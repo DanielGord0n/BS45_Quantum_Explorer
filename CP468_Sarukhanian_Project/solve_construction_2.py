@@ -239,6 +239,11 @@ def solve():
     print("\nBest signs found:")
     print(best_signs)
     
+    # Check against Hardcoded Best Effort from SA
+    # Energy: 2404
+    # Perm: [3, 15, 0, 13, 5, 19, 16, 2, 17, 18, 10, 12, 9, 8, 4, 1, 14, 6, 11, 7]
+    # Signs: [-1  1 -1  1  1 -1 -1  1 -1  1  1 -1 -1  1  1 -1  1 -1 -1  1]
+    
     # Verify
     x, y, z, w = build_sequence(best_signs, A, B, C, D, F, G)
     diag = npaf_sum_four(x, y, z, w)
