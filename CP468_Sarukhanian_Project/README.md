@@ -1,31 +1,68 @@
 # CP468 Sarukhanian Project
 
-## Project Goal
-This project implements a verified construction of Sarukhanian's delta-codes (cyclic T-matrices) of length 110.
-The construction is based on the paper "A Note on Construction of $\delta$-Codes" by A. G. Sarukhanian.
+Investigation and verification of Sarukhanian's constructions for generating δ-codes.
 
-## Verification Status
-**SUCCESS**: The implementation in `src/construction.py` produces four sequences of length 110 ($n=3$) whose summed Non-Periodic Autocorrelation Function (NPAF) is **exactly zero** for all non-zero shifts.
+## Project Structure
 
-## Repository Layout
-- `src/`: Core Python modules for the construction and verification.
-  - `construction.py`: Defines the correct sequence plan and build logic.
-  - `npaf.py`: Efficient NPAF calculation and verification utilities.
-  - `sequences.py`: Base Turyn sequences and helper functions.
-- `tests/`: Unit tests to ensure correctness.
-- `notebooks/`: Demonstration notebooks.
-- `report/`: Detailed findings and verification report.
+```
+CP468_Sarukhanian_Project/
+├── README.md                    # This file
+├── requirements.txt             # Python dependencies
+├── project_resume_summary.md    # ML techniques summary for resume
+│
+├── scripts/                     # All verification scripts
+│   ├── verify_signs_z3.py       # Z3 sign verification
+│   ├── fix_construction_z3.py   # Z3 structural swap verification
+│   ├── synthesize_construction_z3.py  # Z3 free synthesis
+│   ├── search_parameters_z3.py  # Parameter sensitivity analysis
+│   ├── solve_construction_2.py  # Brute force + genetic algorithm
+│   ├── solve_ordering_sa.py     # Simulated annealing optimization
+│   ├── solve_simple_yang.py     # Working Yang's Base Sequences synthesis
+│   └── fallback_generate.py     # Fallback generation script
+│
+├── src/                         # Core library modules
+│   ├── __init__.py
+│   ├── construction.py          # Construction implementations
+│   ├── npaf.py                  # Non-periodic autocorrelation functions
+│   ├── sequences.py             # Turyn/Golay sequence generators
+│   ├── exhaustive_search.py     # Exhaustive search algorithms
+│   ├── greedy_search.py         # Greedy search algorithms
+│   ├── repair.py                # Repair heuristics
+│   └── viz.py                   # Visualization utilities
+│
+├── submission/                  # Final deliverables
+│   ├── construction_1/          # Construction 1 (working)
+│   │   └── ...
+│   └── construction_2/          # Construction 2 (disproved)
+│       ├── report.md            # FINAL COMPREHENSIVE REPORT
+│       ├── sarukhanian_construction_2.mpl  # Original Maple implementation
+│       └── best_effort_construction_2.mpl  # Best approximation found
+│
+├── tests/                       # Unit tests
+└── venv/                        # Python virtual environment
+```
 
-## Quickstart
-1.  Create a virtual environment: `python3 -m venv venv`
-2.  Activate it: `source venv/bin/activate`
-3.  Install dependencies: `pip install -r requirements.txt`
-4.  Run the demo: `python demo.py`
-5.  Run tests: `pytest`
+## Quick Start
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Run the working Yang synthesis
+python scripts/solve_simple_yang.py
+
+# Run parameter search verification
+python scripts/search_parameters_z3.py
+```
 
 ## Key Findings
-The original paper contained ambiguities regarding the sequence length and signs.
--   **Length:** The correct sequence has length 110 (44 blocks), achieved by repeating a specific pattern 3 times (clarified by the LaTeX source).
--   **Signs:** A specific sign configuration was found via simulated annealing to achieve zero NPAF.
 
-See `report/report.md` for full details.
+1. **Construction 1:** Successfully implemented and verified
+2. **Construction 2:** Proven mathematically impossible (see `submission/construction_2/report.md`)
+3. **Alternative Solution:** Valid δ-code of length 52 synthesized via Yang's Base Sequences
+
+## Dependencies
+
+- Python 3.x
+- NumPy
+- Z3 Theorem Prover (`pip install z3-solver`)
