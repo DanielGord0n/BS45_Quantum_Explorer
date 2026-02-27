@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BS(45) Quantum Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --card-dark: rgba(24, 24, 27, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #0ea5e9;
+            --accent-glow: rgba(14, 165, 233, 0.4);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-dark) 60%);
+            overflow: hidden;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            background: var(--card-dark);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+        }
+
+        .glow-orb {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.2;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            transition: background-color 0.5s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(to right, #e0e7ff, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            font-weight: 400;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding: 0.75rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            box-shadow: 0 0 10px var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.running {
+            background: var(--success);
+            box-shadow: 0 0 15px var(--success);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-dot.paused {
+            background: var(--warning);
+            box-shadow: 0 0 15px var(--warning);
+        }
+
+        .status-dot.stopped {
+            background: var(--danger);
+            box-shadow: 0 0 15px var(--danger);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .status-text {
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .metric-card.full-width {
+            grid-column: span 2;
+        }
+
+        .metric-title {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .metric-sub {
+            color: #10b981;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-play { border-color: rgba(16, 185, 129, 0.5); }
+        .btn-play:hover { background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        
+        .btn-pause { border-color: rgba(245, 158, 11, 0.5); }
+        .btn-pause:hover { background: rgba(245, 158, 11, 0.1); box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+
+    </style>
+</head>
+<body>
+
+    <div class="glow-orb" id="glow"></div>
+
+    <div class="dashboard">
+        <div class="header">
+            <h1 class="title">Theorem 2.2 Explorer</h1>
+            <div class="subtitle">Multi-threaded Simulated Annealing Engine for BS(45)</div>
+        </div>
+
+        <div class="status-container">
+            <div class="status-dot" id="status-dot"></div>
+            <div class="status-text" id="status-text">INITIALIZING...</div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-title">Epochs Explored</div>
+                <div class="metric-value" id="epochs">0</div>
+                <div class="metric-sub">states visited locally</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">Search Speed</div>
+                <div class="metric-value" id="speed">0.0</div>
+                <div class="metric-sub" style="color:var(--accent);">epochs / second</div>
+            </div>
+
+            <div class="metric-card full-width">
+                <div class="metric-title">Estimated Time Left</div>
+                <div class="metric-value" style="font-size: 1.5rem; color: #f472b6;">∞ Unknown (Open Math Problem)</div>
+                <div class="metric-sub" style="color: var(--text-muted);">The search space is practically infinite. It will run until mathematically solved.</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-play" onclick="control('start')" id="btn-start" style="display:none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Start Explorer
+            </button>
+            <button class="btn btn-play" onclick="control('resume')" id="btn-resume" style="display:none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Resume Engine
+            </button>
+            <button class="btn btn-pause" onclick="control('pause')" id="btn-pause" style="display:none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                Freeze in RAM (Pause)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function formatNumber(num) {
+            return new Intl.NumberFormat().format(num);
+        }
+
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                
+                // Update UI based on status
+                const dot = document.getElementById('status-dot');
+                const text = document.getElementById('status-text');
+                const glow = document.getElementById('glow');
+                const btnStart = document.getElementById('btn-start');
+                const btnResume = document.getElementById('btn-resume');
+                const btnPause = document.getElementById('btn-pause');
+
+                dot.className = 'status-dot ' + data.status.toLowerCase();
+                text.innerText = data.status;
+
+                if (data.status === 'RUNNING') {
+                    glow.style.background = 'var(--success)';
+                    btnStart.style.display = 'none';
+                    btnResume.style.display = 'none';
+                    btnPause.style.display = 'flex';
+                } else if (data.status === 'PAUSED') {
+                    glow.style.background = 'var(--warning)';
+                    btnStart.style.display = 'none';
+                    btnResume.style.display = 'flex';
+                    btnPause.style.display = 'none';
+                } else {
+                    glow.style.background = 'var(--danger)';
+                    btnStart.style.display = 'flex';
+                    btnResume.style.display = 'none';
+                    btnPause.style.display = 'none';
+                }
+
+                document.getElementById('epochs').innerText = formatNumber(data.epochs);
+                document.getElementById('speed').innerText = formatNumber(data.speed);
+
+            } catch (e) {
+                console.error("Server offline");
+                document.getElementById('status-text').innerText = "OFFLINE";
+                document.getElementById('status-dot').className = 'status-dot stopped';
+                document.getElementById('glow').style.background = 'var(--danger)';
+            }
+        }
+
+        async function control(action) {
+            await fetch(`/api/${action}`, { method: 'POST' });
+            fetchStatus(); // immediate update
+        }
+
+        // Poll every 1 second
+        setInterval(fetchStatus, 1000);
+        fetchStatus();
+    </script>
+</body>
+</html>

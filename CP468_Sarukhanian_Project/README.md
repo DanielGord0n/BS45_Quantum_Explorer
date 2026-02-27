@@ -1,4 +1,4 @@
-# CP468: Base Sequence Solver Project
+,#'p'// CP468: Base Sequence Solver Project
 
 ## Overview
 This project implements the state-of-the-art Wang-Zhu algorithm (arXiv:2506.20296) for discovering Base Sequences $BS(n+1,n)$. Base sequences are four sequences of $\pm 1$ and lengths $n+1, n+1, n, n$ with zero non-periodic autocorrelation (NPAF).
@@ -47,8 +47,29 @@ The solver (`wz_solver`) implements Sum Signatures (Theorem 2.1), NPAF Feasibili
 ### 2. The Verifier
 The verifier (`verify_bs43`) mathematically tests the specific $BS(43,42)$ and $BS(44,43)$ strings extracted from the arXiv payload, ensuring their NPFA sum is identically $0$ at all shifts.
 
+### 3. The Explorer Daemon (BS 45)
+Because discovering $BS(45)$ is an open combinatorial problem, we built a Simulated Annealing engine (`wz_sa`) structured entirely within the exact topological bounds of the Theorem 2.2 constraint manifold. 
+
+Since the search space is massive, you can run the solver infinitely in the background and pause it whenever you need your CPU back.
+
 ```bash
-./bin/verify_bs43
+# Start exploring for BS(45) in the background (survives terminal closure)
+./manage_solver.sh start
+
+# Pause the solver (Freezes memory, uses 0% CPU, doesn't lose progress)
+./manage_solver.sh pause
+
+# Resume the solver days later where you left off
+./manage_solver.sh resume
+
+# Check if it is running or paused
+./manage_solver.sh status
+
+# Watch the exploration logs live
+./manage_solver.sh tail
+
+# Stop and kill the exploration
+./manage_solver.sh stop
 ```
 
 ## Results
