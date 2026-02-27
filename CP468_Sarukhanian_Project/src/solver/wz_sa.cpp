@@ -619,7 +619,7 @@ int main(int argc, char **argv) {
       }
 
       global_tries++;
-      if (tid == 0 && global_tries % 10 == 0) {
+      if (tid == 0) {
         double t = chrono::duration<double>(Clock::now() - G_T0).count();
         cout << "[" << t
              << "s] SA epochs explored locally: " << global_tries * thr << "\n"
