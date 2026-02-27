@@ -1,8 +1,8 @@
 ========================================================
   BS(45,44) — Thermodynamically Guided Solver
   Targeting NPAF=0 inside Theorem 2.2 Manifold
-  [ Threads: 14 ]
+  [ Threads: 7 ]
 ========================================================
 Loaded 180 valid sum signatures.
 
-[103.535s] SA epochs explored locally: 14
+[7.76416s] SA epochs explored locally: 7

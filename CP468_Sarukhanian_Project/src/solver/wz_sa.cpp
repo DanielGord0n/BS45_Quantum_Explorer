@@ -534,7 +534,8 @@ int main(int argc, char **argv) {
 
   int thr = 1;
 #ifdef _OPENMP
-  thr = omp_get_max_threads();
+  thr = max(1, omp_get_max_threads() /
+                   2); // Thermal failsafe: cap at 50% max cores
   omp_set_num_threads(thr);
 #endif
 
