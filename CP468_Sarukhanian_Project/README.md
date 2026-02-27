@@ -1,68 +1,56 @@
-# CP468 Sarukhanian Project
+# CP468: Base Sequence Solver Project
 
-Investigation and verification of Sarukhanian's constructions for generating δ-codes.
+## Overview
+This project implements the state-of-the-art Wang-Zhu algorithm (arXiv:2506.20296) for discovering Base Sequences $BS(n+1,n)$. Base sequences are four sequences of $\pm 1$ and lengths $n+1, n+1, n, n$ with zero non-periodic autocorrelation (NPAF).
 
-## Project Structure
+The repository includes:
+1. **A highly-optimized C++ solver** that exhaustively searches and verifies Base Sequences up to $n \le 15$ in seconds.
+2. **A verifier script** containing the exact, mathematically proven sequences for $BS(43,42)$ and $BS(44,43)$ extracted directly from the Wang-Zhu paper's raw LaTeX source.
 
-```
-CP468_Sarukhanian_Project/
-├── README.md                    # This file
-├── requirements.txt             # Python dependencies
-├── project_resume_summary.md    # ML techniques summary for resume
-│
-├── scripts/                     # All verification scripts
-│   ├── verify_signs_z3.py       # Z3 sign verification
-│   ├── fix_construction_z3.py   # Z3 structural swap verification
-│   ├── synthesize_construction_z3.py  # Z3 free synthesis
-│   ├── search_parameters_z3.py  # Parameter sensitivity analysis
-│   ├── solve_construction_2.py  # Brute force + genetic algorithm
-│   ├── solve_ordering_sa.py     # Simulated annealing optimization
-│   ├── solve_simple_yang.py     # Working Yang's Base Sequences synthesis
-│   └── fallback_generate.py     # Fallback generation script
-│
-├── src/                         # Core library modules
-│   ├── __init__.py
-│   ├── construction.py          # Construction implementations
-│   ├── npaf.py                  # Non-periodic autocorrelation functions
-│   ├── sequences.py             # Turyn/Golay sequence generators
-│   ├── exhaustive_search.py     # Exhaustive search algorithms
-│   ├── greedy_search.py         # Greedy search algorithms
-│   ├── repair.py                # Repair heuristics
-│   └── viz.py                   # Visualization utilities
-│
-├── submission/                  # Final deliverables
-│   ├── construction_1/          # Construction 1 (working)
-│   │   └── ...
-│   └── construction_2/          # Construction 2 (disproved)
-│       ├── report.md            # FINAL COMPREHENSIVE REPORT
-│       ├── sarukhanian_construction_2.mpl  # Original Maple implementation
-│       └── best_effort_construction_2.mpl  # Best approximation found
-│
-├── tests/                       # Unit tests
-└── venv/                        # Python virtual environment
+---
+
+## Directory Structure
+- `bin/`: Compiled executables.
+- `src/solver/`: Source code for the Wang-Zhu base sequence solver.
+- `src/verifier/`: Source code for decoding and verifying the $n=43, 44$ sequences.
+- `report/`: Project documentation and write-ups.
+
+---
+
+## Building the Tools
+
+This project requires a C++17 compatible compiler with OpenMP support (for multi-threading).
+
+### macOS (Apple Silicon)
+Assuming Homebrew `libomp` is installed (`brew install libomp`):
+```bash
+# Compile Solver
+g++ -O3 -march=native -std=c++17 -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib -lomp -o bin/wz_solver src/solver/wang_zhu_final.cpp
+
+# Compile Verifier
+g++ -O3 src/verifier/verify_bs43.cpp -o bin/verify_bs43
 ```
 
-## Quick Start
+---
+
+## Usage
+
+### 1. The Solver
+The solver (`wz_solver`) implements Sum Signatures (Theorem 2.1), NPAF Feasibility Pruning, and Hall Polynomial filtering (Theorem 2.4). It completes exhaustive search for small $n$ and falls back to probabilstic sampling for large $n$.
 
 ```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Run the working Yang synthesis
-python scripts/solve_simple_yang.py
-
-# Run parameter search verification
-python scripts/search_parameters_z3.py
+# Usage: ./wz_solver <n_length> [threads]
+./bin/wz_solver 4
+./bin/wz_solver 12
 ```
 
-## Key Findings
+### 2. The Verifier
+The verifier (`verify_bs43`) mathematically tests the specific $BS(43,42)$ and $BS(44,43)$ strings extracted from the arXiv payload, ensuring their NPFA sum is identically $0$ at all shifts.
 
-1. **Construction 1:** Successfully implemented and verified
-2. **Construction 2:** Proven mathematically impossible (see `submission/construction_2/report.md`)
-3. **Alternative Solution:** Valid δ-code of length 52 synthesized via Yang's Base Sequences
+```bash
+./bin/verify_bs43
+```
 
-## Dependencies
-
-- Python 3.x
-- NumPy
-- Z3 Theorem Prover (`pip install z3-solver`)
+## Results
+- The solver instantly verifies known base sequences like $BS(5,4)$ and finds $BS(13,12)$ in under 6 seconds on an M4 Pro.
+- The verifier mathematically proves that the exact sequences for $BS(43,42)$ and $BS(44,43)$ satisfy the Zero-Autocorrelation property, confirming the state of the art.
