@@ -11,7 +11,7 @@ case "$1" in
             echo "Solver is already running with PID $(cat $PID_FILE)"
         else
             echo "Starting BS(45) Solver in the background..."
-            nohup ./bin/wz_sa 44 > solver.log 2>&1 &
+            nohup ./bin/wz_sa 44 >> solver.log 2>&1 &
             PID=$!
             echo $PID > "$PID_FILE"
             echo "Solver started with PID $PID. Output is being logged to solver.log"

@@ -18,6 +18,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <random>
 #include <vector>
@@ -550,6 +551,14 @@ int main(int argc, char **argv) {
   auto sigs = get_sigs(n);
   cout << "Loaded " << sigs.size() << " valid sum signatures." << endl << endl;
 
+  long long initial_epochs = 0;
+  {
+    ifstream state_in(".solver_state");
+    if (state_in.is_open()) {
+      state_in >> initial_epochs;
+    }
+  }
+
   // Search indefinitely, we are just hunting the minimum.
   long long global_tries = 0;
 
@@ -621,10 +630,17 @@ int main(int argc, char **argv) {
 
       global_tries++;
       if (tid == 0) {
+        long long current_total = initial_epochs + (global_tries * thr);
         double t = chrono::duration<double>(Clock::now() - G_T0).count();
-        cout << "[" << t
-             << "s] SA epochs explored locally: " << global_tries * thr << "\n"
+        double speed = (t > 0) ? ((global_tries * thr) / t) : 0.0;
+        cout << "[" << t << "s] SA epochs explored locally: " << current_total
+             << " Speed: " << speed << "\n"
              << flush;
+
+        ofstream state_out(".solver_state");
+        if (state_out.is_open()) {
+          state_out << current_total << endl;
+        }
       }
     }
   }

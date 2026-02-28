@@ -46,17 +46,14 @@ class CustomHandler(SimpleHTTPRequestHandler):
                         lines = f.readlines()[-50:]
                         for line in reversed(lines):
                             if "SA epochs explored locally:" in line:
-                                m = re.search(r'\[(.*?)s\] SA epochs explored locally: (\d+)', line)
+                                m = re.search(r'\[(.*?)s\] SA epochs explored locally: (\d+) Speed: ([\d\.]+)', line)
                                 if m:
                                     time_el = float(m.group(1))
                                     epochs = int(m.group(2))
+                                    speed = float(m.group(3))
                                     break
                 except Exception:
                     pass
-            
-            # Since each epoch checks roughly ~45 depth calculations (pairs of elements)
-            # The speed is epochs / time
-            speed = (epochs / time_el) if time_el > 0 else 0
             
             data = {
                 'status': state,

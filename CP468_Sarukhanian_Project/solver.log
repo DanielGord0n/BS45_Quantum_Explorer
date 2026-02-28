@@ -229,3 +229,11 @@ Loaded 180 valid sum signatures.
 [20952.8s] SA epochs explored locally: 1554
 [20961s] SA epochs explored locally: 1561
 [20973s] SA epochs explored locally: 1568
+========================================================
+  BS(45,44) — Thermodynamically Guided Solver
+  Targeting NPAF=0 inside Theorem 2.2 Manifold
+  [ Threads: 7 ]
+========================================================
+Loaded 180 valid sum signatures.
+
+[71.5668s] SA epochs explored locally: 7 Speed: 0.0978107

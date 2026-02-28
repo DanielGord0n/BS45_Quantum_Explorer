@@ -1,4 +1,11 @@
-No solver PID found.
-Solver (PID 85922) has been PAUSED. It is using 0% CPU but keeping its place in memory.
-Solver (PID 85922) has been RESUMED.
-Solver (PID 89645) has been PAUSED. It is using 0% CPU but keeping its place in memory.
+Traceback (most recent call last):
+  File "/Users/danielgordon/School/CP468/CP468-Assignments/CP468-Sarukhanian/CP468_Sarukhanian_Project/ui_server.py", line 94, in <module>
+    with TCPServer(("", PORT), CustomHandler) as httpd:
+    Solver (PID 81763) has been PAUSED. It is using 0% CPU but keeping its place in memory.
+5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 457, in __init__
+    self.server_bind()
+    ~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 48] Address already in use
