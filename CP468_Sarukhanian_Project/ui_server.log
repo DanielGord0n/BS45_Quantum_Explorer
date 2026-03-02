@@ -6,7 +6,8 @@ Solver (PID 81763) has been RESUMED.
 Solver (PID 81763) has been PAUSED. It is using 0% CPU but keeping its place in memory.
 Solver (PID 81763) has been RESUMED.
 Solver (PID 81763) has been PAUSED. It is using 0% CPU but keeping its place in memory.
-socketserver.py", line 478, in server_bind
+Solver (PID 81763) has been RESUMED.
+_bind
     self.socket.bind(self.server_address)
     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
 OSError: [Errno 48] Address already in use
