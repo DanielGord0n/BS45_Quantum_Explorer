@@ -1,0 +1,53 @@
+========================================================
+  BS(43,42) — Thermodynamically Guided Solver
+  Targeting NPAF=0 inside Theorem 2.2 Manifold
+  [ Threads: 14 ]
+========================================================
+Loaded 216 valid sum signatures.
+
+[351.917s] SA epochs explored locally: 14 Speed: 0.0397821
+[465.663s] SA epochs explored locally: 28 Speed: 0.0601293
+[737.596s] SA epochs explored locally: 42 Speed: 0.0569417
+[756.827s] SA epochs explored locally: 56 Speed: 0.0739931
+[879.213s] SA epochs explored locally: 70 Speed: 0.0796[101[1209.64s] SA epochs explored locally: 84 Speed: 0.0694424
+[1255.98s] SA epochs explored locally: 98 Speed: 0.078[154[1883.85s] SA epochs explored locally: 112 Speed: 0.0594526
+[2006.63s] SA epochs explored locally: 126 Speed: 0.0627919
+[2279.56s] SA epochs explored locally: 140 Speed: 0.0614[246[2449.18s] SA epochs explored locally: 154 Speed: 0.0628[271[2609.17s] SA epochs explored locally: 168 Speed: 0.0643[3023.82s] SA epochs explored locally: 182 Speed: 0.0601887
+[3335.26s] SA epochs explored locally: 196 Speed: 0.058766
+[3402.86s] SA epochs explored locally: 210 Speed: 0.0617127
+[3440.19s] SA epochs explored locally: 224 Speed: 0.0651127
+[3487.18s] SA epochs explored locally: 238 Speed: 0.06825
+[3506.54s] SA epochs explored locally: 252 Speed: 0.0718656
+[3647.[3543.38s] SA epochs explored locally: 266 Speed: 0.07[3714.[3713.59s] SA epochs explored locally: 280 Speed: 0.0753987
+[3771.44s] SA epochs explored locally: 294 Speed: 0.07[4475.99s] SA epochs explored locally: 308 Speed: 0.0688116
+[4504.[4444.52s] SA epochs explored locally: 322 Speed: 0.0724487
+[4455.44s] SA epochs explored locally: 336 Speed: 0.0754133
+[4635.75s] SA epochs explored locally: 350 Speed: 0.07[4895.[4813.82s] SA epochs explored locally: 364 Speed: 0.07[5456.58s] SA epochs explored locally: 378 Speed: 0.0692742
+[5524.03s] SA epochs explored locally: 392 Speed: 0.0709626
+[6184.49s] SA epochs explored locally: 406 Speed: 0.0656481
+[6606.46s] SA epochs explored locally: 420 Speed: 0.0635741
+[6768.[6863.13s] SA epochs explored locally: 434 Speed: 0.0632365
+[6884.76s] SA epochs explored locally: 448 Speed: 0.0650713
+[6949.53s] SA epochs explored locally: 462 Speed: 0.06[7536.[7663.87s] SA epochs explored locally: 476 Speed: 0.06[7861.[7770.84s] SA epochs explored locally: 490 Speed: 0.06[8074.85s] SA epochs explored locally: 504 Speed: 0.062416
+[8556.81s] SA epochs explored locally: 518 Speed: 0.0605366
+[8696.29s] SA epochs explored locally: 532 Speed: 0.0611755
+[8741.63s] SA epochs explored locally: 546 Speed: 0.0624597
+[9052.69s] SA epochs explored locally: 560 Speed: 0.0618601
+[9182.16s] SA epochs explored locally: 574 Speed: 0.0625126
+[9441.97s] SA epochs explored locally: 588 Speed: 0.0622751
+[9726.9s] SA epochs explored locally: 602 Speed: 0.0618902
+[10081.7s] SA epochs explored locally: 616 Speed: 0.061101
+[10133.1s] SA epochs explored locally: 630 Speed: 0.0621722
+[10524.2s] SA epochs explored locally: 644 Speed: 0.0611923
+[10765.2s] SA epochs explored locally: 658 Speed: 0.0611227
+[11154.5s] SA epochs explored locally: 672 Speed: 0.0602446
+[11280.4s] SA epochs explored locally: 686 Speed: 0.0608134
+[11586.1s] SA epochs explored locally: 700 Speed: 0.0604173
+[11765.9s] SA epochs explored locally: 714 Speed: 0.0606841
+[11819.2s] SA epochs explored locally: 728 Speed: 0.0615945
+[11916.4s] SA epochs explored locally: 742 Speed: 0.062267
+[12379.5s] SA epochs explored locally: 756 Speed: 0.0610689
+[12432.7s] SA epochs explored locally: 770 Speed: 0.0619333
+ed: 0.0875596
+[2503.53s] SA epochs explored locally: 728 Speed: 0.0615133
+[3100.95s] SA epochs explored locally: 742 Speed: 0.054177
