@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <tuple>
 #include <vector>
 
 #ifdef _OPENMP
