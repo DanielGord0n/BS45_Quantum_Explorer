@@ -609,10 +609,11 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    cerr << "Usage: " << argv[0] << " <n>" << endl;
+    cerr << "Usage: " << argv[0] << " <n> [seed_offset]" << endl;
     return 1;
   }
   int n = atoi(argv[1]);
+  int seed_offset = (argc >= 3) ? atoi(argv[2]) : 0;
   G_N = n;
   int n1 = n + 1;
   int ms = max(n1, n);
@@ -629,7 +630,7 @@ int main(int argc, char **argv) {
   cout << "  BS(" << n1 << "," << n << ") — Thermodynamically Guided Solver"
        << endl;
   cout << "  Targeting NPAF=0 inside Theorem 2.2 Manifold" << endl;
-  cout << "  [ Threads: " << thr << " ]" << endl;
+  cout << "  [ Threads: " << thr << " | Seed offset: " << seed_offset << " ]" << endl;
   cout << "========================================================" << endl;
 
   G_T0 = Clock::now();
@@ -653,7 +654,7 @@ int main(int argc, char **argv) {
 #ifdef _OPENMP
     tid = omp_get_thread_num();
 #endif
-    mt19937 rng(42 + tid * 1000 + time(NULL));
+    mt19937 rng(42 + tid * 1000 + time(NULL) + seed_offset * 100000);
 
     while (!g_found.load(memory_order_relaxed)) {
       // Pick a random signature to target so workers distribute load
