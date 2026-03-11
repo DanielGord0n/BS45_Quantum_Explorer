@@ -686,9 +686,12 @@ int main(int argc, char **argv) {
             g_found.store(true);
 #pragma omp critical
             {
-              cout << "\n*** WORLD RECORD DISCOVERY: FOUND BS(" << n1 << ","
-                   << n << ") ***\n"
-                   << endl;
+              if (n >= 44)
+                cout << "\n*** WORLD RECORD DISCOVERY: FOUND BS(" << n1 << ","
+                     << n << ") ***\n" << endl;
+              else
+                cout << "\n*** REPRODUCTION CONFIRMED: FOUND BS(" << n1 << ","
+                     << n << ") ***\n" << endl;
 
               cout << "A = {";
               for (int i = 0; i < n1; i++)
