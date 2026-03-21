@@ -2,15 +2,15 @@
  * Wang-Zhu BS Solver — SA over Theorem 2.2 Manifold
  * CP493 - Directed Research - Daniel Gordon
  *
- * BS(43) REPRODUCTION COPY
- * This is a copy of the BS(45) solver configured to independently
- * discover BS(43,42) to reproduce the Wang-Zhu result.
- * Uses all available cores (no thermal cap).
+ * TRILLIUM SUPERCOMPUTER VERSION
+ * Optimized for Trillium (192-core AMD EPYC nodes).
+ * Features: adaptive restart SA, reheating, faster cooling.
+ * Uses all available cores.
  *
- * Compile:
- *   g++ -O3 -march=native -std=c++17 -Xpreprocessor -fopenmp \
- *       -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib -lomp
- * \ -o bin/wz_sa_bs43 src/solver/wz_sa_bs43.cpp
+ * Compile on Trillium:
+ *   module load StdEnv/2023 gcc/12.3
+ *   g++ -O3 -march=native -std=c++17 -fopenmp -o wz_sa
+ * src/solver/wz_sa_trillium.cpp
  */
 
 #include <algorithm>
@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <tuple>
 #include <vector>
 
 #ifdef _OPENMP
@@ -152,13 +153,14 @@ vector<Sig> get_sigs(int n) {
 }
 
 struct SAParams {
-  double initial_temp = 100.0;
-  double cooling_rate = 0.99995; // Slower cooling for longer cycles
-  int iterations = 1000000;      // Longer cycles = deeper exploration
-  int restarts = 10;             // Fewer restarts locally
-  int reheat_threshold = 100000; // Wait longer before reheating
-  double reheat_ratio = 0.50;    // Reheat to 50%
+  double initial_temp = 50.0;
+  double cooling_rate = 0.9999;
+  int iterations = 500000;
+  int restarts = 20;
+  int reheat_threshold = 50000;
+  double reheat_ratio = 0.25;
 };
+SAParams g_sa_params;
 
 // ===================================
 // CD SA Solver
@@ -220,7 +222,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
   best_state = curr;
   int best_cost = current_cost;
 
-  SAParams sa;
+  SAParams sa = g_sa_params;
   uniform_real_distribution<> prob(0.0, 1.0);
   uniform_int_distribution<> d_dist(0, n / 2 - 1);
 
@@ -360,7 +362,6 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
       temp *= sa.cooling_rate;
     }
 
-    // Early out if this restart found cost 0
     if (best_cost == 0 && hall_ok(best_state.C, n, best_state.D, n))
       return true;
   }
@@ -437,7 +438,7 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
   best_state = curr;
   int best_cost = current_cost;
 
-  SAParams sa;
+  SAParams sa = g_sa_params;
   uniform_real_distribution<> prob(0.0, 1.0);
   uniform_int_distribution<> d_dist(0, (n1 - 1) / 2);
 
@@ -609,10 +610,17 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    cerr << "Usage: " << argv[0] << " <n>" << endl;
+    cerr << "Usage: " << argv[0] << " <n> [seed_offset] [temp] [cool_rate] [iters] [restarts] [reheat_thresh] [reheat_ratio]" << endl;
     return 1;
   }
   int n = atoi(argv[1]);
+  int seed_offset = (argc >= 3) ? atoi(argv[2]) : 0;
+  if (argc >= 4) g_sa_params.initial_temp = atof(argv[3]);
+  if (argc >= 5) g_sa_params.cooling_rate = atof(argv[4]);
+  if (argc >= 6) g_sa_params.iterations = atoi(argv[5]);
+  if (argc >= 7) g_sa_params.restarts = atoi(argv[6]);
+  if (argc >= 8) g_sa_params.reheat_threshold = atoi(argv[7]);
+  if (argc >= 9) g_sa_params.reheat_ratio = atof(argv[8]);
   G_N = n;
   int n1 = n + 1;
   int ms = max(n1, n);
@@ -621,7 +629,7 @@ int main(int argc, char **argv) {
 
   int thr = 1;
 #ifdef _OPENMP
-  thr = omp_get_max_threads(); // BS(43) repro: use ALL cores for max speed
+  thr = omp_get_max_threads(); // Trillium: use ALL 192 cores
   omp_set_num_threads(thr);
 #endif
 
@@ -629,7 +637,7 @@ int main(int argc, char **argv) {
   cout << "  BS(" << n1 << "," << n << ") — Thermodynamically Guided Solver"
        << endl;
   cout << "  Targeting NPAF=0 inside Theorem 2.2 Manifold" << endl;
-  cout << "  [ Threads: " << thr << " ]" << endl;
+  cout << "  [ Threads: " << thr << " | Seed offset: " << seed_offset << " ]" << endl;
   cout << "========================================================" << endl;
 
   G_T0 = Clock::now();
@@ -638,7 +646,7 @@ int main(int argc, char **argv) {
 
   long long initial_epochs = 0;
   {
-    ifstream state_in(".solver_state_bs43");
+    ifstream state_in(".solver_state");
     if (state_in.is_open()) {
       state_in >> initial_epochs;
     }
@@ -653,7 +661,7 @@ int main(int argc, char **argv) {
 #ifdef _OPENMP
     tid = omp_get_thread_num();
 #endif
-    mt19937 rng(42 + tid * 1000 + time(NULL));
+    mt19937 rng(42 + tid * 1000 + time(NULL) + seed_offset * 100000);
 
     while (!g_found.load(memory_order_relaxed)) {
       // Pick a random signature to target so workers distribute load
@@ -685,9 +693,12 @@ int main(int argc, char **argv) {
             g_found.store(true);
 #pragma omp critical
             {
-              cout << "\n*** REPRODUCTION SUCCESS: INDEPENDENTLY FOUND BS("
-                   << n1 << "," << n << ") ***\n"
-                   << endl;
+              if (n >= 44)
+                cout << "\n*** WORLD RECORD DISCOVERY: FOUND BS(" << n1 << ","
+                     << n << ") ***\n" << endl;
+              else
+                cout << "\n*** REPRODUCTION CONFIRMED: FOUND BS(" << n1 << ","
+                     << n << ") ***\n" << endl;
 
               cout << "A = {";
               for (int i = 0; i < n1; i++)
@@ -722,7 +733,7 @@ int main(int argc, char **argv) {
              << " Speed: " << speed << "\n"
              << flush;
 
-        ofstream state_out(".solver_state_bs43");
+        ofstream state_out(".solver_state");
         if (state_out.is_open()) {
           state_out << current_total << endl;
         }

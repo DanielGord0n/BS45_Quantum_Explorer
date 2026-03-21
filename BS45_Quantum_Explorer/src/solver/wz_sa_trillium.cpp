@@ -154,11 +154,11 @@ vector<Sig> get_sigs(int n) {
 
 struct SAParams {
   double initial_temp = 50.0;
-  double cooling_rate = 0.9999; // Faster cooling for shorter cycles
-  int iterations = 500000;      // Shorter cycles = more restarts
-  int restarts = 20;            // Number of restart cycles per epoch
-  int reheat_threshold = 50000; // Reheat if no improvement for this many iters
-  double reheat_ratio = 0.25;   // Reheat to 25% of initial temp
+  double cooling_rate = 0.999;  // Very fast cooling
+  int iterations = 100000;      // Very short cycles
+  int restarts = 50;            // Aggressive restarts for wide coverage
+  int reheat_threshold = 20000; // Fast stuck detection
+  double reheat_ratio = 0.25;   // Reheat to 25%
 };
 
 // ===================================
