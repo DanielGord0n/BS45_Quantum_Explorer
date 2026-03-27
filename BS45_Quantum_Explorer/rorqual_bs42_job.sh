@@ -5,13 +5,13 @@
 #SBATCH --time=24:00:00
 #SBATCH --job-name=BS42_rorqual
 #SBATCH --output=bs42_rorqual_output_%A_%a.txt
-#SBATCH --array=0-19
+#SBATCH --array=0-49
 #SBATCH --account=def-ikotsire
 #SBATCH --mail-type=END,FAIL
 
-# === BS(42) Solver — Rorqual Cluster (20 jobs) ===
-# Seed offsets 300-319. Dedicated BS(42) reproduction.
-# Total: 20 nodes × 192 cores = 3,840 cores searching
+# === BS(42) Solver — Rorqual Cluster (50 jobs) ===
+# Seed offsets 3000-3049 to ensure fresh search space
+# Total: 50 nodes × 192 cores = 9,600 cores searching
 
 cd $SLURM_SUBMIT_DIR
 
@@ -20,7 +20,7 @@ module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-SEED_OFFSET=$((300 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((3000 + SLURM_ARRAY_TASK_ID))
 
 echo "=============================================="
 echo "  BS(42) Solver — Rorqual Cluster"
