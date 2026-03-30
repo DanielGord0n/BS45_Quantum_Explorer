@@ -32,6 +32,7 @@ using namespace std;
 using Clock = chrono::steady_clock;
 
 static atomic<bool> g_found{false};
+static atomic<int> g_best_cost{999999};
 static int g_sol[4][128];
 static int G_N;
 static Clock::time_point G_T0;
@@ -153,12 +154,12 @@ vector<Sig> get_sigs(int n) {
 }
 
 struct SAParams {
-  double initial_temp = 50.0;
-  double cooling_rate = 0.999;  // Very fast cooling
-  int iterations = 100000;      // Very short cycles
-  int restarts = 50;            // Aggressive restarts for wide coverage
-  int reheat_threshold = 20000; // Fast stuck detection
-  double reheat_ratio = 0.25;   // Reheat to 25%
+  double initial_temp = 100.0;
+  double cooling_rate = 0.999995; // Deep exploration cooling
+  int iterations = 2000000;       // Long cycles for thorough search
+  int restarts = 10;              // Fewer restarts, each goes deep
+  int reheat_threshold = 500000;  // Patient stuck detection
+  double reheat_ratio = 0.5;      // Reheat to 50%
 };
 
 // ===================================
@@ -188,6 +189,8 @@ struct CDState {
 bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
                  mt19937 &rng) {
   CDState curr;
+  memset(curr.C, 0, sizeof(curr.C));
+  memset(curr.D, 0, sizeof(curr.D));
   memset(curr.corr, 0, sizeof(curr.corr));
   curr.sum_c = 0;
   curr.sum_d = 0;
@@ -209,6 +212,15 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
     curr.sum_c += c_ptr[0] + c_ptr[2];
     curr.sum_d += c_ptr[1] + c_ptr[3];
   }
+  // BUG FIX: Handle middle element for odd-length sequences
+  if (n % 2 != 0) {
+    int mid = n / 2;
+    const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+    curr.C[mid] = c_ptr[0];
+    curr.D[mid] = c_ptr[1];
+    curr.sum_c += c_ptr[0];
+    curr.sum_d += c_ptr[1];
+  }
   // Compute correlations
   int ms = max(n1, n);
   for (int s = 1; s < ms; s++) {
@@ -223,7 +235,8 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
 
   SAParams sa;
   uniform_real_distribution<> prob(0.0, 1.0);
-  uniform_int_distribution<> d_dist(0, n / 2 - 1);
+  // Include middle element in mutation range for odd n
+  uniform_int_distribution<> d_dist(0, (n % 2 != 0) ? n / 2 : n / 2 - 1);
 
   // Adaptive restart loop: run multiple short SA cycles
   for (int restart = 0; restart < sa.restarts; restart++) {
@@ -232,6 +245,8 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
 
     // Re-randomize state for each restart (except first which uses initial)
     if (restart > 0) {
+      memset(curr.C, 0, sizeof(curr.C));
+      memset(curr.D, 0, sizeof(curr.D));
       memset(curr.corr, 0, sizeof(curr.corr));
       curr.sum_c = 0;
       curr.sum_d = 0;
@@ -246,6 +261,15 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
         curr.D[right] = c_ptr[3];
         curr.sum_c += c_ptr[0] + c_ptr[2];
         curr.sum_d += c_ptr[1] + c_ptr[3];
+      }
+      // BUG FIX: Handle middle element for odd-length sequences on restart
+      if (n % 2 != 0) {
+        int mid = n / 2;
+        const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+        curr.C[mid] = c_ptr[0];
+        curr.D[mid] = c_ptr[1];
+        curr.sum_c += c_ptr[0];
+        curr.sum_d += c_ptr[1];
       }
       for (int s = 1; s < ms; s++)
         for (int i = 0; i < n - s; i++)
@@ -279,23 +303,40 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
 
       int oldC_L = curr.C[left], oldD_L = curr.D[left];
       int oldC_R = curr.C[right], oldD_R = curr.D[right];
+      int nC_L, nD_L, nC_R, nD_R;
 
-      const int *c_ptr;
-      if (d == 0)
-        c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-      else
-        c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
-
-      int nC_L = c_ptr[0], nD_L = c_ptr[1];
-      int nC_R = c_ptr[2], nD_R = c_ptr[3];
-
-      if (oldC_L == nC_L && oldD_L == nD_L && oldC_R == nC_R && oldD_R == nD_R)
-        continue;
+      // Handle middle element (left == right) for odd n
+      if (left == right) {
+        const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+        nC_L = c_ptr[0];
+        nD_L = c_ptr[1];
+        nC_R = nC_L;
+        nD_R = nD_L;
+        if (oldC_L == nC_L && oldD_L == nD_L)
+          continue;
+      } else {
+        const int *c_ptr;
+        if (d == 0)
+          c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
+        else
+          c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+        nC_L = c_ptr[0];
+        nD_L = c_ptr[1];
+        nC_R = c_ptr[2];
+        nD_R = c_ptr[3];
+        if (oldC_L == nC_L && oldD_L == nD_L && oldC_R == nC_R && oldD_R == nD_R)
+          continue;
+      }
 
       int old_sum_c = curr.sum_c;
       int old_sum_d = curr.sum_d;
-      curr.sum_c += (nC_L + nC_R) - (oldC_L + oldC_R);
-      curr.sum_d += (nD_L + nD_R) - (oldD_L + oldD_R);
+      if (left == right) {
+        curr.sum_c += nC_L - oldC_L;
+        curr.sum_d += nD_L - oldD_L;
+      } else {
+        curr.sum_c += (nC_L + nC_R) - (oldC_L + oldC_R);
+        curr.sum_d += (nD_L + nD_R) - (oldD_L + oldD_R);
+      }
 
       int delta_corr[128] = {0};
 
@@ -306,14 +347,16 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
         if (left + s < n)
           delta_corr[s] -=
               oldC_L * curr.C[left + s] + oldD_L * curr.D[left + s];
-        if (right - s >= 0)
-          delta_corr[s] -=
-              curr.C[right - s] * oldC_R + curr.D[right - s] * oldD_R;
-        if (right + s < n)
-          delta_corr[s] -=
-              oldC_R * curr.C[right + s] + oldD_R * curr.D[right + s];
-        if (right - left == s)
-          delta_corr[s] += oldC_L * oldC_R + oldD_L * oldD_R;
+        if (left != right) {
+          if (right - s >= 0)
+            delta_corr[s] -=
+                curr.C[right - s] * oldC_R + curr.D[right - s] * oldD_R;
+          if (right + s < n)
+            delta_corr[s] -=
+                oldC_R * curr.C[right + s] + oldD_R * curr.D[right + s];
+          if (right - left == s)
+            delta_corr[s] += oldC_L * oldC_R + oldD_L * oldD_R;
+        }
       }
 
       curr.C[left] = nC_L;
@@ -326,12 +369,16 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
           delta_corr[s] += curr.C[left - s] * nC_L + curr.D[left - s] * nD_L;
         if (left + s < n)
           delta_corr[s] += nC_L * curr.C[left + s] + nD_L * curr.D[left + s];
-        if (right - s >= 0)
-          delta_corr[s] += curr.C[right - s] * nC_R + curr.D[right - s] * nD_R;
-        if (right + s < n)
-          delta_corr[s] += nC_R * curr.C[right + s] + nD_R * curr.D[right + s];
-        if (right - left == s)
-          delta_corr[s] -= nC_L * nC_R + nD_L * nD_R;
+        if (left != right) {
+          if (right - s >= 0)
+            delta_corr[s] +=
+                curr.C[right - s] * nC_R + curr.D[right - s] * nD_R;
+          if (right + s < n)
+            delta_corr[s] +=
+                nC_R * curr.C[right + s] + nD_R * curr.D[right + s];
+          if (right - left == s)
+            delta_corr[s] -= nC_L * nC_R + nD_L * nD_R;
+        }
       }
 
       for (int s = 1; s < ms; s++)
@@ -664,6 +711,16 @@ int main(int argc, char **argv) {
       CDState best_cd;
       bool found_cd = solve_CD_SA(n, n1, sig.c, sig.d, best_cd, rng);
 
+      // Track global best cost for telemetry
+      {
+        int cd_cost = best_cd.cost(sig.c, sig.d, n1, n);
+        int old_best = g_best_cost.load(memory_order_relaxed);
+        while (cd_cost < old_best &&
+               !g_best_cost.compare_exchange_weak(old_best, cd_cost,
+                                                   memory_order_relaxed))
+          ;
+      }
+
       if (found_cd) {
         int cd_full[128] = {0};
         for (int s = 1; s < ms; s++) {
@@ -722,8 +779,10 @@ int main(int argc, char **argv) {
         long long current_total = initial_epochs + (global_tries * thr);
         double t = chrono::duration<double>(Clock::now() - G_T0).count();
         double speed = (t > 0) ? ((global_tries * thr) / t) : 0.0;
-        cout << "[" << t << "s] SA epochs explored locally: " << current_total
-             << " Speed: " << speed << "\n"
+        int gbest = g_best_cost.load(memory_order_relaxed);
+        cout << "[" << t << "s] Epochs: " << current_total
+             << " Speed: " << speed
+             << " [Best cost: " << gbest << "]\n"
              << flush;
 
         ofstream state_out(".solver_state");

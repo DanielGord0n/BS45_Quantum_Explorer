@@ -6,11 +6,13 @@
 #SBATCH --job-name=BS45_array
 #SBATCH --output=bs45_output_%A_%a.txt
 #SBATCH --array=0-49
+#SBATCH --account=def-ikotsire
 #SBATCH --mail-type=END,FAIL
 
-# === BS(45) Solver — Array Job (50 independent searches) ===
+# === BS(45) Solver — Trillium Array Job (Run 3: BUG FIX + Deep SA) ===
 # Each array task gets a unique seed offset so it explores
 # a completely different region of the search space.
+# Run 3: Seed offsets 8000-8049
 # Total: 50 nodes × 192 cores = 9,600 cores searching simultaneously
 #
 # Submit with: sbatch bs45_array_job.sh
@@ -33,14 +35,15 @@ echo "  Seed:   $SLURM_ARRAY_TASK_ID"
 echo "  Time:   $(date)"
 echo "=============================================="
 
-# Compile if binary doesn't exist
-if [ ! -f wz_sa ]; then
-    echo "Compiling..."
-    g++ -O3 -march=native -std=c++17 -fopenmp -o wz_sa src/solver/wz_sa_trillium.cpp
-    echo "Done."
-fi
+# Force recompile to pick up bug fix
+rm -f wz_sa
+echo "Compiling with bug fix..."
+g++ -O3 -march=native -std=c++17 -fopenmp -o wz_sa src/solver/wz_sa_trillium.cpp
+echo "Done."
 
-# Run solver with array task ID as seed offset
-./wz_sa 44 $SLURM_ARRAY_TASK_ID
+SEED_OFFSET=$((8000 + SLURM_ARRAY_TASK_ID))
+
+# Run solver with unique seed offset
+./wz_sa 44 $SEED_OFFSET
 
 echo "=== Task $SLURM_ARRAY_TASK_ID finished at $(date) ==="
