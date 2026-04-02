@@ -9,10 +9,10 @@
 #SBATCH --account=def-ikotsire
 #SBATCH --mail-type=END,FAIL
 
-# === BS(45) Solver — Trillium Array Job (Run 3: BUG FIX + Deep SA) ===
+# === BS(45) Solver — Trillium Array Job (Run 4: AB retry fix) ===
 # Each array task gets a unique seed offset so it explores
 # a completely different region of the search space.
-# Run 3: Seed offsets 8000-8049
+# Run 4: Seed offsets 12000-12049
 # Total: 50 nodes × 192 cores = 9,600 cores searching simultaneously
 #
 # Submit with: sbatch bs45_array_job.sh
@@ -41,7 +41,7 @@ echo "Compiling with bug fix..."
 g++ -O3 -march=native -std=c++17 -fopenmp -o wz_sa src/solver/wz_sa_trillium.cpp
 echo "Done."
 
-SEED_OFFSET=$((8000 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((12000 + SLURM_ARRAY_TASK_ID))
 
 # Run solver with unique seed offset
 ./wz_sa 44 $SEED_OFFSET

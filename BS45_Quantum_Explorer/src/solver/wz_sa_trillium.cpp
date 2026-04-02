@@ -33,6 +33,7 @@ using Clock = chrono::steady_clock;
 
 static atomic<bool> g_found{false};
 static atomic<int> g_best_cost{999999};
+static atomic<int> g_ab_best_cost{999999};
 static int g_sol[4][128];
 static int G_N;
 static Clock::time_point G_T0;
@@ -729,49 +730,68 @@ int main(int argc, char **argv) {
                           best_cd.D[k] * best_cd.D[k + s];
         }
 
-        ABState best_ab;
-        bool found_ab = solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng);
+        // KEY FIX: Retry AB up to 50 times per valid CD pair.
+        // Previously AB got only ONE attempt, wasting every successful CD find.
+        for (int ab_attempt = 0;
+             ab_attempt < 50 && !g_found.load(memory_order_relaxed);
+             ab_attempt++) {
 
-        if (found_ab) {
-          bool valid = true;
-          for (int s = 1; s < ms && valid; s++) {
-            if (npaf_at(best_ab.A, best_ab.B, n1, best_cd.C, best_cd.D, n, s) !=
-                0)
-              valid = false;
+          ABState best_ab;
+          bool found_ab = solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng);
+
+          // Track AB best cost for telemetry
+          {
+            int ab_cost = best_ab.cost(sig.a, sig.b, n1, cd_full);
+            int old_ab = g_ab_best_cost.load(memory_order_relaxed);
+            while (ab_cost < old_ab &&
+                   !g_ab_best_cost.compare_exchange_weak(old_ab, ab_cost,
+                                                         memory_order_relaxed))
+              ;
           }
-          if (valid) {
-            g_found.store(true);
+
+          if (found_ab) {
+            bool valid = true;
+            for (int s = 1; s < ms && valid; s++) {
+              if (npaf_at(best_ab.A, best_ab.B, n1, best_cd.C, best_cd.D, n,
+                          s) != 0)
+                valid = false;
+            }
+            if (valid) {
+              g_found.store(true);
 #pragma omp critical
-            {
-              if (n >= 44)
-                cout << "\n*** WORLD RECORD DISCOVERY: FOUND BS(" << n1 << ","
-                     << n << ") ***\n" << endl;
-              else
-                cout << "\n*** REPRODUCTION CONFIRMED: FOUND BS(" << n1 << ","
-                     << n << ") ***\n" << endl;
+              {
+                if (n >= 44)
+                  cout << "\n*** WORLD RECORD DISCOVERY: FOUND BS(" << n1 << ","
+                       << n << ") ***\n" << endl;
+                else
+                  cout << "\n*** REPRODUCTION CONFIRMED: FOUND BS(" << n1 << ","
+                       << n << ") ***\n" << endl;
 
-              cout << "A = {";
-              for (int i = 0; i < n1; i++)
-                cout << best_ab.A[i] << (i < n1 - 1 ? "," : "");
-              cout << "};" << endl;
-              cout << "B = {";
-              for (int i = 0; i < n1; i++)
-                cout << best_ab.B[i] << (i < n1 - 1 ? "," : "");
-              cout << "};" << endl;
-              cout << "C = {";
-              for (int i = 0; i < n; i++)
-                cout << best_cd.C[i] << (i < n - 1 ? "," : "");
-              cout << "};" << endl;
-              cout << "D = {";
-              for (int i = 0; i < n; i++)
-                cout << best_cd.D[i] << (i < n - 1 ? "," : "");
-              cout << "};" << endl;
+                cout << "A = {";
+                for (int i = 0; i < n1; i++)
+                  cout << best_ab.A[i] << (i < n1 - 1 ? "," : "");
+                cout << "};" << endl;
+                cout << "B = {";
+                for (int i = 0; i < n1; i++)
+                  cout << best_ab.B[i] << (i < n1 - 1 ? "," : "");
+                cout << "};" << endl;
+                cout << "C = {";
+                for (int i = 0; i < n; i++)
+                  cout << best_cd.C[i] << (i < n - 1 ? "," : "");
+                cout << "};" << endl;
+                cout << "D = {";
+                for (int i = 0; i < n; i++)
+                  cout << best_cd.D[i] << (i < n - 1 ? "," : "");
+                cout << "};" << endl;
 
-              double t = chrono::duration<double>(Clock::now() - G_T0).count();
-              cout << "\nTime: " << t << "s" << endl;
+                double t =
+                    chrono::duration<double>(Clock::now() - G_T0).count();
+                cout << "\nTime: " << t << "s" << endl;
+              }
+              break; // exit AB retry loop
             }
           }
-        }
+        } // end AB retry loop
       }
 
       global_tries++;
@@ -780,9 +800,11 @@ int main(int argc, char **argv) {
         double t = chrono::duration<double>(Clock::now() - G_T0).count();
         double speed = (t > 0) ? ((global_tries * thr) / t) : 0.0;
         int gbest = g_best_cost.load(memory_order_relaxed);
+        int ab_best = g_ab_best_cost.load(memory_order_relaxed);
         cout << "[" << t << "s] Epochs: " << current_total
              << " Speed: " << speed
-             << " [Best cost: " << gbest << "]\n"
+             << " [CD cost: " << gbest
+             << " | AB cost: " << (ab_best == 999999 ? -1 : ab_best) << "]\n"
              << flush;
 
         ofstream state_out(".solver_state");

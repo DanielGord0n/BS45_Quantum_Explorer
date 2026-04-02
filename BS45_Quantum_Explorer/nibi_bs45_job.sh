@@ -10,7 +10,7 @@
 #SBATCH --mail-type=END,FAIL
 
 # === BS(45) Solver — Nibi Cluster (50 jobs) ===
-# Run 3: Seed offsets 5000-5049 (BUG FIX + Deep SA)
+# Run 4: Seed offsets 10000-10049 (AB retry fix)
 # Total: 50 nodes × 192 cores = 9,600 cores searching
 
 cd $SLURM_SUBMIT_DIR
@@ -20,7 +20,7 @@ module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-SEED_OFFSET=$((5000 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((10000 + SLURM_ARRAY_TASK_ID))
 
 echo "=============================================="
 echo "  BS(45) Solver — Nibi Cluster"
