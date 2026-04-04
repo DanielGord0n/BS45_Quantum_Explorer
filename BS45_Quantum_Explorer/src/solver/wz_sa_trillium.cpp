@@ -494,35 +494,79 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
     if (g_found.load(memory_order_relaxed))
       return false;
 
-    // Re-randomize for restarts after the first
     if (restart > 0) {
-      memset(curr.corr, 0, sizeof(curr.corr));
-      curr.sum_a = 0;
-      curr.sum_b = 0;
-      for (int d = 0; d < n1 / 2; d++) {
-        int left = d, right = n1 - 1 - d;
-        const int *c_ptr =
-            (d == 0) ? comb8_neg[uniform_int_distribution<>(0, 7)(rng)]
-                     : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
-        curr.A[left] = c_ptr[0];
-        curr.B[left] = c_ptr[1];
-        curr.A[right] = c_ptr[2];
-        curr.B[right] = c_ptr[3];
-        curr.sum_a += c_ptr[0] + c_ptr[2];
-        curr.sum_b += c_ptr[1] + c_ptr[3];
+      if (restart % 2 == 0 && best_cost < 999999) {
+        // WARM START: begin from best state found + random perturbations.
+        // This is iterated local search — we preserve progress instead of
+        // throwing it away. Much more effective when near a solution.
+        curr = best_state;
+        memset(curr.corr, 0, sizeof(curr.corr));
+        curr.sum_a = 0;
+        curr.sum_b = 0;
+        // Recompute sums from best_state
+        for (int i = 0; i < n1; i++) {
+          curr.sum_a += curr.A[i];
+          curr.sum_b += curr.B[i];
+        }
+        // Perturb ~25% of positions randomly to escape local minimum
+        int num_perturb = max(2, n1 / 4);
+        for (int p = 0; p < num_perturb; p++) {
+          int d = d_dist(rng);
+          int left = d, right = n1 - 1 - d;
+          curr.sum_a -= curr.A[left] + (left != right ? curr.A[right] : 0);
+          curr.sum_b -= curr.B[left] + (left != right ? curr.B[right] : 0);
+          const int *c_ptr;
+          if (left == right) {
+            c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+            curr.A[left] = c_ptr[0];
+            curr.B[left] = c_ptr[1];
+            curr.sum_a += c_ptr[0];
+            curr.sum_b += c_ptr[1];
+          } else if (d == 0) {
+            c_ptr = comb8_neg[uniform_int_distribution<>(0, 7)(rng)];
+            curr.A[left] = c_ptr[0]; curr.B[left] = c_ptr[1];
+            curr.A[right] = c_ptr[2]; curr.B[right] = c_ptr[3];
+            curr.sum_a += c_ptr[0] + c_ptr[2];
+            curr.sum_b += c_ptr[1] + c_ptr[3];
+          } else {
+            c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+            curr.A[left] = c_ptr[0]; curr.B[left] = c_ptr[1];
+            curr.A[right] = c_ptr[2]; curr.B[right] = c_ptr[3];
+            curr.sum_a += c_ptr[0] + c_ptr[2];
+            curr.sum_b += c_ptr[1] + c_ptr[3];
+          }
+        }
+        // Recompute correlations after perturbation
+        for (int s = 1; s < ms; s++)
+          for (int i = 0; i < n1 - s; i++)
+            curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+        current_cost = curr.cost(ta, tb, n1, cd_full);
+      } else {
+        // ODD RESTART: full random restart for diversity
+        memset(curr.corr, 0, sizeof(curr.corr));
+        curr.sum_a = 0;
+        curr.sum_b = 0;
+        for (int d = 0; d < n1 / 2; d++) {
+          int left = d, right = n1 - 1 - d;
+          const int *c_ptr =
+              (d == 0) ? comb8_neg[uniform_int_distribution<>(0, 7)(rng)]
+                       : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+          curr.A[left] = c_ptr[0]; curr.B[left] = c_ptr[1];
+          curr.A[right] = c_ptr[2]; curr.B[right] = c_ptr[3];
+          curr.sum_a += c_ptr[0] + c_ptr[2];
+          curr.sum_b += c_ptr[1] + c_ptr[3];
+        }
+        if (n1 % 2 != 0) {
+          int mid = n1 / 2;
+          const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+          curr.A[mid] = c_ptr[0]; curr.B[mid] = c_ptr[1];
+          curr.sum_a += c_ptr[0]; curr.sum_b += c_ptr[1];
+        }
+        for (int s = 1; s < ms; s++)
+          for (int i = 0; i < n1 - s; i++)
+            curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+        current_cost = curr.cost(ta, tb, n1, cd_full);
       }
-      if (n1 % 2 != 0) {
-        int mid = n1 / 2;
-        const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-        curr.A[mid] = c_ptr[0];
-        curr.B[mid] = c_ptr[1];
-        curr.sum_a += c_ptr[0];
-        curr.sum_b += c_ptr[1];
-      }
-      for (int s = 1; s < ms; s++)
-        for (int i = 0; i < n1 - s; i++)
-          curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
-      current_cost = curr.cost(ta, tb, n1, cd_full);
     }
 
     double temp = sa.initial_temp;
