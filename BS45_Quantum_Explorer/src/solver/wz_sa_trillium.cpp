@@ -163,6 +163,18 @@ struct SAParams {
   double reheat_ratio = 0.5;      // Reheat to 50%
 };
 
+// Separate SA parameters tuned for the AB problem, which is much smaller
+// than CD (n1=21 vs n=41). Lower temp prevents accepting bad moves;
+// shorter cycles with more restarts gives better coverage.
+struct ABSAParams {
+  double initial_temp = 10.0;     // AB is smaller, needs lower temp
+  double cooling_rate = 0.99999;  // Cool faster
+  int iterations = 500000;        // Shorter cycles
+  int restarts = 40;              // More restarts for diversity
+  int reheat_threshold = 100000;  // Reheat if stuck
+  double reheat_ratio = 0.3;      // Mild reheat
+};
+
 // ===================================
 // CD SA Solver
 // ===================================
@@ -441,6 +453,107 @@ struct ABState {
   }
 };
 
+// Greedy hill-climbing: deterministically try every possible swap at every
+// position. Repeats until no single-swap improvement is found. This breaks
+// through plateaus that stochastic SA cannot.
+static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
+                                  ABState &state, int &cost_out) {
+  int ms = max(n1, G_N);
+  bool improved = true;
+  while (improved) {
+    improved = false;
+    for (int d = 0; d <= (n1 - 1) / 2; d++) {
+      int left = d, right = n1 - 1 - d;
+      int oldA_L = state.A[left], oldB_L = state.B[left];
+      int oldA_R = state.A[right], oldB_R = state.B[right];
+
+      bool is_middle = (left == right);
+      int num_combos = is_middle ? 4 : 8;
+
+      int best_local_cost = cost_out;
+      int best_combo = -1;
+      for (int ci = 0; ci < num_combos; ci++) {
+        int nA_L, nB_L, nA_R, nB_R;
+        if (is_middle) {
+          nA_L = comb4[ci][0]; nB_L = comb4[ci][1];
+          nA_R = nA_L; nB_R = nB_L;
+        } else if (d == 0) {
+          nA_L = comb8_neg[ci][0]; nB_L = comb8_neg[ci][1];
+          nA_R = comb8_neg[ci][2]; nB_R = comb8_neg[ci][3];
+        } else {
+          nA_L = comb8_pos[ci][0]; nB_L = comb8_pos[ci][1];
+          nA_R = comb8_pos[ci][2]; nB_R = comb8_pos[ci][3];
+        }
+        if (nA_L == oldA_L && nB_L == oldB_L && nA_R == oldA_R && nB_R == oldB_R)
+          continue;
+
+        // Temporarily apply
+        state.A[left] = nA_L; state.B[left] = nB_L;
+        state.A[right] = nA_R; state.B[right] = nB_R;
+        int old_sa = state.sum_a, old_sb = state.sum_b;
+        if (is_middle) {
+          state.sum_a += nA_L - oldA_L;
+          state.sum_b += nB_L - oldB_L;
+        } else {
+          state.sum_a += (nA_L + nA_R) - (oldA_L + oldA_R);
+          state.sum_b += (nB_L + nB_R) - (oldB_L + oldB_R);
+        }
+        // Full recompute of corr for correctness in greedy phase
+        int saved_corr[128];
+        memcpy(saved_corr, state.corr, sizeof(saved_corr));
+        memset(state.corr, 0, sizeof(state.corr));
+        for (int s = 1; s < ms; s++)
+          for (int i = 0; i < n1 - s; i++)
+            state.corr[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
+        int trial_cost = state.cost(ta, tb, n1, cd_full);
+
+        if (trial_cost < best_local_cost) {
+          best_local_cost = trial_cost;
+          best_combo = ci;
+        }
+
+        // Revert
+        state.A[left] = oldA_L; state.B[left] = oldB_L;
+        state.A[right] = oldA_R; state.B[right] = oldB_R;
+        state.sum_a = old_sa; state.sum_b = old_sb;
+        memcpy(state.corr, saved_corr, sizeof(state.corr));
+      }
+
+      if (best_combo >= 0) {
+        // Apply best swap permanently
+        int nA_L, nB_L, nA_R, nB_R;
+        if (is_middle) {
+          nA_L = comb4[best_combo][0]; nB_L = comb4[best_combo][1];
+          nA_R = nA_L; nB_R = nB_L;
+        } else if (d == 0) {
+          nA_L = comb8_neg[best_combo][0]; nB_L = comb8_neg[best_combo][1];
+          nA_R = comb8_neg[best_combo][2]; nB_R = comb8_neg[best_combo][3];
+        } else {
+          nA_L = comb8_pos[best_combo][0]; nB_L = comb8_pos[best_combo][1];
+          nA_R = comb8_pos[best_combo][2]; nB_R = comb8_pos[best_combo][3];
+        }
+        state.A[left] = nA_L; state.B[left] = nB_L;
+        state.A[right] = nA_R; state.B[right] = nB_R;
+        if (is_middle) {
+          state.sum_a += nA_L - oldA_L;
+          state.sum_b += nB_L - oldB_L;
+        } else {
+          state.sum_a += (nA_L + nA_R) - (oldA_L + oldA_R);
+          state.sum_b += (nB_L + nB_R) - (oldB_L + oldB_R);
+        }
+        memset(state.corr, 0, sizeof(state.corr));
+        for (int s = 1; s < ms; s++)
+          for (int i = 0; i < n1 - s; i++)
+            state.corr[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
+        cost_out = best_local_cost;
+        improved = true;
+        if (cost_out == 0) return true;
+      }
+    }
+  }
+  return cost_out == 0;
+}
+
 bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
                  ABState &best_state, mt19937 &rng) {
   ABState curr;
@@ -485,7 +598,7 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
   best_state = curr;
   int best_cost = current_cost;
 
-  SAParams sa;
+  ABSAParams sa;
   uniform_real_distribution<> prob(0.0, 1.0);
   uniform_int_distribution<> d_dist(0, (n1 - 1) / 2);
 
@@ -694,6 +807,21 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
 
     if (best_cost == 0)
       return true;
+
+    // Greedy hill-climbing phase after each SA restart
+    if (best_cost > 0 && best_cost < 200) {
+      ABState hc_state = best_state;
+      int hc_cost = best_cost;
+      if (greedy_hill_climb_AB(n1, ta, tb, cd_full, hc_state, hc_cost)) {
+        best_state = hc_state;
+        best_cost = 0;
+        return true;
+      }
+      if (hc_cost < best_cost) {
+        best_cost = hc_cost;
+        best_state = hc_state;
+      }
+    }
   }
 
   return best_cost == 0;
@@ -777,7 +905,7 @@ int main(int argc, char **argv) {
         // KEY FIX: Retry AB up to 50 times per valid CD pair.
         // Previously AB got only ONE attempt, wasting every successful CD find.
         for (int ab_attempt = 0;
-             ab_attempt < 50 && !g_found.load(memory_order_relaxed);
+             ab_attempt < 200 && !g_found.load(memory_order_relaxed);
              ab_attempt++) {
 
           ABState best_ab;
