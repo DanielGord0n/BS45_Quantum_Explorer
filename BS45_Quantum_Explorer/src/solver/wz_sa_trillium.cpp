@@ -592,14 +592,14 @@ static void perturb_AB(ABState &state, int n1, int K, mt19937 &rng) {
 static bool iterated_local_search_AB(int n1, int ta, int tb, const int *cd_full,
                                       ABState &best_state, int &best_cost,
                                       mt19937 &rng) {
-  // Try 5000 perturbation+climb cycles with varying perturbation sizes
-  for (int attempt = 0; attempt < 5000; attempt++) {
+  // Try 50000 perturbation+climb cycles with varying perturbation sizes
+  for (int attempt = 0; attempt < 50000; attempt++) {
     if (g_found.load(memory_order_relaxed)) return false;
     if (best_cost == 0) return true;
 
     ABState trial = best_state;
-    // Cycle through perturbation sizes: 2, 3, 4 positions
-    int perturb_size = 2 + (attempt % 3);
+    // Cycle through perturbation sizes: 2,3,4,5,6,7 positions
+    int perturb_size = 2 + (attempt % 6);
     perturb_AB(trial, n1, perturb_size, rng);
 
     int trial_cost = trial.cost(ta, tb, n1, cd_full);
@@ -933,7 +933,7 @@ int main(int argc, char **argv) {
         // KEY FIX: Retry AB up to 50 times per valid CD pair.
         // Previously AB got only ONE attempt, wasting every successful CD find.
         for (int ab_attempt = 0;
-             ab_attempt < 200 && !g_found.load(memory_order_relaxed);
+             ab_attempt < 100 && !g_found.load(memory_order_relaxed);
              ab_attempt++) {
 
           ABState best_ab;
