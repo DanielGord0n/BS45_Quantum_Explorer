@@ -452,10 +452,8 @@ struct ABState {
     return diff_a * 5 + diff_b * 5 + pen;
   }
 };
-
 // Greedy hill-climbing: deterministically try every possible swap at every
-// position. Repeats until no single-swap improvement is found. This breaks
-// through plateaus that stochastic SA cannot.
+// position. Repeats until no single-swap improvement is found.
 static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
                                   ABState &state, int &cost_out) {
   int ms = max(n1, G_N);
@@ -554,6 +552,71 @@ static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
   return cost_out == 0;
 }
 
+// Helper: apply a random perturbation to K positions of an ABState
+static void perturb_AB(ABState &state, int n1, int K, mt19937 &rng) {
+  uniform_int_distribution<> d_dist(0, (n1 - 1) / 2);
+  int ms = max(n1, G_N);
+  for (int p = 0; p < K; p++) {
+    int d = d_dist(rng);
+    int left = d, right = n1 - 1 - d;
+    state.sum_a -= state.A[left] + (left != right ? state.A[right] : 0);
+    state.sum_b -= state.B[left] + (left != right ? state.B[right] : 0);
+    const int *c_ptr;
+    if (left == right) {
+      c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+      state.A[left] = c_ptr[0]; state.B[left] = c_ptr[1];
+      state.sum_a += c_ptr[0]; state.sum_b += c_ptr[1];
+    } else if (d == 0) {
+      c_ptr = comb8_neg[uniform_int_distribution<>(0, 7)(rng)];
+      state.A[left] = c_ptr[0]; state.B[left] = c_ptr[1];
+      state.A[right] = c_ptr[2]; state.B[right] = c_ptr[3];
+      state.sum_a += c_ptr[0] + c_ptr[2]; state.sum_b += c_ptr[1] + c_ptr[3];
+    } else {
+      c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+      state.A[left] = c_ptr[0]; state.B[left] = c_ptr[1];
+      state.A[right] = c_ptr[2]; state.B[right] = c_ptr[3];
+      state.sum_a += c_ptr[0] + c_ptr[2]; state.sum_b += c_ptr[1] + c_ptr[3];
+    }
+  }
+  // Recompute correlations from scratch
+  memset(state.corr, 0, sizeof(state.corr));
+  for (int s = 1; s < ms; s++)
+    for (int i = 0; i < n1 - s; i++)
+      state.corr[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
+}
+
+// Iterated Local Search: the key insight is that cost=40 is a 1-swap local
+// minimum. No single position change can improve it. We need to change 2-4
+// positions at once ("basin hop"), then re-climb from there.
+// This is the standard approach for escaping these traps.
+static bool iterated_local_search_AB(int n1, int ta, int tb, const int *cd_full,
+                                      ABState &best_state, int &best_cost,
+                                      mt19937 &rng) {
+  // Try 5000 perturbation+climb cycles with varying perturbation sizes
+  for (int attempt = 0; attempt < 5000; attempt++) {
+    if (g_found.load(memory_order_relaxed)) return false;
+    if (best_cost == 0) return true;
+
+    ABState trial = best_state;
+    // Cycle through perturbation sizes: 2, 3, 4 positions
+    int perturb_size = 2 + (attempt % 3);
+    perturb_AB(trial, n1, perturb_size, rng);
+
+    int trial_cost = trial.cost(ta, tb, n1, cd_full);
+    // Greedy-climb from perturbed state
+    greedy_hill_climb_AB(n1, ta, tb, cd_full, trial, trial_cost);
+
+    if (trial_cost < best_cost) {
+      best_cost = trial_cost;
+      best_state = trial;
+      if (best_cost == 0) return true;
+      // Reset attempt counter on improvement to keep searching from new basin
+      attempt = 0;
+    }
+  }
+  return best_cost == 0;
+}
+
 bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
                  ABState &best_state, mt19937 &rng) {
   ABState curr;
@@ -613,46 +676,7 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
         // This is iterated local search — we preserve progress instead of
         // throwing it away. Much more effective when near a solution.
         curr = best_state;
-        memset(curr.corr, 0, sizeof(curr.corr));
-        curr.sum_a = 0;
-        curr.sum_b = 0;
-        // Recompute sums from best_state
-        for (int i = 0; i < n1; i++) {
-          curr.sum_a += curr.A[i];
-          curr.sum_b += curr.B[i];
-        }
-        // Perturb ~25% of positions randomly to escape local minimum
-        int num_perturb = max(2, n1 / 4);
-        for (int p = 0; p < num_perturb; p++) {
-          int d = d_dist(rng);
-          int left = d, right = n1 - 1 - d;
-          curr.sum_a -= curr.A[left] + (left != right ? curr.A[right] : 0);
-          curr.sum_b -= curr.B[left] + (left != right ? curr.B[right] : 0);
-          const int *c_ptr;
-          if (left == right) {
-            c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-            curr.A[left] = c_ptr[0];
-            curr.B[left] = c_ptr[1];
-            curr.sum_a += c_ptr[0];
-            curr.sum_b += c_ptr[1];
-          } else if (d == 0) {
-            c_ptr = comb8_neg[uniform_int_distribution<>(0, 7)(rng)];
-            curr.A[left] = c_ptr[0]; curr.B[left] = c_ptr[1];
-            curr.A[right] = c_ptr[2]; curr.B[right] = c_ptr[3];
-            curr.sum_a += c_ptr[0] + c_ptr[2];
-            curr.sum_b += c_ptr[1] + c_ptr[3];
-          } else {
-            c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
-            curr.A[left] = c_ptr[0]; curr.B[left] = c_ptr[1];
-            curr.A[right] = c_ptr[2]; curr.B[right] = c_ptr[3];
-            curr.sum_a += c_ptr[0] + c_ptr[2];
-            curr.sum_b += c_ptr[1] + c_ptr[3];
-          }
-        }
-        // Recompute correlations after perturbation
-        for (int s = 1; s < ms; s++)
-          for (int i = 0; i < n1 - s; i++)
-            curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+        perturb_AB(curr, n1, max(2, n1 / 4), rng);
         current_cost = curr.cost(ta, tb, n1, cd_full);
       } else {
         // ODD RESTART: full random restart for diversity
@@ -812,16 +836,20 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
     if (best_cost > 0 && best_cost < 200) {
       ABState hc_state = best_state;
       int hc_cost = best_cost;
-      if (greedy_hill_climb_AB(n1, ta, tb, cd_full, hc_state, hc_cost)) {
-        best_state = hc_state;
-        best_cost = 0;
-        return true;
-      }
+      greedy_hill_climb_AB(n1, ta, tb, cd_full, hc_state, hc_cost);
       if (hc_cost < best_cost) {
         best_cost = hc_cost;
         best_state = hc_state;
       }
     }
+  }
+
+  // ILS phase: SA found a local minimum. Now do basin-hopping:
+  // perturb 2-4 positions, greedy-climb, repeat.
+  // This escapes the cost=40 trap that single-swap can't break.
+  if (best_cost > 0 && best_cost <= 100) {
+    if (iterated_local_search_AB(n1, ta, tb, cd_full, best_state, best_cost, rng))
+      return true;
   }
 
   return best_cost == 0;
