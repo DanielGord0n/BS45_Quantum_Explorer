@@ -155,350 +155,89 @@ vector<Sig> get_sigs(int n) {
 }
 
 struct SAParams {
-  double initial_temp = 100.0;
-  double cooling_rate = 0.999995; // Deep exploration cooling
-  int iterations = 2000000;       // Long cycles for thorough search
-  int restarts = 10;              // Fewer restarts, each goes deep
-  int reheat_threshold = 500000;  // Patient stuck detection
-  double reheat_ratio = 0.5;      // Reheat to 50%
-};
-
-// Separate SA parameters tuned for the AB problem, which is much smaller
-// than CD (n1=21 vs n=41). Lower temp prevents accepting bad moves;
-// shorter cycles with more restarts gives better coverage.
-struct ABSAParams {
-  double initial_temp = 10.0;     // AB is smaller, needs lower temp
-  double cooling_rate = 0.99999;  // Cool faster
-  int iterations = 500000;        // Shorter cycles
-  int restarts = 40;              // More restarts for diversity
-  int reheat_threshold = 100000;  // Reheat if stuck
-  double reheat_ratio = 0.3;      // Mild reheat
+  double initial_temp = 50.0;
+  double cooling_rate = 0.999997;
+  int iterations = 5000000;
+  int restarts = 20;
+  int reheat_threshold = 1000000;
+  double reheat_ratio = 0.4;
 };
 
 // ===================================
-// CD SA Solver
+// Joint 4-Sequence Solver
 // ===================================
-// For n=44, CD lengths are 44. depth pairs = 44/2 = 22 pairs (d=0..21).
-// All pair positions use comb16 (all 16 combinations, no product constraint).
-struct CDState {
-  int C[128], D[128];
-  int sum_c, sum_d;
-  int corr[128];
-  int cost(int tc, int td, int n1, int n) const {
-    int diff_c = abs(sum_c - tc);
-    int diff_d = abs(sum_d - td);
+// Optimizes A,B (length n1) and C,D (length n) simultaneously.
+// Cost = sum_s |NPAF(s)| + 5*(sum penalties)
+// Mutation: flip one random element from any of the 4 sequences.
+// This avoids the two-phase failure mode where CD produces values
+// that AB cannot cancel.
+
+struct JointState {
+  int A[128], B[128], C[128], D[128];
+  int sum_a, sum_b, sum_c, sum_d;
+  int npaf[128]; // npaf[s] = PAF_A(s) + PAF_B(s) + PAF_C(s) + PAF_D(s)
+
+  int cost(int ta, int tb, int tc, int td, int ms) const {
     int pen = 0;
-    int ms = max(n1, n);
-    for (int s = 1; s < ms; s++) {
-      // Force CD to have zero NPAF independently (Goethals-Seidel approach).
-      // Previously max_ab = 2*(n1-s) allowed huge cd_full values that made
-      // AB's coupled constraints impossible to satisfy simultaneously.
-      int max_ab = 0;
-      if (abs(corr[s]) > max_ab) {
-        pen += abs(corr[s]) - max_ab;
-      }
-    }
-    return diff_c * 5 + diff_d * 5 + pen;
+    for (int s = 1; s < ms; s++)
+      pen += abs(npaf[s]);
+    return pen + 5 * (abs(sum_a - ta) + abs(sum_b - tb) +
+                      abs(sum_c - tc) + abs(sum_d - td));
   }
 };
 
-bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
-                 mt19937 &rng) {
-  CDState curr;
-  memset(curr.C, 0, sizeof(curr.C));
-  memset(curr.D, 0, sizeof(curr.D));
-  memset(curr.corr, 0, sizeof(curr.corr));
-  curr.sum_c = 0;
-  curr.sum_d = 0;
-
-  // Initialize random adhering to rules
-  for (int d = 0; d < n / 2; d++) {
-    int left = d;
-    int right = n - 1 - d;
-    const int *c_ptr;
-    c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-
-    curr.C[left] = c_ptr[0];
-    curr.D[left] = c_ptr[1];
-    curr.C[right] = c_ptr[2];
-    curr.D[right] = c_ptr[3];
-    curr.sum_c += c_ptr[0] + c_ptr[2];
-    curr.sum_d += c_ptr[1] + c_ptr[3];
-  }
-  // BUG FIX: Handle middle element for odd-length sequences
-  if (n % 2 != 0) {
-    int mid = n / 2;
-    const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-    curr.C[mid] = c_ptr[0];
-    curr.D[mid] = c_ptr[1];
-    curr.sum_c += c_ptr[0];
-    curr.sum_d += c_ptr[1];
-  }
-  // Compute correlations
-  int ms = max(n1, n);
-  for (int s = 1; s < ms; s++) {
-    for (int i = 0; i < n - s; i++) {
-      curr.corr[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
-    }
-  }
-
-  int current_cost = curr.cost(tc, td, n1, n);
-  best_state = curr;
-  int best_cost = current_cost;
-
-  SAParams sa;
-  uniform_real_distribution<> prob(0.0, 1.0);
-  // Include middle element in mutation range for odd n
-  uniform_int_distribution<> d_dist(0, (n % 2 != 0) ? n / 2 : n / 2 - 1);
-
-  // Adaptive restart loop: run multiple short SA cycles
-  for (int restart = 0; restart < sa.restarts; restart++) {
-    if (g_found.load(memory_order_relaxed))
-      return false;
-
-    // Re-randomize state for each restart (except first which uses initial)
-    if (restart > 0) {
-      memset(curr.C, 0, sizeof(curr.C));
-      memset(curr.D, 0, sizeof(curr.D));
-      memset(curr.corr, 0, sizeof(curr.corr));
-      curr.sum_c = 0;
-      curr.sum_d = 0;
-      for (int d = 0; d < n / 2; d++) {
-        int left = d, right = n - 1 - d;
-        const int *c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-        curr.C[left] = c_ptr[0];
-        curr.D[left] = c_ptr[1];
-        curr.C[right] = c_ptr[2];
-        curr.D[right] = c_ptr[3];
-        curr.sum_c += c_ptr[0] + c_ptr[2];
-        curr.sum_d += c_ptr[1] + c_ptr[3];
-      }
-      // BUG FIX: Handle middle element for odd-length sequences on restart
-      if (n % 2 != 0) {
-        int mid = n / 2;
-        const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-        curr.C[mid] = c_ptr[0];
-        curr.D[mid] = c_ptr[1];
-        curr.sum_c += c_ptr[0];
-        curr.sum_d += c_ptr[1];
-      }
-      for (int s = 1; s < ms; s++)
-        for (int i = 0; i < n - s; i++)
-          curr.corr[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
-      current_cost = curr.cost(tc, td, n1, n);
-    }
-
-    double temp = sa.initial_temp;
-    int no_improve = 0;
-
-    for (int iter = 0; iter < sa.iterations; iter++) {
-      if (g_found.load(memory_order_relaxed))
-        return false;
-
-      if (best_cost == 0) {
-        if (hall_ok(best_state.C, n, best_state.D, n))
-          return true;
-        current_cost += 50;
-      }
-
-      // Reheat if stuck
-      no_improve++;
-      if (no_improve > sa.reheat_threshold) {
-        temp = sa.initial_temp * sa.reheat_ratio;
-        no_improve = 0;
-      }
-
-      int d = d_dist(rng);
-      int left = d;
-      int right = n - 1 - d;
-
-      int oldC_L = curr.C[left], oldD_L = curr.D[left];
-      int oldC_R = curr.C[right], oldD_R = curr.D[right];
-      int nC_L, nD_L, nC_R, nD_R;
-
-      // Handle middle element (left == right) for odd n
-      if (left == right) {
-        const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-        nC_L = c_ptr[0];
-        nD_L = c_ptr[1];
-        nC_R = nC_L;
-        nD_R = nD_L;
-        if (oldC_L == nC_L && oldD_L == nD_L)
-          continue;
-      } else {
-        const int *c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-        nC_L = c_ptr[0];
-        nD_L = c_ptr[1];
-        nC_R = c_ptr[2];
-        nD_R = c_ptr[3];
-        if (oldC_L == nC_L && oldD_L == nD_L && oldC_R == nC_R && oldD_R == nD_R)
-          continue;
-      }
-
-      int old_sum_c = curr.sum_c;
-      int old_sum_d = curr.sum_d;
-      if (left == right) {
-        curr.sum_c += nC_L - oldC_L;
-        curr.sum_d += nD_L - oldD_L;
-      } else {
-        curr.sum_c += (nC_L + nC_R) - (oldC_L + oldC_R);
-        curr.sum_d += (nD_L + nD_R) - (oldD_L + oldD_R);
-      }
-
-      int delta_corr[128] = {0};
-
-      for (int s = 1; s < ms; s++) {
-        if (left - s >= 0)
-          delta_corr[s] -=
-              curr.C[left - s] * oldC_L + curr.D[left - s] * oldD_L;
-        if (left + s < n)
-          delta_corr[s] -=
-              oldC_L * curr.C[left + s] + oldD_L * curr.D[left + s];
-        if (left != right) {
-          if (right - s >= 0)
-            delta_corr[s] -=
-                curr.C[right - s] * oldC_R + curr.D[right - s] * oldD_R;
-          if (right + s < n)
-            delta_corr[s] -=
-                oldC_R * curr.C[right + s] + oldD_R * curr.D[right + s];
-          if (right - left == s)
-            delta_corr[s] += oldC_L * oldC_R + oldD_L * oldD_R;
-        }
-      }
-
-      curr.C[left] = nC_L;
-      curr.D[left] = nD_L;
-      curr.C[right] = nC_R;
-      curr.D[right] = nD_R;
-
-      for (int s = 1; s < ms; s++) {
-        if (left - s >= 0)
-          delta_corr[s] += curr.C[left - s] * nC_L + curr.D[left - s] * nD_L;
-        if (left + s < n)
-          delta_corr[s] += nC_L * curr.C[left + s] + nD_L * curr.D[left + s];
-        if (left != right) {
-          if (right - s >= 0)
-            delta_corr[s] +=
-                curr.C[right - s] * nC_R + curr.D[right - s] * nD_R;
-          if (right + s < n)
-            delta_corr[s] +=
-                nC_R * curr.C[right + s] + nD_R * curr.D[right + s];
-          if (right - left == s)
-            delta_corr[s] -= nC_L * nC_R + nD_L * nD_R;
-        }
-      }
-
-      for (int s = 1; s < ms; s++)
-        curr.corr[s] += delta_corr[s];
-
-      int new_cost = curr.cost(tc, td, n1, n);
-
-      if (new_cost < current_cost ||
-          prob(rng) < exp(-(new_cost - current_cost) / temp)) {
-        current_cost = new_cost;
-        if (new_cost < best_cost) {
-          best_cost = new_cost;
-          best_state = curr;
-          no_improve = 0;
-        }
-      } else {
-        curr.C[left] = oldC_L;
-        curr.D[left] = oldD_L;
-        curr.C[right] = oldC_R;
-        curr.D[right] = oldD_R;
-        curr.sum_c = old_sum_c;
-        curr.sum_d = old_sum_d;
-        for (int s = 1; s < ms; s++)
-          curr.corr[s] -= delta_corr[s];
-      }
-
-      temp *= sa.cooling_rate;
-    }
-
-    if (best_cost == 0 && hall_ok(best_state.C, n, best_state.D, n))
-      return true;
-  }
-
-  return best_cost == 0 && hall_ok(best_state.C, n, best_state.D, n);
-}
-
-// ===================================
-// AB SA Solver
-// ===================================
-// For n1=45, d=0..22.
-// d=0..21 uses comb16 (all 16 combinations, no product constraint)
-// d=22 uses comb4 (middle element)
-struct ABState {
-  int A[128], B[128];
-  int sum_a, sum_b;
-  int corr[128];
-  int cost(int ta, int tb, int n1, const int *cd_full) const {
-    int diff_a = abs(sum_a - ta);
-    int diff_b = abs(sum_b - tb);
-    int pen = 0;
-    int ms = max(n1, G_N);
-    for (int s = 1; s < ms; s++) {
-      if (corr[s] + cd_full[s] != 0) {
-        pen += abs(corr[s] + cd_full[s]);
-      }
-    }
-    return diff_a * 5 + diff_b * 5 + pen;
-  }
-};
-
-// Greedy hill-climbing with independent single-element flips.
-// Tries flipping each A[i] and B[i] independently. Much finer-grained
-// than paired-position swaps — can find improvements the paired approach misses.
-static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
-                                  ABState &state, int &cost_out) {
-  int ms = max(n1, G_N);
+// Greedy hill-climb: try flipping each element of all 4 sequences
+static bool greedy_hill_climb_joint(int n1, int n, int ta, int tb, int tc,
+                                     int td, int ms, JointState &state,
+                                     int &cost_out) {
   bool improved = true;
   while (improved) {
     improved = false;
-    for (int i = 0; i < n1; i++) {
-      // Try flipping A[i]
-      {
-        int old_val = state.A[i];
-        state.A[i] = -old_val;
-        state.sum_a -= 2 * old_val;
-        // Recompute correlations
-        int saved_corr[128];
-        memcpy(saved_corr, state.corr, sizeof(saved_corr));
-        memset(state.corr, 0, sizeof(state.corr));
-        for (int s = 1; s < ms; s++)
-          for (int j = 0; j < n1 - s; j++)
-            state.corr[s] += state.A[j] * state.A[j + s] + state.B[j] * state.B[j + s];
-        int trial_cost = state.cost(ta, tb, n1, cd_full);
-        if (trial_cost < cost_out) {
-          cost_out = trial_cost;
-          improved = true;
-          if (cost_out == 0) return true;
-        } else {
-          state.A[i] = old_val;
-          state.sum_a += 2 * old_val;
-          memcpy(state.corr, saved_corr, sizeof(state.corr));
+    // Try all elements of A, B, C, D
+    for (int seq = 0; seq < 4; seq++) {
+      int *arr;
+      int *sum_ptr;
+      int len;
+      if (seq == 0) { arr = state.A; sum_ptr = &state.sum_a; len = n1; }
+      else if (seq == 1) { arr = state.B; sum_ptr = &state.sum_b; len = n1; }
+      else if (seq == 2) { arr = state.C; sum_ptr = &state.sum_c; len = n; }
+      else { arr = state.D; sum_ptr = &state.sum_d; len = n; }
+
+      // Determine the paired array for NPAF computation
+      int *pair_arr;
+      int pair_len;
+      if (seq == 0) { pair_arr = state.A; pair_len = n1; }
+      else if (seq == 1) { pair_arr = state.B; pair_len = n1; }
+      else if (seq == 2) { pair_arr = state.C; pair_len = n; }
+      else { pair_arr = state.D; pair_len = n; }
+
+      for (int idx = 0; idx < len; idx++) {
+        int old_val = arr[idx];
+        // Compute delta
+        int delta_npaf[128] = {0};
+        for (int s = 1; s < ms; s++) {
+          if (idx + s < len)
+            delta_npaf[s] += (-2 * old_val) * arr[idx + s];
+          if (idx - s >= 0)
+            delta_npaf[s] += arr[idx - s] * (-2 * old_val);
         }
-      }
-      // Try flipping B[i]
-      {
-        int old_val = state.B[i];
-        state.B[i] = -old_val;
-        state.sum_b -= 2 * old_val;
-        int saved_corr[128];
-        memcpy(saved_corr, state.corr, sizeof(saved_corr));
-        memset(state.corr, 0, sizeof(state.corr));
+        // Apply flip
+        arr[idx] = -old_val;
+        *sum_ptr -= 2 * old_val;
         for (int s = 1; s < ms; s++)
-          for (int j = 0; j < n1 - s; j++)
-            state.corr[s] += state.A[j] * state.A[j + s] + state.B[j] * state.B[j + s];
-        int trial_cost = state.cost(ta, tb, n1, cd_full);
+          state.npaf[s] += delta_npaf[s];
+
+        int trial_cost = state.cost(ta, tb, tc, td, ms);
         if (trial_cost < cost_out) {
           cost_out = trial_cost;
           improved = true;
           if (cost_out == 0) return true;
         } else {
-          state.B[i] = old_val;
-          state.sum_b += 2 * old_val;
-          memcpy(state.corr, saved_corr, sizeof(state.corr));
+          // Revert
+          arr[idx] = old_val;
+          *sum_ptr += 2 * old_val;
+          for (int s = 1; s < ms; s++)
+            state.npaf[s] -= delta_npaf[s];
         }
       }
     }
@@ -506,45 +245,55 @@ static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
   return cost_out == 0;
 }
 
-// Perturbation: flip K random individual elements of A or B
-static void perturb_AB(ABState &state, int n1, int K, mt19937 &rng) {
-  int ms = max(n1, G_N);
-  uniform_int_distribution<> pos_dist(0, n1 - 1);
-  uniform_int_distribution<> seq_dist(0, 1);
+// Perturbation: flip K random elements from any sequence
+static void perturb_joint(JointState &state, int n1, int n, int ms, int K,
+                           mt19937 &rng) {
+  int total = 2 * n1 + 2 * n;
+  uniform_int_distribution<> elem_dist(0, total - 1);
   for (int p = 0; p < K; p++) {
-    int i = pos_dist(rng);
-    if (seq_dist(rng) == 0) {
-      state.sum_a -= 2 * state.A[i];
-      state.A[i] = -state.A[i];
+    int elem = elem_dist(rng);
+    int *arr;
+    int *sum_ptr;
+    int idx, len;
+    if (elem < n1) {
+      arr = state.A; sum_ptr = &state.sum_a; idx = elem; len = n1;
+    } else if (elem < 2 * n1) {
+      arr = state.B; sum_ptr = &state.sum_b; idx = elem - n1; len = n1;
+    } else if (elem < 2 * n1 + n) {
+      arr = state.C; sum_ptr = &state.sum_c; idx = elem - 2 * n1; len = n;
     } else {
-      state.sum_b -= 2 * state.B[i];
-      state.B[i] = -state.B[i];
+      arr = state.D; sum_ptr = &state.sum_d; idx = elem - 2 * n1 - n; len = n;
     }
+    int old_val = arr[idx];
+    for (int s = 1; s < ms; s++) {
+      if (idx + s < len)
+        state.npaf[s] += (-2 * old_val) * arr[idx + s];
+      if (idx - s >= 0)
+        state.npaf[s] += arr[idx - s] * (-2 * old_val);
+    }
+    arr[idx] = -old_val;
+    *sum_ptr -= 2 * old_val;
   }
-  memset(state.corr, 0, sizeof(state.corr));
-  for (int s = 1; s < ms; s++)
-    for (int i = 0; i < n1 - s; i++)
-      state.corr[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
 }
 
-// Iterated Local Search: perturb K elements, greedy-climb, repeat.
-static bool iterated_local_search_AB(int n1, int ta, int tb, const int *cd_full,
-                                      ABState &best_state, int &best_cost,
-                                      mt19937 &rng) {
+// ILS: perturb + greedy-climb
+static bool iterated_local_search_joint(int n1, int n, int ta, int tb, int tc,
+                                         int td, int ms, JointState &best,
+                                         int &best_cost, mt19937 &rng) {
   for (int attempt = 0; attempt < 50000; attempt++) {
     if (g_found.load(memory_order_relaxed)) return false;
     if (best_cost == 0) return true;
 
-    ABState trial = best_state;
-    int perturb_size = 2 + (attempt % 6);
-    perturb_AB(trial, n1, perturb_size, rng);
+    JointState trial = best;
+    int perturb_size = 2 + (attempt % 8);
+    perturb_joint(trial, n1, n, ms, perturb_size, rng);
 
-    int trial_cost = trial.cost(ta, tb, n1, cd_full);
-    greedy_hill_climb_AB(n1, ta, tb, cd_full, trial, trial_cost);
+    int trial_cost = trial.cost(ta, tb, tc, td, ms);
+    greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, trial, trial_cost);
 
     if (trial_cost < best_cost) {
       best_cost = trial_cost;
-      best_state = trial;
+      best = trial;
       if (best_cost == 0) return true;
       attempt = 0;
     }
@@ -552,58 +301,73 @@ static bool iterated_local_search_AB(int n1, int ta, int tb, const int *cd_full,
   return best_cost == 0;
 }
 
-bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
-                 ABState &best_state, mt19937 &rng) {
-  ABState curr;
-  memset(curr.corr, 0, sizeof(curr.corr));
-  curr.sum_a = 0;
-  curr.sum_b = 0;
-  int ms = max(n1, G_N);
+bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
+                    JointState &best_state, mt19937 &rng) {
+  int ms = max(n1, n);
+  int total_elems = 2 * n1 + 2 * n;
 
-  // Initialize each element independently as random ±1
+  JointState curr;
+  memset(curr.npaf, 0, sizeof(curr.npaf));
+  curr.sum_a = curr.sum_b = curr.sum_c = curr.sum_d = 0;
+
+  // Initialize all sequences with random ±1
   for (int i = 0; i < n1; i++) {
     curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
     curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
     curr.sum_a += curr.A[i];
     curr.sum_b += curr.B[i];
   }
+  for (int i = 0; i < n; i++) {
+    curr.C[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+    curr.D[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+    curr.sum_c += curr.C[i];
+    curr.sum_d += curr.D[i];
+  }
 
-  for (int s = 1; s < ms; s++)
+  // Compute initial NPAF
+  for (int s = 1; s < ms; s++) {
     for (int i = 0; i < n1 - s; i++)
-      curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+      curr.npaf[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+    for (int i = 0; i < n - s; i++)
+      curr.npaf[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
+  }
 
-  int current_cost = curr.cost(ta, tb, n1, cd_full);
+  int current_cost = curr.cost(ta, tb, tc, td, ms);
   best_state = curr;
   int best_cost = current_cost;
 
-  ABSAParams sa;
+  SAParams sa;
   uniform_real_distribution<> prob(0.0, 1.0);
-  // Mutation: pick a random element from 2*n1 total (A[0..n1-1], B[0..n1-1])
-  uniform_int_distribution<> elem_dist(0, 2 * n1 - 1);
+  uniform_int_distribution<> elem_dist(0, total_elems - 1);
 
   for (int restart = 0; restart < sa.restarts; restart++) {
-    if (g_found.load(memory_order_relaxed))
-      return false;
+    if (g_found.load(memory_order_relaxed)) return false;
 
     if (restart > 0) {
       if (restart % 2 == 0 && best_cost < 999999) {
         curr = best_state;
-        perturb_AB(curr, n1, max(4, n1 / 3), rng);
-        current_cost = curr.cost(ta, tb, n1, cd_full);
+        perturb_joint(curr, n1, n, ms, max(6, total_elems / 5), rng);
+        current_cost = curr.cost(ta, tb, tc, td, ms);
       } else {
-        memset(curr.corr, 0, sizeof(curr.corr));
-        curr.sum_a = 0;
-        curr.sum_b = 0;
+        memset(curr.npaf, 0, sizeof(curr.npaf));
+        curr.sum_a = curr.sum_b = curr.sum_c = curr.sum_d = 0;
         for (int i = 0; i < n1; i++) {
           curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
           curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-          curr.sum_a += curr.A[i];
-          curr.sum_b += curr.B[i];
+          curr.sum_a += curr.A[i]; curr.sum_b += curr.B[i];
         }
-        for (int s = 1; s < ms; s++)
+        for (int i = 0; i < n; i++) {
+          curr.C[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+          curr.D[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+          curr.sum_c += curr.C[i]; curr.sum_d += curr.D[i];
+        }
+        for (int s = 1; s < ms; s++) {
           for (int i = 0; i < n1 - s; i++)
-            curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
-        current_cost = curr.cost(ta, tb, n1, cd_full);
+            curr.npaf[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+          for (int i = 0; i < n - s; i++)
+            curr.npaf[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
+        }
+        current_cost = curr.cost(ta, tb, tc, td, ms);
       }
     }
 
@@ -611,10 +375,8 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
     int no_improve = 0;
 
     for (int iter = 0; iter < sa.iterations; iter++) {
-      if (g_found.load(memory_order_relaxed))
-        return false;
-      if (best_cost == 0)
-        return true;
+      if (g_found.load(memory_order_relaxed)) return false;
+      if (best_cost == 0) return true;
 
       no_improve++;
       if (no_improve > sa.reheat_threshold) {
@@ -622,40 +384,40 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
         no_improve = 0;
       }
 
-      // Single-element flip: pick random A[i] or B[i] and negate it
+      // Pick random element from any of the 4 sequences
       int elem = elem_dist(rng);
-      bool flip_A = (elem < n1);
-      int idx = flip_A ? elem : (elem - n1);
-
-      int old_val = flip_A ? curr.A[idx] : curr.B[idx];
-      int old_sum_a = curr.sum_a, old_sum_b = curr.sum_b;
-
-      // Compute delta correlation incrementally: O(ms) per flip
-      int delta_corr[128] = {0};
-      if (flip_A) {
-        for (int s = 1; s < ms; s++) {
-          if (idx + s < n1)
-            delta_corr[s] += (-2 * old_val) * curr.A[idx + s];
-          if (idx - s >= 0)
-            delta_corr[s] += curr.A[idx - s] * (-2 * old_val);
-        }
-        curr.A[idx] = -old_val;
-        curr.sum_a -= 2 * old_val;
+      int *arr;
+      int *sum_ptr;
+      int idx, len;
+      if (elem < n1) {
+        arr = curr.A; sum_ptr = &curr.sum_a; idx = elem; len = n1;
+      } else if (elem < 2 * n1) {
+        arr = curr.B; sum_ptr = &curr.sum_b; idx = elem - n1; len = n1;
+      } else if (elem < 2 * n1 + n) {
+        arr = curr.C; sum_ptr = &curr.sum_c; idx = elem - 2 * n1; len = n;
       } else {
-        for (int s = 1; s < ms; s++) {
-          if (idx + s < n1)
-            delta_corr[s] += (-2 * old_val) * curr.B[idx + s];
-          if (idx - s >= 0)
-            delta_corr[s] += curr.B[idx - s] * (-2 * old_val);
-        }
-        curr.B[idx] = -old_val;
-        curr.sum_b -= 2 * old_val;
+        arr = curr.D; sum_ptr = &curr.sum_d; idx = elem - 2 * n1 - n; len = n;
       }
 
-      for (int s = 1; s < ms; s++)
-        curr.corr[s] += delta_corr[s];
+      int old_val = arr[idx];
+      int old_sum = *sum_ptr;
 
-      int new_cost = curr.cost(ta, tb, n1, cd_full);
+      // Compute delta NPAF: O(ms) per flip
+      int delta_npaf[128] = {0};
+      for (int s = 1; s < ms; s++) {
+        if (idx + s < len)
+          delta_npaf[s] += (-2 * old_val) * arr[idx + s];
+        if (idx - s >= 0)
+          delta_npaf[s] += arr[idx - s] * (-2 * old_val);
+      }
+
+      // Apply flip
+      arr[idx] = -old_val;
+      *sum_ptr -= 2 * old_val;
+      for (int s = 1; s < ms; s++)
+        curr.npaf[s] += delta_npaf[s];
+
+      int new_cost = curr.cost(ta, tb, tc, td, ms);
 
       if (new_cost < current_cost ||
           prob(rng) < exp(-(new_cost - current_cost) / temp)) {
@@ -667,15 +429,10 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
         }
       } else {
         // Revert
-        if (flip_A) {
-          curr.A[idx] = old_val;
-          curr.sum_a = old_sum_a;
-        } else {
-          curr.B[idx] = old_val;
-          curr.sum_b = old_sum_b;
-        }
+        arr[idx] = old_val;
+        *sum_ptr = old_sum;
         for (int s = 1; s < ms; s++)
-          curr.corr[s] -= delta_corr[s];
+          curr.npaf[s] -= delta_npaf[s];
       }
 
       temp *= sa.cooling_rate;
@@ -683,22 +440,23 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
 
     if (best_cost == 0) return true;
 
-    // Greedy single-element climb after SA
+    // Greedy hill-climb after SA
     if (best_cost > 0 && best_cost < 200) {
-      ABState hc_state = best_state;
+      JointState hc = best_state;
       int hc_cost = best_cost;
-      greedy_hill_climb_AB(n1, ta, tb, cd_full, hc_state, hc_cost);
+      greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, hc, hc_cost);
       if (hc_cost < best_cost) {
         best_cost = hc_cost;
-        best_state = hc_state;
+        best_state = hc;
       }
       if (best_cost == 0) return true;
     }
   }
 
-  // ILS phase: basin-hopping with single-element perturbation + greedy climb
+  // ILS phase
   if (best_cost > 0 && best_cost <= 100) {
-    if (iterated_local_search_AB(n1, ta, tb, cd_full, best_state, best_cost, rng))
+    if (iterated_local_search_joint(n1, n, ta, tb, tc, td, ms, best_state,
+                                     best_cost, rng))
       return true;
   }
 
@@ -720,14 +478,13 @@ int main(int argc, char **argv) {
 
   int thr = 1;
 #ifdef _OPENMP
-  thr = omp_get_max_threads(); // Trillium: use ALL 192 cores
+  thr = omp_get_max_threads();
   omp_set_num_threads(thr);
 #endif
 
   cout << "========================================================" << endl;
-  cout << "  BS(" << n1 << "," << n << ") — Thermodynamically Guided Solver"
-       << endl;
-  cout << "  Targeting NPAF=0 inside Theorem 2.2 Manifold" << endl;
+  cout << "  BS(" << n1 << "," << n << ") — Joint 4-Sequence SA Solver" << endl;
+  cout << "  Targeting NPAF=0 across all sequences simultaneously" << endl;
   cout << "  [ Threads: " << thr << " | Seed offset: " << seed_offset << " ]" << endl;
   cout << "========================================================" << endl;
 
@@ -743,7 +500,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  // Search indefinitely, we are just hunting the minimum.
   long long global_tries = 0;
 
 #pragma omp parallel reduction(+ : global_tries)
@@ -755,93 +511,62 @@ int main(int argc, char **argv) {
     mt19937 rng(42 + tid * 1000 + time(NULL) + seed_offset * 100000);
 
     while (!g_found.load(memory_order_relaxed)) {
-      // Pick a random signature to target so workers distribute load
       int si = uniform_int_distribution<>(0, sigs.size() - 1)(rng);
       auto &sig = sigs[si];
 
-      CDState best_cd;
-      bool found_cd = solve_CD_SA(n, n1, sig.c, sig.d, best_cd, rng);
+      JointState best;
+      bool found = solve_joint_SA(n1, n, sig.a, sig.b, sig.c, sig.d, best, rng);
 
-      // Track global best cost for telemetry
+      // Track best cost
       {
-        int cd_cost = best_cd.cost(sig.c, sig.d, n1, n);
+        int c = best.cost(sig.a, sig.b, sig.c, sig.d, ms);
         int old_best = g_best_cost.load(memory_order_relaxed);
-        while (cd_cost < old_best &&
-               !g_best_cost.compare_exchange_weak(old_best, cd_cost,
+        while (c < old_best &&
+               !g_best_cost.compare_exchange_weak(old_best, c,
                                                    memory_order_relaxed))
           ;
       }
 
-      if (found_cd) {
-        int cd_full[128] = {0};
-        for (int s = 1; s < ms; s++) {
-          for (int k = 0; k < n - s; k++)
-            cd_full[s] += best_cd.C[k] * best_cd.C[k + s] +
-                          best_cd.D[k] * best_cd.D[k + s];
+      if (found) {
+        // Final NPAF validation
+        bool valid = true;
+        for (int s = 1; s < ms && valid; s++) {
+          if (npaf_at(best.A, best.B, n1, best.C, best.D, n, s) != 0)
+            valid = false;
         }
-
-        // KEY FIX: Retry AB up to 50 times per valid CD pair.
-        // Previously AB got only ONE attempt, wasting every successful CD find.
-        for (int ab_attempt = 0;
-             ab_attempt < 100 && !g_found.load(memory_order_relaxed);
-             ab_attempt++) {
-
-          ABState best_ab;
-          bool found_ab = solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng);
-
-          // Track AB best cost for telemetry
-          {
-            int ab_cost = best_ab.cost(sig.a, sig.b, n1, cd_full);
-            int old_ab = g_ab_best_cost.load(memory_order_relaxed);
-            while (ab_cost < old_ab &&
-                   !g_ab_best_cost.compare_exchange_weak(old_ab, ab_cost,
-                                                         memory_order_relaxed))
-              ;
-          }
-
-          if (found_ab) {
-            bool valid = true;
-            for (int s = 1; s < ms && valid; s++) {
-              if (npaf_at(best_ab.A, best_ab.B, n1, best_cd.C, best_cd.D, n,
-                          s) != 0)
-                valid = false;
-            }
-            if (valid) {
-              g_found.store(true);
+        if (valid && hall_ok(best.C, n, best.D, n) &&
+            hall_ok(best.A, n1, best.B, n1)) {
+          g_found.store(true);
 #pragma omp critical
-              {
-                if (n >= 44)
-                  cout << "\n*** WORLD RECORD DISCOVERY: FOUND BS(" << n1 << ","
-                       << n << ") ***\n" << endl;
-                else
-                  cout << "\n*** REPRODUCTION CONFIRMED: FOUND BS(" << n1 << ","
-                       << n << ") ***\n" << endl;
+          {
+            if (n >= 44)
+              cout << "\n*** WORLD RECORD DISCOVERY: FOUND BS(" << n1 << ","
+                   << n << ") ***\n" << endl;
+            else
+              cout << "\n*** REPRODUCTION CONFIRMED: FOUND BS(" << n1 << ","
+                   << n << ") ***\n" << endl;
 
-                cout << "A = {";
-                for (int i = 0; i < n1; i++)
-                  cout << best_ab.A[i] << (i < n1 - 1 ? "," : "");
-                cout << "};" << endl;
-                cout << "B = {";
-                for (int i = 0; i < n1; i++)
-                  cout << best_ab.B[i] << (i < n1 - 1 ? "," : "");
-                cout << "};" << endl;
-                cout << "C = {";
-                for (int i = 0; i < n; i++)
-                  cout << best_cd.C[i] << (i < n - 1 ? "," : "");
-                cout << "};" << endl;
-                cout << "D = {";
-                for (int i = 0; i < n; i++)
-                  cout << best_cd.D[i] << (i < n - 1 ? "," : "");
-                cout << "};" << endl;
+            cout << "A = {";
+            for (int i = 0; i < n1; i++)
+              cout << best.A[i] << (i < n1 - 1 ? "," : "");
+            cout << "};" << endl;
+            cout << "B = {";
+            for (int i = 0; i < n1; i++)
+              cout << best.B[i] << (i < n1 - 1 ? "," : "");
+            cout << "};" << endl;
+            cout << "C = {";
+            for (int i = 0; i < n; i++)
+              cout << best.C[i] << (i < n - 1 ? "," : "");
+            cout << "};" << endl;
+            cout << "D = {";
+            for (int i = 0; i < n; i++)
+              cout << best.D[i] << (i < n - 1 ? "," : "");
+            cout << "};" << endl;
 
-                double t =
-                    chrono::duration<double>(Clock::now() - G_T0).count();
-                cout << "\nTime: " << t << "s" << endl;
-              }
-              break; // exit AB retry loop
-            }
+            double t = chrono::duration<double>(Clock::now() - G_T0).count();
+            cout << "\nTime: " << t << "s" << endl;
           }
-        } // end AB retry loop
+        }
       }
 
       global_tries++;
@@ -850,11 +575,9 @@ int main(int argc, char **argv) {
         double t = chrono::duration<double>(Clock::now() - G_T0).count();
         double speed = (t > 0) ? ((global_tries * thr) / t) : 0.0;
         int gbest = g_best_cost.load(memory_order_relaxed);
-        int ab_best = g_ab_best_cost.load(memory_order_relaxed);
         cout << "[" << t << "s] Epochs: " << current_total
              << " Speed: " << speed
-             << " [CD cost: " << gbest
-             << " | AB cost: " << (ab_best == 999999 ? -1 : ab_best) << "]\n"
+             << " [Best cost: " << gbest << "]\n"
              << flush;
 
         ofstream state_out(".solver_state");
