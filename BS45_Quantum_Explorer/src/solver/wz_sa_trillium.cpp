@@ -442,154 +442,107 @@ struct ABState {
     return diff_a * 5 + diff_b * 5 + pen;
   }
 };
-// Greedy hill-climbing: deterministically try every possible swap at every
-// position. Repeats until no single-swap improvement is found.
+
+// Greedy hill-climbing with independent single-element flips.
+// Tries flipping each A[i] and B[i] independently. Much finer-grained
+// than paired-position swaps — can find improvements the paired approach misses.
 static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
                                   ABState &state, int &cost_out) {
   int ms = max(n1, G_N);
   bool improved = true;
   while (improved) {
     improved = false;
-    for (int d = 0; d <= (n1 - 1) / 2; d++) {
-      int left = d, right = n1 - 1 - d;
-      int oldA_L = state.A[left], oldB_L = state.B[left];
-      int oldA_R = state.A[right], oldB_R = state.B[right];
-
-      bool is_middle = (left == right);
-      int num_combos = is_middle ? 4 : 16;
-
-      int best_local_cost = cost_out;
-      int best_combo = -1;
-      for (int ci = 0; ci < num_combos; ci++) {
-        int nA_L, nB_L, nA_R, nB_R;
-        if (is_middle) {
-          nA_L = comb4[ci][0]; nB_L = comb4[ci][1];
-          nA_R = nA_L; nB_R = nB_L;
-        } else {
-          nA_L = comb16[ci][0]; nB_L = comb16[ci][1];
-          nA_R = comb16[ci][2]; nB_R = comb16[ci][3];
-        }
-        if (nA_L == oldA_L && nB_L == oldB_L && nA_R == oldA_R && nB_R == oldB_R)
-          continue;
-
-        // Temporarily apply
-        state.A[left] = nA_L; state.B[left] = nB_L;
-        state.A[right] = nA_R; state.B[right] = nB_R;
-        int old_sa = state.sum_a, old_sb = state.sum_b;
-        if (is_middle) {
-          state.sum_a += nA_L - oldA_L;
-          state.sum_b += nB_L - oldB_L;
-        } else {
-          state.sum_a += (nA_L + nA_R) - (oldA_L + oldA_R);
-          state.sum_b += (nB_L + nB_R) - (oldB_L + oldB_R);
-        }
-        // Full recompute of corr for correctness in greedy phase
+    for (int i = 0; i < n1; i++) {
+      // Try flipping A[i]
+      {
+        int old_val = state.A[i];
+        state.A[i] = -old_val;
+        state.sum_a -= 2 * old_val;
+        // Recompute correlations
         int saved_corr[128];
         memcpy(saved_corr, state.corr, sizeof(saved_corr));
         memset(state.corr, 0, sizeof(state.corr));
         for (int s = 1; s < ms; s++)
-          for (int i = 0; i < n1 - s; i++)
-            state.corr[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
+          for (int j = 0; j < n1 - s; j++)
+            state.corr[s] += state.A[j] * state.A[j + s] + state.B[j] * state.B[j + s];
         int trial_cost = state.cost(ta, tb, n1, cd_full);
-
-        if (trial_cost < best_local_cost) {
-          best_local_cost = trial_cost;
-          best_combo = ci;
+        if (trial_cost < cost_out) {
+          cost_out = trial_cost;
+          improved = true;
+          if (cost_out == 0) return true;
+        } else {
+          state.A[i] = old_val;
+          state.sum_a += 2 * old_val;
+          memcpy(state.corr, saved_corr, sizeof(state.corr));
         }
-
-        // Revert
-        state.A[left] = oldA_L; state.B[left] = oldB_L;
-        state.A[right] = oldA_R; state.B[right] = oldB_R;
-        state.sum_a = old_sa; state.sum_b = old_sb;
-        memcpy(state.corr, saved_corr, sizeof(state.corr));
       }
-
-      if (best_combo >= 0) {
-        // Apply best swap permanently
-        int nA_L, nB_L, nA_R, nB_R;
-        if (is_middle) {
-          nA_L = comb4[best_combo][0]; nB_L = comb4[best_combo][1];
-          nA_R = nA_L; nB_R = nB_L;
-        } else {
-          nA_L = comb16[best_combo][0]; nB_L = comb16[best_combo][1];
-          nA_R = comb16[best_combo][2]; nB_R = comb16[best_combo][3];
-        }
-        state.A[left] = nA_L; state.B[left] = nB_L;
-        state.A[right] = nA_R; state.B[right] = nB_R;
-        if (is_middle) {
-          state.sum_a += nA_L - oldA_L;
-          state.sum_b += nB_L - oldB_L;
-        } else {
-          state.sum_a += (nA_L + nA_R) - (oldA_L + oldA_R);
-          state.sum_b += (nB_L + nB_R) - (oldB_L + oldB_R);
-        }
+      // Try flipping B[i]
+      {
+        int old_val = state.B[i];
+        state.B[i] = -old_val;
+        state.sum_b -= 2 * old_val;
+        int saved_corr[128];
+        memcpy(saved_corr, state.corr, sizeof(saved_corr));
         memset(state.corr, 0, sizeof(state.corr));
         for (int s = 1; s < ms; s++)
-          for (int i = 0; i < n1 - s; i++)
-            state.corr[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
-        cost_out = best_local_cost;
-        improved = true;
-        if (cost_out == 0) return true;
+          for (int j = 0; j < n1 - s; j++)
+            state.corr[s] += state.A[j] * state.A[j + s] + state.B[j] * state.B[j + s];
+        int trial_cost = state.cost(ta, tb, n1, cd_full);
+        if (trial_cost < cost_out) {
+          cost_out = trial_cost;
+          improved = true;
+          if (cost_out == 0) return true;
+        } else {
+          state.B[i] = old_val;
+          state.sum_b += 2 * old_val;
+          memcpy(state.corr, saved_corr, sizeof(state.corr));
+        }
       }
     }
   }
   return cost_out == 0;
 }
 
-// Helper: apply a random perturbation to K positions of an ABState
+// Perturbation: flip K random individual elements of A or B
 static void perturb_AB(ABState &state, int n1, int K, mt19937 &rng) {
-  uniform_int_distribution<> d_dist(0, (n1 - 1) / 2);
   int ms = max(n1, G_N);
+  uniform_int_distribution<> pos_dist(0, n1 - 1);
+  uniform_int_distribution<> seq_dist(0, 1);
   for (int p = 0; p < K; p++) {
-    int d = d_dist(rng);
-    int left = d, right = n1 - 1 - d;
-    state.sum_a -= state.A[left] + (left != right ? state.A[right] : 0);
-    state.sum_b -= state.B[left] + (left != right ? state.B[right] : 0);
-    const int *c_ptr;
-    if (left == right) {
-      c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-      state.A[left] = c_ptr[0]; state.B[left] = c_ptr[1];
-      state.sum_a += c_ptr[0]; state.sum_b += c_ptr[1];
+    int i = pos_dist(rng);
+    if (seq_dist(rng) == 0) {
+      state.sum_a -= 2 * state.A[i];
+      state.A[i] = -state.A[i];
     } else {
-      c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-      state.A[left] = c_ptr[0]; state.B[left] = c_ptr[1];
-      state.A[right] = c_ptr[2]; state.B[right] = c_ptr[3];
-      state.sum_a += c_ptr[0] + c_ptr[2]; state.sum_b += c_ptr[1] + c_ptr[3];
+      state.sum_b -= 2 * state.B[i];
+      state.B[i] = -state.B[i];
     }
   }
-  // Recompute correlations from scratch
   memset(state.corr, 0, sizeof(state.corr));
   for (int s = 1; s < ms; s++)
     for (int i = 0; i < n1 - s; i++)
       state.corr[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
 }
 
-// Iterated Local Search: the key insight is that cost=40 is a 1-swap local
-// minimum. No single position change can improve it. We need to change 2-4
-// positions at once ("basin hop"), then re-climb from there.
-// This is the standard approach for escaping these traps.
+// Iterated Local Search: perturb K elements, greedy-climb, repeat.
 static bool iterated_local_search_AB(int n1, int ta, int tb, const int *cd_full,
                                       ABState &best_state, int &best_cost,
                                       mt19937 &rng) {
-  // Try 50000 perturbation+climb cycles with varying perturbation sizes
   for (int attempt = 0; attempt < 50000; attempt++) {
     if (g_found.load(memory_order_relaxed)) return false;
     if (best_cost == 0) return true;
 
     ABState trial = best_state;
-    // Cycle through perturbation sizes: 2,3,4,5,6,7 positions
     int perturb_size = 2 + (attempt % 6);
     perturb_AB(trial, n1, perturb_size, rng);
 
     int trial_cost = trial.cost(ta, tb, n1, cd_full);
-    // Greedy-climb from perturbed state
     greedy_hill_climb_AB(n1, ta, tb, cd_full, trial, trial_cost);
 
     if (trial_cost < best_cost) {
       best_cost = trial_cost;
       best_state = trial;
       if (best_cost == 0) return true;
-      // Reset attempt counter on improvement to keep searching from new basin
       attempt = 0;
     }
   }
@@ -604,34 +557,17 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
   curr.sum_b = 0;
   int ms = max(n1, G_N);
 
-  for (int d = 0; d < n1 / 2; d++) {
-    int left = d;
-    int right = n1 - 1 - d;
-    const int *c_ptr;
-    c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-    curr.A[left] = c_ptr[0];
-    curr.B[left] = c_ptr[1];
-    curr.A[right] = c_ptr[2];
-    curr.B[right] = c_ptr[3];
-    curr.sum_a += c_ptr[0] + c_ptr[2];
-    curr.sum_b += c_ptr[1] + c_ptr[3];
-  }
-  // Middle element if odd
-  if (n1 % 2 != 0) {
-    int mid = n1 / 2;
-    const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-    curr.A[mid] = c_ptr[0];
-    curr.B[mid] = c_ptr[1];
-    curr.sum_a += c_ptr[0];
-    curr.sum_b += c_ptr[1];
+  // Initialize each element independently as random ±1
+  for (int i = 0; i < n1; i++) {
+    curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+    curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+    curr.sum_a += curr.A[i];
+    curr.sum_b += curr.B[i];
   }
 
-  // Initial corr
-  for (int s = 1; s < ms; s++) {
-    for (int i = 0; i < n1 - s; i++) {
+  for (int s = 1; s < ms; s++)
+    for (int i = 0; i < n1 - s; i++)
       curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
-    }
-  }
 
   int current_cost = curr.cost(ta, tb, n1, cd_full);
   best_state = curr;
@@ -639,39 +575,27 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
 
   ABSAParams sa;
   uniform_real_distribution<> prob(0.0, 1.0);
-  uniform_int_distribution<> d_dist(0, (n1 - 1) / 2);
+  // Mutation: pick a random element from 2*n1 total (A[0..n1-1], B[0..n1-1])
+  uniform_int_distribution<> elem_dist(0, 2 * n1 - 1);
 
-  // Adaptive restart loop
   for (int restart = 0; restart < sa.restarts; restart++) {
     if (g_found.load(memory_order_relaxed))
       return false;
 
     if (restart > 0) {
       if (restart % 2 == 0 && best_cost < 999999) {
-        // WARM START: begin from best state found + random perturbations.
-        // This is iterated local search — we preserve progress instead of
-        // throwing it away. Much more effective when near a solution.
         curr = best_state;
-        perturb_AB(curr, n1, max(2, n1 / 4), rng);
+        perturb_AB(curr, n1, max(4, n1 / 3), rng);
         current_cost = curr.cost(ta, tb, n1, cd_full);
       } else {
-        // ODD RESTART: full random restart for diversity
         memset(curr.corr, 0, sizeof(curr.corr));
         curr.sum_a = 0;
         curr.sum_b = 0;
-        for (int d = 0; d < n1 / 2; d++) {
-          int left = d, right = n1 - 1 - d;
-          const int *c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-          curr.A[left] = c_ptr[0]; curr.B[left] = c_ptr[1];
-          curr.A[right] = c_ptr[2]; curr.B[right] = c_ptr[3];
-          curr.sum_a += c_ptr[0] + c_ptr[2];
-          curr.sum_b += c_ptr[1] + c_ptr[3];
-        }
-        if (n1 % 2 != 0) {
-          int mid = n1 / 2;
-          const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-          curr.A[mid] = c_ptr[0]; curr.B[mid] = c_ptr[1];
-          curr.sum_a += c_ptr[0]; curr.sum_b += c_ptr[1];
+        for (int i = 0; i < n1; i++) {
+          curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+          curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+          curr.sum_a += curr.A[i];
+          curr.sum_b += curr.B[i];
         }
         for (int s = 1; s < ms; s++)
           for (int i = 0; i < n1 - s; i++)
@@ -689,89 +613,40 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
       if (best_cost == 0)
         return true;
 
-      // Reheat if stuck
       no_improve++;
       if (no_improve > sa.reheat_threshold) {
         temp = sa.initial_temp * sa.reheat_ratio;
         no_improve = 0;
       }
 
-      int d = d_dist(rng);
-      int left = d;
-      int right = n1 - 1 - d;
+      // Single-element flip: pick random A[i] or B[i] and negate it
+      int elem = elem_dist(rng);
+      bool flip_A = (elem < n1);
+      int idx = flip_A ? elem : (elem - n1);
 
-      int oldA_L = curr.A[left], oldB_L = curr.B[left];
-      int oldA_R = curr.A[right], oldB_R = curr.B[right];
-      int nA_L, nB_L, nA_R, nB_R;
-
-      if (left == right) {
-        const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-        nA_L = c_ptr[0];
-        nB_L = c_ptr[1];
-        nA_R = nA_L;
-        nB_R = nB_L;
-        if (oldA_L == nA_L && oldB_L == nB_L)
-          continue;
-      } else {
-        const int *c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-        nA_L = c_ptr[0];
-        nB_L = c_ptr[1];
-        nA_R = c_ptr[2];
-        nB_R = c_ptr[3];
-        if (oldA_L == nA_L && oldB_L == nB_L && oldA_R == nA_R &&
-            oldB_R == nB_R)
-          continue;
-      }
-
+      int old_val = flip_A ? curr.A[idx] : curr.B[idx];
       int old_sum_a = curr.sum_a, old_sum_b = curr.sum_b;
-      if (left == right) {
-        curr.sum_a += nA_L - oldA_L;
-        curr.sum_b += nB_L - oldB_L;
-      } else {
-        curr.sum_a += (nA_L + nA_R) - (oldA_L + oldA_R);
-        curr.sum_b += (nB_L + nB_R) - (oldB_L + oldB_R);
-      }
 
+      // Compute delta correlation incrementally: O(ms) per flip
       int delta_corr[128] = {0};
-      for (int s = 1; s < ms; s++) {
-        if (left - s >= 0)
-          delta_corr[s] -=
-              curr.A[left - s] * oldA_L + curr.B[left - s] * oldB_L;
-        if (left + s < n1)
-          delta_corr[s] -=
-              oldA_L * curr.A[left + s] + oldB_L * curr.B[left + s];
-        if (left != right) {
-          if (right - s >= 0)
-            delta_corr[s] -=
-                curr.A[right - s] * oldA_R + curr.B[right - s] * oldB_R;
-          if (right + s < n1)
-            delta_corr[s] -=
-                oldA_R * curr.A[right + s] + oldB_R * curr.B[right + s];
-          if (right - left == s)
-            delta_corr[s] += oldA_L * oldA_R + oldB_L * oldB_R;
+      if (flip_A) {
+        for (int s = 1; s < ms; s++) {
+          if (idx + s < n1)
+            delta_corr[s] += (-2 * old_val) * curr.A[idx + s];
+          if (idx - s >= 0)
+            delta_corr[s] += curr.A[idx - s] * (-2 * old_val);
         }
-      }
-
-      curr.A[left] = nA_L;
-      curr.B[left] = nB_L;
-      curr.A[right] = nA_R;
-      curr.B[right] = nB_R;
-
-      for (int s = 1; s < ms; s++) {
-        if (left - s >= 0)
-          delta_corr[s] += curr.A[left - s] * nA_L + curr.B[left - s] * nB_L;
-        if (left + s < n1)
-          delta_corr[s] += nA_L * curr.A[left + s] + nB_L * curr.B[left + s];
-        if (left != right) {
-          if (right - s >= 0)
-            delta_corr[s] +=
-                curr.A[right - s] * nA_R + curr.B[right - s] * nB_R;
-          if (right + s < n1)
-            delta_corr[s] +=
-                nA_R * curr.A[right + s] + nB_R * curr.B[right + s];
-          if (right - left == s)
-            delta_corr[s] -= nA_L * nA_R + nB_L * nB_R;
+        curr.A[idx] = -old_val;
+        curr.sum_a -= 2 * old_val;
+      } else {
+        for (int s = 1; s < ms; s++) {
+          if (idx + s < n1)
+            delta_corr[s] += (-2 * old_val) * curr.B[idx + s];
+          if (idx - s >= 0)
+            delta_corr[s] += curr.B[idx - s] * (-2 * old_val);
         }
+        curr.B[idx] = -old_val;
+        curr.sum_b -= 2 * old_val;
       }
 
       for (int s = 1; s < ms; s++)
@@ -788,12 +663,14 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
           no_improve = 0;
         }
       } else {
-        curr.A[left] = oldA_L;
-        curr.B[left] = oldB_L;
-        curr.A[right] = oldA_R;
-        curr.B[right] = oldB_R;
-        curr.sum_a = old_sum_a;
-        curr.sum_b = old_sum_b;
+        // Revert
+        if (flip_A) {
+          curr.A[idx] = old_val;
+          curr.sum_a = old_sum_a;
+        } else {
+          curr.B[idx] = old_val;
+          curr.sum_b = old_sum_b;
+        }
         for (int s = 1; s < ms; s++)
           curr.corr[s] -= delta_corr[s];
       }
@@ -801,10 +678,9 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
       temp *= sa.cooling_rate;
     }
 
-    if (best_cost == 0)
-      return true;
+    if (best_cost == 0) return true;
 
-    // Greedy hill-climbing phase after each SA restart
+    // Greedy single-element climb after SA
     if (best_cost > 0 && best_cost < 200) {
       ABState hc_state = best_state;
       int hc_cost = best_cost;
@@ -813,12 +689,11 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
         best_cost = hc_cost;
         best_state = hc_state;
       }
+      if (best_cost == 0) return true;
     }
   }
 
-  // ILS phase: SA found a local minimum. Now do basin-hopping:
-  // perturb 2-4 positions, greedy-climb, repeat.
-  // This escapes the cost=40 trap that single-swap can't break.
+  // ILS phase: basin-hopping with single-element perturbation + greedy climb
   if (best_cost > 0 && best_cost <= 100) {
     if (iterated_local_search_AB(n1, ta, tb, cd_full, best_state, best_cost, rng))
       return true;
