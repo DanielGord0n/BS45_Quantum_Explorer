@@ -190,7 +190,10 @@ struct CDState {
     int pen = 0;
     int ms = max(n1, n);
     for (int s = 1; s < ms; s++) {
-      int max_ab = (s < n1) ? 2 * (n1 - s) : 0;
+      // Force CD to have zero NPAF independently (Goethals-Seidel approach).
+      // Previously max_ab = 2*(n1-s) allowed huge cd_full values that made
+      // AB's coupled constraints impossible to satisfy simultaneously.
+      int max_ab = 0;
       if (abs(corr[s]) > max_ab) {
         pen += abs(corr[s]) - max_ab;
       }

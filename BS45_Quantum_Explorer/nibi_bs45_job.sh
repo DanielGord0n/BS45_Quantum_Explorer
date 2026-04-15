@@ -20,7 +20,7 @@ module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-SEED_OFFSET=$((27000 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((31000 + SLURM_ARRAY_TASK_ID))
 
 echo "=============================================="
 echo "  BS(45) Solver — Nibi Cluster"
