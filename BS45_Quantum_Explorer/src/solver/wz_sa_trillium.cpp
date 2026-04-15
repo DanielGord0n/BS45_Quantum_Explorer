@@ -179,7 +179,7 @@ struct ABSAParams {
 // CD SA Solver
 // ===================================
 // For n=44, CD lengths are 44. depth pairs = 44/2 = 22 pairs (d=0..21).
-// d=0 uses comb16. d=1..21 uses comb8_pos.
+// All pair positions use comb16 (all 16 combinations, no product constraint).
 struct CDState {
   int C[128], D[128];
   int sum_c, sum_d;
@@ -423,8 +423,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
 // AB SA Solver
 // ===================================
 // For n1=45, d=0..22.
-// d=0 uses comb8_neg (-1)
-// d=1..21 uses comb8_pos (+1)
+// d=0..21 uses comb16 (all 16 combinations, no product constraint)
 // d=22 uses comb4 (middle element)
 struct ABState {
   int A[128], B[128];
