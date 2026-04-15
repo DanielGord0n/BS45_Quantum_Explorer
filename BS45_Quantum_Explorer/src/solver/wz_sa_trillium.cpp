@@ -213,10 +213,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
     int left = d;
     int right = n - 1 - d;
     const int *c_ptr;
-    if (d == 0)
-      c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-    else
-      c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+    c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
 
     curr.C[left] = c_ptr[0];
     curr.D[left] = c_ptr[1];
@@ -265,9 +262,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
       curr.sum_d = 0;
       for (int d = 0; d < n / 2; d++) {
         int left = d, right = n - 1 - d;
-        const int *c_ptr =
-            (d == 0) ? comb16[uniform_int_distribution<>(0, 15)(rng)]
-                     : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+        const int *c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
         curr.C[left] = c_ptr[0];
         curr.D[left] = c_ptr[1];
         curr.C[right] = c_ptr[2];
@@ -328,11 +323,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
         if (oldC_L == nC_L && oldD_L == nD_L)
           continue;
       } else {
-        const int *c_ptr;
-        if (d == 0)
-          c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
-        else
-          c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+        const int *c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
         nC_L = c_ptr[0];
         nD_L = c_ptr[1];
         nC_R = c_ptr[2];
@@ -466,7 +457,7 @@ static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
       int oldA_R = state.A[right], oldB_R = state.B[right];
 
       bool is_middle = (left == right);
-      int num_combos = is_middle ? 4 : 8;
+      int num_combos = is_middle ? 4 : 16;
 
       int best_local_cost = cost_out;
       int best_combo = -1;
@@ -475,12 +466,9 @@ static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
         if (is_middle) {
           nA_L = comb4[ci][0]; nB_L = comb4[ci][1];
           nA_R = nA_L; nB_R = nB_L;
-        } else if (d == 0) {
-          nA_L = comb8_neg[ci][0]; nB_L = comb8_neg[ci][1];
-          nA_R = comb8_neg[ci][2]; nB_R = comb8_neg[ci][3];
         } else {
-          nA_L = comb8_pos[ci][0]; nB_L = comb8_pos[ci][1];
-          nA_R = comb8_pos[ci][2]; nB_R = comb8_pos[ci][3];
+          nA_L = comb16[ci][0]; nB_L = comb16[ci][1];
+          nA_R = comb16[ci][2]; nB_R = comb16[ci][3];
         }
         if (nA_L == oldA_L && nB_L == oldB_L && nA_R == oldA_R && nB_R == oldB_R)
           continue;
@@ -523,12 +511,9 @@ static bool greedy_hill_climb_AB(int n1, int ta, int tb, const int *cd_full,
         if (is_middle) {
           nA_L = comb4[best_combo][0]; nB_L = comb4[best_combo][1];
           nA_R = nA_L; nB_R = nB_L;
-        } else if (d == 0) {
-          nA_L = comb8_neg[best_combo][0]; nB_L = comb8_neg[best_combo][1];
-          nA_R = comb8_neg[best_combo][2]; nB_R = comb8_neg[best_combo][3];
         } else {
-          nA_L = comb8_pos[best_combo][0]; nB_L = comb8_pos[best_combo][1];
-          nA_R = comb8_pos[best_combo][2]; nB_R = comb8_pos[best_combo][3];
+          nA_L = comb16[best_combo][0]; nB_L = comb16[best_combo][1];
+          nA_R = comb16[best_combo][2]; nB_R = comb16[best_combo][3];
         }
         state.A[left] = nA_L; state.B[left] = nB_L;
         state.A[right] = nA_R; state.B[right] = nB_R;
@@ -566,13 +551,8 @@ static void perturb_AB(ABState &state, int n1, int K, mt19937 &rng) {
       c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
       state.A[left] = c_ptr[0]; state.B[left] = c_ptr[1];
       state.sum_a += c_ptr[0]; state.sum_b += c_ptr[1];
-    } else if (d == 0) {
-      c_ptr = comb8_neg[uniform_int_distribution<>(0, 7)(rng)];
-      state.A[left] = c_ptr[0]; state.B[left] = c_ptr[1];
-      state.A[right] = c_ptr[2]; state.B[right] = c_ptr[3];
-      state.sum_a += c_ptr[0] + c_ptr[2]; state.sum_b += c_ptr[1] + c_ptr[3];
     } else {
-      c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+      c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
       state.A[left] = c_ptr[0]; state.B[left] = c_ptr[1];
       state.A[right] = c_ptr[2]; state.B[right] = c_ptr[3];
       state.sum_a += c_ptr[0] + c_ptr[2]; state.sum_b += c_ptr[1] + c_ptr[3];
@@ -629,10 +609,7 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
     int left = d;
     int right = n1 - 1 - d;
     const int *c_ptr;
-    if (d == 0)
-      c_ptr = comb8_neg[uniform_int_distribution<>(0, 7)(rng)];
-    else
-      c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+    c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
     curr.A[left] = c_ptr[0];
     curr.B[left] = c_ptr[1];
     curr.A[right] = c_ptr[2];
@@ -685,9 +662,7 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
         curr.sum_b = 0;
         for (int d = 0; d < n1 / 2; d++) {
           int left = d, right = n1 - 1 - d;
-          const int *c_ptr =
-              (d == 0) ? comb8_neg[uniform_int_distribution<>(0, 7)(rng)]
-                       : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+          const int *c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
           curr.A[left] = c_ptr[0]; curr.B[left] = c_ptr[1];
           curr.A[right] = c_ptr[2]; curr.B[right] = c_ptr[3];
           curr.sum_a += c_ptr[0] + c_ptr[2];
@@ -739,9 +714,7 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
         if (oldA_L == nA_L && oldB_L == nB_L)
           continue;
       } else {
-        const int *c_ptr =
-            (d == 0) ? comb8_neg[uniform_int_distribution<>(0, 7)(rng)]
-                     : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+        const int *c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
         nA_L = c_ptr[0];
         nB_L = c_ptr[1];
         nA_R = c_ptr[2];
