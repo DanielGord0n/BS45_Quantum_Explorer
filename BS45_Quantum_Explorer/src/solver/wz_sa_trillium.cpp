@@ -155,12 +155,12 @@ vector<Sig> get_sigs(int n) {
 }
 
 struct SAParams {
-  double initial_temp = 50.0;
-  double cooling_rate = 0.999997;
-  int iterations = 5000000;
-  int restarts = 20;
-  int reheat_threshold = 1000000;
-  double reheat_ratio = 0.4;
+  double initial_temp = 30.0;      // Lower start since swaps don't touch sums
+  double cooling_rate = 0.9999985; // Slower cooling for deeper exploration
+  int iterations = 8000000;        // More iterations per restart
+  int restarts = 15;
+  int reheat_threshold = 1500000;
+  double reheat_ratio = 0.5;
 };
 
 // ===================================
@@ -211,9 +211,9 @@ static bool greedy_hill_climb_joint(int n1, int n, int ta, int tb, int tc,
       else if (seq == 2) { pair_arr = state.C; pair_len = n; }
       else { pair_arr = state.D; pair_len = n; }
 
+      // Phase 1: Try single-element flips
       for (int idx = 0; idx < len; idx++) {
         int old_val = arr[idx];
-        // Compute delta
         int delta_npaf[128] = {0};
         for (int s = 1; s < ms; s++) {
           if (idx + s < len)
@@ -221,7 +221,6 @@ static bool greedy_hill_climb_joint(int n1, int n, int ta, int tb, int tc,
           if (idx - s >= 0)
             delta_npaf[s] += arr[idx - s] * (-2 * old_val);
         }
-        // Apply flip
         arr[idx] = -old_val;
         *sum_ptr -= 2 * old_val;
         for (int s = 1; s < ms; s++)
@@ -233,11 +232,47 @@ static bool greedy_hill_climb_joint(int n1, int n, int ta, int tb, int tc,
           improved = true;
           if (cost_out == 0) return true;
         } else {
-          // Revert
           arr[idx] = old_val;
           *sum_ptr += 2 * old_val;
           for (int s = 1; s < ms; s++)
             state.npaf[s] -= delta_npaf[s];
+        }
+      }
+
+      // Phase 2: Try sum-preserving swaps within this sequence
+      for (int i = 0; i < len; i++) {
+        for (int j = i + 1; j < len; j++) {
+          if (arr[i] == arr[j]) continue; // Only swap opposite values
+          int vi = arr[i]; // vi and vj have opposite signs
+          // Compute delta NPAF for swapping arr[i] and arr[j]
+          int delta_npaf2[128] = {0};
+          for (int s = 1; s < ms; s++) {
+            // Effect from position i (changing vi to -vi)
+            if (i + s < len && i + s != j)
+              delta_npaf2[s] -= 2 * vi * arr[i + s];
+            if (i - s >= 0 && i - s != j)
+              delta_npaf2[s] -= 2 * vi * arr[i - s];
+            // Effect from position j (changing -vi to vi)
+            if (j + s < len && j + s != i)
+              delta_npaf2[s] += 2 * vi * arr[j + s];
+            if (j - s >= 0 && j - s != i)
+              delta_npaf2[s] += 2 * vi * arr[j - s];
+          }
+          // Apply swap
+          arr[i] = -vi; arr[j] = vi;
+          for (int s = 1; s < ms; s++)
+            state.npaf[s] += delta_npaf2[s];
+
+          int trial_cost = state.cost(ta, tb, tc, td, ms);
+          if (trial_cost < cost_out) {
+            cost_out = trial_cost;
+            improved = true;
+            if (cost_out == 0) return true;
+          } else {
+            arr[i] = vi; arr[j] = -vi;
+            for (int s = 1; s < ms; s++)
+              state.npaf[s] -= delta_npaf2[s];
+          }
         }
       }
     }
@@ -280,7 +315,7 @@ static void perturb_joint(JointState &state, int n1, int n, int ms, int K,
 static bool iterated_local_search_joint(int n1, int n, int ta, int tb, int tc,
                                          int td, int ms, JointState &best,
                                          int &best_cost, mt19937 &rng) {
-  for (int attempt = 0; attempt < 50000; attempt++) {
+  for (int attempt = 0; attempt < 200000; attempt++) {
     if (g_found.load(memory_order_relaxed)) return false;
     if (best_cost == 0) return true;
 
@@ -384,55 +419,111 @@ bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
         no_improve = 0;
       }
 
-      // Pick random element from any of the 4 sequences
-      int elem = elem_dist(rng);
-      int *arr;
-      int *sum_ptr;
-      int idx, len;
-      if (elem < n1) {
-        arr = curr.A; sum_ptr = &curr.sum_a; idx = elem; len = n1;
-      } else if (elem < 2 * n1) {
-        arr = curr.B; sum_ptr = &curr.sum_b; idx = elem - n1; len = n1;
-      } else if (elem < 2 * n1 + n) {
-        arr = curr.C; sum_ptr = &curr.sum_c; idx = elem - 2 * n1; len = n;
-      } else {
-        arr = curr.D; sum_ptr = &curr.sum_d; idx = elem - 2 * n1 - n; len = n;
-      }
+      // 60% swap mutations (sum-preserving), 40% flips
+      bool do_swap = (prob(rng) < 0.6);
 
-      int old_val = arr[idx];
-      int old_sum = *sum_ptr;
+      if (do_swap) {
+        // === SWAP MUTATION: pick a random sequence, swap two opposite elements ===
+        int seq_id = uniform_int_distribution<>(0, 3)(rng);
+        int *arr;
+        int len;
+        if (seq_id == 0) { arr = curr.A; len = n1; }
+        else if (seq_id == 1) { arr = curr.B; len = n1; }
+        else if (seq_id == 2) { arr = curr.C; len = n; }
+        else { arr = curr.D; len = n; }
 
-      // Compute delta NPAF: O(ms) per flip
-      int delta_npaf[128] = {0};
-      for (int s = 1; s < ms; s++) {
-        if (idx + s < len)
-          delta_npaf[s] += (-2 * old_val) * arr[idx + s];
-        if (idx - s >= 0)
-          delta_npaf[s] += arr[idx - s] * (-2 * old_val);
-      }
+        // Find positions with +1 and -1
+        int pos_plus[128], pos_minus[128];
+        int np = 0, nm = 0;
+        for (int k = 0; k < len; k++) {
+          if (arr[k] == 1) pos_plus[np++] = k;
+          else pos_minus[nm++] = k;
+        }
+        if (np == 0 || nm == 0) { temp *= sa.cooling_rate; continue; }
 
-      // Apply flip
-      arr[idx] = -old_val;
-      *sum_ptr -= 2 * old_val;
-      for (int s = 1; s < ms; s++)
-        curr.npaf[s] += delta_npaf[s];
+        int pi = pos_plus[uniform_int_distribution<>(0, np - 1)(rng)];
+        int pj = pos_minus[uniform_int_distribution<>(0, nm - 1)(rng)];
+        int vi = 1; // arr[pi] = 1, arr[pj] = -1
 
-      int new_cost = curr.cost(ta, tb, tc, td, ms);
+        // Compute swap delta: O(ms)
+        int delta_npaf[128] = {0};
+        for (int s = 1; s < ms; s++) {
+          if (pi + s < len && pi + s != pj)
+            delta_npaf[s] -= 2 * vi * arr[pi + s];
+          if (pi - s >= 0 && pi - s != pj)
+            delta_npaf[s] -= 2 * vi * arr[pi - s];
+          if (pj + s < len && pj + s != pi)
+            delta_npaf[s] += 2 * vi * arr[pj + s];
+          if (pj - s >= 0 && pj - s != pi)
+            delta_npaf[s] += 2 * vi * arr[pj - s];
+        }
 
-      if (new_cost < current_cost ||
-          prob(rng) < exp(-(new_cost - current_cost) / temp)) {
-        current_cost = new_cost;
-        if (new_cost < best_cost) {
-          best_cost = new_cost;
-          best_state = curr;
-          no_improve = 0;
+        // Apply swap
+        arr[pi] = -1; arr[pj] = 1;
+        for (int s = 1; s < ms; s++)
+          curr.npaf[s] += delta_npaf[s];
+
+        int new_cost = curr.cost(ta, tb, tc, td, ms);
+        if (new_cost < current_cost ||
+            prob(rng) < exp(-(new_cost - current_cost) / temp)) {
+          current_cost = new_cost;
+          if (new_cost < best_cost) {
+            best_cost = new_cost;
+            best_state = curr;
+            no_improve = 0;
+          }
+        } else {
+          arr[pi] = 1; arr[pj] = -1;
+          for (int s = 1; s < ms; s++)
+            curr.npaf[s] -= delta_npaf[s];
         }
       } else {
-        // Revert
-        arr[idx] = old_val;
-        *sum_ptr = old_sum;
+        // === FLIP MUTATION: flip one random element ===
+        int elem = elem_dist(rng);
+        int *arr;
+        int *sum_ptr;
+        int idx, len;
+        if (elem < n1) {
+          arr = curr.A; sum_ptr = &curr.sum_a; idx = elem; len = n1;
+        } else if (elem < 2 * n1) {
+          arr = curr.B; sum_ptr = &curr.sum_b; idx = elem - n1; len = n1;
+        } else if (elem < 2 * n1 + n) {
+          arr = curr.C; sum_ptr = &curr.sum_c; idx = elem - 2 * n1; len = n;
+        } else {
+          arr = curr.D; sum_ptr = &curr.sum_d; idx = elem - 2 * n1 - n; len = n;
+        }
+
+        int old_val = arr[idx];
+        int old_sum = *sum_ptr;
+
+        int delta_npaf[128] = {0};
+        for (int s = 1; s < ms; s++) {
+          if (idx + s < len)
+            delta_npaf[s] += (-2 * old_val) * arr[idx + s];
+          if (idx - s >= 0)
+            delta_npaf[s] += arr[idx - s] * (-2 * old_val);
+        }
+
+        arr[idx] = -old_val;
+        *sum_ptr -= 2 * old_val;
         for (int s = 1; s < ms; s++)
-          curr.npaf[s] -= delta_npaf[s];
+          curr.npaf[s] += delta_npaf[s];
+
+        int new_cost = curr.cost(ta, tb, tc, td, ms);
+        if (new_cost < current_cost ||
+            prob(rng) < exp(-(new_cost - current_cost) / temp)) {
+          current_cost = new_cost;
+          if (new_cost < best_cost) {
+            best_cost = new_cost;
+            best_state = curr;
+            no_improve = 0;
+          }
+        } else {
+          arr[idx] = old_val;
+          *sum_ptr = old_sum;
+          for (int s = 1; s < ms; s++)
+            curr.npaf[s] -= delta_npaf[s];
+        }
       }
 
       temp *= sa.cooling_rate;

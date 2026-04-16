@@ -41,7 +41,7 @@ echo "Compiling with bug fix..."
 g++ -O3 -march=native -std=c++17 -fopenmp -o wz_sa src/solver/wz_sa_trillium.cpp
 echo "Done."
 
-SEED_OFFSET=$((32000 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((36000 + SLURM_ARRAY_TASK_ID))
 
 # Run solver with unique seed offset
 ./wz_sa 44 $SEED_OFFSET
