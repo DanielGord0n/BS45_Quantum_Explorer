@@ -280,9 +280,43 @@ static bool greedy_hill_climb_joint(int n1, int n, int ta, int tb, int tc,
   return cost_out == 0;
 }
 
-// Perturbation: flip K random elements from any sequence
-static void perturb_joint(JointState &state, int n1, int n, int ms, int K,
-                           mt19937 &rng) {
+// Swap-based perturbation: preserves sums exactly
+static void perturb_joint_swaps(JointState &state, int n1, int n, int ms,
+                                 int K, mt19937 &rng) {
+  for (int p = 0; p < K; p++) {
+    int seq_id = uniform_int_distribution<>(0, 3)(rng);
+    int *arr;
+    int len;
+    if (seq_id == 0) { arr = state.A; len = n1; }
+    else if (seq_id == 1) { arr = state.B; len = n1; }
+    else if (seq_id == 2) { arr = state.C; len = n; }
+    else { arr = state.D; len = n; }
+
+    int pos_plus[128], pos_minus[128];
+    int np = 0, nm = 0;
+    for (int k = 0; k < len; k++) {
+      if (arr[k] == 1) pos_plus[np++] = k;
+      else pos_minus[nm++] = k;
+    }
+    if (np == 0 || nm == 0) continue;
+
+    int pi = pos_plus[uniform_int_distribution<>(0, np - 1)(rng)];
+    int pj = pos_minus[uniform_int_distribution<>(0, nm - 1)(rng)];
+    for (int s = 1; s < ms; s++) {
+      int d = 0;
+      if (pi + s < len && pi + s != pj) d -= 2 * arr[pi + s];
+      if (pi - s >= 0 && pi - s != pj) d -= 2 * arr[pi - s];
+      if (pj + s < len && pj + s != pi) d += 2 * arr[pj + s];
+      if (pj - s >= 0 && pj - s != pi) d += 2 * arr[pj - s];
+      state.npaf[s] += d;
+    }
+    arr[pi] = -1; arr[pj] = 1;
+  }
+}
+
+// Flip-based perturbation (for broad exploration)
+static void perturb_joint_flips(JointState &state, int n1, int n, int ms,
+                                 int K, mt19937 &rng) {
   int total = 2 * n1 + 2 * n;
   uniform_int_distribution<> elem_dist(0, total - 1);
   for (int p = 0; p < K; p++) {
@@ -311,17 +345,107 @@ static void perturb_joint(JointState &state, int n1, int n, int ms, int K,
   }
 }
 
-// ILS: perturb + greedy-climb
+// Compound swap search: try random pairs of swaps across two sequences
+// This finds moves that no single swap can achieve
+static bool compound_swap_search(int n1, int n, int ta, int tb, int tc, int td,
+                                  int ms, JointState &best, int &best_cost,
+                                  mt19937 &rng) {
+  // Get arrays and lengths for all 4 sequences
+  int *arrs[4] = {best.A, best.B, best.C, best.D};
+  int lens[4] = {n1, n1, n, n};
+
+  // Try 100000 random compound swaps
+  for (int attempt = 0; attempt < 100000; attempt++) {
+    if (g_found.load(memory_order_relaxed)) return false;
+    if (best_cost == 0) return true;
+
+    // Pick two different sequences
+    int s1 = uniform_int_distribution<>(0, 3)(rng);
+    int s2 = uniform_int_distribution<>(0, 2)(rng);
+    if (s2 >= s1) s2++;
+
+    JointState trial = best;
+    int *arrs_t[4] = {trial.A, trial.B, trial.C, trial.D};
+
+    // Do one swap in seq s1
+    bool did_swap1 = false;
+    {
+      int *arr = arrs_t[s1];
+      int len = lens[s1];
+      int pp[128], pm[128]; int np = 0, nm = 0;
+      for (int k = 0; k < len; k++) {
+        if (arr[k] == 1) pp[np++] = k;
+        else pm[nm++] = k;
+      }
+      if (np > 0 && nm > 0) {
+        int pi = pp[uniform_int_distribution<>(0, np-1)(rng)];
+        int pj = pm[uniform_int_distribution<>(0, nm-1)(rng)];
+        for (int s = 1; s < ms; s++) {
+          int d = 0;
+          if (pi+s < len && pi+s != pj) d -= 2 * arr[pi+s];
+          if (pi-s >= 0 && pi-s != pj) d -= 2 * arr[pi-s];
+          if (pj+s < len && pj+s != pi) d += 2 * arr[pj+s];
+          if (pj-s >= 0 && pj-s != pi) d += 2 * arr[pj-s];
+          trial.npaf[s] += d;
+        }
+        arr[pi] = -1; arr[pj] = 1;
+        did_swap1 = true;
+      }
+    }
+    if (!did_swap1) continue;
+
+    // Do one swap in seq s2
+    {
+      int *arr = arrs_t[s2];
+      int len = lens[s2];
+      int pp[128], pm[128]; int np = 0, nm = 0;
+      for (int k = 0; k < len; k++) {
+        if (arr[k] == 1) pp[np++] = k;
+        else pm[nm++] = k;
+      }
+      if (np > 0 && nm > 0) {
+        int pi = pp[uniform_int_distribution<>(0, np-1)(rng)];
+        int pj = pm[uniform_int_distribution<>(0, nm-1)(rng)];
+        for (int s = 1; s < ms; s++) {
+          int d = 0;
+          if (pi+s < len && pi+s != pj) d -= 2 * arr[pi+s];
+          if (pi-s >= 0 && pi-s != pj) d -= 2 * arr[pi-s];
+          if (pj+s < len && pj+s != pi) d += 2 * arr[pj+s];
+          if (pj-s >= 0 && pj-s != pi) d += 2 * arr[pj-s];
+          trial.npaf[s] += d;
+        }
+        arr[pi] = -1; arr[pj] = 1;
+      }
+    }
+
+    int trial_cost = trial.cost(ta, tb, tc, td, ms);
+    if (trial_cost < best_cost) {
+      // Try greedy from here
+      greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, trial, trial_cost);
+      if (trial_cost < best_cost) {
+        best_cost = trial_cost;
+        best = trial;
+        if (best_cost == 0) return true;
+        attempt = 0; // Reset on improvement
+      }
+    }
+  }
+  return best_cost == 0;
+}
+
+// ILS: swap-based perturb + greedy-climb
 static bool iterated_local_search_joint(int n1, int n, int ta, int tb, int tc,
                                          int td, int ms, JointState &best,
                                          int &best_cost, mt19937 &rng) {
-  for (int attempt = 0; attempt < 200000; attempt++) {
+  for (int attempt = 0; attempt < 300000; attempt++) {
     if (g_found.load(memory_order_relaxed)) return false;
     if (best_cost == 0) return true;
 
     JointState trial = best;
-    int perturb_size = 2 + (attempt % 8);
-    perturb_joint(trial, n1, n, ms, perturb_size, rng);
+    int perturb_size = 2 + (attempt % 10);
+
+    // Use swap-based perturbation (preserves sums)
+    perturb_joint_swaps(trial, n1, n, ms, perturb_size, rng);
 
     int trial_cost = trial.cost(ta, tb, tc, td, ms);
     greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, trial, trial_cost);
@@ -381,7 +505,7 @@ bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
     if (restart > 0) {
       if (restart % 2 == 0 && best_cost < 999999) {
         curr = best_state;
-        perturb_joint(curr, n1, n, ms, max(6, total_elems / 5), rng);
+        perturb_joint_swaps(curr, n1, n, ms, max(4, total_elems / 8), rng);
         current_cost = curr.cost(ta, tb, tc, td, ms);
       } else {
         memset(curr.npaf, 0, sizeof(curr.npaf));
@@ -544,10 +668,17 @@ bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
     }
   }
 
-  // ILS phase
-  if (best_cost > 0 && best_cost <= 100) {
+  // ILS phase (always run after SA if not solved)
+  if (best_cost > 0) {
     if (iterated_local_search_joint(n1, n, ta, tb, tc, td, ms, best_state,
                                      best_cost, rng))
+      return true;
+  }
+
+  // Compound swap search for endgame (cost < 20)
+  if (best_cost > 0 && best_cost <= 20) {
+    if (compound_swap_search(n1, n, ta, tb, tc, td, ms, best_state,
+                              best_cost, rng))
       return true;
   }
 
