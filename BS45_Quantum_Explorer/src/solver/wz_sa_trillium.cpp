@@ -561,34 +561,38 @@ static bool iterated_local_search_joint(int n1, int n, int ta, int tb, int tc,
 }
 
 bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
-                    JointState &best_state, mt19937 &rng) {
+                    JointState &best_state, mt19937 &rng, bool warm_start = false) {
   int ms = max(n1, n);
   int total_elems = 2 * n1 + 2 * n;
 
   JointState curr;
-  memset(curr.npaf, 0, sizeof(curr.npaf));
-  curr.sum_a = curr.sum_b = curr.sum_c = curr.sum_d = 0;
+  if (warm_start) {
+    curr = best_state;
+  } else {
+    memset(curr.npaf, 0, sizeof(curr.npaf));
+    curr.sum_a = curr.sum_b = curr.sum_c = curr.sum_d = 0;
 
-  // Initialize all sequences with random ±1
-  for (int i = 0; i < n1; i++) {
-    curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-    curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-    curr.sum_a += curr.A[i];
-    curr.sum_b += curr.B[i];
-  }
-  for (int i = 0; i < n; i++) {
-    curr.C[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-    curr.D[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-    curr.sum_c += curr.C[i];
-    curr.sum_d += curr.D[i];
-  }
+    // Initialize all sequences with random ±1
+    for (int i = 0; i < n1; i++) {
+      curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+      curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+      curr.sum_a += curr.A[i];
+      curr.sum_b += curr.B[i];
+    }
+    for (int i = 0; i < n; i++) {
+      curr.C[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+      curr.D[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+      curr.sum_c += curr.C[i];
+      curr.sum_d += curr.D[i];
+    }
 
-  // Compute initial NPAF
-  for (int s = 1; s < ms; s++) {
-    for (int i = 0; i < n1 - s; i++)
-      curr.npaf[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
-    for (int i = 0; i < n - s; i++)
-      curr.npaf[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
+    // Compute initial NPAF
+    for (int s = 1; s < ms; s++) {
+      for (int i = 0; i < n1 - s; i++)
+        curr.npaf[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+      for (int i = 0; i < n - s; i++)
+        curr.npaf[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
+    }
   }
 
   int current_cost = curr.cost(ta, tb, tc, td, ms);
@@ -845,7 +849,7 @@ int main(int argc, char **argv) {
         // Re-init as a warm start: copy retry_state into solve and hope
         // for a different path
         found = solve_joint_SA(n1, n, sig.a, sig.b, sig.c, sig.d,
-                                retry_state, rng);
+                                retry_state, rng, true);
         int rc = retry_state.cost(sig.a, sig.b, sig.c, sig.d, ms);
         if (rc < retry_cost) {
           retry_cost = rc;
