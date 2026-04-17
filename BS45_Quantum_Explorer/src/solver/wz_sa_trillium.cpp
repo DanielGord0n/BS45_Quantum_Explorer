@@ -345,93 +345,193 @@ static void perturb_joint_flips(JointState &state, int n1, int n, int ms,
   }
 }
 
-// Compound swap search: try random pairs of swaps across two sequences
-// This finds moves that no single swap can achieve
-static bool compound_swap_search(int n1, int n, int ta, int tb, int tc, int td,
-                                  int ms, JointState &best, int &best_cost,
-                                  mt19937 &rng) {
-  // Get arrays and lengths for all 4 sequences
+// Exhaustive 2-swap: try ALL pairs of swaps across two sequences
+// For BS(28): ~196 swaps/seq × 196 = ~38K per pair × 6 pairs ≈ 230K total
+// With early termination this is very fast
+static bool exhaustive_2swap(int n1, int n, int ta, int tb, int tc, int td,
+                              int ms, JointState &best, int &best_cost) {
+  if (best_cost == 0) return true;
   int *arrs[4] = {best.A, best.B, best.C, best.D};
   int lens[4] = {n1, n1, n, n};
 
-  // Try 100000 random compound swaps
-  for (int attempt = 0; attempt < 100000; attempt++) {
-    if (g_found.load(memory_order_relaxed)) return false;
-    if (best_cost == 0) return true;
-
-    // Pick two different sequences
-    int s1 = uniform_int_distribution<>(0, 3)(rng);
-    int s2 = uniform_int_distribution<>(0, 2)(rng);
-    if (s2 >= s1) s2++;
-
-    JointState trial = best;
-    int *arrs_t[4] = {trial.A, trial.B, trial.C, trial.D};
-
-    // Do one swap in seq s1
-    bool did_swap1 = false;
-    {
-      int *arr = arrs_t[s1];
-      int len = lens[s1];
-      int pp[128], pm[128]; int np = 0, nm = 0;
-      for (int k = 0; k < len; k++) {
-        if (arr[k] == 1) pp[np++] = k;
-        else pm[nm++] = k;
-      }
-      if (np > 0 && nm > 0) {
-        int pi = pp[uniform_int_distribution<>(0, np-1)(rng)];
-        int pj = pm[uniform_int_distribution<>(0, nm-1)(rng)];
-        for (int s = 1; s < ms; s++) {
-          int d = 0;
-          if (pi+s < len && pi+s != pj) d -= 2 * arr[pi+s];
-          if (pi-s >= 0 && pi-s != pj) d -= 2 * arr[pi-s];
-          if (pj+s < len && pj+s != pi) d += 2 * arr[pj+s];
-          if (pj-s >= 0 && pj-s != pi) d += 2 * arr[pj-s];
-          trial.npaf[s] += d;
-        }
-        arr[pi] = -1; arr[pj] = 1;
-        did_swap1 = true;
-      }
+  // Pre-collect +1/-1 positions for each sequence
+  int pp[4][128], pm[4][128], npp[4], npm[4];
+  for (int q = 0; q < 4; q++) {
+    npp[q] = npm[q] = 0;
+    for (int k = 0; k < lens[q]; k++) {
+      if (arrs[q][k] == 1) pp[q][npp[q]++] = k;
+      else pm[q][npm[q]++] = k;
     }
-    if (!did_swap1) continue;
+  }
 
-    // Do one swap in seq s2
-    {
-      int *arr = arrs_t[s2];
-      int len = lens[s2];
-      int pp[128], pm[128]; int np = 0, nm = 0;
-      for (int k = 0; k < len; k++) {
-        if (arr[k] == 1) pp[np++] = k;
-        else pm[nm++] = k;
-      }
-      if (np > 0 && nm > 0) {
-        int pi = pp[uniform_int_distribution<>(0, np-1)(rng)];
-        int pj = pm[uniform_int_distribution<>(0, nm-1)(rng)];
-        for (int s = 1; s < ms; s++) {
-          int d = 0;
-          if (pi+s < len && pi+s != pj) d -= 2 * arr[pi+s];
-          if (pi-s >= 0 && pi-s != pj) d -= 2 * arr[pi-s];
-          if (pj+s < len && pj+s != pi) d += 2 * arr[pj+s];
-          if (pj-s >= 0 && pj-s != pi) d += 2 * arr[pj-s];
-          trial.npaf[s] += d;
+  bool improved = false;
+  // For each pair of sequences
+  for (int q1 = 0; q1 < 4 && !improved; q1++) {
+    for (int q2 = q1+1; q2 < 4 && !improved; q2++) {
+      if (g_found.load(memory_order_relaxed)) return false;
+      int *arr1 = arrs[q1]; int len1 = lens[q1];
+      int *arr2 = arrs[q2]; int len2 = lens[q2];
+
+      // For each swap in q1
+      for (int a = 0; a < npp[q1] && !improved; a++) {
+        for (int b = 0; b < npm[q1] && !improved; b++) {
+          int pi1 = pp[q1][a], pj1 = pm[q1][b];
+
+          // Pre-compute delta from swap1
+          int d1[128];
+          for (int s = 1; s < ms; s++) {
+            d1[s] = 0;
+            if (pi1+s < len1 && pi1+s != pj1) d1[s] -= 2 * arr1[pi1+s];
+            if (pi1-s >= 0 && pi1-s != pj1) d1[s] -= 2 * arr1[pi1-s];
+            if (pj1+s < len1 && pj1+s != pi1) d1[s] += 2 * arr1[pj1+s];
+            if (pj1-s >= 0 && pj1-s != pi1) d1[s] += 2 * arr1[pj1-s];
+          }
+
+          // For each swap in q2
+          for (int c = 0; c < npp[q2] && !improved; c++) {
+            for (int d = 0; d < npm[q2] && !improved; d++) {
+              int pi2 = pp[q2][c], pj2 = pm[q2][d];
+
+              // Compute combined cost with early termination
+              int total = 0;
+              bool viable = true;
+              for (int s = 1; s < ms; s++) {
+                int d2 = 0;
+                if (pi2+s < len2 && pi2+s != pj2) d2 -= 2 * arr2[pi2+s];
+                if (pi2-s >= 0 && pi2-s != pj2) d2 -= 2 * arr2[pi2-s];
+                if (pj2+s < len2 && pj2+s != pi2) d2 += 2 * arr2[pj2+s];
+                if (pj2-s >= 0 && pj2-s != pi2) d2 += 2 * arr2[pj2-s];
+                total += abs(best.npaf[s] + d1[s] + d2);
+                if (total >= best_cost) { viable = false; break; }
+              }
+              // Sums unchanged (swaps preserve sums), so no sum penalty
+              if (viable && total < best_cost) {
+                // Apply both swaps
+                arr1[pi1] = -1; arr1[pj1] = 1;
+                arr2[pi2] = -1; arr2[pj2] = 1;
+                for (int s = 1; s < ms; s++) {
+                  int d2 = 0;
+                  if (pi2+s < len2 && pi2+s != pj2) d2 -= 2*arr2[pi2+s];
+                  if (pi2-s >= 0 && pi2-s != pj2) d2 -= 2*arr2[pi2-s];
+                  if (pj2+s < len2 && pj2+s != pi2) d2 += 2*arr2[pj2+s];
+                  if (pj2-s >= 0 && pj2-s != pi2) d2 += 2*arr2[pj2-s];
+                  best.npaf[s] += d1[s] + d2;
+                }
+                best_cost = total;
+                improved = true;
+                if (best_cost == 0) return true;
+              }
+            }
+          }
         }
-        arr[pi] = -1; arr[pj] = 1;
-      }
-    }
-
-    int trial_cost = trial.cost(ta, tb, tc, td, ms);
-    if (trial_cost < best_cost) {
-      // Try greedy from here
-      greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, trial, trial_cost);
-      if (trial_cost < best_cost) {
-        best_cost = trial_cost;
-        best = trial;
-        if (best_cost == 0) return true;
-        attempt = 0; // Reset on improvement
       }
     }
   }
   return best_cost == 0;
 }
+
+// Walk-SAT targeted fix: identify violated shifts and fix them with
+// minimum damage to other shifts
+static bool walksat_fix(int n1, int n, int ta, int tb, int tc, int td,
+                         int ms, JointState &best, int &best_cost,
+                         mt19937 &rng) {
+  int *arrs[4] = {best.A, best.B, best.C, best.D};
+  int lens[4] = {n1, n1, n, n};
+
+  for (int round = 0; round < 50000; round++) {
+    if (g_found.load(memory_order_relaxed)) return false;
+    if (best_cost == 0) return true;
+
+    // Find violated shifts
+    int violated[128]; int nv = 0;
+    for (int s = 1; s < ms; s++) {
+      if (best.npaf[s] != 0) violated[nv++] = s;
+    }
+    if (nv == 0) return true;
+
+    // Pick a random violated shift
+    int target_s = violated[uniform_int_distribution<>(0, nv-1)(rng)];
+    int target_val = best.npaf[target_s]; // We want to push this toward 0
+
+    // Find the best swap across all sequences that reduces |target_val|
+    // with minimum increase to total cost
+    int best_seq = -1, best_pi = -1, best_pj = -1;
+    int best_new_cost = best_cost;
+
+    for (int q = 0; q < 4; q++) {
+      int *arr = arrs[q]; int len = lens[q];
+      int pplus[128], pminus[128]; int nplus = 0, nminus = 0;
+      for (int k = 0; k < len; k++) {
+        if (arr[k] == 1) pplus[nplus++] = k;
+        else pminus[nminus++] = k;
+      }
+
+      for (int a = 0; a < nplus; a++) {
+        for (int b = 0; b < nminus; b++) {
+          int pi = pplus[a], pj = pminus[b];
+
+          // Compute delta for target shift
+          int dt = 0;
+          if (pi+target_s < len && pi+target_s != pj)
+            dt -= 2 * arr[pi+target_s];
+          if (pi-target_s >= 0 && pi-target_s != pj)
+            dt -= 2 * arr[pi-target_s];
+          if (pj+target_s < len && pj+target_s != pi)
+            dt += 2 * arr[pj+target_s];
+          if (pj-target_s >= 0 && pj-target_s != pi)
+            dt += 2 * arr[pj-target_s];
+
+          // Only consider swaps that improve the target shift
+          if (abs(target_val + dt) >= abs(target_val)) continue;
+
+          // Compute full cost change
+          int new_cost = 0;
+          bool viable = true;
+          for (int s = 1; s < ms; s++) {
+            int ds = 0;
+            if (pi+s < len && pi+s != pj) ds -= 2 * arr[pi+s];
+            if (pi-s >= 0 && pi-s != pj) ds -= 2 * arr[pi-s];
+            if (pj+s < len && pj+s != pi) ds += 2 * arr[pj+s];
+            if (pj-s >= 0 && pj-s != pi) ds += 2 * arr[pj-s];
+            new_cost += abs(best.npaf[s] + ds);
+            if (new_cost > best_cost + 4) { viable = false; break; }
+          }
+          if (!viable) continue;
+
+          // Accept if it improves cost OR improves target with minimal damage
+          if (new_cost < best_new_cost ||
+              (new_cost <= best_cost && abs(target_val + dt) == 0)) {
+            best_new_cost = new_cost;
+            best_seq = q; best_pi = pi; best_pj = pj;
+          }
+        }
+      }
+    }
+
+    if (best_seq >= 0 && best_new_cost <= best_cost) {
+      // Apply the best swap
+      int *arr = arrs[best_seq]; int len = lens[best_seq];
+      for (int s = 1; s < ms; s++) {
+        int ds = 0;
+        if (best_pi+s < len && best_pi+s != best_pj)
+          ds -= 2 * arr[best_pi+s];
+        if (best_pi-s >= 0 && best_pi-s != best_pj)
+          ds -= 2 * arr[best_pi-s];
+        if (best_pj+s < len && best_pj+s != best_pi)
+          ds += 2 * arr[best_pj+s];
+        if (best_pj-s >= 0 && best_pj-s != best_pi)
+          ds += 2 * arr[best_pj-s];
+        best.npaf[s] += ds;
+      }
+      arr[best_pi] = -1; arr[best_pj] = 1;
+      best_cost = best_new_cost;
+      if (best_cost == 0) return true;
+      round = 0; // Reset on improvement
+    }
+  }
+  return best_cost == 0;
+}
+
 
 // ILS: swap-based perturb + greedy-climb
 static bool iterated_local_search_joint(int n1, int n, int ta, int tb, int tc,
@@ -675,11 +775,35 @@ bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
       return true;
   }
 
-  // Compound swap search for endgame (cost < 20)
+  // Endgame: exhaustive 2-swap + Walk-SAT (cost < 20)
   if (best_cost > 0 && best_cost <= 20) {
-    if (compound_swap_search(n1, n, ta, tb, tc, td, ms, best_state,
-                              best_cost, rng))
-      return true;
+    // Loop: exhaustive 2-swap → greedy → Walk-SAT → repeat
+    for (int endgame_round = 0; endgame_round < 10; endgame_round++) {
+      if (g_found.load(memory_order_relaxed)) return false;
+      int prev_cost = best_cost;
+
+      // Exhaustive 2-swap
+      exhaustive_2swap(n1, n, ta, tb, tc, td, ms, best_state, best_cost);
+      if (best_cost == 0) return true;
+
+      // Greedy after 2-swap improvement
+      if (best_cost < prev_cost) {
+        greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, best_state,
+                                best_cost);
+        if (best_cost == 0) return true;
+      }
+
+      // Walk-SAT targeted fix
+      walksat_fix(n1, n, ta, tb, tc, td, ms, best_state, best_cost, rng);
+      if (best_cost == 0) return true;
+
+      // Greedy after Walk-SAT
+      greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, best_state,
+                              best_cost);
+      if (best_cost == 0) return true;
+
+      if (best_cost >= prev_cost) break; // No progress
+    }
   }
 
   return best_cost == 0;
