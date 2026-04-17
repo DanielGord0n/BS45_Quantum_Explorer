@@ -533,19 +533,19 @@ static bool walksat_fix(int n1, int n, int ta, int tb, int tc, int td,
 }
 
 
-// ILS: swap-based perturb + greedy-climb
+// ILS: flip-based perturb + greedy-climb (flips are MORE diverse than swaps)
 static bool iterated_local_search_joint(int n1, int n, int ta, int tb, int tc,
                                          int td, int ms, JointState &best,
                                          int &best_cost, mt19937 &rng) {
-  for (int attempt = 0; attempt < 300000; attempt++) {
+  for (int attempt = 0; attempt < 100000; attempt++) {
     if (g_found.load(memory_order_relaxed)) return false;
     if (best_cost == 0) return true;
 
     JointState trial = best;
-    int perturb_size = 2 + (attempt % 10);
+    int perturb_size = 2 + (attempt % 8);
 
-    // Use swap-based perturbation (preserves sums)
-    perturb_joint_swaps(trial, n1, n, ms, perturb_size, rng);
+    // Flip-based perturbation for maximum diversity
+    perturb_joint_flips(trial, n1, n, ms, perturb_size, rng);
 
     int trial_cost = trial.cost(ta, tb, tc, td, ms);
     greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, trial, trial_cost);
@@ -768,42 +768,11 @@ bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
     }
   }
 
-  // ILS phase (always run after SA if not solved)
-  if (best_cost > 0) {
+  // ILS phase (only if close)
+  if (best_cost > 0 && best_cost <= 50) {
     if (iterated_local_search_joint(n1, n, ta, tb, tc, td, ms, best_state,
                                      best_cost, rng))
       return true;
-  }
-
-  // Endgame: exhaustive 2-swap + Walk-SAT (cost < 20)
-  if (best_cost > 0 && best_cost <= 20) {
-    // Loop: exhaustive 2-swap → greedy → Walk-SAT → repeat
-    for (int endgame_round = 0; endgame_round < 10; endgame_round++) {
-      if (g_found.load(memory_order_relaxed)) return false;
-      int prev_cost = best_cost;
-
-      // Exhaustive 2-swap
-      exhaustive_2swap(n1, n, ta, tb, tc, td, ms, best_state, best_cost);
-      if (best_cost == 0) return true;
-
-      // Greedy after 2-swap improvement
-      if (best_cost < prev_cost) {
-        greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, best_state,
-                                best_cost);
-        if (best_cost == 0) return true;
-      }
-
-      // Walk-SAT targeted fix
-      walksat_fix(n1, n, ta, tb, tc, td, ms, best_state, best_cost, rng);
-      if (best_cost == 0) return true;
-
-      // Greedy after Walk-SAT
-      greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, best_state,
-                              best_cost);
-      if (best_cost == 0) return true;
-
-      if (best_cost >= prev_cost) break; // No progress
-    }
   }
 
   return best_cost == 0;
@@ -862,6 +831,30 @@ int main(int argc, char **argv) {
 
       JointState best;
       bool found = solve_joint_SA(n1, n, sig.a, sig.b, sig.c, sig.d, best, rng);
+
+      // RETRY LOOP: if we found a promising state (cost < 10),
+      // keep retrying the SAME signature instead of discarding it
+      int retry_cost = best.cost(sig.a, sig.b, sig.c, sig.d, ms);
+      for (int retry = 0; retry < 50 && !found && retry_cost > 0 &&
+                          retry_cost < 10 &&
+                          !g_found.load(memory_order_relaxed); retry++) {
+        // Perturb from best state and retry
+        JointState retry_state = best;
+        perturb_joint_swaps(retry_state, n1, n, ms, 3 + (retry % 6), rng);
+        // Quick SA from perturbed state
+        // Re-init as a warm start: copy retry_state into solve and hope
+        // for a different path
+        found = solve_joint_SA(n1, n, sig.a, sig.b, sig.c, sig.d,
+                                retry_state, rng);
+        int rc = retry_state.cost(sig.a, sig.b, sig.c, sig.d, ms);
+        if (rc < retry_cost) {
+          retry_cost = rc;
+          best = retry_state;
+          retry = 0; // Reset counter on improvement
+        }
+        if (found) { best = retry_state; break; }
+        global_tries++;
+      }
 
       // Track best cost
       {
