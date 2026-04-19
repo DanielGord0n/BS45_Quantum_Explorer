@@ -155,11 +155,11 @@ vector<Sig> get_sigs(int n) {
 }
 
 struct SAParams {
-  double initial_temp = 30.0;      // Lower start since swaps don't touch sums
-  double cooling_rate = 0.9999985; // Slower cooling for deeper exploration
-  int iterations = 8000000;        // More iterations per restart
-  int restarts = 15;
-  int reheat_threshold = 1500000;
+  double initial_temp = 30.0;
+  double cooling_rate = 0.99997;  // Reaches ~0 at iter ~170K, greedy tail ~330K
+  int iterations = 500000;        // 500K per restart (was 8M — 75% was wasted greedy)
+  int restarts = 80;              // 80 diverse restarts (was 15)
+  int reheat_threshold = 150000;
   double reheat_ratio = 0.5;
 };
 
@@ -537,7 +537,7 @@ static bool walksat_fix(int n1, int n, int ta, int tb, int tc, int td,
 static bool iterated_local_search_joint(int n1, int n, int ta, int tb, int tc,
                                          int td, int ms, JointState &best,
                                          int &best_cost, mt19937 &rng) {
-  for (int attempt = 0; attempt < 100000; attempt++) {
+  for (int attempt = 0; attempt < 50000; attempt++) {
     if (g_found.load(memory_order_relaxed)) return false;
     if (best_cost == 0) return true;
 
@@ -607,9 +607,14 @@ bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
     if (g_found.load(memory_order_relaxed)) return false;
 
     if (restart > 0) {
-      if (restart % 2 == 0 && best_cost < 999999) {
+      // 30% perturb from best (exploit), 70% random (explore)
+      if (restart % 10 < 3 && best_cost < 999999) {
         curr = best_state;
-        perturb_joint_swaps(curr, n1, n, ms, max(4, total_elems / 8), rng);
+        // Vary perturbation intensity
+        int pert = 3 + (restart % 8);
+        perturb_joint_swaps(curr, n1, n, ms, pert, rng);
+        // Also do a few flips for sum diversity
+        perturb_joint_flips(curr, n1, n, ms, 1 + (restart % 3), rng);
         current_cost = curr.cost(ta, tb, tc, td, ms);
       } else {
         memset(curr.npaf, 0, sizeof(curr.npaf));
@@ -758,22 +763,16 @@ bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
     }
 
     if (best_cost == 0) return true;
+  }
 
-    // Greedy hill-climb after SA
-    if (best_cost > 0 && best_cost < 200) {
-      JointState hc = best_state;
-      int hc_cost = best_cost;
-      greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, hc, hc_cost);
-      if (hc_cost < best_cost) {
-        best_cost = hc_cost;
-        best_state = hc;
-      }
-      if (best_cost == 0) return true;
-    }
+  // One final greedy
+  if (best_cost > 0 && best_cost < 100) {
+    greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, best_state, best_cost);
+    if (best_cost == 0) return true;
   }
 
   // ILS phase (only if close)
-  if (best_cost > 0 && best_cost <= 50) {
+  if (best_cost > 0 && best_cost <= 30) {
     if (iterated_local_search_joint(n1, n, ta, tb, tc, td, ms, best_state,
                                      best_cost, rng))
       return true;
