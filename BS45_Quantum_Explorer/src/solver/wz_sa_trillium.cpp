@@ -434,72 +434,248 @@ static bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
 
   }
 
-  // *** ENDGAME (runs once after all restarts) ***
-  // Joint SA reaches ~12-16 on BS(28). Try many C,D perturbations
-  // with focused A,B-only SA for each.
-  if (best_cost > 0 && best_cost <= 20) {
-    JointState cd_base = best_state;
-    for (int cd_trial = 0; cd_trial < 50; cd_trial++) {
+  // *** ENDGAME: Alternating Optimization ***
+  // Fix C,D → SA on A,B → Fix A,B → SA on C,D → repeat
+  // This is block coordinate descent in half the variables each pass.
+  if (best_cost > 0 && best_cost <= 24) {
+    for (int alt_round = 0; alt_round < 30; alt_round++) {
       if (g_found.load(memory_order_relaxed)) return false;
       if (best_cost == 0) return true;
 
-      // Perturb C,D from the best state (1-4 random swaps)
-      JointState trial = cd_base;
-      int n_pert = 1 + (cd_trial % 4);
-      for (int p = 0; p < n_pert; p++) {
-        int seq = uniform_int_distribution<>(0, 1)(rng);
-        int *arr = (seq == 0) ? trial.C : trial.D;
-        int pos[128], neg[128]; int npos = 0, nneg = 0;
-        for (int k = 0; k < n; k++) {
-          if (arr[k] == 1) pos[npos++] = k; else neg[nneg++] = k;
-        }
-        if (npos > 0 && nneg > 0) {
-          int pi = pos[uniform_int_distribution<>(0, npos - 1)(rng)];
-          int pj = neg[uniform_int_distribution<>(0, nneg - 1)(rng)];
-          arr[pi] = -1; arr[pj] = 1;
-        }
-      }
-
-      // Check Hall filter on perturbed C,D
-      if (!hall_ok(trial.C, n, trial.D, n)) continue;
-
-      // Compute PAF_CD target for A,B
-      int paf_cd[128];
-      for (int s = 1; s < ms; s++) {
-        paf_cd[s] = 0;
-        if (s < n)
-          for (int i = 0; i < n - s; i++)
-            paf_cd[s] += trial.C[i] * trial.C[i + s] +
-                          trial.D[i] * trial.D[i + s];
-      }
-      int target_ab[128];
-      for (int s = 1; s < ms; s++) target_ab[s] = -paf_cd[s];
-
-      // Run A,B-only SA with this target
-      JointState ab_state = trial;
-      int ab_cost = solve_AB_only(n1, ta, tb, ms, target_ab, ab_state, rng);
-      if (ab_cost < best_cost) {
-        best_cost = ab_cost;
-        best_state = ab_state;
-        memcpy(best_state.C, trial.C, sizeof(int) * n);
-        memcpy(best_state.D, trial.D, sizeof(int) * n);
-        best_state.sum_c = trial.sum_c;
-        best_state.sum_d = trial.sum_d;
-        // Recompute npaf
-        memset(best_state.npaf, 0, sizeof(best_state.npaf));
+      // --- Phase A: Fix C,D, optimize A,B ---
+      {
+        int paf_cd[128];
         for (int s = 1; s < ms; s++) {
-          for (int i = 0; i < n1 - s; i++)
-            best_state.npaf[s] += best_state.A[i] * best_state.A[i + s] +
-                                   best_state.B[i] * best_state.B[i + s];
+          paf_cd[s] = 0;
           if (s < n)
             for (int i = 0; i < n - s; i++)
-              best_state.npaf[s] += best_state.C[i] * best_state.C[i + s] +
-                                     best_state.D[i] * best_state.D[i + s];
+              paf_cd[s] += best_state.C[i] * best_state.C[i + s] +
+                            best_state.D[i] * best_state.D[i + s];
         }
-        cd_base = best_state;
-        cd_trial = 0; // Reset on improvement
+        int target_ab[128];
+        for (int s = 1; s < ms; s++) target_ab[s] = -paf_cd[s];
+
+        JointState ab_state = best_state;
+        int ab_cost = solve_AB_only(n1, ta, tb, ms, target_ab, ab_state, rng);
+        if (ab_cost == 0) {
+          best_cost = 0;
+          best_state = ab_state;
+          // Recompute full npaf
+          memset(best_state.npaf, 0, sizeof(best_state.npaf));
+          for (int s = 1; s < ms; s++) {
+            for (int i = 0; i < n1 - s; i++)
+              best_state.npaf[s] += best_state.A[i] * best_state.A[i + s] +
+                                     best_state.B[i] * best_state.B[i + s];
+            if (s < n)
+              for (int i = 0; i < n - s; i++)
+                best_state.npaf[s] += best_state.C[i] * best_state.C[i + s] +
+                                       best_state.D[i] * best_state.D[i + s];
+          }
+          return true;
+        }
+        // Even if not 0, update A,B if improved
+        if (ab_cost < best_cost) {
+          best_state.sum_a = ab_state.sum_a;
+          best_state.sum_b = ab_state.sum_b;
+          memcpy(best_state.A, ab_state.A, sizeof(int) * n1);
+          memcpy(best_state.B, ab_state.B, sizeof(int) * n1);
+          // Recompute npaf
+          memset(best_state.npaf, 0, sizeof(best_state.npaf));
+          for (int s = 1; s < ms; s++) {
+            for (int i = 0; i < n1 - s; i++)
+              best_state.npaf[s] += best_state.A[i] * best_state.A[i + s] +
+                                     best_state.B[i] * best_state.B[i + s];
+            if (s < n)
+              for (int i = 0; i < n - s; i++)
+                best_state.npaf[s] += best_state.C[i] * best_state.C[i + s] +
+                                       best_state.D[i] * best_state.D[i + s];
+          }
+          best_cost = best_state.cost(ta, tb, tc, td, ms);
+        }
       }
+
       if (best_cost == 0) return true;
+
+      // --- Phase B: Fix A,B, optimize C,D ---
+      {
+        // Compute PAF_AB
+        int paf_ab[128];
+        for (int s = 1; s < ms; s++) {
+          paf_ab[s] = 0;
+          for (int i = 0; i < n1 - s; i++)
+            paf_ab[s] += best_state.A[i] * best_state.A[i + s] +
+                          best_state.B[i] * best_state.B[i + s];
+        }
+
+        // target_cd[s] = what PAF_C(s)+PAF_D(s) should be
+        int target_cd[128];
+        for (int s = 1; s < ms; s++) target_cd[s] = -paf_ab[s];
+
+        // SA on C,D only (mirror of solve_AB_only)
+        int paf_cd[128];
+        for (int s = 1; s < ms; s++) {
+          paf_cd[s] = 0;
+          if (s < n)
+            for (int i = 0; i < n - s; i++)
+              paf_cd[s] += best_state.C[i] * best_state.C[i + s] +
+                            best_state.D[i] * best_state.D[i + s];
+        }
+
+        int cd_cost = 0;
+        for (int s = 1; s < ms; s++) cd_cost += abs(paf_cd[s] - target_cd[s]);
+        cd_cost += 5 * (abs(best_state.sum_c - tc) + abs(best_state.sum_d - td));
+
+        int cd_best = cd_cost;
+
+        uniform_real_distribution<> prob2(0.0, 1.0);
+        int total_cd = 2 * n;
+        uniform_int_distribution<> cd_elem_dist(0, total_cd - 1);
+
+        JointState cd_state = best_state;
+
+        for (int cd_restart = 0; cd_restart < 10; cd_restart++) {
+          if (g_found.load(memory_order_relaxed)) return false;
+          if (cd_best == 0) break;
+
+          if (cd_restart > 0) {
+            cd_state = best_state;
+            // Recompute
+            for (int s = 1; s < ms; s++) {
+              paf_cd[s] = 0;
+              if (s < n)
+                for (int i = 0; i < n - s; i++)
+                  paf_cd[s] += cd_state.C[i] * cd_state.C[i + s] +
+                                cd_state.D[i] * cd_state.D[i + s];
+            }
+            cd_cost = 0;
+            for (int s = 1; s < ms; s++) cd_cost += abs(paf_cd[s] - target_cd[s]);
+            cd_cost += 5 * (abs(cd_state.sum_c - tc) + abs(cd_state.sum_d - td));
+
+            // Perturb
+            for (int p = 0; p < 2 + (cd_restart % 5); p++) {
+              int seq = uniform_int_distribution<>(0, 1)(rng);
+              int *arr = (seq == 0) ? cd_state.C : cd_state.D;
+              int pos[128], neg[128]; int np2 = 0, nm2 = 0;
+              for (int k = 0; k < n; k++) {
+                if (arr[k] == 1) pos[np2++] = k; else neg[nm2++] = k;
+              }
+              if (np2 > 0 && nm2 > 0) {
+                int pi = pos[uniform_int_distribution<>(0, np2 - 1)(rng)];
+                int pj = neg[uniform_int_distribution<>(0, nm2 - 1)(rng)];
+                for (int s = 1; s < ms; s++) {
+                  int d = 0;
+                  if (s < n) {
+                    if (pi + s < n && pi + s != pj) d -= 2 * arr[pi + s];
+                    if (pi - s >= 0 && pi - s != pj) d -= 2 * arr[pi - s];
+                    if (pj + s < n && pj + s != pi) d += 2 * arr[pj + s];
+                    if (pj - s >= 0 && pj - s != pi) d += 2 * arr[pj - s];
+                  }
+                  paf_cd[s] += d;
+                }
+                arr[pi] = -1; arr[pj] = 1;
+              }
+            }
+            cd_cost = 0;
+            for (int s = 1; s < ms; s++) cd_cost += abs(paf_cd[s] - target_cd[s]);
+            cd_cost += 5 * (abs(cd_state.sum_c - tc) + abs(cd_state.sum_d - td));
+          }
+
+          double temp = 15.0;
+          for (int iter = 0; iter < 200000; iter++) {
+            if (g_found.load(memory_order_relaxed)) return false;
+
+            int elem = cd_elem_dist(rng);
+            int seq = (elem < n) ? 0 : 1;
+            int *arr = (seq == 0) ? cd_state.C : cd_state.D;
+            int *sum_ptr = (seq == 0) ? &cd_state.sum_c : &cd_state.sum_d;
+            int idx = (seq == 0) ? elem : elem - n;
+
+            // 70% swap, 30% flip
+            if (prob2(rng) < 0.7) {
+              int pos_p[128], pos_m[128]; int npp = 0, npm = 0;
+              for (int k = 0; k < n; k++) {
+                if (arr[k] == 1) pos_p[npp++] = k; else pos_m[npm++] = k;
+              }
+              if (npp == 0 || npm == 0) { temp *= 0.99997; continue; }
+              int pi = pos_p[uniform_int_distribution<>(0, npp - 1)(rng)];
+              int pj = pos_m[uniform_int_distribution<>(0, npm - 1)(rng)];
+
+              int delta[128];
+              for (int s = 1; s < ms; s++) {
+                delta[s] = 0;
+                if (s < n) {
+                  if (pi + s < n && pi + s != pj) delta[s] -= 2 * arr[pi + s];
+                  if (pi - s >= 0 && pi - s != pj) delta[s] -= 2 * arr[pi - s];
+                  if (pj + s < n && pj + s != pi) delta[s] += 2 * arr[pj + s];
+                  if (pj - s >= 0 && pj - s != pi) delta[s] += 2 * arr[pj - s];
+                }
+              }
+
+              int new_cost = 0;
+              for (int s = 1; s < ms; s++)
+                new_cost += abs(paf_cd[s] + delta[s] - target_cd[s]);
+              new_cost += 5 * (abs(cd_state.sum_c - tc) + abs(cd_state.sum_d - td));
+
+              int diff = new_cost - cd_cost;
+              if (diff <= 0 || prob2(rng) < exp(-diff / temp)) {
+                arr[pi] = -1; arr[pj] = 1;
+                for (int s = 1; s < ms; s++) paf_cd[s] += delta[s];
+                cd_cost = new_cost;
+                if (cd_cost < cd_best) cd_best = cd_cost;
+              }
+            } else {
+              int old_val = arr[idx];
+              int delta[128];
+              for (int s = 1; s < ms; s++) {
+                delta[s] = 0;
+                if (s < n) {
+                  if (idx + s < n) delta[s] += (-2 * old_val) * arr[idx + s];
+                  if (idx - s >= 0) delta[s] += arr[idx - s] * (-2 * old_val);
+                }
+              }
+
+              int new_sum = *sum_ptr - 2 * old_val;
+              int new_cost = 0;
+              for (int s = 1; s < ms; s++)
+                new_cost += abs(paf_cd[s] + delta[s] - target_cd[s]);
+              int sc = (seq == 0) ? new_sum : cd_state.sum_c;
+              int sd = (seq == 0) ? cd_state.sum_d : new_sum;
+              new_cost += 5 * (abs(sc - tc) + abs(sd - td));
+
+              int diff = new_cost - cd_cost;
+              if (diff <= 0 || prob2(rng) < exp(-diff / temp)) {
+                arr[idx] = -old_val;
+                *sum_ptr = new_sum;
+                for (int s = 1; s < ms; s++) paf_cd[s] += delta[s];
+                cd_cost = new_cost;
+                if (cd_cost < cd_best) cd_best = cd_cost;
+              }
+            }
+            temp *= 0.99997;
+          }
+        }
+
+        // Update best state with improved C,D
+        if (cd_best < best_cost) {
+          best_state = cd_state;
+          best_state.sum_c = cd_state.sum_c;
+          best_state.sum_d = cd_state.sum_d;
+          memcpy(best_state.C, cd_state.C, sizeof(int) * n);
+          memcpy(best_state.D, cd_state.D, sizeof(int) * n);
+          // Recompute npaf
+          memset(best_state.npaf, 0, sizeof(best_state.npaf));
+          for (int s = 1; s < ms; s++) {
+            for (int i = 0; i < n1 - s; i++)
+              best_state.npaf[s] += best_state.A[i] * best_state.A[i + s] +
+                                     best_state.B[i] * best_state.B[i + s];
+            if (s < n)
+              for (int i = 0; i < n - s; i++)
+                best_state.npaf[s] += best_state.C[i] * best_state.C[i + s] +
+                                       best_state.D[i] * best_state.D[i + s];
+          }
+          best_cost = best_state.cost(ta, tb, tc, td, ms);
+        }
+      }
     }
   }
 
