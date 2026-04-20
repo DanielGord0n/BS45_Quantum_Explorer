@@ -1,11 +1,11 @@
 /*
- * Wang-Zhu BS Solver — SA over Theorem 2.2 Manifold
+ * Wang-Zhu BS Solver — Hybrid Joint + Decomposed SA
  * CP493 - Directed Research - Daniel Gordon
  *
  * TRILLIUM SUPERCOMPUTER VERSION
- * Optimized for Trillium (192-core AMD EPYC nodes).
- * Features: adaptive restart SA, reheating, faster cooling.
- * Uses all available cores.
+ * Strategy: Joint SA on all 4 sequences for exploration,
+ * then freeze C,D and intensive A,B-only SA for the endgame.
+ * This halves the variables from 110 to 56 at the critical moment.
  *
  * Compile on Trillium:
  *   module load StdEnv/2023 gcc/12.3
@@ -33,40 +33,8 @@ using Clock = chrono::steady_clock;
 
 static atomic<bool> g_found{false};
 static atomic<int> g_best_cost{999999};
-static atomic<int> g_ab_best_cost{999999};
-static int g_sol[4][128];
 static int G_N;
 static Clock::time_point G_T0;
-
-// All 16 combinations
-int comb16[16][4];
-// The 8 combinations where product = 1 (sum = 0 mod 4)
-int comb8_pos[8][4];
-// The 8 combinations where product = -1 (sum = 2 mod 4)
-int comb8_neg[8][4];
-// Middle combinations (for length 45, the 22nd index)
-int comb4[4][2] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-
-void init_combs() {
-  int p = 0, n_idx = 0;
-  for (int i = 0; i < 16; i++) {
-    comb16[i][0] = (i & 8) ? 1 : -1;
-    comb16[i][1] = (i & 4) ? 1 : -1;
-    comb16[i][2] = (i & 2) ? 1 : -1;
-    comb16[i][3] = (i & 1) ? 1 : -1;
-
-    int prod = comb16[i][0] * comb16[i][1] * comb16[i][2] * comb16[i][3];
-    if (prod == 1) {
-      for (int j = 0; j < 4; j++)
-        comb8_pos[p][j] = comb16[i][j];
-      p++;
-    } else {
-      for (int j = 0; j < 4; j++)
-        comb8_neg[n_idx][j] = comb16[i][j];
-      n_idx++;
-    }
-  }
-}
 
 // Hall polynomial filter
 bool hall_ok(const int *X, int xlen, const int *Y, int ylen) {
@@ -154,24 +122,9 @@ vector<Sig> get_sigs(int n) {
   return sigs;
 }
 
-struct SAParams {
-  double initial_temp = 30.0;
-  double cooling_rate = 0.99997;  // Reaches ~0 at iter ~170K, greedy tail ~330K
-  int iterations = 500000;        // 500K per restart (was 8M — 75% was wasted greedy)
-  int restarts = 80;              // 80 diverse restarts (was 15)
-  int reheat_threshold = 150000;
-  double reheat_ratio = 0.5;
-};
-
 // ===================================
-// Joint 4-Sequence Solver
+// Joint state: all 4 sequences
 // ===================================
-// Optimizes A,B (length n1) and C,D (length n) simultaneously.
-// Cost = sum_s |NPAF(s)| + 5*(sum penalties)
-// Mutation: flip one random element from any of the 4 sequences.
-// This avoids the two-phase failure mode where CD produces values
-// that AB cannot cancel.
-
 struct JointState {
   int A[128], B[128], C[128], D[128];
   int sum_a, sum_b, sum_c, sum_d;
@@ -186,477 +139,185 @@ struct JointState {
   }
 };
 
-// Greedy hill-climb: try flipping each element of all 4 sequences
-static bool greedy_hill_climb_joint(int n1, int n, int ta, int tb, int tc,
-                                     int td, int ms, JointState &state,
-                                     int &cost_out) {
-  bool improved = true;
-  while (improved) {
-    improved = false;
-    // Try all elements of A, B, C, D
-    for (int seq = 0; seq < 4; seq++) {
-      int *arr;
-      int *sum_ptr;
-      int len;
-      if (seq == 0) { arr = state.A; sum_ptr = &state.sum_a; len = n1; }
-      else if (seq == 1) { arr = state.B; sum_ptr = &state.sum_b; len = n1; }
-      else if (seq == 2) { arr = state.C; sum_ptr = &state.sum_c; len = n; }
-      else { arr = state.D; sum_ptr = &state.sum_d; len = n; }
-
-      // Determine the paired array for NPAF computation
-      int *pair_arr;
-      int pair_len;
-      if (seq == 0) { pair_arr = state.A; pair_len = n1; }
-      else if (seq == 1) { pair_arr = state.B; pair_len = n1; }
-      else if (seq == 2) { pair_arr = state.C; pair_len = n; }
-      else { pair_arr = state.D; pair_len = n; }
-
-      // Phase 1: Try single-element flips
-      for (int idx = 0; idx < len; idx++) {
-        int old_val = arr[idx];
-        int delta_npaf[128] = {0};
-        for (int s = 1; s < ms; s++) {
-          if (idx + s < len)
-            delta_npaf[s] += (-2 * old_val) * arr[idx + s];
-          if (idx - s >= 0)
-            delta_npaf[s] += arr[idx - s] * (-2 * old_val);
-        }
-        arr[idx] = -old_val;
-        *sum_ptr -= 2 * old_val;
-        for (int s = 1; s < ms; s++)
-          state.npaf[s] += delta_npaf[s];
-
-        int trial_cost = state.cost(ta, tb, tc, td, ms);
-        if (trial_cost < cost_out) {
-          cost_out = trial_cost;
-          improved = true;
-          if (cost_out == 0) return true;
-        } else {
-          arr[idx] = old_val;
-          *sum_ptr += 2 * old_val;
-          for (int s = 1; s < ms; s++)
-            state.npaf[s] -= delta_npaf[s];
-        }
-      }
-
-      // Phase 2: Try sum-preserving swaps within this sequence
-      for (int i = 0; i < len; i++) {
-        for (int j = i + 1; j < len; j++) {
-          if (arr[i] == arr[j]) continue; // Only swap opposite values
-          int vi = arr[i]; // vi and vj have opposite signs
-          // Compute delta NPAF for swapping arr[i] and arr[j]
-          int delta_npaf2[128] = {0};
-          for (int s = 1; s < ms; s++) {
-            // Effect from position i (changing vi to -vi)
-            if (i + s < len && i + s != j)
-              delta_npaf2[s] -= 2 * vi * arr[i + s];
-            if (i - s >= 0 && i - s != j)
-              delta_npaf2[s] -= 2 * vi * arr[i - s];
-            // Effect from position j (changing -vi to vi)
-            if (j + s < len && j + s != i)
-              delta_npaf2[s] += 2 * vi * arr[j + s];
-            if (j - s >= 0 && j - s != i)
-              delta_npaf2[s] += 2 * vi * arr[j - s];
-          }
-          // Apply swap
-          arr[i] = -vi; arr[j] = vi;
-          for (int s = 1; s < ms; s++)
-            state.npaf[s] += delta_npaf2[s];
-
-          int trial_cost = state.cost(ta, tb, tc, td, ms);
-          if (trial_cost < cost_out) {
-            cost_out = trial_cost;
-            improved = true;
-            if (cost_out == 0) return true;
-          } else {
-            arr[i] = vi; arr[j] = -vi;
-            for (int s = 1; s < ms; s++)
-              state.npaf[s] -= delta_npaf2[s];
-          }
-        }
-      }
-    }
-  }
-  return cost_out == 0;
-}
-
-// Swap-based perturbation: preserves sums exactly
-static void perturb_joint_swaps(JointState &state, int n1, int n, int ms,
-                                 int K, mt19937 &rng) {
-  for (int p = 0; p < K; p++) {
-    int seq_id = uniform_int_distribution<>(0, 3)(rng);
-    int *arr;
-    int len;
-    if (seq_id == 0) { arr = state.A; len = n1; }
-    else if (seq_id == 1) { arr = state.B; len = n1; }
-    else if (seq_id == 2) { arr = state.C; len = n; }
-    else { arr = state.D; len = n; }
-
-    int pos_plus[128], pos_minus[128];
-    int np = 0, nm = 0;
-    for (int k = 0; k < len; k++) {
-      if (arr[k] == 1) pos_plus[np++] = k;
-      else pos_minus[nm++] = k;
-    }
-    if (np == 0 || nm == 0) continue;
-
-    int pi = pos_plus[uniform_int_distribution<>(0, np - 1)(rng)];
-    int pj = pos_minus[uniform_int_distribution<>(0, nm - 1)(rng)];
-    for (int s = 1; s < ms; s++) {
-      int d = 0;
-      if (pi + s < len && pi + s != pj) d -= 2 * arr[pi + s];
-      if (pi - s >= 0 && pi - s != pj) d -= 2 * arr[pi - s];
-      if (pj + s < len && pj + s != pi) d += 2 * arr[pj + s];
-      if (pj - s >= 0 && pj - s != pi) d += 2 * arr[pj - s];
-      state.npaf[s] += d;
-    }
-    arr[pi] = -1; arr[pj] = 1;
-  }
-}
-
-// Flip-based perturbation (for broad exploration)
-static void perturb_joint_flips(JointState &state, int n1, int n, int ms,
-                                 int K, mt19937 &rng) {
-  int total = 2 * n1 + 2 * n;
-  uniform_int_distribution<> elem_dist(0, total - 1);
-  for (int p = 0; p < K; p++) {
-    int elem = elem_dist(rng);
-    int *arr;
-    int *sum_ptr;
-    int idx, len;
-    if (elem < n1) {
-      arr = state.A; sum_ptr = &state.sum_a; idx = elem; len = n1;
-    } else if (elem < 2 * n1) {
-      arr = state.B; sum_ptr = &state.sum_b; idx = elem - n1; len = n1;
-    } else if (elem < 2 * n1 + n) {
-      arr = state.C; sum_ptr = &state.sum_c; idx = elem - 2 * n1; len = n;
-    } else {
-      arr = state.D; sum_ptr = &state.sum_d; idx = elem - 2 * n1 - n; len = n;
-    }
-    int old_val = arr[idx];
-    for (int s = 1; s < ms; s++) {
-      if (idx + s < len)
-        state.npaf[s] += (-2 * old_val) * arr[idx + s];
-      if (idx - s >= 0)
-        state.npaf[s] += arr[idx - s] * (-2 * old_val);
-    }
-    arr[idx] = -old_val;
-    *sum_ptr -= 2 * old_val;
-  }
-}
-
-// Exhaustive 2-swap: try ALL pairs of swaps across two sequences
-// For BS(28): ~196 swaps/seq × 196 = ~38K per pair × 6 pairs ≈ 230K total
-// With early termination this is very fast
-static bool exhaustive_2swap(int n1, int n, int ta, int tb, int tc, int td,
-                              int ms, JointState &best, int &best_cost) {
-  if (best_cost == 0) return true;
-  int *arrs[4] = {best.A, best.B, best.C, best.D};
-  int lens[4] = {n1, n1, n, n};
-
-  // Pre-collect +1/-1 positions for each sequence
-  int pp[4][128], pm[4][128], npp[4], npm[4];
-  for (int q = 0; q < 4; q++) {
-    npp[q] = npm[q] = 0;
-    for (int k = 0; k < lens[q]; k++) {
-      if (arrs[q][k] == 1) pp[q][npp[q]++] = k;
-      else pm[q][npm[q]++] = k;
-    }
+// ===================================
+// A,B-only SA (endgame: C,D are frozen)
+// ===================================
+// Given fixed C,D with known PAF_CD, find A,B such that
+// PAF_A(s) + PAF_B(s) = -PAF_CD(s) for all s
+static int solve_AB_only(int n1, int ta, int tb, int ms,
+                          const int *target_ab,
+                          JointState &state, mt19937 &rng) {
+  // target_ab[s] = what PAF_A(s)+PAF_B(s) should equal
+  // Current paf_ab
+  int paf_ab[128];
+  for (int s = 1; s < ms; s++) {
+    paf_ab[s] = 0;
+    for (int i = 0; i < n1 - s; i++)
+      paf_ab[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
   }
 
-  bool improved = false;
-  // For each pair of sequences
-  for (int q1 = 0; q1 < 4 && !improved; q1++) {
-    for (int q2 = q1+1; q2 < 4 && !improved; q2++) {
-      if (g_found.load(memory_order_relaxed)) return false;
-      int *arr1 = arrs[q1]; int len1 = lens[q1];
-      int *arr2 = arrs[q2]; int len2 = lens[q2];
+  int current_cost = 0;
+  for (int s = 1; s < ms; s++) current_cost += abs(paf_ab[s] - target_ab[s]);
+  current_cost += 5 * (abs(state.sum_a - ta) + abs(state.sum_b - tb));
 
-      // For each swap in q1
-      for (int a = 0; a < npp[q1] && !improved; a++) {
-        for (int b = 0; b < npm[q1] && !improved; b++) {
-          int pi1 = pp[q1][a], pj1 = pm[q1][b];
-
-          // Pre-compute delta from swap1
-          int d1[128];
-          for (int s = 1; s < ms; s++) {
-            d1[s] = 0;
-            if (pi1+s < len1 && pi1+s != pj1) d1[s] -= 2 * arr1[pi1+s];
-            if (pi1-s >= 0 && pi1-s != pj1) d1[s] -= 2 * arr1[pi1-s];
-            if (pj1+s < len1 && pj1+s != pi1) d1[s] += 2 * arr1[pj1+s];
-            if (pj1-s >= 0 && pj1-s != pi1) d1[s] += 2 * arr1[pj1-s];
-          }
-
-          // For each swap in q2
-          for (int c = 0; c < npp[q2] && !improved; c++) {
-            for (int d = 0; d < npm[q2] && !improved; d++) {
-              int pi2 = pp[q2][c], pj2 = pm[q2][d];
-
-              // Compute combined cost with early termination
-              int total = 0;
-              bool viable = true;
-              for (int s = 1; s < ms; s++) {
-                int d2 = 0;
-                if (pi2+s < len2 && pi2+s != pj2) d2 -= 2 * arr2[pi2+s];
-                if (pi2-s >= 0 && pi2-s != pj2) d2 -= 2 * arr2[pi2-s];
-                if (pj2+s < len2 && pj2+s != pi2) d2 += 2 * arr2[pj2+s];
-                if (pj2-s >= 0 && pj2-s != pi2) d2 += 2 * arr2[pj2-s];
-                total += abs(best.npaf[s] + d1[s] + d2);
-                if (total >= best_cost) { viable = false; break; }
-              }
-              // Sums unchanged (swaps preserve sums), so no sum penalty
-              if (viable && total < best_cost) {
-                // Apply both swaps
-                arr1[pi1] = -1; arr1[pj1] = 1;
-                arr2[pi2] = -1; arr2[pj2] = 1;
-                for (int s = 1; s < ms; s++) {
-                  int d2 = 0;
-                  if (pi2+s < len2 && pi2+s != pj2) d2 -= 2*arr2[pi2+s];
-                  if (pi2-s >= 0 && pi2-s != pj2) d2 -= 2*arr2[pi2-s];
-                  if (pj2+s < len2 && pj2+s != pi2) d2 += 2*arr2[pj2+s];
-                  if (pj2-s >= 0 && pj2-s != pi2) d2 += 2*arr2[pj2-s];
-                  best.npaf[s] += d1[s] + d2;
-                }
-                best_cost = total;
-                improved = true;
-                if (best_cost == 0) return true;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return best_cost == 0;
-}
-
-// Walk-SAT targeted fix: identify violated shifts and fix them with
-// minimum damage to other shifts
-static bool walksat_fix(int n1, int n, int ta, int tb, int tc, int td,
-                         int ms, JointState &best, int &best_cost,
-                         mt19937 &rng) {
-  int *arrs[4] = {best.A, best.B, best.C, best.D};
-  int lens[4] = {n1, n1, n, n};
-
-  for (int round = 0; round < 50000; round++) {
-    if (g_found.load(memory_order_relaxed)) return false;
-    if (best_cost == 0) return true;
-
-    // Find violated shifts
-    int violated[128]; int nv = 0;
-    for (int s = 1; s < ms; s++) {
-      if (best.npaf[s] != 0) violated[nv++] = s;
-    }
-    if (nv == 0) return true;
-
-    // Pick a random violated shift
-    int target_s = violated[uniform_int_distribution<>(0, nv-1)(rng)];
-    int target_val = best.npaf[target_s]; // We want to push this toward 0
-
-    // Find the best swap across all sequences that reduces |target_val|
-    // with minimum increase to total cost
-    int best_seq = -1, best_pi = -1, best_pj = -1;
-    int best_new_cost = best_cost;
-
-    for (int q = 0; q < 4; q++) {
-      int *arr = arrs[q]; int len = lens[q];
-      int pplus[128], pminus[128]; int nplus = 0, nminus = 0;
-      for (int k = 0; k < len; k++) {
-        if (arr[k] == 1) pplus[nplus++] = k;
-        else pminus[nminus++] = k;
-      }
-
-      for (int a = 0; a < nplus; a++) {
-        for (int b = 0; b < nminus; b++) {
-          int pi = pplus[a], pj = pminus[b];
-
-          // Compute delta for target shift
-          int dt = 0;
-          if (pi+target_s < len && pi+target_s != pj)
-            dt -= 2 * arr[pi+target_s];
-          if (pi-target_s >= 0 && pi-target_s != pj)
-            dt -= 2 * arr[pi-target_s];
-          if (pj+target_s < len && pj+target_s != pi)
-            dt += 2 * arr[pj+target_s];
-          if (pj-target_s >= 0 && pj-target_s != pi)
-            dt += 2 * arr[pj-target_s];
-
-          // Only consider swaps that improve the target shift
-          if (abs(target_val + dt) >= abs(target_val)) continue;
-
-          // Compute full cost change
-          int new_cost = 0;
-          bool viable = true;
-          for (int s = 1; s < ms; s++) {
-            int ds = 0;
-            if (pi+s < len && pi+s != pj) ds -= 2 * arr[pi+s];
-            if (pi-s >= 0 && pi-s != pj) ds -= 2 * arr[pi-s];
-            if (pj+s < len && pj+s != pi) ds += 2 * arr[pj+s];
-            if (pj-s >= 0 && pj-s != pi) ds += 2 * arr[pj-s];
-            new_cost += abs(best.npaf[s] + ds);
-            if (new_cost > best_cost + 4) { viable = false; break; }
-          }
-          if (!viable) continue;
-
-          // Accept if it improves cost OR improves target with minimal damage
-          if (new_cost < best_new_cost ||
-              (new_cost <= best_cost && abs(target_val + dt) == 0)) {
-            best_new_cost = new_cost;
-            best_seq = q; best_pi = pi; best_pj = pj;
-          }
-        }
-      }
-    }
-
-    if (best_seq >= 0 && best_new_cost <= best_cost) {
-      // Apply the best swap
-      int *arr = arrs[best_seq]; int len = lens[best_seq];
-      for (int s = 1; s < ms; s++) {
-        int ds = 0;
-        if (best_pi+s < len && best_pi+s != best_pj)
-          ds -= 2 * arr[best_pi+s];
-        if (best_pi-s >= 0 && best_pi-s != best_pj)
-          ds -= 2 * arr[best_pi-s];
-        if (best_pj+s < len && best_pj+s != best_pi)
-          ds += 2 * arr[best_pj+s];
-        if (best_pj-s >= 0 && best_pj-s != best_pi)
-          ds += 2 * arr[best_pj-s];
-        best.npaf[s] += ds;
-      }
-      arr[best_pi] = -1; arr[best_pj] = 1;
-      best_cost = best_new_cost;
-      if (best_cost == 0) return true;
-      round = 0; // Reset on improvement
-    }
-  }
-  return best_cost == 0;
-}
-
-
-// ILS: flip-based perturb + greedy-climb (flips are MORE diverse than swaps)
-static bool iterated_local_search_joint(int n1, int n, int ta, int tb, int tc,
-                                         int td, int ms, JointState &best,
-                                         int &best_cost, mt19937 &rng) {
-  for (int attempt = 0; attempt < 50000; attempt++) {
-    if (g_found.load(memory_order_relaxed)) return false;
-    if (best_cost == 0) return true;
-
-    JointState trial = best;
-    int perturb_size = 2 + (attempt % 8);
-
-    // Flip-based perturbation for maximum diversity
-    perturb_joint_flips(trial, n1, n, ms, perturb_size, rng);
-
-    int trial_cost = trial.cost(ta, tb, tc, td, ms);
-    greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, trial, trial_cost);
-
-    if (trial_cost < best_cost) {
-      best_cost = trial_cost;
-      best = trial;
-      if (best_cost == 0) return true;
-      attempt = 0;
-    }
-  }
-  return best_cost == 0;
-}
-
-bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
-                    JointState &best_state, mt19937 &rng, bool warm_start = false) {
-  int ms = max(n1, n);
-  int total_elems = 2 * n1 + 2 * n;
-
-  JointState curr;
-  if (warm_start) {
-    curr = best_state;
-  } else {
-    memset(curr.npaf, 0, sizeof(curr.npaf));
-    curr.sum_a = curr.sum_b = curr.sum_c = curr.sum_d = 0;
-
-    // Initialize all sequences with random ±1
-    for (int i = 0; i < n1; i++) {
-      curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-      curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-      curr.sum_a += curr.A[i];
-      curr.sum_b += curr.B[i];
-    }
-    for (int i = 0; i < n; i++) {
-      curr.C[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-      curr.D[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-      curr.sum_c += curr.C[i];
-      curr.sum_d += curr.D[i];
-    }
-
-    // Compute initial NPAF
-    for (int s = 1; s < ms; s++) {
-      for (int i = 0; i < n1 - s; i++)
-        curr.npaf[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
-      for (int i = 0; i < n - s; i++)
-        curr.npaf[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
-    }
-  }
-
-  int current_cost = curr.cost(ta, tb, tc, td, ms);
-  best_state = curr;
   int best_cost = current_cost;
 
-  SAParams sa;
+  uniform_real_distribution<> prob(0.0, 1.0);
+  int total = 2 * n1;
+  uniform_int_distribution<> elem_dist(0, total - 1);
+
+  // Multiple restarts of short SA runs
+  for (int restart = 0; restart < 20; restart++) {
+    if (g_found.load(memory_order_relaxed)) return best_cost;
+    if (best_cost == 0) return 0;
+
+    // On restarts > 0, perturb A,B from best
+    if (restart > 0) {
+      // Recompute paf_ab from state
+      for (int s = 1; s < ms; s++) {
+        paf_ab[s] = 0;
+        for (int i = 0; i < n1 - s; i++)
+          paf_ab[s] += state.A[i] * state.A[i + s] + state.B[i] * state.B[i + s];
+      }
+      current_cost = 0;
+      for (int s = 1; s < ms; s++) current_cost += abs(paf_ab[s] - target_ab[s]);
+      current_cost += 5 * (abs(state.sum_a - ta) + abs(state.sum_b - tb));
+
+      // Random swaps to perturb
+      for (int p = 0; p < 2 + (restart % 5); p++) {
+        int seq = uniform_int_distribution<>(0, 1)(rng);
+        int *arr = (seq == 0) ? state.A : state.B;
+        int pos[128], neg[128]; int np = 0, nm = 0;
+        for (int k = 0; k < n1; k++) {
+          if (arr[k] == 1) pos[np++] = k; else neg[nm++] = k;
+        }
+        if (np > 0 && nm > 0) {
+          int pi = pos[uniform_int_distribution<>(0, np - 1)(rng)];
+          int pj = neg[uniform_int_distribution<>(0, nm - 1)(rng)];
+          for (int s = 1; s < ms; s++) {
+            int d = 0;
+            if (pi + s < n1 && pi + s != pj) d -= 2 * arr[pi + s];
+            if (pi - s >= 0 && pi - s != pj) d -= 2 * arr[pi - s];
+            if (pj + s < n1 && pj + s != pi) d += 2 * arr[pj + s];
+            if (pj - s >= 0 && pj - s != pi) d += 2 * arr[pj - s];
+            paf_ab[s] += d;
+          }
+          arr[pi] = -1; arr[pj] = 1;
+        }
+      }
+      current_cost = 0;
+      for (int s = 1; s < ms; s++) current_cost += abs(paf_ab[s] - target_ab[s]);
+      current_cost += 5 * (abs(state.sum_a - ta) + abs(state.sum_b - tb));
+    }
+
+    double temp = 15.0;
+    for (int iter = 0; iter < 100000; iter++) {
+      if (g_found.load(memory_order_relaxed)) return best_cost;
+
+      int elem = elem_dist(rng);
+      int seq = (elem < n1) ? 0 : 1;
+      int *arr = (seq == 0) ? state.A : state.B;
+      int *sum_ptr = (seq == 0) ? &state.sum_a : &state.sum_b;
+      int idx = (seq == 0) ? elem : elem - n1;
+
+      // 70% swap, 30% flip
+      if (prob(rng) < 0.7) {
+        int pos_p[128], pos_m[128]; int npp = 0, npm = 0;
+        for (int k = 0; k < n1; k++) {
+          if (arr[k] == 1) pos_p[npp++] = k; else pos_m[npm++] = k;
+        }
+        if (npp == 0 || npm == 0) { temp *= 0.99997; continue; }
+        int pi = pos_p[uniform_int_distribution<>(0, npp - 1)(rng)];
+        int pj = pos_m[uniform_int_distribution<>(0, npm - 1)(rng)];
+
+        int delta[128];
+        for (int s = 1; s < ms; s++) {
+          delta[s] = 0;
+          if (pi + s < n1 && pi + s != pj) delta[s] -= 2 * arr[pi + s];
+          if (pi - s >= 0 && pi - s != pj) delta[s] -= 2 * arr[pi - s];
+          if (pj + s < n1 && pj + s != pi) delta[s] += 2 * arr[pj + s];
+          if (pj - s >= 0 && pj - s != pi) delta[s] += 2 * arr[pj - s];
+        }
+
+        int new_cost = 0;
+        for (int s = 1; s < ms; s++)
+          new_cost += abs(paf_ab[s] + delta[s] - target_ab[s]);
+        new_cost += 5 * (abs(state.sum_a - ta) + abs(state.sum_b - tb));
+
+        int diff = new_cost - current_cost;
+        if (diff <= 0 || prob(rng) < exp(-diff / temp)) {
+          arr[pi] = -1; arr[pj] = 1;
+          for (int s = 1; s < ms; s++) paf_ab[s] += delta[s];
+          current_cost = new_cost;
+          if (current_cost < best_cost) {
+            best_cost = current_cost;
+          }
+        }
+      } else {
+        int old_val = arr[idx];
+        int delta[128];
+        for (int s = 1; s < ms; s++) {
+          delta[s] = 0;
+          if (idx + s < n1) delta[s] += (-2 * old_val) * arr[idx + s];
+          if (idx - s >= 0) delta[s] += arr[idx - s] * (-2 * old_val);
+        }
+
+        int new_sum = *sum_ptr - 2 * old_val;
+        int new_cost = 0;
+        for (int s = 1; s < ms; s++)
+          new_cost += abs(paf_ab[s] + delta[s] - target_ab[s]);
+        int sa = (seq == 0) ? new_sum : state.sum_a;
+        int sb = (seq == 0) ? state.sum_b : new_sum;
+        new_cost += 5 * (abs(sa - ta) + abs(sb - tb));
+
+        int diff = new_cost - current_cost;
+        if (diff <= 0 || prob(rng) < exp(-diff / temp)) {
+          arr[idx] = -old_val;
+          *sum_ptr = new_sum;
+          for (int s = 1; s < ms; s++) paf_ab[s] += delta[s];
+          current_cost = new_cost;
+          if (current_cost < best_cost) {
+            best_cost = current_cost;
+          }
+        }
+      }
+      temp *= 0.99997;
+    }
+  }
+  return best_cost;
+}
+
+// ===================================
+// Joint SA solver (exploration phase)
+// ===================================
+static bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
+                            JointState &best_state, mt19937 &rng,
+                            bool warm_start = false) {
+  int ms = max(n1, n);
+  int total_elems = 2 * n1 + 2 * n;
   uniform_real_distribution<> prob(0.0, 1.0);
   uniform_int_distribution<> elem_dist(0, total_elems - 1);
 
-  for (int restart = 0; restart < sa.restarts; restart++) {
+  const double initial_temp = 30.0;
+  const double cooling_rate = 0.99997;
+  const int sa_iters = 500000;
+  const int restarts = 40;
+
+  JointState curr;
+  int best_cost = 999999;
+
+  for (int restart = 0; restart < restarts; restart++) {
     if (g_found.load(memory_order_relaxed)) return false;
+    if (best_cost == 0) return true;
 
-    if (restart > 0) {
-      // 30% perturb from best (exploit), 70% random (explore)
-      if (restart % 10 < 3 && best_cost < 999999) {
-        curr = best_state;
-        // Vary perturbation intensity
-        int pert = 3 + (restart % 8);
-        perturb_joint_swaps(curr, n1, n, ms, pert, rng);
-        // Also do a few flips for sum diversity
-        perturb_joint_flips(curr, n1, n, ms, 1 + (restart % 3), rng);
-        current_cost = curr.cost(ta, tb, tc, td, ms);
-      } else {
-        memset(curr.npaf, 0, sizeof(curr.npaf));
-        curr.sum_a = curr.sum_b = curr.sum_c = curr.sum_d = 0;
-        for (int i = 0; i < n1; i++) {
-          curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-          curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-          curr.sum_a += curr.A[i]; curr.sum_b += curr.B[i];
-        }
-        for (int i = 0; i < n; i++) {
-          curr.C[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-          curr.D[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
-          curr.sum_c += curr.C[i]; curr.sum_d += curr.D[i];
-        }
-        for (int s = 1; s < ms; s++) {
-          for (int i = 0; i < n1 - s; i++)
-            curr.npaf[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
-          for (int i = 0; i < n - s; i++)
-            curr.npaf[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
-        }
-        current_cost = curr.cost(ta, tb, tc, td, ms);
-      }
-    }
-
-    double temp = sa.initial_temp;
-    int no_improve = 0;
-
-    for (int iter = 0; iter < sa.iterations; iter++) {
-      if (g_found.load(memory_order_relaxed)) return false;
-      if (best_cost == 0) return true;
-
-      no_improve++;
-      if (no_improve > sa.reheat_threshold) {
-        temp = sa.initial_temp * sa.reheat_ratio;
-        no_improve = 0;
-      }
-
-      // 60% swap mutations (sum-preserving), 40% flips
-      bool do_swap = (prob(rng) < 0.6);
-
-      if (do_swap) {
-        // === SWAP MUTATION: pick a random sequence, swap two opposite elements ===
+    if (restart == 0 && warm_start) {
+      curr = best_state;
+    } else if (restart > 0 && restart % 5 < 2 && best_cost < 999999) {
+      // Perturb from best
+      curr = best_state;
+      int pert = 3 + (restart % 8);
+      // Swap-based perturbation
+      for (int p = 0; p < pert; p++) {
         int seq_id = uniform_int_distribution<>(0, 3)(rng);
         int *arr;
         int len;
@@ -664,118 +325,148 @@ bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
         else if (seq_id == 1) { arr = curr.B; len = n1; }
         else if (seq_id == 2) { arr = curr.C; len = n; }
         else { arr = curr.D; len = n; }
-
-        // Find positions with +1 and -1
-        int pos_plus[128], pos_minus[128];
-        int np = 0, nm = 0;
+        int pos[128], neg[128]; int np = 0, nm = 0;
         for (int k = 0; k < len; k++) {
-          if (arr[k] == 1) pos_plus[np++] = k;
-          else pos_minus[nm++] = k;
+          if (arr[k] == 1) pos[np++] = k; else neg[nm++] = k;
         }
-        if (np == 0 || nm == 0) { temp *= sa.cooling_rate; continue; }
-
-        int pi = pos_plus[uniform_int_distribution<>(0, np - 1)(rng)];
-        int pj = pos_minus[uniform_int_distribution<>(0, nm - 1)(rng)];
-        int vi = 1; // arr[pi] = 1, arr[pj] = -1
-
-        // Compute swap delta: O(ms)
-        int delta_npaf[128] = {0};
-        for (int s = 1; s < ms; s++) {
-          if (pi + s < len && pi + s != pj)
-            delta_npaf[s] -= 2 * vi * arr[pi + s];
-          if (pi - s >= 0 && pi - s != pj)
-            delta_npaf[s] -= 2 * vi * arr[pi - s];
-          if (pj + s < len && pj + s != pi)
-            delta_npaf[s] += 2 * vi * arr[pj + s];
-          if (pj - s >= 0 && pj - s != pi)
-            delta_npaf[s] += 2 * vi * arr[pj - s];
-        }
-
-        // Apply swap
-        arr[pi] = -1; arr[pj] = 1;
-        for (int s = 1; s < ms; s++)
-          curr.npaf[s] += delta_npaf[s];
-
-        int new_cost = curr.cost(ta, tb, tc, td, ms);
-        if (new_cost < current_cost ||
-            prob(rng) < exp(-(new_cost - current_cost) / temp)) {
-          current_cost = new_cost;
-          if (new_cost < best_cost) {
-            best_cost = new_cost;
-            best_state = curr;
-            no_improve = 0;
+        if (np > 0 && nm > 0) {
+          int pi = pos[uniform_int_distribution<>(0, np - 1)(rng)];
+          int pj = neg[uniform_int_distribution<>(0, nm - 1)(rng)];
+          for (int s = 1; s < ms; s++) {
+            int d = 0;
+            if (pi + s < len && pi + s != pj) d -= 2 * arr[pi + s];
+            if (pi - s >= 0 && pi - s != pj) d -= 2 * arr[pi - s];
+            if (pj + s < len && pj + s != pi) d += 2 * arr[pj + s];
+            if (pj - s >= 0 && pj - s != pi) d += 2 * arr[pj - s];
+            curr.npaf[s] += d;
           }
-        } else {
-          arr[pi] = 1; arr[pj] = -1;
-          for (int s = 1; s < ms; s++)
-            curr.npaf[s] -= delta_npaf[s];
-        }
-      } else {
-        // === FLIP MUTATION: flip one random element ===
-        int elem = elem_dist(rng);
-        int *arr;
-        int *sum_ptr;
-        int idx, len;
-        if (elem < n1) {
-          arr = curr.A; sum_ptr = &curr.sum_a; idx = elem; len = n1;
-        } else if (elem < 2 * n1) {
-          arr = curr.B; sum_ptr = &curr.sum_b; idx = elem - n1; len = n1;
-        } else if (elem < 2 * n1 + n) {
-          arr = curr.C; sum_ptr = &curr.sum_c; idx = elem - 2 * n1; len = n;
-        } else {
-          arr = curr.D; sum_ptr = &curr.sum_d; idx = elem - 2 * n1 - n; len = n;
-        }
-
-        int old_val = arr[idx];
-        int old_sum = *sum_ptr;
-
-        int delta_npaf[128] = {0};
-        for (int s = 1; s < ms; s++) {
-          if (idx + s < len)
-            delta_npaf[s] += (-2 * old_val) * arr[idx + s];
-          if (idx - s >= 0)
-            delta_npaf[s] += arr[idx - s] * (-2 * old_val);
-        }
-
-        arr[idx] = -old_val;
-        *sum_ptr -= 2 * old_val;
-        for (int s = 1; s < ms; s++)
-          curr.npaf[s] += delta_npaf[s];
-
-        int new_cost = curr.cost(ta, tb, tc, td, ms);
-        if (new_cost < current_cost ||
-            prob(rng) < exp(-(new_cost - current_cost) / temp)) {
-          current_cost = new_cost;
-          if (new_cost < best_cost) {
-            best_cost = new_cost;
-            best_state = curr;
-            no_improve = 0;
-          }
-        } else {
-          arr[idx] = old_val;
-          *sum_ptr = old_sum;
-          for (int s = 1; s < ms; s++)
-            curr.npaf[s] -= delta_npaf[s];
+          arr[pi] = -1; arr[pj] = 1;
         }
       }
+    } else {
+      // Random init
+      memset(curr.npaf, 0, sizeof(curr.npaf));
+      curr.sum_a = curr.sum_b = curr.sum_c = curr.sum_d = 0;
+      for (int i = 0; i < n1; i++) {
+        curr.A[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+        curr.B[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+        curr.sum_a += curr.A[i]; curr.sum_b += curr.B[i];
+      }
+      for (int i = 0; i < n; i++) {
+        curr.C[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+        curr.D[i] = (uniform_int_distribution<>(0, 1)(rng) == 0) ? 1 : -1;
+        curr.sum_c += curr.C[i]; curr.sum_d += curr.D[i];
+      }
+      for (int s = 1; s < ms; s++) {
+        for (int i = 0; i < n1 - s; i++)
+          curr.npaf[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+        for (int i = 0; i < n - s; i++)
+          curr.npaf[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
+      }
+    }
 
-      temp *= sa.cooling_rate;
+    int current_cost = curr.cost(ta, tb, tc, td, ms);
+    if (current_cost < best_cost) {
+      best_cost = current_cost;
+      best_state = curr;
+    }
+
+    double temp = initial_temp;
+    int no_improve = 0;
+
+    for (int iter = 0; iter < sa_iters; iter++) {
+      if (g_found.load(memory_order_relaxed)) return false;
+      if (best_cost == 0) return true;
+
+      int elem = elem_dist(rng);
+      int *arr, *sum_ptr;
+      int idx, len;
+      if (elem < n1) {
+        arr = curr.A; sum_ptr = &curr.sum_a; idx = elem; len = n1;
+      } else if (elem < 2 * n1) {
+        arr = curr.B; sum_ptr = &curr.sum_b; idx = elem - n1; len = n1;
+      } else if (elem < 2 * n1 + n) {
+        arr = curr.C; sum_ptr = &curr.sum_c; idx = elem - 2 * n1; len = n;
+      } else {
+        arr = curr.D; sum_ptr = &curr.sum_d; idx = elem - 2 * n1 - n; len = n;
+      }
+
+      int old_val = arr[idx];
+      int old_sum = *sum_ptr;
+      int delta_npaf[128];
+      for (int s = 1; s < ms; s++) {
+        delta_npaf[s] = 0;
+        if (idx + s < len) delta_npaf[s] += (-2 * old_val) * arr[idx + s];
+        if (idx - s >= 0) delta_npaf[s] += arr[idx - s] * (-2 * old_val);
+      }
+
+      arr[idx] = -old_val;
+      *sum_ptr -= 2 * old_val;
+      for (int s = 1; s < ms; s++)
+        curr.npaf[s] += delta_npaf[s];
+
+      int new_cost = curr.cost(ta, tb, tc, td, ms);
+      int diff = new_cost - current_cost;
+
+      if (diff <= 0 || prob(rng) < exp(-diff / temp)) {
+        current_cost = new_cost;
+        no_improve = (diff < 0) ? 0 : no_improve + 1;
+        if (new_cost < best_cost) {
+          best_cost = new_cost;
+          best_state = curr;
+          no_improve = 0;
+        }
+      } else {
+        arr[idx] = old_val;
+        *sum_ptr = old_sum;
+        for (int s = 1; s < ms; s++)
+          curr.npaf[s] -= delta_npaf[s];
+        no_improve++;
+      }
+
+      // Reheat
+      if (no_improve > 150000) {
+        temp = initial_temp * 0.5;
+        no_improve = 0;
+      }
+      temp *= cooling_rate;
     }
 
     if (best_cost == 0) return true;
-  }
 
-  // One final greedy
-  if (best_cost > 0 && best_cost < 100) {
-    greedy_hill_climb_joint(n1, n, ta, tb, tc, td, ms, best_state, best_cost);
-    if (best_cost == 0) return true;
-  }
+    // *** KEY INNOVATION: When close, freeze C,D and do A,B-only SA ***
+    if (best_cost > 0 && best_cost <= 8) {
+      // Compute PAF_CD target
+      int paf_cd[128];
+      for (int s = 1; s < ms; s++) {
+        paf_cd[s] = 0;
+        if (s < n)
+          for (int i = 0; i < n - s; i++)
+            paf_cd[s] += best_state.C[i] * best_state.C[i + s] +
+                          best_state.D[i] * best_state.D[i + s];
+      }
+      int target_ab[128];
+      for (int s = 1; s < ms; s++) target_ab[s] = -paf_cd[s];
 
-  // ILS phase (only if close)
-  if (best_cost > 0 && best_cost <= 30) {
-    if (iterated_local_search_joint(n1, n, ta, tb, tc, td, ms, best_state,
-                                     best_cost, rng))
-      return true;
+      JointState ab_state = best_state;
+      int ab_cost = solve_AB_only(n1, ta, tb, ms, target_ab, ab_state, rng);
+      if (ab_cost < best_cost) {
+        best_cost = ab_cost;
+        best_state = ab_state;
+        // Recompute npaf
+        memset(best_state.npaf, 0, sizeof(best_state.npaf));
+        for (int s = 1; s < ms; s++) {
+          for (int i = 0; i < n1 - s; i++)
+            best_state.npaf[s] += best_state.A[i] * best_state.A[i + s] +
+                                   best_state.B[i] * best_state.B[i + s];
+          if (s < n)
+            for (int i = 0; i < n - s; i++)
+              best_state.npaf[s] += best_state.C[i] * best_state.C[i + s] +
+                                     best_state.D[i] * best_state.D[i + s];
+        }
+      }
+      if (best_cost == 0) return true;
+    }
   }
 
   return best_cost == 0;
@@ -792,8 +483,6 @@ int main(int argc, char **argv) {
   int n1 = n + 1;
   int ms = max(n1, n);
 
-  init_combs();
-
   int thr = 1;
 #ifdef _OPENMP
   thr = omp_get_max_threads();
@@ -801,8 +490,8 @@ int main(int argc, char **argv) {
 #endif
 
   cout << "========================================================" << endl;
-  cout << "  BS(" << n1 << "," << n << ") — Joint 4-Sequence SA Solver" << endl;
-  cout << "  Targeting NPAF=0 across all sequences simultaneously" << endl;
+  cout << "  BS(" << n1 << "," << n << ") — Hybrid SA Solver" << endl;
+  cout << "  Joint SA + A,B-only Endgame" << endl;
   cout << "  [ Threads: " << thr << " | Seed offset: " << seed_offset << " ]" << endl;
   cout << "========================================================" << endl;
 
@@ -835,37 +524,13 @@ int main(int argc, char **argv) {
       JointState best;
       bool found = solve_joint_SA(n1, n, sig.a, sig.b, sig.c, sig.d, best, rng);
 
-      // RETRY LOOP: if we found a promising state (cost < 10),
-      // keep retrying the SAME signature instead of discarding it
-      int retry_cost = best.cost(sig.a, sig.b, sig.c, sig.d, ms);
-      for (int retry = 0; retry < 50 && !found && retry_cost > 0 &&
-                          retry_cost < 10 &&
-                          !g_found.load(memory_order_relaxed); retry++) {
-        // Perturb from best state and retry
-        JointState retry_state = best;
-        perturb_joint_swaps(retry_state, n1, n, ms, 3 + (retry % 6), rng);
-        // Quick SA from perturbed state
-        // Re-init as a warm start: copy retry_state into solve and hope
-        // for a different path
-        found = solve_joint_SA(n1, n, sig.a, sig.b, sig.c, sig.d,
-                                retry_state, rng, true);
-        int rc = retry_state.cost(sig.a, sig.b, sig.c, sig.d, ms);
-        if (rc < retry_cost) {
-          retry_cost = rc;
-          best = retry_state;
-          retry = 0; // Reset counter on improvement
-        }
-        if (found) { best = retry_state; break; }
-        global_tries++;
-      }
-
       // Track best cost
       {
         int c = best.cost(sig.a, sig.b, sig.c, sig.d, ms);
         int old_best = g_best_cost.load(memory_order_relaxed);
         while (c < old_best &&
                !g_best_cost.compare_exchange_weak(old_best, c,
-                                                   memory_order_relaxed))
+                                                    memory_order_relaxed))
           ;
       }
 

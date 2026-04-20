@@ -20,7 +20,7 @@ module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-SEED_OFFSET=$((53000 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((57000 + SLURM_ARRAY_TASK_ID))
 
 echo "=============================================="
 echo "  BS(42) Solver — Fir Cluster"
