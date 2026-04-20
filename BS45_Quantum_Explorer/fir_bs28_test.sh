@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=BS28_test
 #SBATCH --account=def-ikotsire
-#SBATCH --time=01:00:00
+#SBATCH --time=03:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=192
 #SBATCH --mem-per-cpu=256M

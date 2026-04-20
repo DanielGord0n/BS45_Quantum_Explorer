@@ -167,7 +167,7 @@ static int solve_AB_only(int n1, int ta, int tb, int ms,
   uniform_int_distribution<> elem_dist(0, total - 1);
 
   // Multiple restarts of short SA runs
-  for (int restart = 0; restart < 20; restart++) {
+  for (int restart = 0; restart < 10; restart++) {
     if (g_found.load(memory_order_relaxed)) return best_cost;
     if (best_cost == 0) return 0;
 
@@ -211,7 +211,7 @@ static int solve_AB_only(int n1, int ta, int tb, int ms,
     }
 
     double temp = 15.0;
-    for (int iter = 0; iter < 100000; iter++) {
+    for (int iter = 0; iter < 200000; iter++) {
       if (g_found.load(memory_order_relaxed)) return best_cost;
 
       int elem = elem_dist(rng);
@@ -432,27 +432,59 @@ static bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
       temp *= cooling_rate;
     }
 
-    if (best_cost == 0) return true;
+  }
 
-    // *** KEY INNOVATION: When close, freeze C,D and do A,B-only SA ***
-    if (best_cost > 0 && best_cost <= 8) {
-      // Compute PAF_CD target
+  // *** ENDGAME (runs once after all restarts) ***
+  // Joint SA reaches ~12-16 on BS(28). Try many C,D perturbations
+  // with focused A,B-only SA for each.
+  if (best_cost > 0 && best_cost <= 20) {
+    JointState cd_base = best_state;
+    for (int cd_trial = 0; cd_trial < 50; cd_trial++) {
+      if (g_found.load(memory_order_relaxed)) return false;
+      if (best_cost == 0) return true;
+
+      // Perturb C,D from the best state (1-4 random swaps)
+      JointState trial = cd_base;
+      int n_pert = 1 + (cd_trial % 4);
+      for (int p = 0; p < n_pert; p++) {
+        int seq = uniform_int_distribution<>(0, 1)(rng);
+        int *arr = (seq == 0) ? trial.C : trial.D;
+        int pos[128], neg[128]; int npos = 0, nneg = 0;
+        for (int k = 0; k < n; k++) {
+          if (arr[k] == 1) pos[npos++] = k; else neg[nneg++] = k;
+        }
+        if (npos > 0 && nneg > 0) {
+          int pi = pos[uniform_int_distribution<>(0, npos - 1)(rng)];
+          int pj = neg[uniform_int_distribution<>(0, nneg - 1)(rng)];
+          arr[pi] = -1; arr[pj] = 1;
+        }
+      }
+
+      // Check Hall filter on perturbed C,D
+      if (!hall_ok(trial.C, n, trial.D, n)) continue;
+
+      // Compute PAF_CD target for A,B
       int paf_cd[128];
       for (int s = 1; s < ms; s++) {
         paf_cd[s] = 0;
         if (s < n)
           for (int i = 0; i < n - s; i++)
-            paf_cd[s] += best_state.C[i] * best_state.C[i + s] +
-                          best_state.D[i] * best_state.D[i + s];
+            paf_cd[s] += trial.C[i] * trial.C[i + s] +
+                          trial.D[i] * trial.D[i + s];
       }
       int target_ab[128];
       for (int s = 1; s < ms; s++) target_ab[s] = -paf_cd[s];
 
-      JointState ab_state = best_state;
+      // Run A,B-only SA with this target
+      JointState ab_state = trial;
       int ab_cost = solve_AB_only(n1, ta, tb, ms, target_ab, ab_state, rng);
       if (ab_cost < best_cost) {
         best_cost = ab_cost;
         best_state = ab_state;
+        memcpy(best_state.C, trial.C, sizeof(int) * n);
+        memcpy(best_state.D, trial.D, sizeof(int) * n);
+        best_state.sum_c = trial.sum_c;
+        best_state.sum_d = trial.sum_d;
         // Recompute npaf
         memset(best_state.npaf, 0, sizeof(best_state.npaf));
         for (int s = 1; s < ms; s++) {
@@ -464,6 +496,8 @@ static bool solve_joint_SA(int n1, int n, int ta, int tb, int tc, int td,
               best_state.npaf[s] += best_state.C[i] * best_state.C[i + s] +
                                      best_state.D[i] * best_state.D[i + s];
         }
+        cd_base = best_state;
+        cd_trial = 0; // Reset on improvement
       }
       if (best_cost == 0) return true;
     }
