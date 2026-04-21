@@ -36,6 +36,7 @@
 #include <iostream>
 #include <random>
 #include <sstream>
+#include <tuple>
 #include <vector>
 
 #ifdef _OPENMP
