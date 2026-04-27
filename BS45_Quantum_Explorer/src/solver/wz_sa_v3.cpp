@@ -118,8 +118,14 @@ struct SAParams {
   int    restarts         = 10;
   int    reheat_threshold = 200000;
   double reheat_ratio     = 0.65;
-  int    kick_after_stall = 60000;
-  int    kick_max_k       = 8;
+  int    kick_after_stall = 80000;
+  int    kick_min_k       = 4;
+  int    kick_max_k       = 12;
+  // Compound move probabilities (single-flip = remainder)
+  double p_two_flip       = 0.10;
+  double p_three_flip     = 0.04;
+  // ILS threshold: when best_cost <= ils_threshold, perturb best_state on restart
+  int    ils_threshold    = 60;
 };
 
 // =====================================================================
@@ -246,10 +252,25 @@ static bool solve_SA(int n1, int n, const Sig &sig,
   uniform_int_distribution<> pos_dist(0, total_pos-1);
   int delta_npaf[MAXN];
 
+  auto decode_pos = [&](int p, int &seq_id, int &idx) {
+    if      (p < n1)     { seq_id=0; idx=p; }
+    else if (p < 2*n1)   { seq_id=1; idx=p-n1; }
+    else if (p < 2*n1+n) { seq_id=2; idx=p-2*n1; }
+    else                 { seq_id=3; idx=p-2*n1-n; }
+  };
+
   for (int restart = 0; restart < sa.restarts; restart++) {
     if (g_found.load(memory_order_relaxed)) return false;
     if (restart > 0) {
-      state_random_init(curr, n1, n, rng);
+      // ILS: perturb best_state when we are already close, otherwise random restart.
+      if (best_cost > 0 && best_cost <= sa.ils_threshold) {
+        curr = best_state;
+        int base_k = max(sa.kick_min_k + 2, n/4);
+        int kk = base_k + uniform_int_distribution<>(0, n/4 + 2)(rng);
+        kopt_kick(curr, n1, n, ms, kk, rng);
+      } else {
+        state_random_init(curr, n1, n, rng);
+      }
       cur_cost = curr.cost(sig, ms);
     }
 
@@ -257,20 +278,24 @@ static bool solve_SA(int n1, int n, const Sig &sig,
     int no_improve = 0, stall = 0;
     int acc_win = 0, att_win = 0;
 
+    int delta1[MAXN], delta2[MAXN], delta3[MAXN], dummy[MAXN];
+
     for (int iter = 0; iter < sa.iterations; iter++) {
       if (g_found.load(memory_order_relaxed)) return false;
       if (best_cost == 0) return true;
 
       no_improve++; stall++; att_win++;
 
-      // k-opt kick when stalled near a minimum
+      // k-opt kick when stalled near a minimum: perturb best_state and reheat fully
       if (stall > sa.kick_after_stall) {
-        int k = 3 + uniform_int_distribution<>(0, sa.kick_max_k-3)(rng);
+        int kspan = sa.kick_max_k - sa.kick_min_k;
+        int k = sa.kick_min_k + uniform_int_distribution<>(0, max(1, kspan))(rng);
         curr = best_state;
         kopt_kick(curr, n1, n, ms, k, rng);
         cur_cost = curr.cost(sig, ms);
-        temp = sa.initial_temp * 0.6;
+        temp = sa.initial_temp;
         stall = 0;
+        no_improve = 0;
         continue;
       }
 
@@ -287,25 +312,82 @@ static bool solve_SA(int n1, int n, const Sig &sig,
         no_improve = 0;
       }
 
-      // Pick random position across all 4 sequences
-      int p = pos_dist(rng);
-      int seq_id, idx;
-      if      (p < n1)     { seq_id=0; idx=p; }
-      else if (p < 2*n1)   { seq_id=1; idx=p-n1; }
-      else if (p < 2*n1+n) { seq_id=2; idx=p-2*n1; }
-      else                 { seq_id=3; idx=p-2*n1-n; }
+      // Choose move type. Compound moves only kick in once we are close to the basin.
+      double mt = prob(rng);
+      bool use_compound = (best_cost > 0 && best_cost <= sa.ils_threshold);
+      double p2 = use_compound ? sa.p_two_flip   : 0.0;
+      double p3 = use_compound ? sa.p_three_flip : 0.0;
 
-      int dcost = flip_delta(curr, seq_id, idx, n1, n, sig, ms, delta_npaf);
+      if (mt < p3) {
+        // 3-flip: pick three distinct positions; tentatively apply, decide together.
+        int p1 = pos_dist(rng);
+        int q1 = pos_dist(rng); while (q1 == p1) q1 = pos_dist(rng);
+        int r1 = pos_dist(rng); while (r1 == p1 || r1 == q1) r1 = pos_dist(rng);
+        int s1, i1, s2, i2, s3, i3;
+        decode_pos(p1, s1, i1); decode_pos(q1, s2, i2); decode_pos(r1, s3, i3);
 
-      if (dcost < 0 || prob(rng) < exp(-(double)dcost / temp)) {
-        flip_apply(curr, seq_id, idx, ms, delta_npaf);
-        cur_cost += dcost;
-        acc_win++;
-        if (cur_cost < best_cost) {
-          best_cost = cur_cost;
-          best_state = curr;
-          no_improve = 0;
-          stall = 0;
+        int dc1 = flip_delta(curr, s1, i1, n1, n, sig, ms, delta1);
+        flip_apply(curr, s1, i1, ms, delta1);
+        int dc2 = flip_delta(curr, s2, i2, n1, n, sig, ms, delta2);
+        flip_apply(curr, s2, i2, ms, delta2);
+        int dc3 = flip_delta(curr, s3, i3, n1, n, sig, ms, delta3);
+
+        int dcost = dc1 + dc2 + dc3;
+        if (dcost < 0 || prob(rng) < exp(-(double)dcost / temp)) {
+          flip_apply(curr, s3, i3, ms, delta3);
+          cur_cost += dcost;
+          acc_win++;
+          if (cur_cost < best_cost) {
+            best_cost = cur_cost; best_state = curr;
+            no_improve = 0; stall = 0;
+          }
+        } else {
+          // Roll back: undo s2 then s1.
+          flip_delta(curr, s2, i2, n1, n, sig, ms, dummy);
+          flip_apply(curr, s2, i2, ms, dummy);
+          flip_delta(curr, s1, i1, n1, n, sig, ms, dummy);
+          flip_apply(curr, s1, i1, ms, dummy);
+        }
+      } else if (mt < p3 + p2) {
+        // 2-flip
+        int p1 = pos_dist(rng);
+        int q1 = pos_dist(rng); while (q1 == p1) q1 = pos_dist(rng);
+        int s1, i1, s2, i2;
+        decode_pos(p1, s1, i1); decode_pos(q1, s2, i2);
+
+        int dc1 = flip_delta(curr, s1, i1, n1, n, sig, ms, delta1);
+        flip_apply(curr, s1, i1, ms, delta1);
+        int dc2 = flip_delta(curr, s2, i2, n1, n, sig, ms, delta2);
+
+        int dcost = dc1 + dc2;
+        if (dcost < 0 || prob(rng) < exp(-(double)dcost / temp)) {
+          flip_apply(curr, s2, i2, ms, delta2);
+          cur_cost += dcost;
+          acc_win++;
+          if (cur_cost < best_cost) {
+            best_cost = cur_cost; best_state = curr;
+            no_improve = 0; stall = 0;
+          }
+        } else {
+          flip_delta(curr, s1, i1, n1, n, sig, ms, dummy);
+          flip_apply(curr, s1, i1, ms, dummy);
+        }
+      } else {
+        // Single flip
+        int p = pos_dist(rng);
+        int seq_id, idx;
+        decode_pos(p, seq_id, idx);
+
+        int dcost = flip_delta(curr, seq_id, idx, n1, n, sig, ms, delta_npaf);
+
+        if (dcost < 0 || prob(rng) < exp(-(double)dcost / temp)) {
+          flip_apply(curr, seq_id, idx, ms, delta_npaf);
+          cur_cost += dcost;
+          acc_win++;
+          if (cur_cost < best_cost) {
+            best_cost = cur_cost; best_state = curr;
+            no_improve = 0; stall = 0;
+          }
         }
       }
       temp *= sa.cooling_rate;
@@ -389,10 +471,19 @@ int main(int argc, char **argv) {
 
   // Scale SA parameters with problem size
   SAParams sa;
-  if      (n <= 15) { sa.iterations = 600000;  sa.restarts =  6; sa.initial_temp = 15.0; }
-  else if (n <= 25) { sa.iterations = 1200000; sa.restarts =  8; sa.initial_temp = 28.0; }
-  else if (n <= 35) { sa.iterations = 2000000; sa.restarts = 10; sa.initial_temp = 40.0; }
-  else              { sa.iterations = 3000000; sa.restarts = 12; sa.initial_temp = 55.0; }
+  if (n <= 15) {
+    sa.iterations = 600000;  sa.restarts = 6;  sa.initial_temp = 15.0;
+    sa.kick_min_k = 3; sa.kick_max_k = 6;  sa.ils_threshold = 24;
+  } else if (n <= 25) {
+    sa.iterations = 1200000; sa.restarts = 8;  sa.initial_temp = 28.0;
+    sa.kick_min_k = 4; sa.kick_max_k = 10; sa.ils_threshold = 40;
+  } else if (n <= 35) {
+    sa.iterations = 2000000; sa.restarts = 10; sa.initial_temp = 40.0;
+    sa.kick_min_k = 5; sa.kick_max_k = 14; sa.ils_threshold = 60;
+  } else {
+    sa.iterations = 3000000; sa.restarts = 12; sa.initial_temp = 55.0;
+    sa.kick_min_k = 6; sa.kick_max_k = 18; sa.ils_threshold = 90;
+  }
 
   vector<atomic<int>> sig_fails(sigs.size());
   for (auto &a : sig_fails) a.store(0, memory_order_relaxed);
