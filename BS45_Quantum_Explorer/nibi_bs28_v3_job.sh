@@ -3,28 +3,29 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=192
 #SBATCH --time=4:00:00
-#SBATCH --job-name=BS28_v3_fir
-#SBATCH --output=bs28_v3_fir_output_%A_%a.txt
+#SBATCH --job-name=BS28_v3_nibi
+#SBATCH --output=bs28_v3_nibi_output_%A_%a.txt
 #SBATCH --array=0-9
-#SBATCH --account=def-ikotsire
+#SBATCH --account=def-ikotsire_cpu
 #SBATCH --mail-type=END,FAIL
 
-# === BS(28,27) v3 validation — Fir ===
-# v3 uses the full unconstrained manifold — proven to solve BS(12,11) locally
-# in under a minute on 4 threads.  Expect BS(28,27) within minutes on 192 cores.
-# Seed offsets 6000-6009.
+# === BS(28,27) v3 validation — Nibi ===
+# Seed offsets 6200-6209.
 
 cd $SLURM_SUBMIT_DIR
 
 module load StdEnv/2023
 module load gcc/12.3
 
+export TMPDIR=$SCRATCH/tmp
+mkdir -p $TMPDIR
+
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-SEED_OFFSET=$((6000 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((6200 + SLURM_ARRAY_TASK_ID))
 BIN=wz_sa_v3_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="
-echo "  BS(28,27) v3 — Fir"
+echo "  BS(28,27) v3 — Nibi"
 echo "  Job: $SLURM_ARRAY_JOB_ID  Task: $SLURM_ARRAY_TASK_ID"
 echo "  Node: $(hostname)  Cores: $OMP_NUM_THREADS"
 echo "  Seed Offset: $SEED_OFFSET"

@@ -211,6 +211,243 @@ static void flip_apply(State &st, int seq_id, int idx, int ms,
   for (int s = 1; s < ms; s++) st.npaf[s] += delta_npaf[s];
 }
 
+// Decode a flat position index into (seq_id, idx) within that sequence.
+static inline void decode_flat(int p, int n1, int n, int &seq_id, int &idx) {
+  if      (p < n1)       { seq_id=0; idx=p; }
+  else if (p < 2*n1)     { seq_id=1; idx=p-n1; }
+  else if (p < 2*n1+n)   { seq_id=2; idx=p-2*n1; }
+  else                   { seq_id=3; idx=p-2*n1-n; }
+}
+
+// Compute dcost for flipping (s1,i1) and (s2,i2) together, leaving state unchanged.
+static int pair_dcost(State &st, int s1, int i1, int s2, int i2,
+                      int n1, int n, const Sig &sig, int ms) {
+  int d1[MAXN], d2[MAXN], dundo[MAXN];
+  int dc1 = flip_delta(st, s1, i1, n1, n, sig, ms, d1);
+  flip_apply(st, s1, i1, ms, d1);
+  int dc2 = flip_delta(st, s2, i2, n1, n, sig, ms, d2);
+  // Undo s1
+  flip_delta(st, s1, i1, n1, n, sig, ms, dundo);
+  flip_apply(st, s1, i1, ms, dundo);
+  return dc1 + dc2;
+}
+
+// Compute dcost for flipping (s1,i1), (s2,i2), (s3,i3) together, leaving state unchanged.
+static int triple_dcost(State &st, int s1, int i1, int s2, int i2, int s3, int i3,
+                        int n1, int n, const Sig &sig, int ms) {
+  int d[MAXN];
+  int dc1 = flip_delta(st, s1, i1, n1, n, sig, ms, d);
+  flip_apply(st, s1, i1, ms, d);
+  int dc2 = flip_delta(st, s2, i2, n1, n, sig, ms, d);
+  flip_apply(st, s2, i2, ms, d);
+  int dc3 = flip_delta(st, s3, i3, n1, n, sig, ms, d);
+  // Undo s2 then s1
+  flip_delta(st, s2, i2, n1, n, sig, ms, d);
+  flip_apply(st, s2, i2, ms, d);
+  flip_delta(st, s1, i1, n1, n, sig, ms, d);
+  flip_apply(st, s1, i1, ms, d);
+  return dc1 + dc2 + dc3;
+}
+
+static inline void apply_single(State &st, int seq_id, int idx,
+                                int n1, int n, const Sig &sig, int ms) {
+  int d[MAXN];
+  flip_delta(st, seq_id, idx, n1, n, sig, ms, d);
+  flip_apply(st, seq_id, idx, ms, d);
+}
+
+// Deterministic 2-opt descent: exhaustively try all bit-pair flips, take best improving.
+// Loops until no improving pair exists. Returns true if any improvement found.
+static bool two_opt_descent(State &st, int &cur_cost, int n1, int n,
+                             const Sig &sig, int ms, int max_iters) {
+  int total_pos = 2*n1 + 2*n;
+  bool any = false;
+  for (int it = 0; it < max_iters; it++) {
+    int best_dc = 0, best_p1 = -1, best_p2 = -1;
+    for (int p1 = 0; p1 < total_pos - 1; p1++) {
+      int s1, i1; decode_flat(p1, n1, n, s1, i1);
+      for (int p2 = p1 + 1; p2 < total_pos; p2++) {
+        int s2, i2; decode_flat(p2, n1, n, s2, i2);
+        int dc = pair_dcost(st, s1, i1, s2, i2, n1, n, sig, ms);
+        if (dc < best_dc) { best_dc = dc; best_p1 = p1; best_p2 = p2; }
+      }
+    }
+    if (best_dc < 0) {
+      int s1, i1, s2, i2;
+      decode_flat(best_p1, n1, n, s1, i1);
+      decode_flat(best_p2, n1, n, s2, i2);
+      apply_single(st, s1, i1, n1, n, sig, ms);
+      apply_single(st, s2, i2, n1, n, sig, ms);
+      cur_cost += best_dc;
+      any = true;
+      if (cur_cost == 0) return true;
+    } else {
+      break;
+    }
+  }
+  return any;
+}
+
+// 3-opt EXHAUSTIVE: try all C(N,3) triples, accept best improving.
+// Loops while improvements are found. Returns true if any improvement.
+static bool three_opt_exhaustive(State &st, int &cur_cost, int n1, int n,
+                                  const Sig &sig, int ms, int max_rounds) {
+  int total_pos = 2*n1 + 2*n;
+  bool any = false;
+  for (int r = 0; r < max_rounds; r++) {
+    int best_dc = 0;
+    int best_p[3] = {-1, -1, -1};
+    for (int p1 = 0; p1 < total_pos - 2; p1++) {
+      int s1, i1; decode_flat(p1, n1, n, s1, i1);
+      for (int p2 = p1 + 1; p2 < total_pos - 1; p2++) {
+        int s2, i2; decode_flat(p2, n1, n, s2, i2);
+        for (int p3 = p2 + 1; p3 < total_pos; p3++) {
+          int s3, i3; decode_flat(p3, n1, n, s3, i3);
+          int dc = triple_dcost(st, s1, i1, s2, i2, s3, i3, n1, n, sig, ms);
+          if (dc < best_dc) { best_dc = dc; best_p[0]=p1; best_p[1]=p2; best_p[2]=p3; }
+        }
+      }
+    }
+    if (best_dc < 0) {
+      for (int j = 0; j < 3; j++) {
+        int sj, ij; decode_flat(best_p[j], n1, n, sj, ij);
+        apply_single(st, sj, ij, n1, n, sig, ms);
+      }
+      cur_cost += best_dc;
+      any = true;
+      if (cur_cost == 0) return true;
+    } else {
+      break;
+    }
+  }
+  return any;
+}
+
+// 4-opt sampling: random quadruples, useful as last resort for hard basins.
+static bool four_opt_sample(State &st, int &cur_cost, int n1, int n,
+                             const Sig &sig, int ms, int samples,
+                             mt19937 &rng) {
+  int total_pos = 2*n1 + 2*n;
+  uniform_int_distribution<> pos_dist(0, total_pos - 1);
+  int best_dc = 0;
+  int best_p[4] = {-1,-1,-1,-1};
+  for (int k = 0; k < samples; k++) {
+    int p[4];
+    p[0] = pos_dist(rng);
+    do { p[1] = pos_dist(rng); } while (p[1]==p[0]);
+    do { p[2] = pos_dist(rng); } while (p[2]==p[0] || p[2]==p[1]);
+    do { p[3] = pos_dist(rng); } while (p[3]==p[0] || p[3]==p[1] || p[3]==p[2]);
+    int dc = 0;
+    int d[MAXN];
+    for (int j = 0; j < 4; j++) {
+      int sj, ij; decode_flat(p[j], n1, n, sj, ij);
+      dc += flip_delta(st, sj, ij, n1, n, sig, ms, d);
+      flip_apply(st, sj, ij, ms, d);
+    }
+    if (dc < best_dc) { best_dc = dc; for (int j=0;j<4;j++) best_p[j]=p[j]; }
+    // Undo all 4 in reverse order
+    for (int j = 3; j >= 0; j--) {
+      int sj, ij; decode_flat(p[j], n1, n, sj, ij);
+      flip_delta(st, sj, ij, n1, n, sig, ms, d);
+      flip_apply(st, sj, ij, ms, d);
+    }
+  }
+  if (best_dc < 0) {
+    for (int j = 0; j < 4; j++) {
+      int sj, ij; decode_flat(best_p[j], n1, n, sj, ij);
+      apply_single(st, sj, ij, n1, n, sig, ms);
+    }
+    cur_cost += best_dc;
+    return true;
+  }
+  return false;
+}
+
+// Intensification: alternates 2-opt exhaustive, 3-opt exhaustive, 4-opt sample.
+// Returns true if cost reaches 0.
+static bool intensify(State &st, int &cur_cost, int n1, int n,
+                       const Sig &sig, int ms, mt19937 &rng) {
+  for (int round = 0; round < 8; round++) {
+    bool i2 = two_opt_descent(st, cur_cost, n1, n, sig, ms, 200);
+    if (cur_cost == 0) return true;
+    bool i3 = three_opt_exhaustive(st, cur_cost, n1, n, sig, ms, 4);
+    if (cur_cost == 0) return true;
+    bool i4 = false;
+    if (!i2 && !i3 && cur_cost <= 24) {
+      i4 = four_opt_sample(st, cur_cost, n1, n, sig, ms, 200000, rng);
+      if (cur_cost == 0) return true;
+    }
+    if (!i2 && !i3 && !i4) break;
+  }
+  return cur_cost == 0;
+}
+
+// Structured kick: identify which shifts have nonzero NPAF, perturb bits
+// that contribute to those shifts. More targeted than random kick.
+static void structured_kick(State &st, int n1, int n, int ms, int k, mt19937 &rng) {
+  // Score each bit by how many violated shifts it touches.
+  int total_pos = 2*n1 + 2*n;
+  vector<int> score(total_pos, 0);
+  vector<int> violated_shifts;
+  for (int s = 1; s < ms; s++) if (st.npaf[s] != 0) violated_shifts.push_back(s);
+
+  if (violated_shifts.empty()) {
+    // Fall through to random kick if nothing is violated (shouldn't happen at low cost)
+    uniform_int_distribution<> flat(0, total_pos - 1);
+    for (int f = 0; f < k; f++) {
+      int p = flat(rng);
+      int sid, idx; decode_flat(p, n1, n, sid, idx);
+      int *arr; int *sp;
+      switch (sid) { case 0: arr=st.A; sp=&st.sum_a; break;
+                     case 1: arr=st.B; sp=&st.sum_b; break;
+                     case 2: arr=st.C; sp=&st.sum_c; break;
+                     default:arr=st.D; sp=&st.sum_d; break; }
+      *sp -= 2*arr[idx]; arr[idx] = -arr[idx];
+    }
+    state_recompute(st, n1, n);
+    return;
+  }
+
+  for (int p = 0; p < total_pos; p++) {
+    int sid, idx; decode_flat(p, n1, n, sid, idx);
+    int len = (sid <= 1) ? n1 : n;
+    for (int s : violated_shifts) {
+      if (idx + s < len || idx - s >= 0) score[p]++;
+    }
+  }
+
+  // Build weighted distribution: bits scoring > 0 get probability proportional to score.
+  // Pick k bits without replacement, biased by score.
+  vector<int> picked;
+  vector<bool> used(total_pos, false);
+  for (int f = 0; f < k; f++) {
+    int total_w = 0;
+    for (int p = 0; p < total_pos; p++) if (!used[p]) total_w += max(1, score[p]);
+    if (total_w == 0) break;
+    int r = uniform_int_distribution<>(0, total_w - 1)(rng);
+    int acc = 0, chosen = -1;
+    for (int p = 0; p < total_pos; p++) {
+      if (used[p]) continue;
+      acc += max(1, score[p]);
+      if (acc > r) { chosen = p; break; }
+    }
+    if (chosen < 0) break;
+    used[chosen] = true;
+    picked.push_back(chosen);
+  }
+
+  for (int p : picked) {
+    int sid, idx; decode_flat(p, n1, n, sid, idx);
+    int *arr; int *sp;
+    switch (sid) { case 0: arr=st.A; sp=&st.sum_a; break;
+                   case 1: arr=st.B; sp=&st.sum_b; break;
+                   case 2: arr=st.C; sp=&st.sum_c; break;
+                   default:arr=st.D; sp=&st.sum_d; break; }
+    *sp -= 2*arr[idx]; arr[idx] = -arr[idx];
+  }
+  state_recompute(st, n1, n);
+}
+
 // k-opt kick: flip k random positions across all 4 sequences, recompute npaf.
 static void kopt_kick(State &st, int n1, int n, int ms, int k, mt19937 &rng) {
   uniform_int_distribution<> flat_dist(0, 2*n1+2*n-1);
@@ -286,12 +523,26 @@ static bool solve_SA(int n1, int n, const Sig &sig,
 
       no_improve++; stall++; att_win++;
 
-      // k-opt kick when stalled near a minimum: perturb best_state and reheat fully
+      // When stalled near a basin: run intensification, then structured kick
       if (stall > sa.kick_after_stall) {
+        // If close to a solution, run intensify on best_state IMMEDIATELY
+        if (best_cost > 0 && best_cost <= 32) {
+          State work = best_state;
+          int wc = best_cost;
+          if (intensify(work, wc, n1, n, sig, ms, rng)) {
+            best_state = work; best_cost = 0;
+            return true;
+          }
+          if (wc < best_cost) {
+            best_state = work; best_cost = wc;
+          }
+        }
         int kspan = sa.kick_max_k - sa.kick_min_k;
         int k = sa.kick_min_k + uniform_int_distribution<>(0, max(1, kspan))(rng);
         curr = best_state;
-        kopt_kick(curr, n1, n, ms, k, rng);
+        // Structured kick near a basin, random kick when far
+        if (best_cost <= 24) structured_kick(curr, n1, n, ms, k, rng);
+        else                 kopt_kick(curr, n1, n, ms, k, rng);
         cur_cost = curr.cost(sig, ms);
         temp = sa.initial_temp;
         stall = 0;
@@ -392,7 +643,29 @@ static bool solve_SA(int n1, int n, const Sig &sig,
       }
       temp *= sa.cooling_rate;
     }
+
+    // Post-restart intensification: if we are near a basin, exhaust 2-opt / 3-opt.
+    if (best_cost > 0 && best_cost <= 32) {
+      State work = best_state;
+      int wc = best_cost;
+      if (intensify(work, wc, n1, n, sig, ms, rng)) {
+        best_state = work; best_cost = 0;
+        return true;
+      }
+      if (wc < best_cost) { best_state = work; best_cost = wc; }
+    }
     if (best_cost == 0) return true;
+  }
+
+  // Final intensification attempt on whatever we ended with.
+  if (best_cost > 0 && best_cost <= 48) {
+    State work = best_state;
+    int wc = best_cost;
+    if (intensify(work, wc, n1, n, sig, ms, rng)) {
+      best_state = work; best_cost = 0;
+      return true;
+    }
+    if (wc < best_cost) { best_state = work; best_cost = wc; }
   }
   return best_cost == 0;
 }
@@ -469,20 +742,25 @@ int main(int argc, char **argv) {
   auto sigs = get_sigs(n);
   cout << "Loaded " << sigs.size() << " valid signatures.\n";
 
-  // Scale SA parameters with problem size
+  // Scale SA parameters with problem size. Smaller iterations + faster
+  // stall-trigger so intensification fires often.
   SAParams sa;
   if (n <= 15) {
-    sa.iterations = 600000;  sa.restarts = 6;  sa.initial_temp = 15.0;
+    sa.iterations = 300000;  sa.restarts = 8;  sa.initial_temp = 15.0;
     sa.kick_min_k = 3; sa.kick_max_k = 6;  sa.ils_threshold = 24;
+    sa.kick_after_stall = 25000;
   } else if (n <= 25) {
-    sa.iterations = 1200000; sa.restarts = 8;  sa.initial_temp = 28.0;
+    sa.iterations = 600000;  sa.restarts = 12; sa.initial_temp = 28.0;
     sa.kick_min_k = 4; sa.kick_max_k = 10; sa.ils_threshold = 40;
+    sa.kick_after_stall = 35000;
   } else if (n <= 35) {
-    sa.iterations = 2000000; sa.restarts = 10; sa.initial_temp = 40.0;
+    sa.iterations = 800000;  sa.restarts = 20; sa.initial_temp = 40.0;
     sa.kick_min_k = 5; sa.kick_max_k = 14; sa.ils_threshold = 60;
+    sa.kick_after_stall = 40000;
   } else {
-    sa.iterations = 3000000; sa.restarts = 12; sa.initial_temp = 55.0;
+    sa.iterations = 1200000; sa.restarts = 24; sa.initial_temp = 55.0;
     sa.kick_min_k = 6; sa.kick_max_k = 18; sa.ils_threshold = 90;
+    sa.kick_after_stall = 50000;
   }
 
   vector<atomic<int>> sig_fails(sigs.size());
