@@ -530,9 +530,76 @@ static bool two_pair_descent(State &st, int &cur_cost, int n1, int n, int ms,
   return cur_cost == 0;
 }
 
-// Intensification: run 1-pair descent, then 2-pair descent if needed.  Returns true if cost reached 0.
-static bool intensify(State &st, int &cur_cost, int n1, int n, int ms, const Sig &sig) {
+// Sampled 3-pair descent: randomly sample triples (slot_i, slot_j, slot_k) and combos,
+// applying any improving move.  Loops until no improvement found in MAX_SAMPLES tries.
+// Used to escape 2-pair-stable basins (e.g., cost-8 trap on BS(28), cost-24/32 on BS(43)).
+static bool three_pair_sampled_descent(State &st, int &cur_cost, int n1, int n, int ms,
+                                         const Sig &sig, mt19937 &rng) {
+  int ab_slots = (n1 + 1) / 2;
+  int cd_slots = (n  + 1) / 2;
+  int total = ab_slots + cd_slots;
+  if (total < 3) return cur_cost == 0;
+
+  bool improved = true;
+  int delta1[128], delta2[128], delta3[128];
+  int oldv1[8], oldv2[8], oldv3[8];
+  int combos_i[16][4], combos_j[16][4], combos_k[16][4];
+  uniform_int_distribution<> slot_dist(0, total - 1);
+  const int MAX_SAMPLES = 50000;
+
+  while (improved && cur_cost > 0) {
+    improved = false;
+    for (int sample = 0; sample < MAX_SAMPLES && !improved; sample++) {
+      int s1 = slot_dist(rng);
+      int s2; do { s2 = slot_dist(rng); } while (s2 == s1);
+      int s3; do { s3 = slot_dist(rng); } while (s3 == s1 || s3 == s2);
+
+      bool i_AB = (s1 < ab_slots), j_AB = (s2 < ab_slots), k_AB = (s3 < ab_slots);
+      int li = i_AB ? s1 : s1 - ab_slots;
+      int lj = j_AB ? s2 : s2 - ab_slots;
+      int lk = k_AB ? s3 : s3 - ab_slots;
+
+      int nci = enumerate_slot(li, n1, n, i_AB, combos_i);
+      int ncj = enumerate_slot(lj, n1, n, j_AB, combos_j);
+      int nck = enumerate_slot(lk, n1, n, k_AB, combos_k);
+
+      int ci = uniform_int_distribution<>(0, nci - 1)(rng);
+      int cj = uniform_int_distribution<>(0, ncj - 1)(rng);
+      int ck = uniform_int_distribution<>(0, nck - 1)(rng);
+
+      if (!apply_forced(st, n1, n, ms, li, i_AB, combos_i[ci], delta1, oldv1)) continue;
+      if (!apply_forced(st, n1, n, ms, lj, j_AB, combos_j[cj], delta2, oldv2)) {
+        revert_forced(st, n1, n, ms, li, i_AB, oldv1, delta1);
+        continue;
+      }
+      if (!apply_forced(st, n1, n, ms, lk, k_AB, combos_k[ck], delta3, oldv3)) {
+        revert_forced(st, n1, n, ms, lj, j_AB, oldv2, delta2);
+        revert_forced(st, n1, n, ms, li, i_AB, oldv1, delta1);
+        continue;
+      }
+
+      int nc = st.cost(sig, ms);
+      if (nc < cur_cost) {
+        cur_cost = nc;
+        improved = true;
+        if (cur_cost == 0) return true;
+      } else {
+        revert_forced(st, n1, n, ms, lk, k_AB, oldv3, delta3);
+        revert_forced(st, n1, n, ms, lj, j_AB, oldv2, delta2);
+        revert_forced(st, n1, n, ms, li, i_AB, oldv1, delta1);
+      }
+    }
+  }
+  return cur_cost == 0;
+}
+
+// Intensification: run 1-pair descent, then 2-pair, then sampled 3-pair if needed.
+// Returns true if cost reached 0.
+static bool intensify(State &st, int &cur_cost, int n1, int n, int ms, const Sig &sig, mt19937 &rng) {
   if (one_pair_descent(st, cur_cost, n1, n, ms, sig)) return true;
+  if (cur_cost <= 24 && two_pair_descent(st, cur_cost, n1, n, ms, sig)) return true;
+  if (one_pair_descent(st, cur_cost, n1, n, ms, sig)) return true;
+  if (cur_cost <= 40 && three_pair_sampled_descent(st, cur_cost, n1, n, ms, sig, rng)) return true;
   if (cur_cost <= 24 && two_pair_descent(st, cur_cost, n1, n, ms, sig)) return true;
   if (one_pair_descent(st, cur_cost, n1, n, ms, sig)) return true;
   return cur_cost == 0;
@@ -632,7 +699,7 @@ static bool solve_joint_SA(int n, int n1, int ms, const Sig &sig,
         if (best_cost > 0 && best_cost <= 32) {
           State work = best_state;
           int wc = best_cost;
-          if (intensify(work, wc, n1, n, ms, sig)) {
+          if (intensify(work, wc, n1, n, ms, sig, rng)) {
             best_state = work;
             best_cost = 0;
             return true;

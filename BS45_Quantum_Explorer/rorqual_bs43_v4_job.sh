@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=192
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --job-name=BS43_v4_rorqual
 #SBATCH --output=bs43_v4_rorqual_output_%A_%a.txt
 #SBATCH --array=0-9
@@ -10,7 +10,7 @@
 #SBATCH --mail-type=END,FAIL
 
 # === BS(43,42) v4 reproduction — Rorqual ===
-# Seed offsets 7100-7109.
+# Seed offsets 8100-8109.
 
 cd $SLURM_SUBMIT_DIR
 
@@ -18,7 +18,7 @@ module load StdEnv/2023
 module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-SEED_OFFSET=$((7100 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((8100 + SLURM_ARRAY_TASK_ID))
 BIN=wz_sa_v4_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="

@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=192
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --job-name=BS43_v4_trillium
 #SBATCH --output=bs43_v4_trillium_output_%A_%a.txt
 #SBATCH --array=0-9
@@ -10,7 +10,7 @@
 #SBATCH --mail-type=END,FAIL
 
 # === BS(43,42) v4 reproduction — Trillium ===
-# Seed offsets 7300-7309.
+# Seed offsets 8300-8309.
 
 cd $SLURM_SUBMIT_DIR
 
@@ -18,7 +18,7 @@ module load StdEnv/2023
 module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-SEED_OFFSET=$((7300 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((8300 + SLURM_ARRAY_TASK_ID))
 BIN=wz_sa_v4_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="
