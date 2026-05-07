@@ -17,7 +17,7 @@ check_cluster() {
     echo ''
     echo '=== LATEST OUTPUT (tail 8) ==='
     cd \$SCRATCH/bs45 2>/dev/null || exit 0
-    for f in \$(ls -t bs28_v3_${name}_output_*.txt bs43_v2_${name}_output_*.txt bs45_v3_${name}_output_*.txt 2>/dev/null | head -4); do
+    for f in \$(ls -t bs43_v8_${name}_output_*.txt 2>/dev/null | head -4); do
       echo \"--- \$f ---\"
       tail -8 \"\$f\"
     done
@@ -34,7 +34,7 @@ echo ""
 check_cluster fir      dangord@fir.alliancecan.ca       &
 check_cluster rorqual  dangord@rorqual.alliancecan.ca   &
 check_cluster nibi     dangord@nibi.alliancecan.ca      &
-check_cluster trillium dangord@trillium.scinet.utoronto.ca &
+check_cluster trillium dangord@trillium.alliancecan.ca &
 
 wait
 
