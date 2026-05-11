@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <climits>
 #include <cmath>
 #include <cstring>
 #include <fstream>
@@ -42,6 +43,20 @@ static atomic<bool> g_found{false};
 static int g_sol[4][128];
 static int G_N;
 static Clock::time_point G_T0;
+
+// Diagnostic counters: best costs ever seen across all threads, plus
+// CD success rate (so we can tell if CD phase is even closing).
+static atomic<int> g_best_cd_cost{INT_MAX};
+static atomic<int> g_best_ab_cost{INT_MAX};
+static atomic<long long> g_cd_attempts{0};
+static atomic<long long> g_cd_successes{0};
+static atomic<long long> g_ab_attempts{0};
+
+static inline void update_min_atomic(atomic<int> &a, int v) {
+  int cur = a.load(memory_order_relaxed);
+  while (v < cur && !a.compare_exchange_weak(cur, v, memory_order_relaxed)) {
+  }
+}
 
 // All 16 combinations
 int comb16[16][4];
@@ -373,6 +388,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
       return true;
   }
 
+  update_min_atomic(g_best_cd_cost, best_cost);
   return best_cost == 0 && hall_ok(best_state.C, n, best_state.D, n);
 }
 
@@ -612,6 +628,7 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
       return true;
   }
 
+  update_min_atomic(g_best_ab_cost, best_cost);
   return best_cost == 0;
 }
 
@@ -668,9 +685,11 @@ int main(int argc, char **argv) {
       auto &sig = sigs[si];
 
       CDState best_cd;
+      g_cd_attempts.fetch_add(1, memory_order_relaxed);
       bool found_cd = solve_CD_SA(n, n1, sig.c, sig.d, best_cd, rng);
 
       if (found_cd) {
+        g_cd_successes.fetch_add(1, memory_order_relaxed);
         int cd_full[128] = {0};
         for (int s = 1; s < ms; s++) {
           for (int k = 0; k < n - s; k++)
@@ -679,6 +698,7 @@ int main(int argc, char **argv) {
         }
 
         ABState best_ab;
+        g_ab_attempts.fetch_add(1, memory_order_relaxed);
         bool found_ab = solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng);
 
         if (found_ab) {
@@ -730,8 +750,17 @@ int main(int argc, char **argv) {
         long long current_total = global_tries * thr;
         double t = chrono::duration<double>(Clock::now() - G_T0).count();
         double speed = (t > 0) ? ((global_tries * thr) / t) : 0.0;
-        cout << "[" << t << "s] SA epochs: " << current_total
-             << " Speed: " << speed << "\n"
+        int bcd = g_best_cd_cost.load(memory_order_relaxed);
+        int bab = g_best_ab_cost.load(memory_order_relaxed);
+        long long cda = g_cd_attempts.load(memory_order_relaxed);
+        long long cds = g_cd_successes.load(memory_order_relaxed);
+        long long aba = g_ab_attempts.load(memory_order_relaxed);
+        cout << "[" << t << "s] epochs=" << current_total
+             << " speed=" << speed
+             << " bestCD=" << (bcd == INT_MAX ? -1 : bcd)
+             << " bestAB=" << (bab == INT_MAX ? -1 : bab)
+             << " CDok=" << cds << "/" << cda
+             << " ABtry=" << aba << "\n"
              << flush;
       }
     }
