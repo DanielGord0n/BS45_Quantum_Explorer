@@ -208,13 +208,12 @@ struct CDState {
 };
 
 bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
-                 mt19937 &rng) {
-  CDState curr;
+                 mt19937 &rng, int sig_idx);
+
+static void cd_init_random(CDState &curr, int n, mt19937 &rng) {
   memset(curr.corr, 0, sizeof(curr.corr));
   curr.sum_c = 0;
   curr.sum_d = 0;
-
-  // Initialize random adhering to rules
   for (int d = 0; d < n / 2; d++) {
     int left = d;
     int right = n - 1 - d;
@@ -223,7 +222,6 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
       c_ptr = comb16[uniform_int_distribution<>(0, 15)(rng)];
     else
       c_ptr = comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
-
     curr.C[left] = c_ptr[0];
     curr.D[left] = c_ptr[1];
     curr.C[right] = c_ptr[2];
@@ -231,6 +229,28 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
     curr.sum_c += c_ptr[0] + c_ptr[2];
     curr.sum_d += c_ptr[1] + c_ptr[3];
   }
+  // For odd n, the middle position is unpaired; use comb4 (free ±1 ±1).
+  if (n % 2 == 1) {
+    int mid = n / 2;
+    const int *m_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+    curr.C[mid] = m_ptr[0];
+    curr.D[mid] = m_ptr[1];
+    curr.sum_c += m_ptr[0];
+    curr.sum_d += m_ptr[1];
+  }
+}
+
+// Per-signature CD champion for warm-starts across threads.
+struct CDChampion {
+  int cost;
+  CDState state;
+};
+static vector<CDChampion> g_cd_champ;
+
+bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
+                 mt19937 &rng, int sig_idx) {
+  CDState curr;
+  cd_init_random(curr, n, rng);
   // Compute correlations
   int ms = max(n1, n);
   for (int s = 1; s < ms; s++) {
@@ -245,34 +265,40 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
 
   SAParams sa;
   uniform_real_distribution<> prob(0.0, 1.0);
-  uniform_int_distribution<> d_dist(0, n / 2 - 1);
+  // For odd n, include d == n/2 to allow mutation of the middle position.
+  uniform_int_distribution<> d_dist(0, (n % 2 == 1) ? n / 2 : n / 2 - 1);
 
   // Adaptive restart loop: run multiple short SA cycles
   for (int restart = 0; restart < sa.restarts; restart++) {
     if (g_found.load(memory_order_relaxed))
       return false;
 
-    // Re-randomize state for each restart (except first which uses initial)
+    // Re-randomize state for each restart (except first which uses initial).
+    // With probability 0.3, warm-start from the per-sig champion if we have
+    // one that's better than a random init would likely be.
     if (restart > 0) {
-      memset(curr.corr, 0, sizeof(curr.corr));
-      curr.sum_c = 0;
-      curr.sum_d = 0;
-      for (int d = 0; d < n / 2; d++) {
-        int left = d, right = n - 1 - d;
-        const int *c_ptr =
-            (d == 0) ? comb16[uniform_int_distribution<>(0, 15)(rng)]
-                     : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
-        curr.C[left] = c_ptr[0];
-        curr.D[left] = c_ptr[1];
-        curr.C[right] = c_ptr[2];
-        curr.D[right] = c_ptr[3];
-        curr.sum_c += c_ptr[0] + c_ptr[2];
-        curr.sum_d += c_ptr[1] + c_ptr[3];
+      bool used_champion = false;
+      if (sig_idx >= 0 && (int)g_cd_champ.size() > sig_idx) {
+        int ch_cost;
+#pragma omp critical(cd_champ)
+        ch_cost = g_cd_champ[sig_idx].cost;
+        if (ch_cost < INT_MAX && prob(rng) < 0.3) {
+#pragma omp critical(cd_champ)
+          curr = g_cd_champ[sig_idx].state;
+          current_cost = ch_cost;
+          used_champion = true;
+        }
       }
-      for (int s = 1; s < ms; s++)
-        for (int i = 0; i < n - s; i++)
-          curr.corr[s] += curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
-      current_cost = curr.cost(tc, td, n1, n);
+      if (!used_champion) {
+        cd_init_random(curr, n, rng);
+        for (int s = 1; s < ms; s++)
+          curr.corr[s] = 0;
+        for (int s = 1; s < ms; s++)
+          for (int i = 0; i < n - s; i++)
+            curr.corr[s] +=
+                curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
+        current_cost = curr.cost(tc, td, n1, n);
+      }
     }
 
     double temp = sa.initial_temp;
@@ -296,6 +322,58 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
       }
 
       int d = d_dist(rng);
+
+      // Odd-n middle position: single-index mutation with comb4.
+      if (n % 2 == 1 && d == n / 2) {
+        int mid = n / 2;
+        int oldC = curr.C[mid], oldD = curr.D[mid];
+        const int *m_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+        int nC = m_ptr[0], nD = m_ptr[1];
+        if (oldC == nC && oldD == nD)
+          continue;
+        int old_sum_c = curr.sum_c, old_sum_d = curr.sum_d;
+        curr.sum_c += nC - oldC;
+        curr.sum_d += nD - oldD;
+        int delta_corr_mid[128] = {0};
+        for (int s = 1; s < ms; s++) {
+          if (mid - s >= 0)
+            delta_corr_mid[s] -=
+                curr.C[mid - s] * oldC + curr.D[mid - s] * oldD;
+          if (mid + s < n)
+            delta_corr_mid[s] -=
+                oldC * curr.C[mid + s] + oldD * curr.D[mid + s];
+        }
+        curr.C[mid] = nC;
+        curr.D[mid] = nD;
+        for (int s = 1; s < ms; s++) {
+          if (mid - s >= 0)
+            delta_corr_mid[s] += curr.C[mid - s] * nC + curr.D[mid - s] * nD;
+          if (mid + s < n)
+            delta_corr_mid[s] += nC * curr.C[mid + s] + nD * curr.D[mid + s];
+        }
+        for (int s = 1; s < ms; s++)
+          curr.corr[s] += delta_corr_mid[s];
+        int new_cost_mid = curr.cost(tc, td, n1, n);
+        if (new_cost_mid < current_cost ||
+            prob(rng) < exp(-(new_cost_mid - current_cost) / temp)) {
+          current_cost = new_cost_mid;
+          if (new_cost_mid < best_cost) {
+            best_cost = new_cost_mid;
+            best_state = curr;
+            no_improve = 0;
+          }
+        } else {
+          curr.C[mid] = oldC;
+          curr.D[mid] = oldD;
+          curr.sum_c = old_sum_c;
+          curr.sum_d = old_sum_d;
+          for (int s = 1; s < ms; s++)
+            curr.corr[s] -= delta_corr_mid[s];
+        }
+        temp *= sa.cooling_rate;
+        continue;
+      }
+
       int left = d;
       int right = n - 1 - d;
 
@@ -381,6 +459,17 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
       }
 
       temp *= sa.cooling_rate;
+    }
+
+    // Push best of this restart to the per-sig champion if it's an improvement.
+    if (sig_idx >= 0 && (int)g_cd_champ.size() > sig_idx) {
+#pragma omp critical(cd_champ)
+      {
+        if (best_cost < g_cd_champ[sig_idx].cost) {
+          g_cd_champ[sig_idx].cost = best_cost;
+          g_cd_champ[sig_idx].state = best_state;
+        }
+      }
     }
 
     // Early out if this restart found cost 0
@@ -661,6 +750,8 @@ int main(int argc, char **argv) {
   auto sigs = get_sigs(n);
   cout << "Loaded " << sigs.size() << " valid sum signatures." << endl << endl;
 
+  g_cd_champ.assign(sigs.size(), CDChampion{INT_MAX, {}});
+
   long long global_tries = 0;
 
 #pragma omp parallel reduction(+ : global_tries)
@@ -686,7 +777,7 @@ int main(int argc, char **argv) {
 
       CDState best_cd;
       g_cd_attempts.fetch_add(1, memory_order_relaxed);
-      bool found_cd = solve_CD_SA(n, n1, sig.c, sig.d, best_cd, rng);
+      bool found_cd = solve_CD_SA(n, n1, sig.c, sig.d, best_cd, rng, si);
 
       if (found_cd) {
         g_cd_successes.fetch_add(1, memory_order_relaxed);
