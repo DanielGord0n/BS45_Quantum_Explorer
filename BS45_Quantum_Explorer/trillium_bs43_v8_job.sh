@@ -10,7 +10,7 @@
 #SBATCH --mail-type=END,FAIL
 
 # === BS(43,42) v8 — Trillium ===
-# Seed offsets 12300-12309.
+# Seed offsets 13300-13309 (v8 + odd-n fix + champion + multi-AB + kicks).
 
 cd $SLURM_SUBMIT_DIR
 
@@ -18,7 +18,7 @@ module load StdEnv/2023
 module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-SEED_OFFSET=$((12300 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((13300 + SLURM_ARRAY_TASK_ID))
 BIN=wz_sa_v8_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="

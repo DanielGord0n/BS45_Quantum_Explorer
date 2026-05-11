@@ -321,6 +321,44 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
         no_improve = 0;
       }
 
+      // k-pair kick: when stuck above cost 0, resample 2-3 pairs simultaneously
+      // and accept unconditionally to escape coordinated basins. Standard ILS.
+      if (no_improve > 30000 && best_cost > 0) {
+        int k_kick = 2 + uniform_int_distribution<>(0, 1)(rng);
+        for (int kk = 0; kk < k_kick; kk++) {
+          int dk = d_dist(rng);
+          if (n % 2 == 1 && dk == n / 2) {
+            int mid = n / 2;
+            const int *m_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+            curr.sum_c += m_ptr[0] - curr.C[mid];
+            curr.sum_d += m_ptr[1] - curr.D[mid];
+            curr.C[mid] = m_ptr[0];
+            curr.D[mid] = m_ptr[1];
+          } else {
+            int lk = dk, rk = n - 1 - dk;
+            const int *c_ptr =
+                (dk == 0)
+                    ? comb16[uniform_int_distribution<>(0, 15)(rng)]
+                    : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+            curr.sum_c += (c_ptr[0] + c_ptr[2]) - (curr.C[lk] + curr.C[rk]);
+            curr.sum_d += (c_ptr[1] + c_ptr[3]) - (curr.D[lk] + curr.D[rk]);
+            curr.C[lk] = c_ptr[0];
+            curr.D[lk] = c_ptr[1];
+            curr.C[rk] = c_ptr[2];
+            curr.D[rk] = c_ptr[3];
+          }
+        }
+        memset(curr.corr, 0, sizeof(curr.corr));
+        for (int s = 1; s < ms; s++)
+          for (int i = 0; i < n - s; i++)
+            curr.corr[s] +=
+                curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
+        current_cost = curr.cost(tc, td, n1, n);
+        no_improve = 0;
+        temp = sa.initial_temp * 0.5;
+        continue;
+      }
+
       int d = d_dist(rng);
 
       // Odd-n middle position: single-index mutation with comb4.
@@ -788,9 +826,16 @@ int main(int argc, char **argv) {
                           best_cd.D[k] * best_cd.D[k + s];
         }
 
+        // Multi-AB-per-CD: amortize expensive CD success over several AB tries.
         ABState best_ab;
-        g_ab_attempts.fetch_add(1, memory_order_relaxed);
-        bool found_ab = solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng);
+        bool found_ab = false;
+        for (int ab_try = 0;
+             ab_try < 5 && !found_ab && !g_found.load(memory_order_relaxed);
+             ab_try++) {
+          g_ab_attempts.fetch_add(1, memory_order_relaxed);
+          if (solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng))
+            found_ab = true;
+        }
 
         if (found_ab) {
           bool valid = true;
