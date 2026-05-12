@@ -644,6 +644,42 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
         no_improve = 0;
       }
 
+      // k-pair kick (AB): resample 2-3 pairs simultaneously to escape basins.
+      if (no_improve > 30000 && best_cost > 0) {
+        int k_kick = 2 + uniform_int_distribution<>(0, 1)(rng);
+        for (int kk = 0; kk < k_kick; kk++) {
+          int dk = d_dist(rng);
+          int lk = dk, rk = n1 - 1 - dk;
+          if (lk == rk) {
+            const int *m_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+            curr.sum_a += m_ptr[0] - curr.A[lk];
+            curr.sum_b += m_ptr[1] - curr.B[lk];
+            curr.A[lk] = m_ptr[0];
+            curr.B[lk] = m_ptr[1];
+          } else {
+            const int *c_ptr =
+                (dk == 0)
+                    ? comb8_neg[uniform_int_distribution<>(0, 7)(rng)]
+                    : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+            curr.sum_a += (c_ptr[0] + c_ptr[2]) - (curr.A[lk] + curr.A[rk]);
+            curr.sum_b += (c_ptr[1] + c_ptr[3]) - (curr.B[lk] + curr.B[rk]);
+            curr.A[lk] = c_ptr[0];
+            curr.B[lk] = c_ptr[1];
+            curr.A[rk] = c_ptr[2];
+            curr.B[rk] = c_ptr[3];
+          }
+        }
+        memset(curr.corr, 0, sizeof(curr.corr));
+        for (int s = 1; s < ms; s++)
+          for (int i = 0; i < n1 - s; i++)
+            curr.corr[s] +=
+                curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+        current_cost = curr.cost(ta, tb, n1, cd_full);
+        no_improve = 0;
+        temp = sa.initial_temp * 0.5;
+        continue;
+      }
+
       int d = d_dist(rng);
       int left = d;
       int right = n1 - 1 - d;

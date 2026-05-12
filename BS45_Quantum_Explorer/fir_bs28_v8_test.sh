@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=192
-#SBATCH --time=01:00:00
+#SBATCH --time=02:00:00
 #SBATCH --job-name=BS28_v8_fir
 #SBATCH --output=bs28_v8_fir_output_%A_%a.txt
 #SBATCH --array=0-2
@@ -20,7 +20,7 @@ module load StdEnv/2023
 module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-SEED_OFFSET=$((28000 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((28100 + SLURM_ARRAY_TASK_ID))
 BIN=wz_sa_v8_bs28_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="
