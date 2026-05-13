@@ -2,28 +2,31 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=192
-#SBATCH --time=02:00:00
-#SBATCH --job-name=BS34_v8_fir
-#SBATCH --output=bs34_v8_fir_output_%A_%a.txt
-#SBATCH --array=0-2
-#SBATCH --account=def-ikotsire
+#SBATCH --time=24:00:00
+#SBATCH --job-name=BS45_v8_nibi
+#SBATCH --output=bs45_v8_nibi_output_%A_%a.txt
+#SBATCH --array=0-9
+#SBATCH --account=def-ikotsire_cpu
 #SBATCH --mail-type=END,FAIL
 
-# === BS(34,33) v8 regression test — Fir ===
-# Tests v8 with odd-n CD encoding fix on a mid-size case.
-# 3 tasks × 2h, seed offsets 34000-34002.
+# === BS(45,44) v8 — Nibi ===
+# WORLD-RECORD target. Submit after BS(43,42) is reproduced.
+# Seed offsets 45200-45209.
 
 cd $SLURM_SUBMIT_DIR
 
 module load StdEnv/2023
 module load gcc/12.3
 
+export TMPDIR=$SCRATCH/tmp
+mkdir -p $TMPDIR
+
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-SEED_OFFSET=$((34200 + SLURM_ARRAY_TASK_ID))
-BIN=wz_sa_v8_bs34_${SLURM_ARRAY_TASK_ID}
+SEED_OFFSET=$((45200 + SLURM_ARRAY_TASK_ID))
+BIN=wz_sa_v8_bs45_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="
-echo "  BS(34,33) v8 regression — Fir"
+echo "  BS(45,44) v8 — Nibi — WORLD RECORD ATTEMPT"
 echo "  Job: $SLURM_ARRAY_JOB_ID  Task: $SLURM_ARRAY_TASK_ID"
 echo "  Node: $(hostname)  Cores: $OMP_NUM_THREADS"
 echo "  Seed Offset: $SEED_OFFSET"
@@ -32,7 +35,7 @@ echo "=============================================="
 
 g++ -O3 -march=native -std=c++17 -fopenmp -o $BIN src/solver/wz_sa_v8.cpp || exit 1
 
-./$BIN 33 $SEED_OFFSET
+./$BIN 44 $SEED_OFFSET
 
 rm -f $BIN
 echo "=== Task $SLURM_ARRAY_TASK_ID finished at $(date) ==="

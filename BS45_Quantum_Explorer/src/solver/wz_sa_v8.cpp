@@ -247,6 +247,19 @@ struct CDChampion {
 };
 static vector<CDChampion> g_cd_champ;
 
+// AB-phase plateau diagnostics. Populated whenever solve_AB_SA terminates
+// with 0 < best_cost < 64. Tells us WHICH shifts dominate the residual and
+// WHERE (which cost buckets) AB attempts get stuck.
+static atomic<long long> g_ab_shift_residual[128];
+static atomic<long long> g_ab_term_hist[256];
+static atomic<long long> g_ab_terminations{0};
+static atomic<long long> g_ab_sum_residual{0};
+static atomic<long long> g_ab_npaf_residual{0};
+
+// Commit B: AB champion sharing + adaptive multi-AB-per-CD counters.
+static atomic<long long> g_ab_champion_hits{0};      // # of warm-starts from champion
+static atomic<long long> g_ab_attempts_skipped{0};   // # of AB tries skipped by early-exit
+
 bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
                  mt19937 &rng, int sig_idx) {
   CDState curr;
@@ -544,8 +557,18 @@ struct ABState {
   }
 };
 
+// Per-signature AB champion for warm-starts across threads (mirrors CDChampion).
+// Stores the best-so-far A,B state for each signature. corr depends only on A,B
+// so it remains valid across the champion's lifetime; the cost is recomputed at
+// warm-start time because it depends on the current cd_full (different per CD).
+struct ABChampion {
+  int cost;
+  ABState state;
+};
+static vector<ABChampion> g_ab_champ;
+
 bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
-                 ABState &best_state, mt19937 &rng) {
+                 ABState &best_state, mt19937 &rng, int sig_idx) {
   ABState curr;
   memset(curr.corr, 0, sizeof(curr.corr));
   curr.sum_a = 0;
@@ -597,35 +620,52 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
     if (g_found.load(memory_order_relaxed))
       return false;
 
-    // Re-randomize for restarts after the first
+    // Re-randomize (or warm-start from champion) for restarts after the first.
     if (restart > 0) {
-      memset(curr.corr, 0, sizeof(curr.corr));
-      curr.sum_a = 0;
-      curr.sum_b = 0;
-      for (int d = 0; d < n1 / 2; d++) {
-        int left = d, right = n1 - 1 - d;
-        const int *c_ptr =
-            (d == 0) ? comb8_neg[uniform_int_distribution<>(0, 7)(rng)]
-                     : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
-        curr.A[left] = c_ptr[0];
-        curr.B[left] = c_ptr[1];
-        curr.A[right] = c_ptr[2];
-        curr.B[right] = c_ptr[3];
-        curr.sum_a += c_ptr[0] + c_ptr[2];
-        curr.sum_b += c_ptr[1] + c_ptr[3];
+      bool used_champion = false;
+      if (sig_idx >= 0 && (int)g_ab_champ.size() > sig_idx) {
+        int ch_cost;
+#pragma omp critical(ab_champ)
+        ch_cost = g_ab_champ[sig_idx].cost;
+        if (ch_cost < INT_MAX && prob(rng) < 0.3) {
+#pragma omp critical(ab_champ)
+          curr = g_ab_champ[sig_idx].state;
+          // Champion's corr is the AB self-correlation (depends only on A,B).
+          // Recompute cost against the *current* cd_full (different per CD success).
+          current_cost = curr.cost(ta, tb, n1, cd_full);
+          used_champion = true;
+          g_ab_champion_hits.fetch_add(1, memory_order_relaxed);
+        }
       }
-      if (n1 % 2 != 0) {
-        int mid = n1 / 2;
-        const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
-        curr.A[mid] = c_ptr[0];
-        curr.B[mid] = c_ptr[1];
-        curr.sum_a += c_ptr[0];
-        curr.sum_b += c_ptr[1];
+      if (!used_champion) {
+        memset(curr.corr, 0, sizeof(curr.corr));
+        curr.sum_a = 0;
+        curr.sum_b = 0;
+        for (int d = 0; d < n1 / 2; d++) {
+          int left = d, right = n1 - 1 - d;
+          const int *c_ptr =
+              (d == 0) ? comb8_neg[uniform_int_distribution<>(0, 7)(rng)]
+                       : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+          curr.A[left] = c_ptr[0];
+          curr.B[left] = c_ptr[1];
+          curr.A[right] = c_ptr[2];
+          curr.B[right] = c_ptr[3];
+          curr.sum_a += c_ptr[0] + c_ptr[2];
+          curr.sum_b += c_ptr[1] + c_ptr[3];
+        }
+        if (n1 % 2 != 0) {
+          int mid = n1 / 2;
+          const int *c_ptr = comb4[uniform_int_distribution<>(0, 3)(rng)];
+          curr.A[mid] = c_ptr[0];
+          curr.B[mid] = c_ptr[1];
+          curr.sum_a += c_ptr[0];
+          curr.sum_b += c_ptr[1];
+        }
+        for (int s = 1; s < ms; s++)
+          for (int i = 0; i < n1 - s; i++)
+            curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
+        current_cost = curr.cost(ta, tb, n1, cd_full);
       }
-      for (int s = 1; s < ms; s++)
-        for (int i = 0; i < n1 - s; i++)
-          curr.corr[s] += curr.A[i] * curr.A[i + s] + curr.B[i] * curr.B[i + s];
-      current_cost = curr.cost(ta, tb, n1, cd_full);
     }
 
     double temp = sa.initial_temp;
@@ -787,11 +827,44 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
       temp *= sa.cooling_rate;
     }
 
+    // Push to per-signature AB champion (best so far for this signature
+    // across all threads). Mirrors the CD champion update pattern.
+    if (sig_idx >= 0 && (int)g_ab_champ.size() > sig_idx) {
+#pragma omp critical(ab_champ)
+      {
+        if (best_cost < g_ab_champ[sig_idx].cost) {
+          g_ab_champ[sig_idx].cost = best_cost;
+          g_ab_champ[sig_idx].state = best_state;
+        }
+      }
+    }
+
     if (best_cost == 0)
       return true;
   }
 
   update_min_atomic(g_best_ab_cost, best_cost);
+
+  // Plateau diagnostic: record which shifts dominate the residual and
+  // which cost bucket this attempt terminated in. Only sample attempts
+  // that ended in a typical plateau range (skip wildly bad terminations).
+  if (best_cost > 0 && best_cost < 64) {
+    int sum_diff = abs(best_state.sum_a - ta) + abs(best_state.sum_b - tb);
+    long long npaf_pen = 0;
+    for (int s = 1; s < ms; s++) {
+      int r = best_state.corr[s] + cd_full[s];
+      if (r != 0) {
+        int ar = r < 0 ? -r : r;
+        npaf_pen += ar;
+        g_ab_shift_residual[s].fetch_add(ar, memory_order_relaxed);
+      }
+    }
+    g_ab_sum_residual.fetch_add(sum_diff, memory_order_relaxed);
+    g_ab_npaf_residual.fetch_add(npaf_pen, memory_order_relaxed);
+    g_ab_term_hist[best_cost].fetch_add(1, memory_order_relaxed);
+    g_ab_terminations.fetch_add(1, memory_order_relaxed);
+  }
+
   return best_cost == 0;
 }
 
@@ -825,6 +898,7 @@ int main(int argc, char **argv) {
   cout << "Loaded " << sigs.size() << " valid sum signatures." << endl << endl;
 
   g_cd_champ.assign(sigs.size(), CDChampion{INT_MAX, {}});
+  g_ab_champ.assign(sigs.size(), ABChampion{INT_MAX, {}});
 
   long long global_tries = 0;
 
@@ -863,14 +937,30 @@ int main(int argc, char **argv) {
         }
 
         // Multi-AB-per-CD: amortize expensive CD success over several AB tries.
+        // Adaptive early-exit: if 3 attempts in a row terminate at the same
+        // non-zero cost, this CD is in a stuck basin; abandon it.
         ABState best_ab;
         bool found_ab = false;
+        const int kAbTriesMax = 15;
+        int recent[3] = {-1, -1, -1};
         for (int ab_try = 0;
-             ab_try < 5 && !found_ab && !g_found.load(memory_order_relaxed);
+             ab_try < kAbTriesMax && !found_ab && !g_found.load(memory_order_relaxed);
              ab_try++) {
           g_ab_attempts.fetch_add(1, memory_order_relaxed);
-          if (solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng))
+          if (solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng, si)) {
             found_ab = true;
+            break;
+          }
+          int this_cost = best_ab.cost(sig.a, sig.b, n1, cd_full);
+          recent[0] = recent[1];
+          recent[1] = recent[2];
+          recent[2] = this_cost;
+          if (ab_try >= 2 && this_cost > 0 &&
+              recent[0] == this_cost && recent[1] == this_cost) {
+            g_ab_attempts_skipped.fetch_add(kAbTriesMax - ab_try - 1,
+                                            memory_order_relaxed);
+            break;
+          }
         }
 
         if (found_ab) {
@@ -927,13 +1017,57 @@ int main(int argc, char **argv) {
         long long cda = g_cd_attempts.load(memory_order_relaxed);
         long long cds = g_cd_successes.load(memory_order_relaxed);
         long long aba = g_ab_attempts.load(memory_order_relaxed);
+        long long abterm = g_ab_terminations.load(memory_order_relaxed);
+        long long absum = g_ab_sum_residual.load(memory_order_relaxed);
+        long long abnpaf = g_ab_npaf_residual.load(memory_order_relaxed);
+        long long abch = g_ab_champion_hits.load(memory_order_relaxed);
+        long long absk = g_ab_attempts_skipped.load(memory_order_relaxed);
+
+        // Top-5 shifts by accumulated residual.
+        pair<long long, int> top_shifts[5] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+        for (int s = 1; s < 128; s++) {
+          long long v = g_ab_shift_residual[s].load(memory_order_relaxed);
+          if (v > top_shifts[4].first) {
+            top_shifts[4] = {v, s};
+            for (int k = 4; k > 0 && top_shifts[k].first > top_shifts[k - 1].first; k--)
+              swap(top_shifts[k], top_shifts[k - 1]);
+          }
+        }
+
+        // Top-5 termination cost buckets by count.
+        pair<long long, int> top_buckets[5] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+        for (int c = 1; c < 256; c++) {
+          long long v = g_ab_term_hist[c].load(memory_order_relaxed);
+          if (v > top_buckets[4].first) {
+            top_buckets[4] = {v, c};
+            for (int k = 4; k > 0 && top_buckets[k].first > top_buckets[k - 1].first; k--)
+              swap(top_buckets[k], top_buckets[k - 1]);
+          }
+        }
+
         cout << "[" << t << "s] epochs=" << current_total
              << " speed=" << speed
              << " bestCD=" << (bcd == INT_MAX ? -1 : bcd)
              << " bestAB=" << (bab == INT_MAX ? -1 : bab)
              << " CDok=" << cds << "/" << cda
-             << " ABtry=" << aba << "\n"
-             << flush;
+             << " ABtry=" << aba
+             << " ABterm=" << abterm
+             << " ABchamp=" << abch
+             << " ABskip=" << absk
+             << " ab_resid=sum:" << absum << "/npaf:" << abnpaf
+             << " shifts_top=";
+        for (int k = 0; k < 5; k++) {
+          if (top_shifts[k].first == 0) break;
+          if (k) cout << ",";
+          cout << "s" << top_shifts[k].second << ":" << top_shifts[k].first;
+        }
+        cout << " term_hist=";
+        for (int k = 0; k < 5; k++) {
+          if (top_buckets[k].first == 0) break;
+          if (k) cout << ",";
+          cout << top_buckets[k].second << ":" << top_buckets[k].first;
+        }
+        cout << "\n" << flush;
       }
     }
   }
