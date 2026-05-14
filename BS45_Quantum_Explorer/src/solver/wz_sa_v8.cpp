@@ -192,15 +192,25 @@ struct CDState {
   int C[128], D[128];
   int sum_c, sum_d;
   int corr[128];
-  int cost(int tc, int td, int n1, int n) const {
+  int cost(int tc, int td, int n1, int n, const int *ab_full = nullptr) const {
     int diff_c = abs(sum_c - tc);
     int diff_d = abs(sum_d - td);
     int pen = 0;
     int ms = max(n1, n);
-    for (int s = 1; s < ms; s++) {
-      int max_ab = (s < n1) ? 2 * (n1 - s) : 0;
-      if (abs(corr[s]) > max_ab) {
-        pen += abs(corr[s]) - max_ab;
+    if (ab_full) {
+      // Coupled objective (alternating refinement): CD must cancel a fixed AB
+      // exactly. cost 0 here == full NPAF=0 solution for (this CD, that AB).
+      for (int s = 1; s < ms; s++)
+        pen += abs(corr[s] + ab_full[s]);
+    } else {
+      // Warm-start objective: sum-matching only. NOTE: the magnitude term
+      // below is always 0 for any valid CD, since |corr_CD[s]| <= 2(n-s) <
+      // 2(n1-s). It exists only to seed the refinement with a sum-correct CD.
+      for (int s = 1; s < ms; s++) {
+        int max_ab = (s < n1) ? 2 * (n1 - s) : 0;
+        if (abs(corr[s]) > max_ab) {
+          pen += abs(corr[s]) - max_ab;
+        }
       }
     }
     return diff_c * 5 + diff_d * 5 + pen;
@@ -208,7 +218,7 @@ struct CDState {
 };
 
 bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
-                 mt19937 &rng, int sig_idx);
+                 mt19937 &rng, int sig_idx, const int *ab_full = nullptr);
 
 static void cd_init_random(CDState &curr, int n, mt19937 &rng) {
   memset(curr.corr, 0, sizeof(curr.corr));
@@ -260,8 +270,12 @@ static atomic<long long> g_ab_npaf_residual{0};
 static atomic<long long> g_ab_champion_hits{0};      // # of warm-starts from champion
 static atomic<long long> g_ab_attempts_skipped{0};   // # of AB tries skipped by early-exit
 
+// Commit C: alternating CD<->AB refinement (block coordinate descent on the
+// true coupled objective). g_refine_rounds = total CD-against-AB passes run.
+static atomic<long long> g_refine_rounds{0};
+
 bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
-                 mt19937 &rng, int sig_idx) {
+                 mt19937 &rng, int sig_idx, const int *ab_full) {
   CDState curr;
   cd_init_random(curr, n, rng);
   // Compute correlations
@@ -272,7 +286,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
     }
   }
 
-  int current_cost = curr.cost(tc, td, n1, n);
+  int current_cost = curr.cost(tc, td, n1, n, ab_full);
   best_state = curr;
   int best_cost = current_cost;
 
@@ -298,7 +312,9 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
         if (ch_cost < INT_MAX && prob(rng) < 0.3) {
 #pragma omp critical(cd_champ)
           curr = g_cd_champ[sig_idx].state;
-          current_cost = ch_cost;
+          // The champion's cached cost is the warm-start (sum-only) cost.
+          // In refinement mode the objective differs, so recompute.
+          current_cost = ab_full ? curr.cost(tc, td, n1, n, ab_full) : ch_cost;
           used_champion = true;
         }
       }
@@ -310,7 +326,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
           for (int i = 0; i < n - s; i++)
             curr.corr[s] +=
                 curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
-        current_cost = curr.cost(tc, td, n1, n);
+        current_cost = curr.cost(tc, td, n1, n, ab_full);
       }
     }
 
@@ -366,7 +382,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
           for (int i = 0; i < n - s; i++)
             curr.corr[s] +=
                 curr.C[i] * curr.C[i + s] + curr.D[i] * curr.D[i + s];
-        current_cost = curr.cost(tc, td, n1, n);
+        current_cost = curr.cost(tc, td, n1, n, ab_full);
         no_improve = 0;
         temp = sa.initial_temp * 0.5;
         continue;
@@ -404,7 +420,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
         }
         for (int s = 1; s < ms; s++)
           curr.corr[s] += delta_corr_mid[s];
-        int new_cost_mid = curr.cost(tc, td, n1, n);
+        int new_cost_mid = curr.cost(tc, td, n1, n, ab_full);
         if (new_cost_mid < current_cost ||
             prob(rng) < exp(-(new_cost_mid - current_cost) / temp)) {
           current_cost = new_cost_mid;
@@ -488,7 +504,7 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
       for (int s = 1; s < ms; s++)
         curr.corr[s] += delta_corr[s];
 
-      int new_cost = curr.cost(tc, td, n1, n);
+      int new_cost = curr.cost(tc, td, n1, n, ab_full);
 
       if (new_cost < current_cost ||
           prob(rng) < exp(-(new_cost - current_cost) / temp)) {
@@ -528,7 +544,13 @@ bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
       return true;
   }
 
-  update_min_atomic(g_best_cd_cost, best_cost);
+  // In refinement mode the "cost" is the coupled NPAF residual, the same
+  // objective the AB phase minimizes — surface it via g_best_ab_cost so the
+  // log's bestAB reflects progress from BOTH search directions.
+  if (ab_full)
+    update_min_atomic(g_best_ab_cost, best_cost);
+  else
+    update_min_atomic(g_best_cd_cost, best_cost);
   return best_cost == 0 && hall_ok(best_state.C, n, best_state.D, n);
 }
 
@@ -936,31 +958,85 @@ int main(int argc, char **argv) {
                           best_cd.D[k] * best_cd.D[k + s];
         }
 
-        // Multi-AB-per-CD: amortize expensive CD success over several AB tries.
-        // Adaptive early-exit: if 3 attempts in a row terminate at the same
-        // non-zero cost, this CD is in a stuck basin; abandon it.
         ABState best_ab;
-        bool found_ab = false;
-        const int kAbTriesMax = 15;
-        int recent[3] = {-1, -1, -1};
-        for (int ab_try = 0;
-             ab_try < kAbTriesMax && !found_ab && !g_found.load(memory_order_relaxed);
-             ab_try++) {
-          g_ab_attempts.fetch_add(1, memory_order_relaxed);
-          if (solve_AB_SA(n1, sig.a, sig.b, cd_full, best_ab, rng, si)) {
+        bool have_ab = false;   // best_ab holds a valid state
+        bool found_ab = false;  // full NPAF=0 solution reached
+        const int kAbTriesInit = 4;
+
+        // One AB pass against the current cd_full. Keeps the best AB across
+        // tries (solve_AB_SA overwrites its out-param, so we compare costs).
+        auto ab_pass = [&]() {
+          for (int t = 0; t < kAbTriesInit && !found_ab &&
+                          !g_found.load(memory_order_relaxed);
+               t++) {
+            ABState trial;
+            g_ab_attempts.fetch_add(1, memory_order_relaxed);
+            if (solve_AB_SA(n1, sig.a, sig.b, cd_full, trial, rng, si)) {
+              best_ab = trial;
+              have_ab = true;
+              found_ab = true;
+              return;
+            }
+            if (!have_ab ||
+                trial.cost(sig.a, sig.b, n1, cd_full) <
+                    best_ab.cost(sig.a, sig.b, n1, cd_full)) {
+              best_ab = trial;
+              have_ab = true;
+            }
+          }
+        };
+
+        // Initial AB pass against the sum-correct warm-start CD.
+        ab_pass();
+
+        // === Alternating refinement (the real coupled solve) ===
+        // The warm-start CD only matched sums; it almost never admits a
+        // compensating AB. So do block coordinate descent on the TRUE
+        // objective Sum|corr_CD[s]+corr_AB[s]|: freeze AB, move CD to cancel
+        // it; freeze CD, move AB; repeat. Each half-step is guarded so it
+        // never regresses the coupled cost, so the pair is pulled toward
+        // NPAF=0 together rather than random-walking.
+        const int kRefineRounds = 12;
+        for (int round = 0;
+             round < kRefineRounds && !found_ab && have_ab &&
+             !g_found.load(memory_order_relaxed);
+             round++) {
+          g_refine_rounds.fetch_add(1, memory_order_relaxed);
+
+          // Freeze AB: ab_full[s] = autocorrelation of the current best AB.
+          int ab_full[128] = {0};
+          for (int s = 1; s < ms; s++)
+            for (int i = 0; i < n1 - s; i++)
+              ab_full[s] += best_ab.A[i] * best_ab.A[i + s] +
+                            best_ab.B[i] * best_ab.B[i + s];
+
+          // Move CD against the frozen AB on the coupled objective.
+          // sig_idx = -1: the CD champion pool is keyed to the warm-start
+          // objective, so it must not be mixed into refinement scoring.
+          CDState refined_cd;
+          bool cd_solved =
+              solve_CD_SA(n, n1, sig.c, sig.d, refined_cd, rng, -1, ab_full);
+          // Guarded CD-step: keep refined_cd only if it cancels the frozen AB
+          // at least as well as the incumbent (or if it fully solved).
+          if (cd_solved ||
+              refined_cd.cost(sig.c, sig.d, n1, n, ab_full) <
+                  best_cd.cost(sig.c, sig.d, n1, n, ab_full)) {
+            best_cd = refined_cd;
+          }
+          for (int s = 1; s < ms; s++) {
+            cd_full[s] = 0;
+            for (int k = 0; k < n - s; k++)
+              cd_full[s] += best_cd.C[k] * best_cd.C[k + s] +
+                            best_cd.D[k] * best_cd.D[k + s];
+          }
+          if (cd_solved) {
+            // refined_cd cancels best_ab exactly -> full NPAF=0 solution.
             found_ab = true;
             break;
           }
-          int this_cost = best_ab.cost(sig.a, sig.b, n1, cd_full);
-          recent[0] = recent[1];
-          recent[1] = recent[2];
-          recent[2] = this_cost;
-          if (ab_try >= 2 && this_cost > 0 &&
-              recent[0] == this_cost && recent[1] == this_cost) {
-            g_ab_attempts_skipped.fetch_add(kAbTriesMax - ab_try - 1,
-                                            memory_order_relaxed);
-            break;
-          }
+
+          // Freeze CD: move AB against the refined CD (keeps best across tries).
+          ab_pass();
         }
 
         if (found_ab) {
@@ -1022,6 +1098,7 @@ int main(int argc, char **argv) {
         long long abnpaf = g_ab_npaf_residual.load(memory_order_relaxed);
         long long abch = g_ab_champion_hits.load(memory_order_relaxed);
         long long absk = g_ab_attempts_skipped.load(memory_order_relaxed);
+        long long refr = g_refine_rounds.load(memory_order_relaxed);
 
         // Top-5 shifts by accumulated residual.
         pair<long long, int> top_shifts[5] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
@@ -1054,6 +1131,7 @@ int main(int argc, char **argv) {
              << " ABterm=" << abterm
              << " ABchamp=" << abch
              << " ABskip=" << absk
+             << " refine=" << refr
              << " ab_resid=sum:" << absum << "/npaf:" << abnpaf
              << " shifts_top=";
         for (int k = 0; k < 5; k++) {
