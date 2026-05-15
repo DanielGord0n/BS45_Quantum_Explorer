@@ -274,6 +274,10 @@ static atomic<long long> g_ab_attempts_skipped{0};   // # of AB tries skipped by
 // true coupled objective). g_refine_rounds = total CD-against-AB passes run.
 static atomic<long long> g_refine_rounds{0};
 
+// Commit D: stall detector + CD perturbation kick to escape BCD local minima.
+// g_refine_kicks = total perturbation kicks fired between refinement rounds.
+static atomic<long long> g_refine_kicks{0};
+
 bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
                  mt19937 &rng, int sig_idx, const int *ab_full) {
   CDState curr;
@@ -990,13 +994,20 @@ int main(int argc, char **argv) {
         ab_pass();
 
         // === Alternating refinement (the real coupled solve) ===
-        // The warm-start CD only matched sums; it almost never admits a
-        // compensating AB. So do block coordinate descent on the TRUE
-        // objective Sum|corr_CD[s]+corr_AB[s]|: freeze AB, move CD to cancel
-        // it; freeze CD, move AB; repeat. Each half-step is guarded so it
-        // never regresses the coupled cost, so the pair is pulled toward
-        // NPAF=0 together rather than random-walking.
-        const int kRefineRounds = 12;
+        // BCD on the TRUE coupled objective Sum|corr_CD[s]+corr_AB[s]|: freeze
+        // AB, move CD; freeze CD, move AB; repeat. Each half-step is guarded
+        // so it never regresses the coupled cost. When the alternation stalls
+        // (consecutive rounds with no improvement) we perturb CD by flipping
+        // 2-3 random pairs — same k-pair kick the inner SAs already use, but
+        // lifted up to the BCD level to escape coupled local minima (cf. the
+        // bestAB=8/12 plateau Commit C produced on BS(28)/BS(34)).
+        const int kRefineRounds = 16;
+        int prev_coupled = INT_MAX;
+        int stall_count = 0;
+        uniform_int_distribution<> cd_d_dist(
+            0, (n % 2 == 1) ? n / 2 : n / 2 - 1);
+        uniform_real_distribution<> prob01(0.0, 1.0);
+        (void)prob01;  // reserved for future per-step decisions
         for (int round = 0;
              round < kRefineRounds && !found_ab && have_ab &&
              !g_found.load(memory_order_relaxed);
@@ -1018,21 +1029,83 @@ int main(int argc, char **argv) {
               solve_CD_SA(n, n1, sig.c, sig.d, refined_cd, rng, -1, ab_full);
           // Guarded CD-step: keep refined_cd only if it cancels the frozen AB
           // at least as well as the incumbent (or if it fully solved).
-          if (cd_solved ||
-              refined_cd.cost(sig.c, sig.d, n1, n, ab_full) <
-                  best_cd.cost(sig.c, sig.d, n1, n, ab_full)) {
+          int refined_coupled =
+              refined_cd.cost(sig.c, sig.d, n1, n, ab_full);
+          int incumbent_coupled =
+              best_cd.cost(sig.c, sig.d, n1, n, ab_full);
+          if (cd_solved || refined_coupled < incumbent_coupled) {
             best_cd = refined_cd;
           }
+          if (cd_solved) {
+            // refined_cd cancels best_ab exactly -> full NPAF=0 solution.
+            for (int s = 1; s < ms; s++) {
+              cd_full[s] = 0;
+              for (int k = 0; k < n - s; k++)
+                cd_full[s] += best_cd.C[k] * best_cd.C[k + s] +
+                              best_cd.D[k] * best_cd.D[k + s];
+            }
+            found_ab = true;
+            break;
+          }
+
+          // Stall detector: if the CD-step couldn't beat the incumbent against
+          // this frozen AB, perturb CD before the next AB step. Two stalls in
+          // a row trigger the kick; a single stall might just be SA variance.
+          int round_coupled = min(refined_coupled, incumbent_coupled);
+          if (round_coupled >= prev_coupled) {
+            stall_count++;
+          } else {
+            stall_count = 0;
+          }
+          prev_coupled = round_coupled;
+
+          if (stall_count >= 2) {
+            // Perturb best_cd: resample 2-3 random pairs from the comb tables.
+            // Updates corr incrementally is messy here, so just recompute
+            // from scratch after the kick (k <= 3 pairs is cheap).
+            int k_kick = 2 + uniform_int_distribution<>(0, 1)(rng);
+            for (int kk = 0; kk < k_kick; kk++) {
+              int dk = cd_d_dist(rng);
+              if (n % 2 == 1 && dk == n / 2) {
+                int mid = n / 2;
+                const int *m_ptr =
+                    comb4[uniform_int_distribution<>(0, 3)(rng)];
+                best_cd.sum_c += m_ptr[0] - best_cd.C[mid];
+                best_cd.sum_d += m_ptr[1] - best_cd.D[mid];
+                best_cd.C[mid] = m_ptr[0];
+                best_cd.D[mid] = m_ptr[1];
+              } else {
+                int lk = dk, rk = n - 1 - dk;
+                const int *c_ptr =
+                    (dk == 0)
+                        ? comb16[uniform_int_distribution<>(0, 15)(rng)]
+                        : comb8_pos[uniform_int_distribution<>(0, 7)(rng)];
+                best_cd.sum_c +=
+                    (c_ptr[0] + c_ptr[2]) - (best_cd.C[lk] + best_cd.C[rk]);
+                best_cd.sum_d +=
+                    (c_ptr[1] + c_ptr[3]) - (best_cd.D[lk] + best_cd.D[rk]);
+                best_cd.C[lk] = c_ptr[0];
+                best_cd.D[lk] = c_ptr[1];
+                best_cd.C[rk] = c_ptr[2];
+                best_cd.D[rk] = c_ptr[3];
+              }
+            }
+            memset(best_cd.corr, 0, sizeof(best_cd.corr));
+            for (int s = 1; s < ms; s++)
+              for (int k = 0; k < n - s; k++)
+                best_cd.corr[s] += best_cd.C[k] * best_cd.C[k + s] +
+                                   best_cd.D[k] * best_cd.D[k + s];
+            g_refine_kicks.fetch_add(1, memory_order_relaxed);
+            stall_count = 0;
+            prev_coupled = INT_MAX;  // give post-kick state a clean slate
+          }
+
+          // Recompute cd_full from (possibly perturbed) best_cd.
           for (int s = 1; s < ms; s++) {
             cd_full[s] = 0;
             for (int k = 0; k < n - s; k++)
               cd_full[s] += best_cd.C[k] * best_cd.C[k + s] +
                             best_cd.D[k] * best_cd.D[k + s];
-          }
-          if (cd_solved) {
-            // refined_cd cancels best_ab exactly -> full NPAF=0 solution.
-            found_ab = true;
-            break;
           }
 
           // Freeze CD: move AB against the refined CD (keeps best across tries).
@@ -1099,6 +1172,7 @@ int main(int argc, char **argv) {
         long long abch = g_ab_champion_hits.load(memory_order_relaxed);
         long long absk = g_ab_attempts_skipped.load(memory_order_relaxed);
         long long refr = g_refine_rounds.load(memory_order_relaxed);
+        long long refk = g_refine_kicks.load(memory_order_relaxed);
 
         // Top-5 shifts by accumulated residual.
         pair<long long, int> top_shifts[5] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
@@ -1132,6 +1206,7 @@ int main(int argc, char **argv) {
              << " ABchamp=" << abch
              << " ABskip=" << absk
              << " refine=" << refr
+             << " kicks=" << refk
              << " ab_resid=sum:" << absum << "/npaf:" << abnpaf
              << " shifts_top=";
         for (int k = 0; k < 5; k++) {
