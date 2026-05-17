@@ -908,11 +908,29 @@ bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    cerr << "Usage: " << argv[0] << " <n> [seed_offset]" << endl;
+    cerr << "Usage: " << argv[0] << " <n> [seed_offset] [a,b,c,d]" << endl
+         << "  a,b,c,d (optional): lock signature for diagnostic single-sig run"
+         << endl;
     return 1;
   }
   int n = atoi(argv[1]);
   int seed_offset = (argc >= 3) ? atoi(argv[2]) : 0;
+  // Optional argv[3] = "a,b,c,d" to lock signature selection to a single sig.
+  // Diagnostic only: prove the SA can find a known solution (e.g. BS(43,42)
+  // with sig 7,11,0,0) when given the right sig — separates SA bottleneck
+  // from signature-selection bottleneck.
+  int lock_a = 0, lock_b = 0, lock_c = 0, lock_d = 0;
+  bool lock_sig = false;
+  if (argc >= 4) {
+    int parsed = sscanf(argv[3], "%d,%d,%d,%d",
+                        &lock_a, &lock_b, &lock_c, &lock_d);
+    if (parsed != 4) {
+      cerr << "ERROR: --lock-sig requires 'a,b,c,d' format (got '"
+           << argv[3] << "')" << endl;
+      return 1;
+    }
+    lock_sig = true;
+  }
   G_N = n;
   int n1 = n + 1;
   int ms = max(n1, n);
@@ -933,7 +951,28 @@ int main(int argc, char **argv) {
 
   G_T0 = Clock::now();
   auto sigs = get_sigs(n);
-  cout << "Loaded " << sigs.size() << " valid sum signatures." << endl << endl;
+  cout << "Loaded " << sigs.size() << " valid sum signatures." << endl;
+
+  int locked_sig_idx = -1;
+  if (lock_sig) {
+    for (int i = 0; i < (int)sigs.size(); i++) {
+      if (sigs[i].a == lock_a && sigs[i].b == lock_b &&
+          sigs[i].c == lock_c && sigs[i].d == lock_d) {
+        locked_sig_idx = i;
+        break;
+      }
+    }
+    if (locked_sig_idx < 0) {
+      cerr << "ERROR: lock-sig (" << lock_a << "," << lock_b << ","
+           << lock_c << "," << lock_d
+           << ") not found in enumerated sigs for n=" << n << endl;
+      return 1;
+    }
+    cout << "*** SIGNATURE LOCKED to index " << locked_sig_idx
+         << " = (" << lock_a << "," << lock_b << "," << lock_c << ","
+         << lock_d << ") — DIAGNOSTIC MODE ***" << endl;
+  }
+  cout << endl;
 
   g_cd_champ.assign(sigs.size(), CDChampion{INT_MAX, {}});
   g_ab_champ.assign(sigs.size(), ABChampion{INT_MAX, {}});
@@ -969,7 +1008,9 @@ int main(int argc, char **argv) {
 
     while (!g_found.load(memory_order_relaxed)) {
       // Pick a random signature to target so workers distribute load
-      int si = uniform_int_distribution<>(0, sigs.size() - 1)(rng);
+      int si = (locked_sig_idx >= 0)
+                   ? locked_sig_idx
+                   : uniform_int_distribution<>(0, sigs.size() - 1)(rng);
       auto &sig = sigs[si];
 
       CDState best_cd;
