@@ -285,6 +285,17 @@ static atomic<long long> g_refine_kick_escalations{0};
 static constexpr int kMaxSigs = 1024;
 static atomic<int> g_sig_best_ab[kMaxSigs];
 
+// Commit F: endgame exhaustive polish — when SA-BCD gets the coupled cost
+// below kPolishThreshold, deterministically enumerate 1-pair and 2-pair flips
+// from the current (best_cd, best_ab) to see if a real solution lives in the
+// nearby neighborhood. Addresses the proven SA bottleneck (Commit E sig-lock
+// diagnostic showed even the known-correct sig plateaus at coupled cost ~28
+// on BS(43); BS(28) plateaus at 4 — both within reach of exhaustive 2-flips).
+static constexpr int kPolishThreshold = 16;
+static atomic<long long> g_polish_attempts{0};
+static atomic<long long> g_polish_improvements{0};
+static atomic<long long> g_polish_solutions{0};
+
 bool solve_CD_SA(int n, int n1, int tc, int td, CDState &best_state,
                  mt19937 &rng, int sig_idx, const int *ab_full) {
   CDState curr;
@@ -599,6 +610,246 @@ struct ABChampion {
   ABState state;
 };
 static vector<ABChampion> g_ab_champ;
+
+// ===================================
+// Commit F: Endgame polish helpers
+// ===================================
+// Helper: full coupled cost = 5*all-sum-mismatch + Sum|corr_CD[s]+corr_AB[s]|.
+// (Same objective both blocks optimize; just measured here from the full state.)
+static int compute_coupled_cost(const CDState &cd, const ABState &ab,
+                                int sig_a, int sig_b, int sig_c, int sig_d,
+                                int n, int n1) {
+  int ms = max(n1, n);
+  int cost = 5 * abs(ab.sum_a - sig_a) + 5 * abs(ab.sum_b - sig_b) +
+             5 * abs(cd.sum_c - sig_c) + 5 * abs(cd.sum_d - sig_d);
+  for (int s = 1; s < ms; s++)
+    cost += abs(cd.corr[s] + ab.corr[s]);
+  return cost;
+}
+
+// Replace CD pair (positions L=d, R=n-1-d). For odd-n middle (L==R), cR/dR ignored.
+// Updates sums and recomputes corr from scratch (cheap: O(n^2) ~ 2000 ops for n=43).
+static void apply_cd_pair(CDState &cd, int n, int d, int cL, int dL, int cR, int dR) {
+  int L = d, R = n - 1 - d;
+  cd.sum_c += cL - cd.C[L];
+  cd.sum_d += dL - cd.D[L];
+  cd.C[L] = cL;
+  cd.D[L] = dL;
+  if (L != R) {
+    cd.sum_c += cR - cd.C[R];
+    cd.sum_d += dR - cd.D[R];
+    cd.C[R] = cR;
+    cd.D[R] = dR;
+  }
+  int ms = max(n + 1, n);
+  memset(cd.corr, 0, sizeof(cd.corr));
+  for (int s = 1; s < ms; s++)
+    for (int i = 0; i < n - s; i++)
+      cd.corr[s] += cd.C[i] * cd.C[i + s] + cd.D[i] * cd.D[i + s];
+}
+
+static void apply_ab_pair(ABState &ab, int n1, int d, int aL, int bL, int aR, int bR) {
+  int L = d, R = n1 - 1 - d;
+  ab.sum_a += aL - ab.A[L];
+  ab.sum_b += bL - ab.B[L];
+  ab.A[L] = aL;
+  ab.B[L] = bL;
+  if (L != R) {
+    ab.sum_a += aR - ab.A[R];
+    ab.sum_b += bR - ab.B[R];
+    ab.A[R] = aR;
+    ab.B[R] = bR;
+  }
+  int ms = max(n1, G_N);
+  memset(ab.corr, 0, sizeof(ab.corr));
+  for (int s = 1; s < ms; s++)
+    for (int i = 0; i < n1 - s; i++)
+      ab.corr[s] += ab.A[i] * ab.A[i + s] + ab.B[i] * ab.B[i + s];
+}
+
+// Enumerate valid pair options for CD position d.
+// Returns vector of (cL, dL, cR, dR) 4-tuples (R irrelevant if L==R for middle).
+struct CDOpt { int cL, dL, cR, dR; };
+struct ABOpt { int aL, bL, aR, bR; };
+
+static vector<CDOpt> get_cd_options(int n, int d) {
+  vector<CDOpt> opts;
+  if (n % 2 == 1 && d == n / 2) {
+    for (int i = 0; i < 4; i++)
+      opts.push_back({comb4[i][0], comb4[i][1], 0, 0});
+  } else if (d == 0) {
+    for (int i = 0; i < 16; i++)
+      opts.push_back({comb16[i][0], comb16[i][1], comb16[i][2], comb16[i][3]});
+  } else {
+    for (int i = 0; i < 8; i++)
+      opts.push_back({comb8_pos[i][0], comb8_pos[i][1], comb8_pos[i][2], comb8_pos[i][3]});
+  }
+  return opts;
+}
+
+static vector<ABOpt> get_ab_options(int n1, int d) {
+  vector<ABOpt> opts;
+  if (n1 % 2 == 1 && d == n1 / 2) {
+    for (int i = 0; i < 4; i++)
+      opts.push_back({comb4[i][0], comb4[i][1], 0, 0});
+  } else if (d == 0) {
+    for (int i = 0; i < 8; i++)
+      opts.push_back({comb8_neg[i][0], comb8_neg[i][1], comb8_neg[i][2], comb8_neg[i][3]});
+  } else {
+    for (int i = 0; i < 8; i++)
+      opts.push_back({comb8_pos[i][0], comb8_pos[i][1], comb8_pos[i][2], comb8_pos[i][3]});
+  }
+  return opts;
+}
+
+// Exhaustive 1-pair greedy descent + 2-pair check around (best_cd, best_ab).
+// Returns true iff coupled cost 0 reached (full NPAF=0 solution). Mutates the
+// states in place: any 1-pair improvement is kept; 2-pair only applied if it
+// reaches 0 (we don't keep non-zero 2-pair improvements because the next BCD
+// round would likely just undo them).
+static bool endgame_polish(CDState &best_cd, ABState &best_ab,
+                           int sig_a, int sig_b, int sig_c, int sig_d,
+                           int n, int n1) {
+  g_polish_attempts.fetch_add(1, memory_order_relaxed);
+
+  int best_cost = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b, sig_c, sig_d, n, n1);
+  if (best_cost == 0) {
+    g_polish_solutions.fetch_add(1, memory_order_relaxed);
+    return true;
+  }
+  int initial_cost = best_cost;
+
+  int cd_positions = (n % 2 == 1) ? (n / 2 + 1) : (n / 2);
+  int ab_positions = (n1 % 2 == 1) ? (n1 / 2 + 1) : (n1 / 2);
+
+  // ===== 1-pair greedy descent (alternating CD and AB) =====
+  bool improved_this_pass = true;
+  while (improved_this_pass && best_cost > 0) {
+    improved_this_pass = false;
+    // CD 1-pair
+    for (int d = 0; d < cd_positions; d++) {
+      auto opts = get_cd_options(n, d);
+      CDState save = best_cd;
+      for (const auto &opt : opts) {
+        best_cd = save;
+        apply_cd_pair(best_cd, n, d, opt.cL, opt.dL, opt.cR, opt.dR);
+        int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b, sig_c, sig_d, n, n1);
+        if (c < best_cost) {
+          best_cost = c;
+          save = best_cd;  // promote
+          improved_this_pass = true;
+          if (c == 0) {
+            g_polish_solutions.fetch_add(1, memory_order_relaxed);
+            g_polish_improvements.fetch_add(1, memory_order_relaxed);
+            return true;
+          }
+        }
+      }
+      best_cd = save;
+    }
+    // AB 1-pair
+    for (int d = 0; d < ab_positions; d++) {
+      auto opts = get_ab_options(n1, d);
+      ABState save = best_ab;
+      for (const auto &opt : opts) {
+        best_ab = save;
+        apply_ab_pair(best_ab, n1, d, opt.aL, opt.bL, opt.aR, opt.bR);
+        int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b, sig_c, sig_d, n, n1);
+        if (c < best_cost) {
+          best_cost = c;
+          save = best_ab;
+          improved_this_pass = true;
+          if (c == 0) {
+            g_polish_solutions.fetch_add(1, memory_order_relaxed);
+            g_polish_improvements.fetch_add(1, memory_order_relaxed);
+            return true;
+          }
+        }
+      }
+      best_ab = save;
+    }
+  }
+
+  // ===== 2-pair check (CD+CD, AB+AB, CD+AB) — only accept if reaches 0 =====
+  CDState save_cd = best_cd;
+  ABState save_ab = best_ab;
+
+  // CD+CD
+  for (int d1 = 0; d1 < cd_positions && best_cost > 0; d1++) {
+    auto opts1 = get_cd_options(n, d1);
+    for (const auto &o1 : opts1) {
+      best_cd = save_cd;
+      apply_cd_pair(best_cd, n, d1, o1.cL, o1.dL, o1.cR, o1.dR);
+      CDState after_d1 = best_cd;
+      for (int d2 = d1 + 1; d2 < cd_positions; d2++) {
+        auto opts2 = get_cd_options(n, d2);
+        for (const auto &o2 : opts2) {
+          best_cd = after_d1;
+          apply_cd_pair(best_cd, n, d2, o2.cL, o2.dL, o2.cR, o2.dR);
+          int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b, sig_c, sig_d, n, n1);
+          if (c == 0) {
+            g_polish_solutions.fetch_add(1, memory_order_relaxed);
+            g_polish_improvements.fetch_add(1, memory_order_relaxed);
+            return true;
+          }
+        }
+      }
+    }
+  }
+  best_cd = save_cd;
+
+  // AB+AB
+  for (int d1 = 0; d1 < ab_positions && best_cost > 0; d1++) {
+    auto opts1 = get_ab_options(n1, d1);
+    for (const auto &o1 : opts1) {
+      best_ab = save_ab;
+      apply_ab_pair(best_ab, n1, d1, o1.aL, o1.bL, o1.aR, o1.bR);
+      ABState after_d1 = best_ab;
+      for (int d2 = d1 + 1; d2 < ab_positions; d2++) {
+        auto opts2 = get_ab_options(n1, d2);
+        for (const auto &o2 : opts2) {
+          best_ab = after_d1;
+          apply_ab_pair(best_ab, n1, d2, o2.aL, o2.bL, o2.aR, o2.bR);
+          int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b, sig_c, sig_d, n, n1);
+          if (c == 0) {
+            g_polish_solutions.fetch_add(1, memory_order_relaxed);
+            g_polish_improvements.fetch_add(1, memory_order_relaxed);
+            return true;
+          }
+        }
+      }
+    }
+  }
+  best_ab = save_ab;
+
+  // CD+AB cross
+  for (int dC = 0; dC < cd_positions && best_cost > 0; dC++) {
+    auto optsC = get_cd_options(n, dC);
+    for (const auto &oC : optsC) {
+      best_cd = save_cd;
+      apply_cd_pair(best_cd, n, dC, oC.cL, oC.dL, oC.cR, oC.dR);
+      for (int dA = 0; dA < ab_positions; dA++) {
+        auto optsA = get_ab_options(n1, dA);
+        for (const auto &oA : optsA) {
+          best_ab = save_ab;
+          apply_ab_pair(best_ab, n1, dA, oA.aL, oA.bL, oA.aR, oA.bR);
+          int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b, sig_c, sig_d, n, n1);
+          if (c == 0) {
+            g_polish_solutions.fetch_add(1, memory_order_relaxed);
+            g_polish_improvements.fetch_add(1, memory_order_relaxed);
+            return true;
+          }
+        }
+      }
+    }
+  }
+  best_cd = save_cd;
+  best_ab = save_ab;
+
+  if (best_cost < initial_cost)
+    g_polish_improvements.fetch_add(1, memory_order_relaxed);
+  return false;
+}
 
 bool solve_AB_SA(int n1, int ta, int tb, const int *cd_full,
                  ABState &best_state, mt19937 &rng, int sig_idx) {
@@ -1138,6 +1389,34 @@ int main(int argc, char **argv) {
           if (si >= 0 && si < kMaxSigs)
             update_min_atomic(g_sig_best_ab[si], end_coupled);
 
+          // Commit F: when SA-BCD gets us close (coupled cost below threshold),
+          // try an exhaustive 1-pair greedy descent + 2-pair check. Polish does
+          // not need RNG and is deterministic — if no 2-flip neighbor reaches 0,
+          // we know the current basin is at least 3 pair-flips deep.
+          if (end_coupled > 0 && end_coupled <= kPolishThreshold) {
+            // best_ab.corr is currently the AB self-correlation (set inside the
+            // ab_pass via solve_AB_SA's last write). end_coupled was computed
+            // from a fresh AB autocorr above, so we recompute best_ab.corr from
+            // scratch to keep it in sync with what compute_coupled_cost uses.
+            memset(best_ab.corr, 0, sizeof(best_ab.corr));
+            for (int s = 1; s < ms; s++)
+              for (int i = 0; i < n1 - s; i++)
+                best_ab.corr[s] += best_ab.A[i] * best_ab.A[i + s] +
+                                   best_ab.B[i] * best_ab.B[i + s];
+            if (endgame_polish(best_cd, best_ab, sig.a, sig.b, sig.c, sig.d,
+                               n, n1)) {
+              // Recompute cd_full for the verification path below.
+              for (int s = 1; s < ms; s++) {
+                cd_full[s] = 0;
+                for (int k = 0; k < n - s; k++)
+                  cd_full[s] += best_cd.C[k] * best_cd.C[k + s] +
+                                best_cd.D[k] * best_cd.D[k + s];
+              }
+              found_ab = true;
+              break;
+            }
+          }
+
           // Stall detector: this round failed to improve the coupled cost.
           if (end_coupled >= prev_coupled) {
             stall_count++;
@@ -1293,6 +1572,9 @@ int main(int argc, char **argv) {
         long long refr = g_refine_rounds.load(memory_order_relaxed);
         long long refk = g_refine_kicks.load(memory_order_relaxed);
         long long resc = g_refine_kick_escalations.load(memory_order_relaxed);
+        long long pola = g_polish_attempts.load(memory_order_relaxed);
+        long long poli = g_polish_improvements.load(memory_order_relaxed);
+        long long pols = g_polish_solutions.load(memory_order_relaxed);
 
         // Commit E: top-5 signatures by lowest coupled cost ever seen.
         pair<int, int> top_sigs[5] = {{INT_MAX, -1}, {INT_MAX, -1},
@@ -1341,6 +1623,7 @@ int main(int argc, char **argv) {
              << " refine=" << refr
              << " kicks=" << refk
              << " kesc=" << resc
+             << " polish=" << pola << "/" << poli << "/" << pols
              << " ab_resid=sum:" << absum << "/npaf:" << abnpaf
              << " shifts_top=";
         for (int k = 0; k < 5; k++) {
