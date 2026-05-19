@@ -846,6 +846,145 @@ static bool endgame_polish(CDState &best_cd, ABState &best_ab,
   best_cd = save_cd;
   best_ab = save_ab;
 
+  // ===== 3-pair check — CCC, CCA, CAA, AAA — only accept cost 0 =====
+  // Commit G: Commit F's data proved BS(28) solutions are NOT in the 2-flip
+  // neighborhood of any SA-found cost-4 state (1705 polish calls, 0 solutions).
+  // Solutions must be at least 3 flips away. 3-pair exhaustive search is the
+  // direct test. Cost: ~5M-7M candidates per call for BS(43), ~250k for BS(28).
+  // At ~3000 ops/candidate that's ~7sec on BS(43), ~0.25sec on BS(28).
+
+  // CCC: 3 CD flips
+  for (int d1 = 0; d1 < cd_positions; d1++) {
+    auto opts1 = get_cd_options(n, d1);
+    for (const auto &o1 : opts1) {
+      best_cd = save_cd;
+      apply_cd_pair(best_cd, n, d1, o1.cL, o1.dL, o1.cR, o1.dR);
+      CDState after_d1 = best_cd;
+      for (int d2 = d1 + 1; d2 < cd_positions; d2++) {
+        auto opts2 = get_cd_options(n, d2);
+        for (const auto &o2 : opts2) {
+          best_cd = after_d1;
+          apply_cd_pair(best_cd, n, d2, o2.cL, o2.dL, o2.cR, o2.dR);
+          CDState after_d2 = best_cd;
+          for (int d3 = d2 + 1; d3 < cd_positions; d3++) {
+            auto opts3 = get_cd_options(n, d3);
+            for (const auto &o3 : opts3) {
+              best_cd = after_d2;
+              apply_cd_pair(best_cd, n, d3, o3.cL, o3.dL, o3.cR, o3.dR);
+              int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b,
+                                           sig_c, sig_d, n, n1);
+              if (c == 0) {
+                g_polish_solutions.fetch_add(1, memory_order_relaxed);
+                g_polish_improvements.fetch_add(1, memory_order_relaxed);
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  best_cd = save_cd;
+
+  // CCA: 2 CD flips + 1 AB flip
+  for (int d1 = 0; d1 < cd_positions; d1++) {
+    auto opts1 = get_cd_options(n, d1);
+    for (const auto &o1 : opts1) {
+      best_cd = save_cd;
+      apply_cd_pair(best_cd, n, d1, o1.cL, o1.dL, o1.cR, o1.dR);
+      CDState after_d1 = best_cd;
+      for (int d2 = d1 + 1; d2 < cd_positions; d2++) {
+        auto opts2 = get_cd_options(n, d2);
+        for (const auto &o2 : opts2) {
+          best_cd = after_d1;
+          apply_cd_pair(best_cd, n, d2, o2.cL, o2.dL, o2.cR, o2.dR);
+          for (int dA = 0; dA < ab_positions; dA++) {
+            auto optsA = get_ab_options(n1, dA);
+            for (const auto &oA : optsA) {
+              best_ab = save_ab;
+              apply_ab_pair(best_ab, n1, dA, oA.aL, oA.bL, oA.aR, oA.bR);
+              int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b,
+                                           sig_c, sig_d, n, n1);
+              if (c == 0) {
+                g_polish_solutions.fetch_add(1, memory_order_relaxed);
+                g_polish_improvements.fetch_add(1, memory_order_relaxed);
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  best_cd = save_cd;
+  best_ab = save_ab;
+
+  // CAA: 1 CD flip + 2 AB flips
+  for (int dC = 0; dC < cd_positions; dC++) {
+    auto optsC = get_cd_options(n, dC);
+    for (const auto &oC : optsC) {
+      best_cd = save_cd;
+      apply_cd_pair(best_cd, n, dC, oC.cL, oC.dL, oC.cR, oC.dR);
+      for (int d1 = 0; d1 < ab_positions; d1++) {
+        auto opts1 = get_ab_options(n1, d1);
+        for (const auto &o1 : opts1) {
+          best_ab = save_ab;
+          apply_ab_pair(best_ab, n1, d1, o1.aL, o1.bL, o1.aR, o1.bR);
+          ABState after_d1 = best_ab;
+          for (int d2 = d1 + 1; d2 < ab_positions; d2++) {
+            auto opts2 = get_ab_options(n1, d2);
+            for (const auto &o2 : opts2) {
+              best_ab = after_d1;
+              apply_ab_pair(best_ab, n1, d2, o2.aL, o2.bL, o2.aR, o2.bR);
+              int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b,
+                                           sig_c, sig_d, n, n1);
+              if (c == 0) {
+                g_polish_solutions.fetch_add(1, memory_order_relaxed);
+                g_polish_improvements.fetch_add(1, memory_order_relaxed);
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  best_cd = save_cd;
+  best_ab = save_ab;
+
+  // AAA: 3 AB flips
+  for (int d1 = 0; d1 < ab_positions; d1++) {
+    auto opts1 = get_ab_options(n1, d1);
+    for (const auto &o1 : opts1) {
+      best_ab = save_ab;
+      apply_ab_pair(best_ab, n1, d1, o1.aL, o1.bL, o1.aR, o1.bR);
+      ABState after_d1 = best_ab;
+      for (int d2 = d1 + 1; d2 < ab_positions; d2++) {
+        auto opts2 = get_ab_options(n1, d2);
+        for (const auto &o2 : opts2) {
+          best_ab = after_d1;
+          apply_ab_pair(best_ab, n1, d2, o2.aL, o2.bL, o2.aR, o2.bR);
+          ABState after_d2 = best_ab;
+          for (int d3 = d2 + 1; d3 < ab_positions; d3++) {
+            auto opts3 = get_ab_options(n1, d3);
+            for (const auto &o3 : opts3) {
+              best_ab = after_d2;
+              apply_ab_pair(best_ab, n1, d3, o3.aL, o3.bL, o3.aR, o3.bR);
+              int c = compute_coupled_cost(best_cd, best_ab, sig_a, sig_b,
+                                           sig_c, sig_d, n, n1);
+              if (c == 0) {
+                g_polish_solutions.fetch_add(1, memory_order_relaxed);
+                g_polish_improvements.fetch_add(1, memory_order_relaxed);
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  best_ab = save_ab;
+
   if (best_cost < initial_cost)
     g_polish_improvements.fetch_add(1, memory_order_relaxed);
   return false;
