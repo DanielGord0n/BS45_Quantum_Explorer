@@ -18,7 +18,7 @@ module load StdEnv/2023
 module load gcc/12.3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-SEED_OFFSET=$((14300 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((14500 + SLURM_ARRAY_TASK_ID))
 BIN=wz_sa_v8_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="

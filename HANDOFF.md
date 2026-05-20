@@ -7,6 +7,40 @@
 
 ---
 
+## Solver Validation Status
+
+### BS(28,27) — pipeline sanity check PASSED (2026-05-20)
+
+BS(28,27) is a known easy validation case (Daniel has found it before). The current solver
+reproducing it just confirms the wz_sa_v8 Commit C–G pipeline works — it is **not** a result.
+Found by Commit G's 3-pair polish (Fir job 40543567 task 0, seed 28700, sig (0,-2,-5,9)),
+independently verified with `verify_npaf.py` (NPAF[s]=0 for all s, fits Wang-Zhu encoding).
+Tuple kept here only as a pipeline-works proof:
+
+```
+A = {-1,-1,1,-1,-1,-1,1,1,-1,-1,-1,1,1,1,1,1,1,-1,1,-1,1,-1,1,1,-1,-1,1,-1}
+B = {1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,-1,-1,-1,-1,1,1,1,1,-1,1,-1,-1,1,-1,-1}
+C = {1,1,-1,1,-1,-1,1,1,-1,1,-1,1,1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,1,-1,-1,1}
+D = {1,-1,-1,1,1,1,1,-1,1,-1,1,1,1,1,-1,-1,-1,1,1,1,-1,1,1,1,-1,1,1}
+```
+
+### BS(43,42), BS(45,44) — NOT yet found
+
+BS(43) SA still plateaus at coupled cost ~28-40 (polish trigger threshold is 16, so polish never
+fires on BS(43)). BS(43) is the current gate before BS(45). See "Next Steps".
+
+### Known cosmetic bugs (do not affect solution validity)
+
+1. **stdout interleave**: the success block (`#pragma omp critical`) and the tid==0 progress
+   logger are not mutually exclusive — on BS(28) the solution banner got interleaved with a
+   progress line. The A/B/C/D arrays still printed on clean lines. Fix: have the tid==0 logger
+   skip printing once `g_found` is set.
+2. **`g_best_ab_cost` not updated by polish**: when `endgame_polish` finds a solution it bumps
+   `g_polish_solutions` but not `g_best_ab_cost`, so the log kept showing `bestAB=8` after the
+   real answer (0) was found. Fix: `update_min_atomic(g_best_ab_cost, 0)` in the polish success path.
+
+---
+
 ## What Is This Problem?
 
 We are searching for **Balonin-Seberry δ-codes BS(n+1, n)**:

@@ -21,7 +21,7 @@ export TMPDIR=$SCRATCH/tmp
 mkdir -p $TMPDIR
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-SEED_OFFSET=$((12800 + SLURM_ARRAY_TASK_ID))
+SEED_OFFSET=$((12900 + SLURM_ARRAY_TASK_ID))
 BIN=wz_sa_v8_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="
