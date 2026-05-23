@@ -18,8 +18,9 @@ module load gcc/12.3
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 N=42
-CLUSTER_LO=6144
-CLUSTER_HI=8192
+# 3-layer split: 524288 total combos, quartered across the 4 clusters.
+CLUSTER_LO=393216
+CLUSTER_HI=524288
 NTASKS=10
 SPAN=$(( (CLUSTER_HI - CLUSTER_LO + NTASKS - 1) / NTASKS ))
 LO=$(( CLUSTER_LO + SLURM_ARRAY_TASK_ID * SPAN ))

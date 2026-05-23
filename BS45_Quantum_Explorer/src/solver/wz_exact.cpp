@@ -103,7 +103,25 @@ int npaf_at(const int *A, const int *B, int n1, const int *C, const int *D,
 static atomic<bool> g_found{false};
 static atomic<long long> g_nodes{0};
 static atomic<long long> g_combos_done{0};
+static atomic<int> g_last_print{0};  // wall-clock second of last progress line
 static int g_solA[256], g_solB[256], g_solC[256], g_solD[256];
+
+// Time-gated progress print — safe to call very often (cheap early-out).
+// Prints at most once every 20s regardless of how many threads call it.
+static void maybe_progress() {
+  double t = chrono::duration<double>(Clock::now() - G_T0).count();
+  int now = (int)t, last = g_last_print.load(memory_order_relaxed);
+  if (now - last < 20) return;
+  if (!g_last_print.compare_exchange_strong(last, now, memory_order_relaxed))
+    return;  // another thread is printing this tick
+  long long nodes = g_nodes.load(memory_order_relaxed);
+  long long cd = g_combos_done.load(memory_order_relaxed);
+  long long rate = (t > 0) ? (long long)(nodes / t) : 0;
+#pragma omp critical(report)
+  cout << "[" << t << "s] nodes=" << nodes << " rate=" << rate
+       << "/s combos_done=" << cd << " found="
+       << (g_found.load() ? "YES" : "no") << "\n" << flush;
+}
 
 static void record_solution(const int *A, const int *B, const int *C,
                              const int *D) {
@@ -173,7 +191,9 @@ static void search(int d, int *A, int *B, int *C, int *D) {
   for (int abi = 0; abi < abN && !g_found.load(memory_order_relaxed); abi++) {
     for (int cdi = 0; cdi < cdN; cdi++) {
       place_layer(d, abi, cdi, A, B, C, D);
-      g_nodes.fetch_add(1, memory_order_relaxed);
+      long long nc = g_nodes.fetch_add(1, memory_order_relaxed);
+      // Periodic liveness print (every ~67M nodes a thread checks the clock).
+      if ((nc & 0x3FFFFFF) == 0) maybe_progress();
       // Determined-NPAF prune: shift s = n-d is now fully determined.
       if (npaf_at(A, B, n1, C, D, n, n - d) != 0) continue;
       // After the last layer C,D are complete -> Theorem 2.4 spectral prune.
@@ -198,9 +218,10 @@ int main(int argc, char **argv) {
   G_HALF = n / 2;
   init_combs();
 
-  // First two layers are flattened into a combo list for parallel splitting.
-  // Layer 0: 8 (AB comb8_neg) x 16 (CD comb16) = 128.  Layer 1: 8 x 8 = 64.
-  long long total_combos = 128LL * 64LL;  // 8192
+  // First THREE layers are flattened into a combo list for parallel splitting.
+  // Layer 0: 8 (AB comb8_neg) x 16 (CD comb16) = 128.  Layers 1,2: 8 x 8 = 64.
+  // Bit layout (LSB): ab0(3) cd0(4) ab1(3) cd1(3) ab2(3) cd2(3) — 19 bits.
+  long long total_combos = 128LL * 64LL * 64LL;  // 524288
   long long lo = (argc >= 3) ? atoll(argv[2]) : 0;
   long long hi = (argc >= 4) ? atoll(argv[3]) : total_combos;
   if (lo < 0) lo = 0;
@@ -217,35 +238,43 @@ int main(int argc, char **argv) {
   cout << "========================================================" << endl;
   G_T0 = Clock::now();
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(dynamic, 64)
   for (long long combo = lo; combo < hi; combo++) {
     if (g_found.load(memory_order_relaxed)) continue;
-    int ab0 = (int)((combo / 64) / 16);
-    int cd0 = (int)((combo / 64) % 16);
-    int ab1 = (int)((combo % 64) / 8);
-    int cd1 = (int)((combo % 64) % 8);
+    int ab0 = (int)(combo & 7);
+    int cd0 = (int)((combo >> 3) & 15);
+    int ab1 = (int)((combo >> 7) & 7);
+    int cd1 = (int)((combo >> 10) & 7);
+    int ab2 = (int)((combo >> 13) & 7);
+    int cd2 = (int)((combo >> 16) & 7);
 
     int A[256], B[256], C[256], D[256];
     memset(A, 0, sizeof(A)); memset(B, 0, sizeof(B));
     memset(C, 0, sizeof(C)); memset(D, 0, sizeof(D));
 
-    // Layer 0 + determined-NPAF prune at s=n.
+    // Three layers + determined-NPAF prunes at s=n, n-1, n-2.
     place_layer(0, ab0, cd0, A, B, C, D);
     g_nodes.fetch_add(1, memory_order_relaxed);
     if (npaf_at(A, B, G_N1, C, D, G_N, G_N) == 0) {
-      // Layer 1 + determined-NPAF prune at s=n-1.
       place_layer(1, ab1, cd1, A, B, C, D);
       g_nodes.fetch_add(1, memory_order_relaxed);
-      if (npaf_at(A, B, G_N1, C, D, G_N, G_N - 1) == 0)
-        search(2, A, B, C, D);
+      if (npaf_at(A, B, G_N1, C, D, G_N, G_N - 1) == 0) {
+        place_layer(2, ab2, cd2, A, B, C, D);
+        g_nodes.fetch_add(1, memory_order_relaxed);
+        if (npaf_at(A, B, G_N1, C, D, G_N, G_N - 2) == 0)
+          search(3, A, B, C, D);
+      }
     }
 
     long long done = g_combos_done.fetch_add(1, memory_order_relaxed) + 1;
-    if (done % 256 == 0) {
+    // Print every 64 combos (tasks have ~13k combos with the 3-layer split,
+    // so this is a few hundred lines over a 24h run). Combos completing is
+    // the clearest signal the search depth is tractable.
+    if (done % 64 == 0 || done == hi - lo) {
 #pragma omp critical(report)
       {
         double t = chrono::duration<double>(Clock::now() - G_T0).count();
-        cout << "[" << t << "s] combos " << done << "/" << (hi - lo)
+        cout << "[" << t << "s] COMBO DONE " << done << "/" << (hi - lo)
              << "  nodes=" << g_nodes.load() << "  found="
              << (g_found.load() ? "YES" : "no") << "\n" << flush;
       }
