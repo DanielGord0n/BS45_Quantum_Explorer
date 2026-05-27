@@ -156,32 +156,109 @@ static void record_solution(const int *A, const int *B, const int *C,
   }
 }
 
-// Place mirror-pair "layer" d for AB (positions d, n-d) and CD (d, n-1-d).
-// abi indexes the AB comb table, cdi the CD comb table.
-static inline void place_layer(int d, int abi, int cdi, int *A, int *B,
-                                int *C, int *D) {
-  int n = G_N;
-  const int *ab = (d == 0) ? comb8_neg[abi] : comb8_pos[abi];
-  const int *cd = (d == 0) ? comb16[cdi] : comb8_pos[cdi];
-  A[d] = ab[0]; B[d] = ab[1]; A[n - d] = ab[2]; B[n - d] = ab[3];
-  C[d] = cd[0]; D[d] = cd[1]; C[n - 1 - d] = cd[2]; D[n - 1 - d] = cd[3];
+// === Lower-bound NPAF prune (branch-and-bound) ===
+// Per shift s in 1..n we maintain:
+//   Dnpaf[s] = sum of contributions from terms whose both endpoints are placed
+//   Kund[s]  = count of terms (each one a +/-1 product) still undetermined
+// The remaining undetermined sum is in [-Kund[s], +Kund[s]], so a final
+// NPAF[s] = 0 is feasible only if |Dnpaf[s]| <= Kund[s]. Any shift violating
+// this lets us prune the whole subtree. Strictly subsumes the old single-shift
+// check (when Kund[s]==0 the bound says |Dnpaf[s]| must be 0).
+
+static inline void init_bounds(int *Dnpaf, int *Kund) {
+  int n = G_N, n1 = G_N1;
+  for (int s = 0; s <= n; s++) {
+    Dnpaf[s] = 0;
+    int kab = (s >= 1 && s < n1) ? 2 * (n1 - s) : 0;  // A-term + B-term per i
+    int kcd = (s >= 1 && s < n)  ? 2 * (n - s)  : 0;  // C-term + D-term per i
+    Kund[s] = kab + kcd;
+  }
 }
 
-// Recursive exhaustive search starting at layer d (layers 0..d-1 already set).
-static void search(int d, int *A, int *B, int *C, int *D) {
+// Update Dnpaf, Kund for the newly-placed position p in sequence X of length L.
+// X[p] must already hold its new (+/-1) value; partner positions are inspected
+// to see if they are also placed (non-zero) -> the term becomes determined.
+static inline void update_bounds_pos(const int *X, int p, int L,
+                                      int *Dnpaf, int *Kund) {
+  int n = G_N;
+  int v = X[p];
+  for (int s = 1; s <= n; s++) {
+    int j = p + s;
+    if (j < L && X[j] != 0) { Dnpaf[s] += v * X[j]; Kund[s]--; }
+    int i = p - s;
+    if (i >= 0 && X[i] != 0) { Dnpaf[s] += X[i] * v; Kund[s]--; }
+  }
+}
+
+// True iff no shift currently has |Dnpaf[s]| > Kund[s] (i.e. NPAF=0 still
+// reachable for every shift).
+static inline bool bounds_pass(const int *Dnpaf, const int *Kund) {
+  int n = G_N;
+  for (int s = 1; s <= n; s++) {
+    int dv = Dnpaf[s]; if (dv < 0) dv = -dv;
+    if (dv > Kund[s]) return false;
+  }
+  return true;
+}
+
+// Place mirror-pair "layer" d (AB positions d,n-d; CD positions d,n-1-d) AND
+// update Dnpaf/Kund incrementally. Sets positions one at a time so each
+// update_bounds_pos sees the partner's current placed/unplaced state correctly,
+// avoiding double-counting a term whose two endpoints both belong to this layer.
+static inline void place_and_update_layer(int d, int abi, int cdi,
+                                           int *A, int *B, int *C, int *D,
+                                           int *Dnpaf, int *Kund) {
+  int n = G_N, n1 = G_N1;
+  const int *ab = (d == 0) ? comb8_neg[abi] : comb8_pos[abi];
+  const int *cd = (d == 0) ? comb16[cdi] : comb8_pos[cdi];
+  A[d] = ab[0]; update_bounds_pos(A, d, n1, Dnpaf, Kund);
+  B[d] = ab[1]; update_bounds_pos(B, d, n1, Dnpaf, Kund);
+  if (d != n - d) {
+    A[n - d] = ab[2]; update_bounds_pos(A, n - d, n1, Dnpaf, Kund);
+    B[n - d] = ab[3]; update_bounds_pos(B, n - d, n1, Dnpaf, Kund);
+  }
+  C[d] = cd[0]; update_bounds_pos(C, d, n, Dnpaf, Kund);
+  D[d] = cd[1]; update_bounds_pos(D, d, n, Dnpaf, Kund);
+  if (d != n - 1 - d) {
+    C[n - 1 - d] = cd[2]; update_bounds_pos(C, n - 1 - d, n, Dnpaf, Kund);
+    D[n - 1 - d] = cd[3]; update_bounds_pos(D, n - 1 - d, n, Dnpaf, Kund);
+  }
+}
+
+// Zero out the positions written by place_and_update_layer at depth d.
+// (Used on backtrack so other iterations see "unplaced" for those slots.)
+static inline void zero_layer_positions(int d, int *A, int *B, int *C, int *D) {
+  int n = G_N;
+  A[d] = B[d] = 0;
+  if (d != n - d) { A[n - d] = B[n - d] = 0; }
+  C[d] = D[d] = 0;
+  if (d != n - 1 - d) { C[n - 1 - d] = D[n - 1 - d] = 0; }
+}
+
+// Recursive exhaustive search starting at layer d (layers 0..d-1 already set,
+// Dnpaf/Kund reflect that state).
+static void search(int d, int *A, int *B, int *C, int *D,
+                   int *Dnpaf, int *Kund) {
   if (g_found.load(memory_order_relaxed)) return;
   int n = G_N, n1 = G_N1, half = G_HALF;
 
+  // Snapshot once per call; restore at end of each iteration.
+  int Dsave[256], Ksave[256];
+  memcpy(Dsave, Dnpaf, (n + 1) * sizeof(int));
+  memcpy(Ksave, Kund,  (n + 1) * sizeof(int));
+
   if (d == half) {
-    // All mirror pairs assigned; C,D complete. Assign the A,B middle (comb4)
-    // and run the full NPAF check.
+    // C,D complete; only A,B middle position left (assumes even n -> n1 odd).
     for (int mi = 0; mi < 4 && !g_found.load(memory_order_relaxed); mi++) {
-      A[half] = comb4[mi][0];
-      B[half] = comb4[mi][1];
+      A[half] = comb4[mi][0]; update_bounds_pos(A, half, n1, Dnpaf, Kund);
+      B[half] = comb4[mi][1]; update_bounds_pos(B, half, n1, Dnpaf, Kund);
+      // After full assignment Kund should be 0 everywhere; solution iff all Dnpaf are 0.
       bool ok = true;
-      for (int s = 1; s <= n && ok; s++)
-        if (npaf_at(A, B, n1, C, D, n, s) != 0) ok = false;
+      for (int s = 1; s <= n; s++) if (Dnpaf[s] != 0) { ok = false; break; }
       if (ok) record_solution(A, B, C, D);
+      A[half] = B[half] = 0;
+      memcpy(Dnpaf, Dsave, (n + 1) * sizeof(int));
+      memcpy(Kund,  Ksave, (n + 1) * sizeof(int));
     }
     return;
   }
@@ -190,15 +267,19 @@ static void search(int d, int *A, int *B, int *C, int *D) {
   int cdN = (d == 0) ? 16 : 8;
   for (int abi = 0; abi < abN && !g_found.load(memory_order_relaxed); abi++) {
     for (int cdi = 0; cdi < cdN; cdi++) {
-      place_layer(d, abi, cdi, A, B, C, D);
+      place_and_update_layer(d, abi, cdi, A, B, C, D, Dnpaf, Kund);
       long long nc = g_nodes.fetch_add(1, memory_order_relaxed);
-      // Periodic liveness print (every ~67M nodes a thread checks the clock).
       if ((nc & 0x3FFFFFF) == 0) maybe_progress();
-      // Determined-NPAF prune: shift s = n-d is now fully determined.
-      if (npaf_at(A, B, n1, C, D, n, n - d) != 0) continue;
-      // After the last layer C,D are complete -> Theorem 2.4 spectral prune.
-      if (d == half - 1 && !hall_ok(C, n, D, n)) continue;
-      search(d + 1, A, B, C, D);
+
+      if (bounds_pass(Dnpaf, Kund)) {
+        // After the last mirror layer C,D are complete -> Theorem 2.4 spectral prune.
+        if (d != half - 1 || hall_ok(C, n, D, n))
+          search(d + 1, A, B, C, D, Dnpaf, Kund);
+      }
+
+      zero_layer_positions(d, A, B, C, D);
+      memcpy(Dnpaf, Dsave, (n + 1) * sizeof(int));
+      memcpy(Kund,  Ksave, (n + 1) * sizeof(int));
     }
   }
 }
@@ -249,20 +330,23 @@ int main(int argc, char **argv) {
     int cd2 = (int)((combo >> 16) & 7);
 
     int A[256], B[256], C[256], D[256];
+    int Dnpaf[256], Kund[256];
     memset(A, 0, sizeof(A)); memset(B, 0, sizeof(B));
     memset(C, 0, sizeof(C)); memset(D, 0, sizeof(D));
+    init_bounds(Dnpaf, Kund);
 
-    // Three layers + determined-NPAF prunes at s=n, n-1, n-2.
-    place_layer(0, ab0, cd0, A, B, C, D);
+    // Three layers; the bounds prune fires across ALL shifts (not just the
+    // single fully-determined one) so each layer kills many more branches.
+    place_and_update_layer(0, ab0, cd0, A, B, C, D, Dnpaf, Kund);
     g_nodes.fetch_add(1, memory_order_relaxed);
-    if (npaf_at(A, B, G_N1, C, D, G_N, G_N) == 0) {
-      place_layer(1, ab1, cd1, A, B, C, D);
+    if (bounds_pass(Dnpaf, Kund)) {
+      place_and_update_layer(1, ab1, cd1, A, B, C, D, Dnpaf, Kund);
       g_nodes.fetch_add(1, memory_order_relaxed);
-      if (npaf_at(A, B, G_N1, C, D, G_N, G_N - 1) == 0) {
-        place_layer(2, ab2, cd2, A, B, C, D);
+      if (bounds_pass(Dnpaf, Kund)) {
+        place_and_update_layer(2, ab2, cd2, A, B, C, D, Dnpaf, Kund);
         g_nodes.fetch_add(1, memory_order_relaxed);
-        if (npaf_at(A, B, G_N1, C, D, G_N, G_N - 2) == 0)
-          search(3, A, B, C, D);
+        if (bounds_pass(Dnpaf, Kund))
+          search(3, A, B, C, D, Dnpaf, Kund);
       }
     }
 
