@@ -1,9 +1,162 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-05-17 (updated after Commits A–E + encoding verification)
+**Date**: 2026-05-28 (updated after pivot to exhaustive backtracking + Theorem 2.3 prune)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
-**Supervisor account**: def-ikotsire
-**Goal**: Find BS(45,44) δ-codes — a world record. Currently validating with BS(43,42) and BS(28,27).
+**Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
+**Goal**: Find BS(45,44) δ-codes — a world record. Currently validating with BS(43,42).
+
+---
+
+## ⚡ TOP OF MIND — 2026-05-28: Pivot from SA to exhaustive backtracking with Wang-Zhu Thm 2.3 prune
+
+The SA approach (wz_sa_v8 Commits A–H) **never reproduced BS(43,42)** despite 8 commits of layered improvements (BCD coupled refinement, stall kicks, escalating perturbations, per-sig tracking, 1/2/3-pair polish). Plateaus on BS(43) stayed at coupled cost 32-40. Per the user's authorization ("do whatever needs to be done. i need results" + "if that includes building 2.3 then go ahead"), we pivoted to **Wang-Zhu's actual paper algorithm**: complete exhaustive backtracking with theorem-based pruning. The SA solver is preserved as fallback but is **not the active approach**.
+
+### Three solver generations now exist
+
+| Solver | File | Method | Status |
+|--------|------|--------|--------|
+| `wz_sa_v8` | `src/solver/wz_sa_v8.cpp` | SA + BCD refinement | **Inactive** — never found BS(43,42) |
+| `wz_exact` | `src/solver/wz_exact.cpp` | Joint exhaustive backtracking (all sigs), NPAF bounds prune | **Superseded** (canceled 2026-05-28) — ran ~17h across 4 clusters, no signal |
+| **`wz_exact_t23`** | **`src/solver/wz_exact_t23.cpp`** | **Sig-targeted exhaustive backtracking + Thm 2.3 m=3 residue prune + Thm 2.4 spectral filter** | **CURRENT — queued on 4 clusters 2026-05-28** |
+
+### Why wz_exact_t23 is the active approach
+
+1. **Wang-Zhu paper's actual algorithm.** Their result is exhaustive backtracking + Theorem 2.3 m=3 residue-class decomposition + Theorem 2.4 spectral filter (hall_ok). SA was never the right algorithm.
+2. **Theorem 2.3 m=3 prune**: For target sig, precompute all valid (K,R,P,Q) m=3 residue-sum 4-tuples; index by (P,Q). At CD-placement (d==half-1), look up compatible (K,R) — empty result prunes the AB subtree outright. For BS(43,42) sig (7,11,0,0): **40,824 valid 4-tuples, 1441 unique (P,Q) keys, avg 28 / max 108 compatible (K,R) per key** → ~100× narrowing of AB search vs. unpruned wz_exact.
+3. **Sig-targeted**: Wang-Zhu paper explicitly used sig (7,11,0,0) for BS(43,42). Sig-targeting trades sig-coverage for prune strength. Right call for reproduction; would need broader coverage for BS(45).
+4. **Reuses bounds prune from wz_exact** (NPAF Dnpaf/Kund interval arithmetic, Commit `a5335ab`).
+
+### Validation — wz_exact_t23 reproduced BS(7,6) in 23 ms locally
+
+```
+$ ./wz_exact_t23 6 5 1 0 0
+*** REPRODUCTION CONFIRMED: BS(7,6) FOUND ***
+sig = (5,1,0,0)
+A = {1,-1,1,1,1,1,1};  B = {1,-1,1,-1,1,1,-1};
+C = {-1,-1,-1,1,1,1};  D = {1,-1,-1,1,1,-1};
+Time: 0.0228974s
+```
+At n=12 the solver ran 7800/524288 combos in 15s with `t23_prunes` growing correctly (648k prunes across 22M nodes). Confirms both correctness and that the prune fires.
+
+### Critical bug fixed before deploy (do not regress)
+
+**Double-counting in `update_bounds_pos` when batched after `place_layer`.** Original `wz_exact_t23.cpp` first placed all 8 layer positions, then called `update_bounds_pos` once per position. But `update_bounds_pos` scans **bidirectionally** (forward p+s AND backward p-s), so the within-layer partner term (e.g., A[d]*A[n-d] at shift s=n-2d) got counted twice — once when updating A[d] (which finds A[n-d] forward) and once when updating A[n-d] (which finds A[d] backward). Symptom: `Dnpaf[s]` was 2× correct, `Kund[s]` went negative, layer 0 then pruned **every** combo with `t23_prunes=0`.
+
+Fix: new `place_and_update_layer` helper interleaves set + update one position at a time, mirroring `wz_exact.cpp` lines 213-225. Driver lambda and `search()` recursion both use it. See `BS45_Quantum_Explorer/src/solver/wz_exact_t23.cpp:254-283`.
+
+### Files added in this session (uncommitted as of 2026-05-28)
+
+```
+BS45_Quantum_Explorer/
+├── src/solver/
+│   ├── enum_m3_tuples.cpp           ← Standalone Thm 2.3 m=3 tuple enumerator (validation tool)
+│   ├── t23_filter.cpp               ← Standalone T23Filter index test (verifies WZ BS(43) tuple is in the set)
+│   └── wz_exact_t23.cpp             ← THE CURRENT SOLVER. Sig-targeted backtracking + T23 prune
+├── fir_bs43_exact_t23.sh            ← BS(43,42) sig (7,11,0,0) on Fir, combos [0, 131072)
+├── rorqual_bs43_exact_t23.sh        ← Rorqual, combos [131072, 262144)
+├── nibi_bs43_exact_t23.sh           ← Nibi, combos [262144, 393216)
+└── trillium_bs43_exact_t23.sh       ← Trillium, combos [393216, 524288)
+```
+
+### Current job state (2026-05-28, post-deploy)
+
+All four wz_exact (joint, sig-untargeted) jobs were canceled because wz_exact_t23 is strictly better for reproduction (targets known-good sig + adds Thm 2.3 prune on top of bounds prune). Replaced with wz_exact_t23:
+
+| Cluster | Job ID | Status | Sig | Combo range | Account |
+|---------|--------|--------|-----|-------------|---------|
+| Fir | 41964249 | PD (None) | (7,11,0,0) | [0, 131072) | def-ikotsire |
+| Rorqual | 13420400 | PD (None) | (7,11,0,0) | [131072, 262144) | def-ikotsire |
+| Nibi | 15118027 | PD (None) | (7,11,0,0) | [262144, 393216) | def-ikotsire_cpu |
+| Trillium | 1662254 | PD (Resources) | (7,11,0,0) | [393216, 524288) | def-ikotsire |
+
+Each cluster runs `--array=0-9`, splitting its 131072 combos across 10 tasks. Each task is further sub-divided into 3 non-overlapping `WAVE` sub-ranges (NWAVES=3) — submit wave 1/2 once wave 0 finishes. The OpenMP `schedule(dynamic, 64)` causes wave-overlap in single-wave runs (workers re-do the same first ~30% each time), which is why the WAVE env-var split exists.
+
+### Deploy pattern (mirrors prior tar | ssh, one Duo prompt per cluster)
+
+```bash
+cd /Users/danielgordon/School/CP468/CP468-Assignments/CP468-Sarukhanian/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp <cluster>_bs43_exact_t23.sh | \
+  ssh dangord@<cluster>.alliancecan.ca '
+    scancel --user=dangord --name=BS43_exact_<cluster> 2>/dev/null;
+    scancel --user=dangord --name=BS43_t23_<cluster> 2>/dev/null;
+    cd $SCRATCH/bs45 && tar -xvf - &&
+    sbatch <cluster>_bs43_exact_t23.sh &&
+    squeue -u dangord --format="%10i %25j %2t %12L %R"'
+```
+`<cluster>` ∈ {fir, rorqual, trilli, nibi} — note "trilli" not "trillium" for the job-name (the script uses `--job-name=BS43_t23_trilli`). Job names: `BS43_t23_fir`, `BS43_t23_rorqual`, `BS43_t23_nibi`, `BS43_t23_trilli`.
+
+Wave 1/2 resubmits when wave 0 finishes:
+```bash
+ssh dangord@<cluster>.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --export=ALL,WAVE=1 <cluster>_bs43_exact_t23.sh'
+```
+
+### Checker script (covers both wz_exact and wz_exact_t23 outputs)
+
+```bash
+for c in fir rorqual nibi trillium; do echo ""; echo "════════ $c ════════"; \
+  ssh dangord@${c}.alliancecan.ca "squeue -u dangord --format='%10i %25j %2t %12L %R' 2>/dev/null; \
+    cd \$SCRATCH/bs45 2>/dev/null || exit 0; \
+    echo '--- SOLUTIONS ---'; \
+    grep -l 'REPRODUCTION CONFIRMED\|WORLD RECORD' bs43_exact_*output*.txt bs43_t23_*output*.txt 2>/dev/null || echo '(none yet)'; \
+    echo '--- LATEST exact ---'; for f in \$(ls -t bs43_exact_*output*.txt 2>/dev/null | head -2); do echo \"=== \$f ===\"; tail -3 \"\$f\"; done; \
+    echo '--- LATEST t23 ---'; for f in \$(ls -t bs43_t23_*output*.txt 2>/dev/null | head -2); do echo \"=== \$f ===\"; tail -3 \"\$f\"; done"; \
+done
+```
+
+### wz_exact_t23 log line format (different from wz_sa_v8)
+
+```
+[<t>s] nodes=<n> rate=<r>/s combos_done=<c> t23_prunes=<p> found=<yes|no>
+[<t>s] COMBO DONE <c>/<total> nodes=<n> t23_prunes=<p> found=<yes|no>
+```
+
+- `nodes`: total backtracking nodes explored (NPAF-bounds-passing placements)
+- `combos_done`: first-3-layer combo iterations finished
+- `t23_prunes`: times the T23 filter rejected a (P,Q) for having no compatible (K,R)
+- `rate`: nodes/sec
+- `found=YES` and a `*** REPRODUCTION CONFIRMED ***` banner → SUCCESS
+
+If `t23_prunes` stays at 0 while `nodes` grows, the bounds prune is masking everything before T23 fires — that's expected at small n, suspicious at n=42 (should see millions of T23 prunes).
+
+### Where to pick up
+
+1. **Monitor**: run the checker above periodically. Wave 0 has 24h walltime; expect first signal within 12–24h.
+2. **If solution found**: independently verify with `python3 verify_npaf.py < <output>`. Save the tuple. Then deploy BS(45) variants (sig (7,11,0,0) is BS(43)-specific — for BS(45,44) we need a different sig; user picks from `enum_m3_tuples 44 a b c d` candidates satisfying a²+b²+c²+d²=178).
+3. **If wave 0 exhausts with no solution**: resubmit WAVE=1, then WAVE=2. After all 3 waves of all 4 clusters fail, the Wang-Zhu sig (7,11,0,0) under our combo encoding might not match the paper's combo enumeration order — would need to re-derive which combo prefix the paper's solution falls into. (Combo indexing in `wz_exact_t23.cpp:432-437` is `ab0|cd0|ab1|cd1|ab2|cd2` bit-packed.)
+4. **If even single-wave runs explode in walltime without finishing**: increase combo split depth from 3 layers to 4 (would give 67M combos instead of 524k — finer per-task slicing). This was already done once (Commit `fea3ae6`, 2 layers → 3 layers).
+
+### Uncommitted work (user has not asked to commit)
+
+All wz_exact_t23 work, the three new src/solver files, and four new SLURM scripts are **uncommitted**. User explicitly said "tell me exactly what to do" before deploying, and we deployed straight to clusters without committing. Per user preference (`feedback_no_local_runs.md`), commit when user explicitly asks. A draft commit message is prepared:
+
+```
+feat: wz_exact_t23 — Theorem 2.3 m=3 residue-sum pruning solver
+
+Adds Wang-Zhu Thm 2.3 m=3 residue-class decomposition prune to the exhaustive
+backtracker. T23Filter precomputes all valid (K,R,P,Q) m=3 sum 4-tuples for a
+target signature and indexes them by (P,Q). At CD placement (d==half-1), the
+observed (P,Q) is looked up; empty result prunes the AB subtree outright.
+
+Pipeline: enum_m3_tuples.cpp (validator) → t23_filter.cpp (index test) →
+wz_exact_t23.cpp (full solver). Smoke-tested at n=6 (BS(7,6) found in 23ms)
+and n=12 (t23_prunes counter grows correctly).
+
+Bug fix: place_and_update_layer interleaves set + update_bounds_pos one
+position at a time. Previous batched approach double-counted within-layer
+partner terms via bidirectional (forward p+s AND backward p-s) update scan,
+making Dnpaf 2x correct and Kund go negative — layer 0 pruned every combo
+with t23_prunes=0.
+
+Cluster deploys: 4 new SLURM scripts (fir/rorqual/nibi/trillium) targeting
+BS(43,42) sig (7,11,0,0) replace the wz_exact joint-enumeration jobs.
+```
+
+### Don't-do additions from this session
+
+- **Don't run wz_exact and wz_exact_t23 in parallel.** wz_exact_t23 is strictly stronger for reproduction (sig-targeted to known-good sig + extra T23 prune). Running both wastes half the cluster compute. Per 2026-05-28 user decision, wz_exact was canceled across all 4 clusters.
+- **Don't modify the WZ encoding tables in wz_exact_t23** (comb16, comb8_pos, comb8_neg, comb4) — same load-bearing constraint as wz_sa_v8.
+- **Don't compile with `-fopenmp` on macOS** with the default clang — it errors out. Cluster gcc has it. Local compile-check uses plain `g++ -O3 -std=c++17` (loses parallelism but works for smoke tests).
+- **Don't use `place_layer` (gone — was a foot-gun)**. Always interleave set+update via `place_and_update_layer` to avoid double-counting.
 
 ---
 
