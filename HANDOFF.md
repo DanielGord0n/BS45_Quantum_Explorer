@@ -1,9 +1,87 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-05-28 (updated after pivot to exhaustive backtracking + Theorem 2.3 prune)
+**Date**: 2026-05-30 (updated after wz_exact_t23 v2 prune pass — sum + per-class)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
 **Goal**: Find BS(45,44) δ-codes — a world record. Currently validating with BS(43,42).
+
+---
+
+## ⚡ TOP OF MIND — 2026-05-30: wz_exact_t23 v2 prune pass
+
+Diagnosis of the 2026-05-28 status: Fir + Rorqual queues went empty
+(prior 24h wz_exact jobs hit walltime; the new t23 jobs were never
+resubmitted there). Nibi and Trillium are still running v1 t23 jobs
+(Trillium 1662254 ~9h left, Nibi 15118027 tasks 8–9 ~22h left). The
+user's checker was also looking at `bs4*_exact_*output*.txt` only, so
+the actual t23 outputs (`bs43_t23_*output*.txt`) weren't visible —
+fixed in the "Checker script" section below.
+
+### Two new prunes added to wz_exact_t23.cpp (sound; tested)
+
+1. **Sum-constraint prune** — at every layer d, requires
+   `|G_SIG_x − partial_sum_x| ≤ rem_total_x` for x ∈ {A,B,C,D}. Sound
+   because each remaining position can shift the partial sum by ±1.
+   Most selective near d=half-1 (e.g., at BS(43,42) sig (7,11,0,0),
+   layer 20 requires partial sumA ∈ {6,8}, partial sumC = 0, etc.).
+
+2. **Per-class residue prune** — T23Filter now precomputes, for each
+   class c ∈ {0,1,2}, a bitset of valid K[c], R[c], P[c], Q[c] values
+   over the whole tuple set. At every layer the partial Kpar[c] (and
+   R/P/Q) must be reachable to some bitset value within the remaining
+   capacity of that class. Sound because true K_final[c] is always in
+   the bitset (filter built from all valid tuples for the sig).
+
+Both fire at every layer (vs. T23 lookup which fires only at d=half).
+Reproduces BS(7,6) in 22 ms and BS(11,10) in 4 ms on macOS (single-threaded);
+sum_prunes grows ~32% per combo at n=10, class_prunes is 0 at small n
+(bitsets are loose — expected) but should be selective at n=42 with
+the tight sig (7,11,0,0).
+
+### Files touched in this session
+
+- `BS45_Quantum_Explorer/src/solver/wz_exact_t23.cpp` — added globals
+  `G_NA_CLASS`, `G_NC_CLASS`, `G_PLACED_A_AFTER`, `G_PLACED_C_AFTER`;
+  extended `T23Filter` with `allowed_K_set_[3][64]` etc. + new method
+  `class_reachable`; inserted sum + class prune blocks in both
+  `search()` and `place_and_check` (combo-loop driver); added
+  `g_sum_prunes` / `g_class_prunes` counters and threaded them through
+  every progress log and exhaustion message.
+- `HANDOFF.md` — this section, updated checker, updated log-line format.
+
+Uncommitted. Draft commit message:
+
+```
+feat: wz_exact_t23 v2 — sum-constraint + per-class residue pruning
+
+Adds two layer-wise prunes that fire before the existing d==half T23
+lookup, so they kill branches as soon as a partial sum or class
+residue diverges from any value reachable to a valid (K,R,P,Q) tuple:
+
+- Sum prune: |sig_x - partial_x| <= n_x - 2*(d+1) for x in {A,B,C,D}
+- Class prune: any value reachable from partial Kpar[c] within
+  remaining class-c capacity must be in the precomputed bitset of
+  valid K[c] across all (K,R,P,Q) tuples in the T23 filter (same
+  for R, P, Q).
+
+Both prunes are sound (true solutions always satisfy them) and
+fire at every layer rather than only at d==half. Together they
+should make the search converge orders of magnitude faster on the
+combo subtrees that the v1 t23 was iterating through silently
+under bounds-prune masking.
+
+Reproduces BS(7,6) in 22 ms, BS(11,10) in 4 ms on a single core.
+```
+
+### What to deploy where
+
+Trillium (10 t23 jobs, ~9 h left) and Nibi (2 t23 jobs, ~22 h left)
+are mid-flight on the v1 solver; let them run out — they may still
+find a solution. **Deploy v2 only to Fir and Rorqual (empty queues)
+this round.** When Trillium / Nibi finish without success, redeploy
+v2 there too. Sample deploy command in "Deploy pattern" below works
+unchanged — the SLURM scripts didn't need to change; just re-tar the
+new `src/solver/wz_exact_t23.cpp`.
 
 ---
 
@@ -92,31 +170,41 @@ ssh dangord@<cluster>.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --export=ALL,WA
 
 ### Checker script (covers both wz_exact and wz_exact_t23 outputs)
 
+The user's original checker used `bs4*_exact_*output*.txt` and missed the new
+`bs43_t23_*output*.txt` files. Use this updated version — it shows progress
+from t23 jobs in addition to legacy wz_exact, and dumps the last 6 progress
+lines (so you can see the `sum_prunes` / `class_prunes` growth from the v2
+prune pass).
+
 ```bash
 for c in fir rorqual nibi trillium; do echo ""; echo "════════ $c ════════"; \
   ssh dangord@${c}.alliancecan.ca "squeue -u dangord --format='%10i %25j %2t %12L %R' 2>/dev/null; \
     cd \$SCRATCH/bs45 2>/dev/null || exit 0; \
     echo '--- SOLUTIONS ---'; \
-    grep -l 'REPRODUCTION CONFIRMED\|WORLD RECORD' bs43_exact_*output*.txt bs43_t23_*output*.txt 2>/dev/null || echo '(none yet)'; \
-    echo '--- LATEST exact ---'; for f in \$(ls -t bs43_exact_*output*.txt 2>/dev/null | head -2); do echo \"=== \$f ===\"; tail -3 \"\$f\"; done; \
-    echo '--- LATEST t23 ---'; for f in \$(ls -t bs43_t23_*output*.txt 2>/dev/null | head -2); do echo \"=== \$f ===\"; tail -3 \"\$f\"; done"; \
+    grep -l 'REPRODUCTION CONFIRMED\|WORLD RECORD' bs43_exact_*output*.txt bs43_t23_*output*.txt bs4*_exact_t23*output*.txt 2>/dev/null || echo '(none yet)'; \
+    echo '--- LATEST t23 (active solver) ---'; \
+    for f in \$(ls -t bs43_t23_*output*.txt 2>/dev/null | head -3); do echo \"=== \$f ===\"; tail -6 \"\$f\"; done; \
+    echo '--- LATEST exact (legacy) ---'; \
+    for f in \$(ls -t bs43_exact_*output*.txt 2>/dev/null | head -2); do echo \"=== \$f ===\"; tail -3 \"\$f\"; done"; \
 done
 ```
 
-### wz_exact_t23 log line format (different from wz_sa_v8)
+### wz_exact_t23 log line format (UPDATED 2026-05-30 with v2 prunes)
 
 ```
-[<t>s] nodes=<n> rate=<r>/s combos_done=<c> t23_prunes=<p> found=<yes|no>
-[<t>s] COMBO DONE <c>/<total> nodes=<n> t23_prunes=<p> found=<yes|no>
+[<t>s] nodes=<n> rate=<r>/s combos_done=<c> t23_prunes=<p> sum_prunes=<sp> class_prunes=<cp> found=<yes|no>
+[<t>s] COMBO DONE <c>/<total> nodes=<n> t23_prunes=<p> sum_prunes=<sp> class_prunes=<cp> found=<yes|no>
 ```
 
 - `nodes`: total backtracking nodes explored (NPAF-bounds-passing placements)
 - `combos_done`: first-3-layer combo iterations finished
-- `t23_prunes`: times the T23 filter rejected a (P,Q) for having no compatible (K,R)
+- `t23_prunes`: times the (P,Q) lookup at d==half returned an empty (K,R) set
+- `sum_prunes`: branches killed by the sum-constraint prune (post v2 — see below)
+- `class_prunes`: branches killed by the per-class residue prune (post v2)
 - `rate`: nodes/sec
 - `found=YES` and a `*** REPRODUCTION CONFIRMED ***` banner → SUCCESS
 
-If `t23_prunes` stays at 0 while `nodes` grows, the bounds prune is masking everything before T23 fires — that's expected at small n, suspicious at n=42 (should see millions of T23 prunes).
+With v2 active, expect `sum_prunes` to dominate `t23_prunes` by orders of magnitude — sum/class prunes fire at every layer, t23 only at d==half. If `sum_prunes` is 0 while combos grow at n=42, the prune is broken; if `class_prunes` is 0 at n=42 that's just because the per-class allowed sets are wide enough to cover the partial Kpar (expected for permissive sigs; selective for tight ones like (7,11,0,0)).
 
 ### Where to pick up
 

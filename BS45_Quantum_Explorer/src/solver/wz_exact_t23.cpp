@@ -39,6 +39,13 @@ static int G_N, G_N1, G_HALF;
 static int G_SIG_A, G_SIG_B, G_SIG_C, G_SIG_D;
 static Clock::time_point G_T0;
 
+// Precomputed class counts. G_NA_CLASS[c] = positions in A (length n1) with i%3==c.
+// G_PLACED_A_AFTER[d+1][c] = how many A positions in class c are filled after layer d.
+// Same for C (length n). Used by sum-constraint + per-class residue prunes.
+static int G_NA_CLASS[3], G_NC_CLASS[3];
+static int G_PLACED_A_AFTER[64][3];
+static int G_PLACED_C_AFTER[64][3];
+
 // ---- Wang-Zhu Theorem 2.2 comb tables (same as wz_exact) ----
 int comb16[16][4];
 int comb8_pos[8][4];
@@ -110,7 +117,13 @@ static inline uint64_t encode_pq(const int *P, const int *Q) {
 
 class T23Filter {
 public:
-  T23Filter(int n, int a, int b, int c, int d) : n_(n) { build(a, b, c, d); }
+  T23Filter(int n, int a, int b, int c, int d) : n_(n) {
+    for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 64; j++)
+        allowed_K_set_[i][j] = allowed_R_set_[i][j] =
+            allowed_P_set_[i][j] = allowed_Q_set_[i][j] = false;
+    build(a, b, c, d);
+  }
   const vector<KRPair> &compatible_KR(const int *P, const int *Q) const {
     auto it = by_PQ_.find(encode_pq(P, Q));
     return (it == by_PQ_.end()) ? empty_ : it->second;
@@ -118,7 +131,33 @@ public:
   size_t total_tuples() const { return total_; }
   size_t unique_PQ_keys() const { return by_PQ_.size(); }
 
+  // Per-class reachability: each component of K, R, P, Q (over all valid
+  // (K,R,P,Q) tuples) is precomputed as a bitset. class_reachable returns
+  // true iff for every class c, there exists some valid K[c] (resp. R, P, Q)
+  // reachable from the current partial sum within rem ±1 contributions.
+  // This is a sound, looser projection of the full (K,R,P,Q) lookup; it can
+  // fire at every layer (not just d==half) so it kills branches with diverging
+  // class sums very early.
+  bool class_reachable(const int *K, const int *R, const int *P, const int *Q,
+                       const int *remA, const int *remC) const {
+    for (int c = 0; c < 3; c++) {
+      if (!any_reachable(allowed_K_set_[c], K[c], remA[c])) return false;
+      if (!any_reachable(allowed_R_set_[c], R[c], remA[c])) return false;
+      if (!any_reachable(allowed_P_set_[c], P[c], remC[c])) return false;
+      if (!any_reachable(allowed_Q_set_[c], Q[c], remC[c])) return false;
+    }
+    return true;
+  }
+
 private:
+  static bool any_reachable(const bool *set, int current, int rem) {
+    for (int delta = -rem; delta <= rem; delta += 2) {
+      int v = current + delta;
+      if (v < -32 || v > 31) continue;
+      if (set[v + 32]) return true;
+    }
+    return false;
+  }
   static int class_count(int L, int c) {
     int n = 0;
     for (int p = c; p < L; p += 3) n++;
@@ -165,6 +204,16 @@ private:
               int qkey[3] = {Q[l].x[0], Q[l].x[1], Q[l].x[2]};
               by_PQ_[encode_pq(pkey, qkey)].push_back({K[i], R[j]});
               total_++;
+              for (int ci = 0; ci < 3; ci++) {
+                if (K[i].x[ci] >= -32 && K[i].x[ci] <= 31)
+                  allowed_K_set_[ci][K[i].x[ci] + 32] = true;
+                if (R[j].x[ci] >= -32 && R[j].x[ci] <= 31)
+                  allowed_R_set_[ci][R[j].x[ci] + 32] = true;
+                if (P[k].x[ci] >= -32 && P[k].x[ci] <= 31)
+                  allowed_P_set_[ci][P[k].x[ci] + 32] = true;
+                if (Q[l].x[ci] >= -32 && Q[l].x[ci] <= 31)
+                  allowed_Q_set_[ci][Q[l].x[ci] + 32] = true;
+              }
             }
           }
         }
@@ -175,6 +224,10 @@ private:
   size_t total_ = 0;
   unordered_map<uint64_t, vector<KRPair>> by_PQ_;
   vector<KRPair> empty_;
+  bool allowed_K_set_[3][64];
+  bool allowed_R_set_[3][64];
+  bool allowed_P_set_[3][64];
+  bool allowed_Q_set_[3][64];
 };
 
 static T23Filter *G_FILTER = nullptr;
@@ -185,6 +238,8 @@ static atomic<bool> g_found{false};
 static atomic<long long> g_nodes{0};
 static atomic<long long> g_combos_done{0};
 static atomic<long long> g_t23_prunes{0};
+static atomic<long long> g_sum_prunes{0};
+static atomic<long long> g_class_prunes{0};
 static atomic<int> g_last_print{0};
 static int g_solA[256], g_solB[256], g_solC[256], g_solD[256];
 
@@ -197,10 +252,13 @@ static void maybe_progress() {
   long long nodes = g_nodes.load(memory_order_relaxed);
   long long cd = g_combos_done.load(memory_order_relaxed);
   long long t23 = g_t23_prunes.load(memory_order_relaxed);
+  long long sumP = g_sum_prunes.load(memory_order_relaxed);
+  long long clsP = g_class_prunes.load(memory_order_relaxed);
   long long rate = (t > 0) ? (long long)(nodes / t) : 0;
 #pragma omp critical(report)
   cout << "[" << t << "s] nodes=" << nodes << " rate=" << rate
        << "/s combos_done=" << cd << " t23_prunes=" << t23
+       << " sum_prunes=" << sumP << " class_prunes=" << clsP
        << " found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
 }
 
@@ -349,13 +407,41 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
         if (abs(Dnpaf[s]) > Kund[s]) { prune = true; break; }
       }
       if (!prune) {
-        if (d == half - 1) {
-          // C, D fully placed. Apply Thm 2.4 spectral filter.
-          if (hall_ok(C, n, D, n)) {
-            search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
-          }
+        // Sum-constraint prune: must be able to reach (G_SIG_A,B,C,D) given
+        // partial sums and remaining ±1 contributions.
+        int sumA = Kpar[0] + Kpar[1] + Kpar[2];
+        int sumB = Rpar[0] + Rpar[1] + Rpar[2];
+        int sumC = Ppar[0] + Ppar[1] + Ppar[2];
+        int sumD = Qpar[0] + Qpar[1] + Qpar[2];
+        int remA_total = n1 - 2 * (d + 1);
+        int remC_total = n - 2 * (d + 1);
+        bool sum_ok = (abs(G_SIG_A - sumA) <= remA_total)
+                   && (abs(G_SIG_B - sumB) <= remA_total)
+                   && (abs(G_SIG_C - sumC) <= remC_total)
+                   && (abs(G_SIG_D - sumD) <= remC_total);
+        if (!sum_ok) {
+          g_sum_prunes.fetch_add(1, memory_order_relaxed);
         } else {
-          search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+          // Per-class residue prune via T23 filter projections.
+          int remA_c[3] = {G_NA_CLASS[0] - G_PLACED_A_AFTER[d + 1][0],
+                           G_NA_CLASS[1] - G_PLACED_A_AFTER[d + 1][1],
+                           G_NA_CLASS[2] - G_PLACED_A_AFTER[d + 1][2]};
+          int remC_c[3] = {G_NC_CLASS[0] - G_PLACED_C_AFTER[d + 1][0],
+                           G_NC_CLASS[1] - G_PLACED_C_AFTER[d + 1][1],
+                           G_NC_CLASS[2] - G_PLACED_C_AFTER[d + 1][2]};
+          if (!G_FILTER->class_reachable(Kpar, Rpar, Ppar, Qpar,
+                                          remA_c, remC_c)) {
+            g_class_prunes.fetch_add(1, memory_order_relaxed);
+          } else {
+            if (d == half - 1) {
+              // C, D fully placed. Apply Thm 2.4 spectral filter.
+              if (hall_ok(C, n, D, n)) {
+                search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+              }
+            } else {
+              search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+            }
+          }
         }
       }
 
@@ -399,6 +485,25 @@ int main(int argc, char **argv) {
     return 1;
   }
   init_combs();
+
+  // Precompute class counts and cumulative placement-per-layer arrays.
+  for (int c = 0; c < 3; c++) { G_NA_CLASS[c] = 0; G_NC_CLASS[c] = 0; }
+  for (int i = 0; i < G_N1; i++) G_NA_CLASS[i % 3]++;
+  for (int i = 0; i < G_N;  i++) G_NC_CLASS[i % 3]++;
+  for (int c = 0; c < 3; c++) {
+    G_PLACED_A_AFTER[0][c] = 0;
+    G_PLACED_C_AFTER[0][c] = 0;
+  }
+  for (int d = 0; d < G_HALF; d++) {
+    for (int c = 0; c < 3; c++) {
+      G_PLACED_A_AFTER[d + 1][c] = G_PLACED_A_AFTER[d][c];
+      G_PLACED_C_AFTER[d + 1][c] = G_PLACED_C_AFTER[d][c];
+    }
+    G_PLACED_A_AFTER[d + 1][d % 3]++;
+    if (d != G_N - d) G_PLACED_A_AFTER[d + 1][(G_N - d) % 3]++;
+    G_PLACED_C_AFTER[d + 1][d % 3]++;
+    if (d != G_N - 1 - d) G_PLACED_C_AFTER[d + 1][(G_N - 1 - d) % 3]++;
+  }
 
   long long total_combos = 128LL * 64LL * 64LL;
   long long lo = (argc >= 7) ? atoll(argv[6]) : 0;
@@ -457,6 +562,31 @@ int main(int argc, char **argv) {
       g_nodes.fetch_add(1, memory_order_relaxed);
       for (int s = 1; s <= G_N; s++)
         if (abs(Dnpaf[s]) > Kund[s]) return false;
+      // Sum-constraint prune.
+      int sumA = Kpar[0] + Kpar[1] + Kpar[2];
+      int sumB = Rpar[0] + Rpar[1] + Rpar[2];
+      int sumC = Ppar[0] + Ppar[1] + Ppar[2];
+      int sumD = Qpar[0] + Qpar[1] + Qpar[2];
+      int remA_total = G_N1 - 2 * (d + 1);
+      int remC_total = G_N - 2 * (d + 1);
+      if (abs(G_SIG_A - sumA) > remA_total ||
+          abs(G_SIG_B - sumB) > remA_total ||
+          abs(G_SIG_C - sumC) > remC_total ||
+          abs(G_SIG_D - sumD) > remC_total) {
+        g_sum_prunes.fetch_add(1, memory_order_relaxed);
+        return false;
+      }
+      // Per-class residue prune.
+      int remA_c[3] = {G_NA_CLASS[0] - G_PLACED_A_AFTER[d + 1][0],
+                       G_NA_CLASS[1] - G_PLACED_A_AFTER[d + 1][1],
+                       G_NA_CLASS[2] - G_PLACED_A_AFTER[d + 1][2]};
+      int remC_c[3] = {G_NC_CLASS[0] - G_PLACED_C_AFTER[d + 1][0],
+                       G_NC_CLASS[1] - G_PLACED_C_AFTER[d + 1][1],
+                       G_NC_CLASS[2] - G_PLACED_C_AFTER[d + 1][2]};
+      if (!G_FILTER->class_reachable(Kpar, Rpar, Ppar, Qpar, remA_c, remC_c)) {
+        g_class_prunes.fetch_add(1, memory_order_relaxed);
+        return false;
+      }
       return true;
     };
 
@@ -478,6 +608,8 @@ int main(int argc, char **argv) {
         double t = chrono::duration<double>(Clock::now() - G_T0).count();
         cout << "[" << t << "s] COMBO DONE " << done << "/" << (hi - lo)
              << "  nodes=" << g_nodes.load() << "  t23_prunes=" << g_t23_prunes.load()
+             << "  sum_prunes=" << g_sum_prunes.load()
+             << "  class_prunes=" << g_class_prunes.load()
              << "  found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
       }
     }
@@ -488,7 +620,9 @@ int main(int argc, char **argv) {
     cout << "\n[" << t << "s] exhausted combo range [" << lo << "," << hi
          << ") for sig (" << G_SIG_A << "," << G_SIG_B << "," << G_SIG_C
          << "," << G_SIG_D << "). nodes=" << g_nodes.load()
-         << " t23_prunes=" << g_t23_prunes.load() << "\n";
+         << " t23_prunes=" << g_t23_prunes.load()
+         << " sum_prunes=" << g_sum_prunes.load()
+         << " class_prunes=" << g_class_prunes.load() << "\n";
   }
   delete G_FILTER;
   return g_found.load() ? 0 : 2;
