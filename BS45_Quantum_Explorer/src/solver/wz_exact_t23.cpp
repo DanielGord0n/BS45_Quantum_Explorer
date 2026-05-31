@@ -46,6 +46,15 @@ static int G_NA_CLASS[3], G_NC_CLASS[3];
 static int G_PLACED_A_AFTER[64][3];
 static int G_PLACED_C_AFTER[64][3];
 
+// Symmetry-breaking pins. Negating a single sequence (A, B, C, or D) leaves
+// NPAF[s] unchanged for all s (each term is a self-product within one
+// sequence) and only flips that sequence's sum. So for any sequence whose
+// TARGET signature component is 0, both ±versions live in the same sig and
+// produce the same NPAF — we can pin that sequence's first element to +1 and
+// search only one representative. For sig (7,11,0,0) this fires on C and D
+// (4x reduction). Set in main() from the sig.
+static bool G_PIN_A0, G_PIN_B0, G_PIN_C0, G_PIN_D0;
+
 // ---- Wang-Zhu Theorem 2.2 comb tables (same as wz_exact) ----
 int comb16[16][4];
 int comb8_pos[8][4];
@@ -70,18 +79,36 @@ void init_combs() {
   }
 }
 
+// Precomputed DFT basis for hall_ok: G_HALL_COS[j][i] = cos(i * j*pi/100).
+// j in 1..200, i in 0..G_N-1. Built once in main(); read-only thereafter.
+// This removes ~800*n transcendental evals per hall_ok call from the hot path
+// (pure speedup — identical math to the original cos/sin-in-loop version).
+static double G_HALL_COS[201][256];
+static double G_HALL_SIN[201][256];
+
+void init_hall_tables() {
+  for (int j = 1; j <= 200; j++) {
+    double th = j * M_PI / 100.0;
+    for (int i = 0; i < G_N && i < 256; i++) {
+      G_HALL_COS[j][i] = cos(i * th);
+      G_HALL_SIN[j][i] = sin(i * th);
+    }
+  }
+}
+
 bool hall_ok(const int *X, int xlen, const int *Y, int ylen) {
   double limit = 4.0 * G_N + 2.0;
   for (int j = 1; j <= 200; j++) {
-    double th = j * M_PI / 100.0;
+    const double *cj = G_HALL_COS[j];
+    const double *sj = G_HALL_SIN[j];
     double rx = 0, ix = 0, ry = 0, iy = 0;
     for (int i = 0; i < xlen; i++) {
-      rx += X[i] * cos(i * th);
-      ix += X[i] * sin(i * th);
+      rx += X[i] * cj[i];
+      ix += X[i] * sj[i];
     }
     for (int i = 0; i < ylen; i++) {
-      ry += Y[i] * cos(i * th);
-      iy += Y[i] * sin(i * th);
+      ry += Y[i] * cj[i];
+      iy += Y[i] * sj[i];
     }
     if (rx * rx + ix * ix + ry * ry + iy * iy > limit + 0.5) return false;
   }
@@ -240,6 +267,7 @@ static atomic<long long> g_combos_done{0};
 static atomic<long long> g_t23_prunes{0};
 static atomic<long long> g_sum_prunes{0};
 static atomic<long long> g_class_prunes{0};
+static atomic<long long> g_sym_skips{0};
 static atomic<int> g_last_print{0};
 static int g_solA[256], g_solB[256], g_solC[256], g_solD[256];
 
@@ -259,6 +287,7 @@ static void maybe_progress() {
   cout << "[" << t << "s] nodes=" << nodes << " rate=" << rate
        << "/s combos_done=" << cd << " t23_prunes=" << t23
        << " sum_prunes=" << sumP << " class_prunes=" << clsP
+       << " sym_skips=" << g_sym_skips.load(memory_order_relaxed)
        << " found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
 }
 
@@ -485,6 +514,14 @@ int main(int argc, char **argv) {
     return 1;
   }
   init_combs();
+  init_hall_tables();
+
+  // Single-sequence-negation symmetry pins: only sound when the sequence's
+  // target sum is 0 (so the negated copy keeps the same signature).
+  G_PIN_A0 = (G_SIG_A == 0);
+  G_PIN_B0 = (G_SIG_B == 0);
+  G_PIN_C0 = (G_SIG_C == 0);
+  G_PIN_D0 = (G_SIG_D == 0);
 
   // Precompute class counts and cumulative placement-per-layer arrays.
   for (int c = 0; c < 3; c++) { G_NA_CLASS[c] = 0; G_NC_CLASS[c] = 0; }
@@ -521,6 +558,12 @@ int main(int argc, char **argv) {
        << "), sig=(" << G_SIG_A << "," << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D << ")\n";
   cout << "  threads=" << thr << "  combos[" << lo << "," << hi << ")/"
        << total_combos << "\n";
+  cout << "  sym_pins: A0=" << G_PIN_A0 << " B0=" << G_PIN_B0
+       << " C0=" << G_PIN_C0 << " D0=" << G_PIN_D0;
+  {
+    int pins = (int)G_PIN_A0 + G_PIN_B0 + G_PIN_C0 + G_PIN_D0;
+    cout << "  (=> " << (1 << pins) << "x reduction)\n";
+  }
   cout << "========================================================" << endl;
 
   // Build T23Filter for this sig.
@@ -540,6 +583,18 @@ int main(int argc, char **argv) {
     int cd1 = (int)((combo >> 10) & 7);
     int ab2 = (int)((combo >> 13) & 7);
     int cd2 = (int)((combo >> 16) & 7);
+
+    // Symmetry-breaking pins on layer-0 first elements (A[0],B[0] in comb8_neg;
+    // C[0],D[0] in comb16). Sound only for sequences whose target sum is 0.
+    // Skips ~3/4 of combos for sig (7,11,0,0) before any allocation.
+    if ((G_PIN_A0 && comb8_neg[ab0][0] != 1) ||
+        (G_PIN_B0 && comb8_neg[ab0][1] != 1) ||
+        (G_PIN_C0 && comb16[cd0][0] != 1) ||
+        (G_PIN_D0 && comb16[cd0][1] != 1)) {
+      g_sym_skips.fetch_add(1, memory_order_relaxed);
+      g_combos_done.fetch_add(1, memory_order_relaxed);
+      continue;
+    }
 
     int A[256], B[256], C[256], D[256];
     int Dnpaf[256], Kund[256];
@@ -622,7 +677,8 @@ int main(int argc, char **argv) {
          << "," << G_SIG_D << "). nodes=" << g_nodes.load()
          << " t23_prunes=" << g_t23_prunes.load()
          << " sum_prunes=" << g_sum_prunes.load()
-         << " class_prunes=" << g_class_prunes.load() << "\n";
+         << " class_prunes=" << g_class_prunes.load()
+         << " sym_skips=" << g_sym_skips.load() << "\n";
   }
   delete G_FILTER;
   return g_found.load() ? 0 : 2;

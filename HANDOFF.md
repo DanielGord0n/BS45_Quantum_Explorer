@@ -1,9 +1,71 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-05-30 (updated after wz_exact_t23 v2 prune pass — sum + per-class)
+**Date**: 2026-05-30 (updated after wz_exact_t23 v3 symmetry-breaking)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
 **Goal**: Find BS(45,44) δ-codes — a world record. Currently validating with BS(43,42).
+
+---
+
+## ⚡ TOP OF MIND — 2026-05-30 (later): wz_exact_t23 v3 symmetry-breaking
+
+On top of v2's sum + per-class prunes, added **sound single-sequence-negation
+symmetry breaking**. Negating exactly one of A/B/C/D leaves NPAF[s] unchanged
+for all s (each NPAF term is a self-product within one sequence) and only flips
+that sequence's *sum*. So for any sequence whose **target signature component
+is 0**, the ±copies share the same signature and the same NPAF — only one is
+worth searching. We pin that sequence's first element to +1.
+
+- For the BS(43,42) target sig **(7,11,0,0)**: c=0 and d=0 → pin C[0]=+1 and
+  D[0]=+1 → **clean 4× search reduction**.
+- General + automatic: `G_PIN_x0 = (G_SIG_x == 0)`, set in main(). Sigs with no
+  zero component (e.g. BS(45) candidates like (3,1,4,4)) get 1× — no loss.
+- Implemented as a skip in the combo loop *before* any allocation, so it also
+  removes ~3/4 of per-combo memset/state-init overhead for the target sig.
+- New `sym_skips` counter in every log line; startup prints
+  `sym_pins: A0=.. B0=.. C0=.. D0=..  (=> Nx reduction)`.
+
+Verified after the change: BS(7,6) (4× pins) and BS(11,10) at sigs (5,1,4,0)
+(2×) and (3,1,4,4) (1×) all still reproduce and pass verify_npaf.py. The pinned
+runs return the canonical C[0]=D[0]=+1 representative — a different-but-equivalent
+solution than the un-pinned one (expected, not a bug).
+
+**Also in this batch — pure-perf patch (no behavior change):** `hall_ok`
+(Thm 2.4 spectral filter) previously recomputed `cos`/`sin` from scratch on
+every call (~800·n transcendental evals; ≈33,600 at n=42), and it runs deep in
+the tree. Replaced with a precomputed DFT basis (`G_HALL_COS`/`G_HALL_SIN`,
+built once in main via `init_hall_tables()`). Identical math, no trig in the
+hot path. Both reproductions still pass — confirms it's behaviorally identical.
+
+Draft commit message:
+
+```
+feat: wz_exact_t23 v3 — single-sequence-negation symmetry breaking
+
+Negating exactly one of A/B/C/D leaves NPAF[s] invariant (each term is a
+self-product within one sequence) and only flips that sequence's sum. So
+for any sequence whose target signature component is 0, both signs share
+the same sig and the same NPAF; only one representative needs searching.
+Pin that sequence's first element to +1.
+
+For the BS(43,42) target sig (7,11,0,0) this pins C[0] and D[0] => clean
+4x reduction. Generalised: G_PIN_x0 = (G_SIG_x == 0), so sigs with no zero
+component lose nothing. Pins are applied as a skip in the combo loop before
+any allocation, also removing ~3/4 of per-combo state-init overhead.
+
+Adds g_sym_skips counter (in every log line) and a startup line reporting
+which pins are active and the resulting reduction factor.
+
+Also precomputes the hall_ok (Thm 2.4) DFT basis once in main instead of
+recomputing cos/sin per call — pure speedup, identical results.
+
+Verified: BS(7,6) (4x), BS(11,10) at (5,1,4,0) (2x) and (3,1,4,4) (1x) all
+still reproduce and pass verify_npaf.py.
+```
+
+**NOT yet deployed** — the v2 jobs are running on all 4 clusters. Deploy v3 on
+the next redeploy cycle (when v2 jobs finish, or cut them over now). Same 4
+deploy commands, same scripts; only `src/solver/wz_exact_t23.cpp` changed.
 
 ---
 
@@ -189,18 +251,23 @@ for c in fir rorqual nibi trillium; do echo ""; echo "════════ $
 done
 ```
 
-### wz_exact_t23 log line format (UPDATED 2026-05-30 with v2 prunes)
+### wz_exact_t23 log line format (UPDATED 2026-05-30 with v2 prunes + v3 sym)
 
 ```
-[<t>s] nodes=<n> rate=<r>/s combos_done=<c> t23_prunes=<p> sum_prunes=<sp> class_prunes=<cp> found=<yes|no>
-[<t>s] COMBO DONE <c>/<total> nodes=<n> t23_prunes=<p> sum_prunes=<sp> class_prunes=<cp> found=<yes|no>
+[<t>s] nodes=<n> rate=<r>/s combos_done=<c> t23_prunes=<p> sum_prunes=<sp> class_prunes=<cp> sym_skips=<ss> found=<yes|no>
+[<t>s] COMBO DONE <c>/<total> nodes=<n> t23_prunes=<p> sum_prunes=<sp> class_prunes=<cp> sym_skips=<ss> found=<yes|no>
 ```
+
+Startup also prints `sym_pins: A0=.. B0=.. C0=.. D0=..  (=> Nx reduction)`.
 
 - `nodes`: total backtracking nodes explored (NPAF-bounds-passing placements)
 - `combos_done`: first-3-layer combo iterations finished
 - `t23_prunes`: times the (P,Q) lookup at d==half returned an empty (K,R) set
 - `sum_prunes`: branches killed by the sum-constraint prune (post v2 — see below)
 - `class_prunes`: branches killed by the per-class residue prune (post v2)
+- `sym_skips`: combos skipped by symmetry pins (v3). For sig (7,11,0,0) this
+  should be ~3/4 of `combos_done` (C0+D0 pins). If it's 0 at (7,11,0,0) the pin
+  flags weren't set — check the `sym_pins:` startup line says `C0=1 D0=1`.
 - `rate`: nodes/sec
 - `found=YES` and a `*** REPRODUCTION CONFIRMED ***` banner → SUCCESS
 
