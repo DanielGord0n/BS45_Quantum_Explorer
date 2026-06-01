@@ -266,10 +266,28 @@ static atomic<long long> g_nodes{0};
 static atomic<long long> g_combos_done{0};
 static atomic<long long> g_t23_prunes{0};
 static atomic<long long> g_sum_prunes{0};
-static atomic<long long> g_class_prunes{0};
 static atomic<long long> g_sym_skips{0};
 static atomic<int> g_last_print{0};
+
+// Thread-local node/prune counters. The v2 deploy showed 13.5M nodes/s across
+// 192 cores (~70k/core, ~30x below what this integer work should reach): every
+// node hammered the shared g_nodes atomic and 192 cores serialized on that one
+// cache line. We now count per-thread (no atomics in the hot path) and flush to
+// the globals every ~1M nodes. Flush threshold is a power of two so the test is
+// a single compare.
+static thread_local long long tl_nodes = 0;
+static thread_local long long tl_sum_prunes = 0;
+static constexpr long long TL_FLUSH = 1 << 20;
 static int g_solA[256], g_solB[256], g_solC[256], g_solD[256];
+
+// Push this thread's accumulated counts into the shared atomics and reset.
+static inline void flush_counters() {
+  if (tl_nodes) { g_nodes.fetch_add(tl_nodes, memory_order_relaxed); tl_nodes = 0; }
+  if (tl_sum_prunes) {
+    g_sum_prunes.fetch_add(tl_sum_prunes, memory_order_relaxed);
+    tl_sum_prunes = 0;
+  }
+}
 
 static void maybe_progress() {
   double t = chrono::duration<double>(Clock::now() - G_T0).count();
@@ -281,12 +299,11 @@ static void maybe_progress() {
   long long cd = g_combos_done.load(memory_order_relaxed);
   long long t23 = g_t23_prunes.load(memory_order_relaxed);
   long long sumP = g_sum_prunes.load(memory_order_relaxed);
-  long long clsP = g_class_prunes.load(memory_order_relaxed);
   long long rate = (t > 0) ? (long long)(nodes / t) : 0;
 #pragma omp critical(report)
   cout << "[" << t << "s] nodes=" << nodes << " rate=" << rate
        << "/s combos_done=" << cd << " t23_prunes=" << t23
-       << " sum_prunes=" << sumP << " class_prunes=" << clsP
+       << " sum_prunes=" << sumP
        << " sym_skips=" << g_sym_skips.load(memory_order_relaxed)
        << " found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
 }
@@ -427,8 +444,7 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
     for (int cdi = 0; cdi < cdN; cdi++) {
       place_and_update_layer(d, abi, cdi, A, B, C, D,
                               Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
-      long long nc = g_nodes.fetch_add(1, memory_order_relaxed);
-      if ((nc & 0x3FFFFFF) == 0) maybe_progress();
+      if (++tl_nodes >= TL_FLUSH) { flush_counters(); maybe_progress(); }
 
       // NPAF bounds prune
       bool prune = false;
@@ -437,7 +453,11 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
       }
       if (!prune) {
         // Sum-constraint prune: must be able to reach (G_SIG_A,B,C,D) given
-        // partial sums and remaining ±1 contributions.
+        // partial sums and remaining ±1 contributions. Cheap (12 adds + 4
+        // compares) and high-yield, so kept in the hot path. (The per-class
+        // residue prune was removed in v4 — it fired ~0.001% but cost ~240
+        // bitset probes per node; net loss. T23Filter bitset infra is still
+        // built and class_reachable() remains for future use.)
         int sumA = Kpar[0] + Kpar[1] + Kpar[2];
         int sumB = Rpar[0] + Rpar[1] + Rpar[2];
         int sumC = Ppar[0] + Ppar[1] + Ppar[2];
@@ -449,28 +469,13 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
                    && (abs(G_SIG_C - sumC) <= remC_total)
                    && (abs(G_SIG_D - sumD) <= remC_total);
         if (!sum_ok) {
-          g_sum_prunes.fetch_add(1, memory_order_relaxed);
+          tl_sum_prunes++;
+        } else if (d == half - 1) {
+          // C, D fully placed. Apply Thm 2.4 spectral filter.
+          if (hall_ok(C, n, D, n))
+            search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
         } else {
-          // Per-class residue prune via T23 filter projections.
-          int remA_c[3] = {G_NA_CLASS[0] - G_PLACED_A_AFTER[d + 1][0],
-                           G_NA_CLASS[1] - G_PLACED_A_AFTER[d + 1][1],
-                           G_NA_CLASS[2] - G_PLACED_A_AFTER[d + 1][2]};
-          int remC_c[3] = {G_NC_CLASS[0] - G_PLACED_C_AFTER[d + 1][0],
-                           G_NC_CLASS[1] - G_PLACED_C_AFTER[d + 1][1],
-                           G_NC_CLASS[2] - G_PLACED_C_AFTER[d + 1][2]};
-          if (!G_FILTER->class_reachable(Kpar, Rpar, Ppar, Qpar,
-                                          remA_c, remC_c)) {
-            g_class_prunes.fetch_add(1, memory_order_relaxed);
-          } else {
-            if (d == half - 1) {
-              // C, D fully placed. Apply Thm 2.4 spectral filter.
-              if (hall_ok(C, n, D, n)) {
-                search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
-              }
-            } else {
-              search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
-            }
-          }
+          search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
         }
       }
 
@@ -614,10 +619,10 @@ int main(int argc, char **argv) {
     auto place_and_check = [&](int d, int abi, int cdi) -> bool {
       place_and_update_layer(d, abi, cdi, A, B, C, D,
                               Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
-      g_nodes.fetch_add(1, memory_order_relaxed);
+      tl_nodes++;
       for (int s = 1; s <= G_N; s++)
         if (abs(Dnpaf[s]) > Kund[s]) return false;
-      // Sum-constraint prune.
+      // Sum-constraint prune (per-class residue prune removed in v4, see search).
       int sumA = Kpar[0] + Kpar[1] + Kpar[2];
       int sumB = Rpar[0] + Rpar[1] + Rpar[2];
       int sumC = Ppar[0] + Ppar[1] + Ppar[2];
@@ -628,18 +633,7 @@ int main(int argc, char **argv) {
           abs(G_SIG_B - sumB) > remA_total ||
           abs(G_SIG_C - sumC) > remC_total ||
           abs(G_SIG_D - sumD) > remC_total) {
-        g_sum_prunes.fetch_add(1, memory_order_relaxed);
-        return false;
-      }
-      // Per-class residue prune.
-      int remA_c[3] = {G_NA_CLASS[0] - G_PLACED_A_AFTER[d + 1][0],
-                       G_NA_CLASS[1] - G_PLACED_A_AFTER[d + 1][1],
-                       G_NA_CLASS[2] - G_PLACED_A_AFTER[d + 1][2]};
-      int remC_c[3] = {G_NC_CLASS[0] - G_PLACED_C_AFTER[d + 1][0],
-                       G_NC_CLASS[1] - G_PLACED_C_AFTER[d + 1][1],
-                       G_NC_CLASS[2] - G_PLACED_C_AFTER[d + 1][2]};
-      if (!G_FILTER->class_reachable(Kpar, Rpar, Ppar, Qpar, remA_c, remC_c)) {
-        g_class_prunes.fetch_add(1, memory_order_relaxed);
+        tl_sum_prunes++;
         return false;
       }
       return true;
@@ -656,6 +650,9 @@ int main(int argc, char **argv) {
       }
     }
 
+    // End of a combo's subtree: flush this thread's accumulated counts so the
+    // global totals (and the COMBO DONE line below) stay current.
+    flush_counters();
     long long done = g_combos_done.fetch_add(1, memory_order_relaxed) + 1;
     if (done % 64 == 0 || done == hi - lo) {
 #pragma omp critical(report)
@@ -664,7 +661,7 @@ int main(int argc, char **argv) {
         cout << "[" << t << "s] COMBO DONE " << done << "/" << (hi - lo)
              << "  nodes=" << g_nodes.load() << "  t23_prunes=" << g_t23_prunes.load()
              << "  sum_prunes=" << g_sum_prunes.load()
-             << "  class_prunes=" << g_class_prunes.load()
+             << "  sym_skips=" << g_sym_skips.load()
              << "  found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
       }
     }
@@ -677,7 +674,6 @@ int main(int argc, char **argv) {
          << "," << G_SIG_D << "). nodes=" << g_nodes.load()
          << " t23_prunes=" << g_t23_prunes.load()
          << " sum_prunes=" << g_sum_prunes.load()
-         << " class_prunes=" << g_class_prunes.load()
          << " sym_skips=" << g_sym_skips.load() << "\n";
   }
   delete G_FILTER;

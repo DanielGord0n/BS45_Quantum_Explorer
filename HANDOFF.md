@@ -1,9 +1,79 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-05-30 (updated after wz_exact_t23 v3 symmetry-breaking)
+**Date**: 2026-05-31 (updated after wz_exact_t23 v4 — read first v2 cluster data)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
 **Goal**: Find BS(45,44) δ-codes — a world record. Currently validating with BS(43,42).
+
+---
+
+## ⚡ TOP OF MIND — 2026-05-31: v2 cluster data → v4 (contention fix + drop class prune)
+
+**First real v2 numbers came back** (Fir 42406091, Rorqual 13564805, Trillium
+1683719; Nibi 15244284 still PD). The prunes fire massively but the search is
+not covering the space fast enough:
+
+```
+fir task 7: 73,500s  combos_done=1006  nodes=993B  rate=13.5M/s
+            sum_prunes=102B  class_prunes=809k  t23_prunes=0
+```
+
+Three findings from the data:
+
+1. **Atomic contention is the real bottleneck.** 13.5M nodes/s across 192 cores
+   = ~70k/core — ~30× below what this integer work should do. Every node did
+   `g_nodes.fetch_add(1)` on one shared cache line; 192 cores serialize on it.
+   v2 added `g_sum_prunes`/`g_class_prunes` atomics (firing 100B+ times) on top.
+   **Fix (v4): thread-local counters, flushed to globals every 2^20 nodes.**
+   No atomics in the hot path. Expect a large multiplier on `rate`, not 30%.
+
+2. **The per-class residue prune was net-negative.** `class_prunes` ≈ 0.8–12M
+   vs `nodes` ≈ 1000B → fired ~**0.001%** of the time, but `class_reachable`
+   (~240 bitset probes) ran on every bounds-surviving node. **Removed from the
+   hot path in v4.** (T23Filter bitsets + `class_reachable()` left in the code
+   for possible future use; just not called.)
+
+3. **The sum-constraint prune earns its keep** (100B fires, ~12-add check) — kept.
+
+v4 also carries forward v3's **4× symmetry reduction** (pin C[0]=D[0]=+1 for sig
+(7,11,0,0)) and the **hall_ok DFT-table** speedup. Net expected effect vs the
+running v2: much higher node rate (contention gone) × 4 fewer combos (symmetry)
+× lower per-node cost (no class prune). This is the version that should actually
+exhaust the BS(43,42) space in reasonable wall-time.
+
+`t23_prunes=0` across all tasks is expected: the sum prune kills branches before
+the d==half (P,Q) lookup is ever reached.
+
+Validated locally: BS(7,6) (4× pins), BS(11,10) at (5,1,4,0) (2×) and (3,1,4,4)
+(1×) all reproduce and pass verify_npaf.py; `sym_skips` = 3/4 of combos as
+expected. Draft commit message:
+
+```
+feat: wz_exact_t23 v4 — thread-local counters + drop class prune
+
+First v2 cluster data showed 13.5M nodes/s across 192 cores (~70k/core),
+~30x below expected: every node hit the shared g_nodes atomic and the cores
+serialized on one cache line. v2's added g_sum_prunes/g_class_prunes atomics
+(100B+ fires) made it worse.
+
+- Count nodes/sum_prunes per-thread (thread_local), flush to the global
+  atomics every 2^20 nodes and at each combo's end. Removes per-node atomics
+  from the hot path.
+- Remove the per-class residue prune: it fired ~0.001% of nodes but cost ~240
+  bitset probes each (net loss). T23Filter bitset infra + class_reachable()
+  remain in the source, just uncalled.
+- Keep the cheap, high-yield sum-constraint prune, the v3 symmetry pins
+  (C[0]=D[0]=+1 for sig (7,11,0,0) => 4x), and the hall_ok DFT table.
+
+Log lines drop the (now-zero) class_prunes field and add sym_skips.
+Verified: BS(7,6), BS(11,10) at (5,1,4,0) and (3,1,4,4) reproduce + pass
+verify_npaf.py.
+```
+
+**Recommend redeploying v4 to all 4 clusters now** — the running v2 jobs cover
+space slower than even the old solver, so there's nothing to protect by letting
+them finish. Same 4 deploy commands, same SLURM scripts; only
+`src/solver/wz_exact_t23.cpp` changed.
 
 ---
 
@@ -251,27 +321,30 @@ for c in fir rorqual nibi trillium; do echo ""; echo "════════ $
 done
 ```
 
-### wz_exact_t23 log line format (UPDATED 2026-05-30 with v2 prunes + v3 sym)
+### wz_exact_t23 log line format (UPDATED 2026-05-31 for v4)
 
 ```
-[<t>s] nodes=<n> rate=<r>/s combos_done=<c> t23_prunes=<p> sum_prunes=<sp> class_prunes=<cp> sym_skips=<ss> found=<yes|no>
-[<t>s] COMBO DONE <c>/<total> nodes=<n> t23_prunes=<p> sum_prunes=<sp> class_prunes=<cp> sym_skips=<ss> found=<yes|no>
+[<t>s] nodes=<n> rate=<r>/s combos_done=<c> t23_prunes=<p> sum_prunes=<sp> sym_skips=<ss> found=<yes|no>
+[<t>s] COMBO DONE <c>/<total> nodes=<n> t23_prunes=<p> sum_prunes=<sp> sym_skips=<ss> found=<yes|no>
 ```
 
 Startup also prints `sym_pins: A0=.. B0=.. C0=.. D0=..  (=> Nx reduction)`.
+(v4 dropped the `class_prunes` field — that prune was removed; see top-of-mind.)
 
-- `nodes`: total backtracking nodes explored (NPAF-bounds-passing placements)
+- `nodes`: total backtracking nodes explored (NPAF-bounds-passing placements).
+  Counted per-thread now, flushed every 2^20, so it lags slightly behind the
+  true count between flushes — fine for monitoring.
 - `combos_done`: first-3-layer combo iterations finished
 - `t23_prunes`: times the (P,Q) lookup at d==half returned an empty (K,R) set
-- `sum_prunes`: branches killed by the sum-constraint prune (post v2 — see below)
-- `class_prunes`: branches killed by the per-class residue prune (post v2)
-- `sym_skips`: combos skipped by symmetry pins (v3). For sig (7,11,0,0) this
-  should be ~3/4 of `combos_done` (C0+D0 pins). If it's 0 at (7,11,0,0) the pin
-  flags weren't set — check the `sym_pins:` startup line says `C0=1 D0=1`.
-- `rate`: nodes/sec
+  (expected to stay 0 — the sum prune kills branches before d==half)
+- `sum_prunes`: branches killed by the sum-constraint prune (the workhorse prune)
+- `sym_skips`: combos skipped by symmetry pins. For sig (7,11,0,0) this should
+  be ~3/4 of `combos_done` (C0+D0 pins). If it's 0 at (7,11,0,0) the pin flags
+  weren't set — check the `sym_pins:` startup line says `C0=1 D0=1`.
+- `rate`: nodes/sec — **the v4 win to watch.** v2 was ~13.5M/s aggregate; v4
+  should be much higher once the per-node atomics are gone. If `rate` is still
+  ~13M/s on a 192-core node, the contention fix didn't take — investigate.
 - `found=YES` and a `*** REPRODUCTION CONFIRMED ***` banner → SUCCESS
-
-With v2 active, expect `sum_prunes` to dominate `t23_prunes` by orders of magnitude — sum/class prunes fire at every layer, t23 only at d==half. If `sum_prunes` is 0 while combos grow at n=42, the prune is broken; if `class_prunes` is 0 at n=42 that's just because the per-class allowed sets are wide enough to cover the partial Kpar (expected for permissive sigs; selective for tight ones like (7,11,0,0)).
 
 ### Where to pick up
 
