@@ -1,9 +1,114 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-05-31 (updated after wz_exact_t23 v4 — read first v2 cluster data)
+**Date**: 2026-06-03 (project moved to ~/Projects; cluster reality + combo-294887 finding — read TOP OF MIND first)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
 **Goal**: Find BS(45,44) δ-codes — a world record. Currently validating with BS(43,42).
+
+---
+
+## ⚡ TOP OF MIND — 2026-06-03: project moved, cluster reality, combo-294887 finding
+
+**Project was renamed/moved.** New root: `/Users/danielgordon/Projects/BS45_Quantum_Explorer`
+(solver + scripts live in the `BS45_Quantum_Explorer/` subdir). Old `School/CP468/...`
+paths in this doc were updated. Git history intact; v4 solver builds and reproduces
+BS(7,6) after the move (verified locally 2026-06-03).
+
+**Cluster status today (from the user's checker run):**
+- **Fir** — queue EMPTY. Output shown was the *legacy* `bs43_exact_*` job killed
+  2026-05-27 at walltime, NOT the t23 solver. Needs v4 redeploy.
+- **Rorqual** — OFFLINE. Maintenance extended for firmware updates (notice 2026-06-02).
+  Login refused. Can't deploy until it's back.
+- **Nibi** — queue EMPTY. Needs v4 redeploy.
+- **Trillium** — one t23 array job PENDING (`BS43_t23_trilli`, PD/Priority). Only live job.
+
+**Checker-glob bug (was hiding all real data):** the user's checker greps
+`bs4*_exact_*output*.txt`, which matches only the dead May-27 legacy jobs, NOT the
+current `bs43_t23_*output*.txt`. Every "LATEST" block looked stale because of this.
+Use the corrected checker in the "Checker script" section (greps `bs43_t23_*`).
+
+**Why there has been no progress (root cause, now data-backed):**
+1. **~56× atomic contention.** Local single-core v4 runs at **3.93M nodes/s**; the v2
+   cluster logged **70k nodes/core** (13.5M/s ÷ 192). Cores were serializing on the
+   shared `g_nodes` atomic. v4's thread-local counters target exactly this and should
+   restore per-core rate toward the uncontended ~3-4M/s → **~40-50× aggregate**, but
+   **v4 has never run on a cluster.** Measuring its `rate` is the #1 next action.
+2. **Jobs died mid-slice.** Per-combo subtrees are enormous (see below), so 24h jobs
+   hit walltime having exhausted only a sliver, then weren't always resubmitted.
+
+**Combo-294887 finding (validation lever).** The published BS(43,42) solution (hardcoded
+in `src/verifier/verify_bs43.cpp`) was decoded into the wz_exact_t23 combo encoding by
+`BS45_Quantum_Explorer/find_combo_index.py`:
+- All 21 layers fit the Wang-Zhu encoding; sig confirmed (7,11,0,0), a²+b²+c²+d²=170, NPAF≡0.
+- It maps to **combo index 294887**, which lies in **Nibi's slice [262144,393216)**.
+- C[0]=D[0]=+1, so it IS the symmetry-pin canonical representative (not skipped).
+- Reproduce with: `./wz_exact_t23 42 7 11 0 0 294887 294888`.
+
+Running that single combo locally (single-thread) confirms the solver is *pointed at the
+right place*, but the subtree is **>2.7B nodes** — single-core at 3.93M/s it takes many
+minutes/hours of DFS to reach the solution's leaf (192 cores do NOT speed up one combo;
+each combo is one thread). The empirical local reproduction is in progress; the encoding
+proof already guarantees the solution survives all (sound) prunes and will be found.
+**Implication:** when Nibi redeploys v4 and works its slice, it contains the known
+solution — Nibi is the cluster most likely to print `REPRODUCTION CONFIRMED` first.
+
+**v4 DEPLOYED 2026-06-03 (first time v4 hits a cluster).** Clean-slate `scancel -u dangord`
+then fresh v4 on all reachable clusters:
+| Cluster | Job ID | Slice | Status at deploy |
+|---------|--------|-------|------------------|
+| Fir | 42950724 | [0,131072) | PD (None) |
+| Nibi | 15526970 | [262144,393216) | PD (None) |
+| Trillium | 1703944 | [393216,524288) | PD (None) |
+| Rorqual | — | [131072,262144) | OFFLINE (maintenance, login refused) — redeploy when back |
+All `--array=0-9`, WAVE=0 default. **NOTE:** WAVE=0 covers only the first 1/3 of each
+task's slice (NWAVES=3). Combo 294887 is in Nibi task 2 **WAVE 1** ([292730,297100)), so
+the default Nibi run does NOT reach the known solution — submit `--export=ALL,WAVE=1` on
+Nibi to search it, or rely on the local single-combo reproduction. First action when jobs
+flip to R: read `rate=` (v2 was 13.5M/s; v4 target 200-500M/s/node).
+
+**Throughput reframe.** With v4's contention fix (~40-50×) across the ~30-40 schedulable
+192-core nodes (Fir+Nibi+Trillium; Rorqual when back), exhausting sig (7,11,0,0) drops
+from effectively-never to an estimated low-single-digit days of cluster wall (per-combo
+~3-10B nodes × ~131k symmetry-reduced combos ÷ aggregate v4 rate). Not hopeless — v2 was
+just running ~50× too slow and dying at walltime. **Deploy v4, read `rate`, decide.**
+
+### Session actions (2026-06-03) — what was actually done
+1. **Recovered context after the chat was lost** in the project rename/move. Confirmed
+   all state lives in HANDOFF.md + git + source (nothing lost).
+2. **Fixed stale paths** in this doc (`School/CP468/...` → `~/Projects/...`, 2 places).
+3. **Verified v4 builds + reproduces BS(7,6)** locally after the move (sym_pins active,
+   4× reduction; `g++ -O3 -std=c++17`, no `-fopenmp` on macOS).
+4. **Wrote `BS45_Quantum_Explorer/find_combo_index.py`** (NEW, uncommitted) — decodes the
+   published BS(43,42) solution to **combo 294887** and verifies all 21 layers fit the
+   encoding. This is reusable for any future known-solution → combo-index mapping.
+5. **Started a local single-combo reproduction** `./wz_exact_t23 42 7 11 0 0 294887
+   294888` (background, streaming to `/tmp/repro_294887.txt`). As of last check: **>6.3B
+   nodes, single-core 3.95M/s, found=no** — solution leaf is deep in this combo's DFS;
+   it WILL land (encoding proof guarantees survival of all sound prunes), just slow.
+6. **Diagnosed the contention root cause with hard numbers** (local 3.93M/s/core vs
+   cluster 70k/core = 56×).
+7. **Clean-slate redeployed v4** to Fir/Nibi/Trillium (`scancel -u dangord` first); job
+   IDs in the table above. Rorqual still offline.
+8. **Wrote persistent memory** (`~/.claude/projects/.../memory/`): `handoff-is-canonical`,
+   `bs45-no-results-root-cause` — so a lost chat can't cost continuity again.
+
+### Exact current state / where to pick up
+- **Waiting on two signals** (both resolve on their own):
+  (a) cluster `rate=` once jobs flip `PD`→`R` — run the corrected checker, read `rate`;
+  (b) local `REPRODUCTION CONFIRMED` from the combo-294887 run (watching it).
+- **Pre-committed decision tree:**
+  - `rate ≈ 200M+/s/node` → contention fix worked. Green-light **D** (deepen combo split
+    3→4 layers, 524k→67M combos, for load-balancing the monster combos) and plan the
+    **BS(45) pivot** (needs a target sig from `enum_m3_tuples 44 a b c d`, a²+b²+c²+d²=178).
+  - `rate still ≈ 13M/s` → thread-local flush path didn't take effect; debug that FIRST.
+  - local run prints CONFIRMED → independently verify with `python3 verify_npaf.py` and
+    record the validated BS(43,42) tuple here.
+- **Not yet done on purpose:** D (wait for rate, don't optimize blind); B (randomized
+  combo order) + C (bound snapshot memcpy to `[0,n]`) — safe wins queued for the next
+  build; a Nibi `--export=ALL,WAVE=1` job (default WAVE=0 skips combo 294887) — only
+  needed if the local reproduction gets interrupted.
+- **Redeploy Rorqual** (`rorqual_bs43_exact_t23.sh`, slice [131072,262144)) when
+  maintenance clears (Alliance status incident 1598).
 
 ---
 
@@ -284,7 +389,7 @@ Each cluster runs `--array=0-9`, splitting its 131072 combos across 10 tasks. Ea
 ### Deploy pattern (mirrors prior tar | ssh, one Duo prompt per cluster)
 
 ```bash
-cd /Users/danielgordon/School/CP468/CP468-Assignments/CP468-Sarukhanian/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp <cluster>_bs43_exact_t23.sh | \
   ssh dangord@<cluster>.alliancecan.ca '
     scancel --user=dangord --name=BS43_exact_<cluster> 2>/dev/null;
@@ -608,7 +713,7 @@ The entire `BS45_Quantum_Explorer/` folder is synced there.
 `tar | ssh` bundles upload + extract + sbatch in one SSH session = **one Duo prompt per cluster**:
 
 ```bash
-cd /Users/danielgordon/School/CP468/CP468-Assignments/CP468-Sarukhanian/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_sa_v8.cpp <script1>.sh <script2>.sh ... | \
   ssh dangord@<cluster>.alliancecan.ca '
     scancel --user=dangord --name=<job_name> 2>/dev/null;
