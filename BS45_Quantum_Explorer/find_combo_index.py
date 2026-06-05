@@ -73,20 +73,32 @@ for d in range(half):
               f"   CD{cdt} prod={cdt[0]*cdt[1]*cdt[2]*cdt[3]:+d} -> {ci}   *** NO MATCH ***")
 print("  all layers fit the Wang-Zhu encoding" if ok else "  *** ENCODING MISMATCH ***")
 
-# --- combo index from first 3 layers ---
-ab0 = idx_in(comb8_neg, ab_pair(0)); cd0 = idx_in(comb16, cd_pair(0))
-ab1 = idx_in(comb8_pos, ab_pair(1)); cd1 = idx_in(comb8_pos, cd_pair(1))
-ab2 = idx_in(comb8_pos, ab_pair(2)); cd2 = idx_in(comb8_pos, cd_pair(2))
-print("\n--- first-3-layer combo encoding ---")
-print(f"ab0={ab0} cd0={cd0} ab1={ab1} cd1={cd1} ab2={ab2} cd2={cd2}")
-combo = ab0 | (cd0 << 3) | (ab1 << 7) | (cd1 << 10) | (ab2 << 13) | (cd2 << 16)
-print(f"\n>>> COMBO INDEX = {combo}")
+# --- combo index for an arbitrary split depth K (Optimization D) ---
+# Layer 0 packs 7 bits (ab:comb8_neg in 3, cd:comb16 in 4). Each layer L>=1 packs
+# 6 bits (ab:comb8_pos in 3 at 7+6*(L-1), cd:comb8_pos in 3 at 10+6*(L-1)).
+def combo_index(K):
+    combo = idx_in(comb8_neg, ab_pair(0)) | (idx_in(comb16, cd_pair(0)) << 3)
+    for L in range(1, K):
+        abL = idx_in(comb8_pos, ab_pair(L)); cdL = idx_in(comb8_pos, cd_pair(L))
+        combo |= (abL << (7 + 6*(L-1))) | (cdL << (10 + 6*(L-1)))
+    return combo
 
+combo = combo_index(3)
+print("\n--- first-3-layer combo encoding (default split=3) ---")
+print(f">>> COMBO INDEX (split=3) = {combo}")
 slices = {"Fir":(0,131072), "Rorqual":(131072,262144),
           "Nibi":(262144,393216), "Trillium":(393216,524288)}
 for name,(lo,hi) in slices.items():
     if lo <= combo < hi:
         print(f">>> falls in {name}'s slice [{lo},{hi})")
+
+# Deeper splits jump straight to the solution's branch — much smaller subtree.
+print("\n--- deep-split combo index (WZ_SPLIT=K → reproduce instantly) ---")
+for K in (4, 6, 8, 10, 12):
+    if K <= half - 1:
+        ck = combo_index(K)
+        print(f"  WZ_SPLIT={K:2d}  combo={ck}   "
+              f"run: WZ_SPLIT={K} ./wz_exact_t23 42 7 11 0 0 {ck} {ck+1}")
 
 # symmetry-pin check for sig (7,11,0,0): pins require C[0]=+1 and D[0]=+1
 print(f"\nsym-pin canonical? C[0]={C[0]:+d} D[0]={D[0]:+d} "

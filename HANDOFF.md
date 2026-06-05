@@ -7,6 +7,93 @@
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-04: v4 rate measured (fix WORKED ~10×), now bandwidth-bound → v5 (opt C)
+
+**v4's contention fix worked.** First real v4 cluster rates (my deploys):
+- Fir 42950724: task 7 = **151.6M/s**, task 8 = 74.4M/s
+- Trillium 1703944 (still running): task 4 = 98.8M/s, task 6 = **118.4M/s**
+vs v2's 13.5M/s → **~7-11× faster**. The thread-local counters removed the atomic
+serialization, exactly as designed.
+
+**But it's now memory-bandwidth bound, not compute bound.** 151M/s ÷ 192 = ~790k/core
+(lower tasks ~390-620k/core), still **5-10× below the uncontended single-core 3.95M/s**.
+The per-node 2KB snapshot-restore `memcpy` (Dnpaf+Kund, 256 ints each) at ~115M nodes/s ×
+192 cores ≈ **230 GB/s** — at/above node memory bandwidth. **→ v5 / optimization C:**
+bound the snapshot+restore to the live `[0,n]` range (≈344 B, ~6× less traffic).
+Implemented 2026-06-04 in `wz_exact_t23.cpp` (`SNAP_BYTES`), verified: BS(7,6) and
+BS(11,10) sig (5,1,4,0) reproduce + pass `verify_npaf.py`. **v5 source is UNCOMMITTED.**
+
+**Operational reality from the run:** at v4 speed a 24h job does only **~745 real
+(non-sym-skipped) combos/task** — it doesn't even finish one WAVE (~4369 combos × 1/4
+real ≈ 1092). So exhaustion needs many wave-resubmits, and per-combo subtrees are 10B+
+nodes (load imbalance). This is what optimization **D** (deepen split 3→4 layers, finer
+combos) is for — still pending, do after confirming C's rate.
+
+**Job state right now:** Fir empty (job hit 24h walltime, ~64% through wave 0, cancelled).
+Trillium 1703944 still running v4 (~7h left). **Nibi 15526970 still PD — never ran** —
+so the cluster that owns combo 294887 hasn't started. Local single-combo reproduction
+**died** (laptop sleep) at ~8B+ nodes, no solution reached yet.
+
+**→ Fastest reliable reproduction now:** dedicated combo-294887 job on a cluster node
+(`repro294887.sh`, v5) — single core grinds it unattended (won't die from laptop sleep);
+also gives a 192-core C-rate reading.
+
+**OPTIMIZATION D BUILT + a key negative result (2026-06-04).** Added env `WZ_SPLIT`
+(default 3 = unchanged; clamped to [1,half-1]) — the combo index now fixes the first
+WZ_SPLIT layers, search() recurses from there. total_combos = 1<<(7+6*(SPLIT-1)).
+Verified: split=3 byte-identical behavior; split=4 reproduces BS(11,10). `find_combo_index.py`
+now prints the deep-split combo index of the BS(43,42) solution for K=4..12.
+
+**The negative result that matters:** I hypothesized deep-split → fast *targeted*
+reproduction (jump straight to the solution's branch). **It does not.** Pointing split=10
+exactly at the solution's 10-layer prefix (combo 1454118867509739495) still explored
+**720M+ nodes without reaching the solution** — the *searched suffix* (layers 10..20) is
+itself a huge tree because the solution's per-layer comb choices are late in DFS order.
+**Conclusion: the bottleneck is search-TREE SIZE (prune strength), not infrastructure or
+parallelism.** Per combo the residual tree is ~1e9-1e10 nodes even with all current prunes
+(sum+bounds cut ~1e19→~1e9). So exhausting one sig is days-to-weeks at v5 speed, and the
+real lever for BS(45) is **stronger/earlier pruning** (tighter NPAF bound, incremental
+T23 (P,Q)→(K,R) filtering during CD placement, partial spectral bound before d==half-1,
+extra symmetry) — all algorithmic, careful, and a wrong bound silently kills real
+solutions (the prior double-counting bug class). D's real value is finer work units for
+**load balancing** the monster combos, not reproduction speed.
+
+**What's still well-validated regardless:** the published BS(43,42) tuple fits all 21
+layers with NPAF≡0 and sig (7,11,0,0) (`find_combo_index.py`), `verify_npaf.py` confirms
+it, and the solver reproduces BS(7,6)/BS(11,10). So solver+encoding correctness does NOT
+depend on a blind n=42 reproduction — that's nice-to-have, not a correctness gate.
+
+**PRUNE RESEARCH — profiling result (2026-06-04).** Added `-DINSTRUMENT` per-layer
+profiler (zero cost in prod build; `INSTR()` macro + `g_layer_{nodes,bounds,sum}`).
+Profiled BS(19,18) (also reproduced it at sigs (7,5,0,0) and (7,3,4,0) — more validation):
+
+```
+layer 3:  23K  survive=31% | 4: 461K 21% | 5: 6.1M 10% | 6: 38M 5.3% | 7: 130M 2.7% | 8(=half-1): 226M, bounds kills 99.7%
+```
+
+The tree explodes through the MIDDLE layers and only collapses at d==half-1, because the
+decisive CD constraints (tight bounds once C,D complete, `hall_ok` spectral, T23 lookup)
+all fire only at the end. **→ Highest-leverage prune: pull a SOUND CD constraint earlier
+into the mid layers.** Candidates (both soundness-critical, both expensive-per-node — the
+real trade-off):
+1. **Incremental T23 (P,Q) reachability** — partial (Ppar,Qpar) must still reach some valid
+   (P,Q) key in the filter given remaining CD capacity. SOUND (a true solution's (P,Q) is
+   always a valid key). Risk: cheap looser version (per-class sets) fired ~0% before (why
+   v4 removed it); tight joint-key version is a 6-D range query (expensive). Need a cheap
+   sufficient check.
+2. **Partial-CD spectral bound** — min achievable |DFT_C|²+|DFT_D|² over undetermined ±1
+   already exceeding 4n+2 ⇒ prune. SOUND but ~200 freq × n ops/node.
+Method: implement candidate → verify BS(7,6)/(11,10)/(19,18) still reproduce + verify_npaf
+→ A/B node-count vs slowdown with the `-DINSTRUMENT` profiler → deploy only if net win.
+A wrong bound silently kills real solutions, so soundness proof before every deploy.
+
+**Uncommitted this session:** C + D + instrumentation in `wz_exact_t23.cpp`,
+`find_combo_index.py` (deep-split indices), `repro294887.sh`. Job state: Fir 43176687
+(repro294887, v5), Nibi 15663068 (v5 exh, PD), Rorqual 13790401 (v5 exh, PD — back
+online), Trillium 1703944 (v4 exh, running).
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-03: project moved, cluster reality, combo-294887 finding
 
 **Project was renamed/moved.** New root: `/Users/danielgordon/Projects/BS45_Quantum_Explorer`

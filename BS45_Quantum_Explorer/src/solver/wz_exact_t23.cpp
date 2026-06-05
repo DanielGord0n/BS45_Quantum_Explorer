@@ -24,6 +24,8 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <unordered_map>
@@ -36,6 +38,14 @@ using namespace std;
 using Clock = chrono::steady_clock;
 
 static int G_N, G_N1, G_HALF;
+// Combo-split depth (Optimization D). The first G_SPLIT layers are fixed by the
+// combo index (parallel work unit); search() then recurses from layer G_SPLIT.
+// Default 3 (the historical split → 524288 combos, existing SLURM scripts assume
+// this). Set via env WZ_SPLIT. Deeper split = finer work units (better load
+// balance) and lets a targeted run jump straight to the solution's branch,
+// skipping the wasted earlier-branch prefix. Layer 0 packs 7 bits (ab:3,cd16:4);
+// each deeper layer packs 6 (ab:3,cd:3) → total_combos = 1 << (7 + 6*(SPLIT-1)).
+static int G_SPLIT = 3;
 static int G_SIG_A, G_SIG_B, G_SIG_C, G_SIG_D;
 static Clock::time_point G_T0;
 
@@ -269,6 +279,19 @@ static atomic<long long> g_sum_prunes{0};
 static atomic<long long> g_sym_skips{0};
 static atomic<int> g_last_print{0};
 
+// Research instrumentation (compile with -DINSTRUMENT; zero cost otherwise).
+// g_layer_nodes[d] = placements explored at layer d; g_layer_bounds[d] /
+// g_layer_sum[d] = how many of those were killed by the bounds / sum prune at
+// that layer. Reveals which layers the tree is fat at, to target new prunes.
+#ifdef INSTRUMENT
+static atomic<long long> g_layer_nodes[64];
+static atomic<long long> g_layer_bounds[64];
+static atomic<long long> g_layer_sum[64];
+#define INSTR(x) x
+#else
+#define INSTR(x)
+#endif
+
 // Thread-local node/prune counters. The v2 deploy showed 13.5M nodes/s across
 // 192 cores (~70k/core, ~30x below what this integer work should reach): every
 // node hammered the shared g_nodes atomic and 192 cores serialized on that one
@@ -430,9 +453,14 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
     return;
   }
 
+  // Only shifts [0,n] of Dnpaf/Kund are ever live, so snapshot/restore just that
+  // range, not all 256 ints. v4 cluster data showed the search is memory-bandwidth
+  // bound at ~100-150M nodes/s (the per-node 2KB restore copy ≈ 230 GB/s across
+  // 192 cores); bounding the copy to (n+1) ints cuts that ~6x. (Optimization C.)
+  const size_t SNAP_BYTES = (size_t)(n + 1) * sizeof(int);
   int Dsnap[256], Ksnap[256];
-  memcpy(Dsnap, Dnpaf, sizeof(Dsnap));
-  memcpy(Ksnap, Kund, sizeof(Ksnap));
+  memcpy(Dsnap, Dnpaf, SNAP_BYTES);
+  memcpy(Ksnap, Kund, SNAP_BYTES);
   int Kpsnap[3], Rpsnap[3], Ppsnap[3], Qpsnap[3];
   memcpy(Kpsnap, Kpar, sizeof(Kpsnap));
   memcpy(Rpsnap, Rpar, sizeof(Rpsnap));
@@ -445,12 +473,14 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
       place_and_update_layer(d, abi, cdi, A, B, C, D,
                               Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
       if (++tl_nodes >= TL_FLUSH) { flush_counters(); maybe_progress(); }
+      INSTR(g_layer_nodes[d].fetch_add(1, memory_order_relaxed));
 
       // NPAF bounds prune
       bool prune = false;
       for (int s = 1; s <= n; s++) {
         if (abs(Dnpaf[s]) > Kund[s]) { prune = true; break; }
       }
+      INSTR(if (prune) g_layer_bounds[d].fetch_add(1, memory_order_relaxed));
       if (!prune) {
         // Sum-constraint prune: must be able to reach (G_SIG_A,B,C,D) given
         // partial sums and remaining ±1 contributions. Cheap (12 adds + 4
@@ -470,6 +500,7 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
                    && (abs(G_SIG_D - sumD) <= remC_total);
         if (!sum_ok) {
           tl_sum_prunes++;
+          INSTR(g_layer_sum[d].fetch_add(1, memory_order_relaxed));
         } else if (d == half - 1) {
           // C, D fully placed. Apply Thm 2.4 spectral filter.
           if (hall_ok(C, n, D, n))
@@ -484,8 +515,8 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
       if (d != n - d) { A[n - d] = B[n - d] = 0; }
       C[d] = D[d] = 0;
       if (d != n - 1 - d) { C[n - 1 - d] = D[n - 1 - d] = 0; }
-      memcpy(Dnpaf, Dsnap, sizeof(Dsnap));
-      memcpy(Kund, Ksnap, sizeof(Ksnap));
+      memcpy(Dnpaf, Dsnap, SNAP_BYTES);
+      memcpy(Kund, Ksnap, SNAP_BYTES);
       memcpy(Kpar, Kpsnap, sizeof(Kpsnap));
       memcpy(Rpar, Rpsnap, sizeof(Rpsnap));
       memcpy(Ppar, Ppsnap, sizeof(Ppsnap));
@@ -547,7 +578,14 @@ int main(int argc, char **argv) {
     if (d != G_N - 1 - d) G_PLACED_C_AFTER[d + 1][(G_N - 1 - d) % 3]++;
   }
 
-  long long total_combos = 128LL * 64LL * 64LL;
+  // Combo-split depth from env (Optimization D); clamp to [1, half-1] so search()
+  // always still owns at least the d==half-1 (hall_ok) and d==half (T23) layers.
+  if (const char *sp = getenv("WZ_SPLIT")) {
+    G_SPLIT = atoi(sp);
+    if (G_SPLIT < 1) G_SPLIT = 1;
+    if (G_SPLIT > G_HALF - 1) G_SPLIT = G_HALF - 1;
+  }
+  long long total_combos = 1LL << (7 + 6 * (G_SPLIT - 1));
   long long lo = (argc >= 7) ? atoll(argv[6]) : 0;
   long long hi = (argc >= 8) ? atoll(argv[7]) : total_combos;
   if (lo < 0) lo = 0;
@@ -561,8 +599,8 @@ int main(int argc, char **argv) {
   cout << "========================================================\n";
   cout << "  wz_exact_t23 — sig-targeted BS(" << G_N1 << "," << n
        << "), sig=(" << G_SIG_A << "," << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D << ")\n";
-  cout << "  threads=" << thr << "  combos[" << lo << "," << hi << ")/"
-       << total_combos << "\n";
+  cout << "  threads=" << thr << "  split=" << G_SPLIT << "  combos[" << lo
+       << "," << hi << ")/" << total_combos << "\n";
   cout << "  sym_pins: A0=" << G_PIN_A0 << " B0=" << G_PIN_B0
        << " C0=" << G_PIN_C0 << " D0=" << G_PIN_D0;
   {
@@ -584,10 +622,6 @@ int main(int argc, char **argv) {
     if (g_found.load(memory_order_relaxed)) continue;
     int ab0 = (int)(combo & 7);
     int cd0 = (int)((combo >> 3) & 15);
-    int ab1 = (int)((combo >> 7) & 7);
-    int cd1 = (int)((combo >> 10) & 7);
-    int ab2 = (int)((combo >> 13) & 7);
-    int cd2 = (int)((combo >> 16) & 7);
 
     // Symmetry-breaking pins on layer-0 first elements (A[0],B[0] in comb8_neg;
     // C[0],D[0] in comb16). Sound only for sequences whose target sum is 0.
@@ -639,16 +673,16 @@ int main(int argc, char **argv) {
       return true;
     };
 
-    bool ok0 = place_and_check(0, ab0, cd0);
-    if (ok0) {
-      bool ok1 = place_and_check(1, ab1, cd1);
-      if (ok1) {
-        bool ok2 = place_and_check(2, ab2, cd2);
-        if (ok2) {
-          search(3, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
-        }
-      }
+    // Place the first G_SPLIT layers from the combo index; each must survive the
+    // bounds + sum prune or the whole work unit is dead. Layer 0 is (ab0,cd0)
+    // from the low 7 bits; layer L>=1 unpacks 6 bits at offset 7+6*(L-1).
+    bool ok = place_and_check(0, ab0, cd0);
+    for (int L = 1; L < G_SPLIT && ok; L++) {
+      int abi = (int)((combo >> (7 + 6 * (L - 1))) & 7);
+      int cdi = (int)((combo >> (10 + 6 * (L - 1))) & 7);
+      ok = place_and_check(L, abi, cdi);
     }
+    if (ok) search(G_SPLIT, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
 
     // End of a combo's subtree: flush this thread's accumulated counts so the
     // global totals (and the COMBO DONE line below) stay current.
@@ -676,6 +710,17 @@ int main(int argc, char **argv) {
          << " sum_prunes=" << g_sum_prunes.load()
          << " sym_skips=" << g_sym_skips.load() << "\n";
   }
+#ifdef INSTRUMENT
+  cout << "\n=== LAYER PROFILE (d: nodes  bounds_kill%  sum_kill%  survive%) ===\n";
+  for (int d = 0; d <= G_HALF; d++) {
+    long long ln = g_layer_nodes[d].load();
+    if (ln == 0) continue;
+    long long bk = g_layer_bounds[d].load(), sk = g_layer_sum[d].load();
+    long long surv = ln - bk - sk;
+    printf("  layer %2d: nodes=%-14lld bounds=%5.1f%%  sum=%5.1f%%  survive=%5.1f%%\n",
+           d, ln, 100.0*bk/ln, 100.0*sk/ln, 100.0*surv/ln);
+  }
+#endif
   delete G_FILTER;
   return g_found.load() ? 0 : 2;
 }
