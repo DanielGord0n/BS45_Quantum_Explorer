@@ -118,10 +118,25 @@ both WZ_SPLIT=4 and default. This is the redeploy to run (scancel -u dangord fir
 jobs are mostly PD so ~no progress lost). Switching split=3→4 restarts exhaustion in the
 finer space — fine, since little had run.
 
+**SPLIT=4 DEPLOYED 2026-06-07 (all 4 clusters):** Fir 43373087 · Rorqual 13930953 ·
+Nibi 15735364 (solution combo 18644967 in its task-2 WAVE-0) · Trillium 1727347. All PD,
+WZ_SPLIT=4, clean tiling. (Cancelled the running Nibi split=3 WAVE=0 job 15663068 — ~5h,
+but WAVE=0 structurally can't reach the split=3 solution which sat in WAVE=1.)
+
+**C was ~marginal on cluster (honest):** v5/C ran 83-149M/s vs v4's 74-151M/s — same range.
+The 2KB memcpy wasn't the cap; per-placement cost is dominated by `update_bounds_pos`
+(O(8n)/node). C is sound, kept, but not the win the bandwidth estimate predicted. split=4's
+value is correctness (solution in default wave) + load-balancing, not rate.
+
+**Remaining levers (honest, none deployed):** (a) `update_bounds_pos` rewrite to iterate
+only filled positions — biggest throughput lever but the bug-prone area (double-count bug
+lived here); (b) more symmetry — C↔D swap is sound (both sum 0, NPAF invariant) for ~2×,
+reversal for ~2×, but fiddly; (c) **BS(45) sig-selection from the repo's construction
+papers (Sarukhanian_construction.pdf, A_NOTE_ON_CONSTRUCTION_OF_delta_CODES_Rus.pdf)** —
+the actual world-record lever, no cluster/solver change needed. Recommend (c) next.
+
 **Uncommitted this session:** C + D + instrumentation + pq-prune(off) in `wz_exact_t23.cpp`,
-`find_combo_index.py` (deep-split indices), `repro294887.sh`, split=4 SLURM scripts. Job
-state before redeploy: Fir 43180543 (v5/split3 exh, PD), Nibi 15663068 (PD), Rorqual
-13790401 (PD), Trillium 1703944 (v4, user reports finished).
+`find_combo_index.py` (deep-split indices), `repro294887.sh`, split=4 SLURM scripts.
 
 ---
 
