@@ -11,7 +11,7 @@
 
 # === BS(43,42) EXHAUSTIVE wz_exact_t23 (Thm 2.3 prune) — Nibi ===
 # Sig-targeted (7,11,0,0): Wang-Zhu BS(43,42) signature.
-# Nibi searches combo quarter [262144,393216) of the 524288 first-3-layer combos.
+# Nibi searches combo quarter [16777216,25165824) of the 33554432 first-4-layer combos (WZ_SPLIT=4).
 
 cd $SLURM_SUBMIT_DIR
 module load StdEnv/2023
@@ -19,6 +19,7 @@ module load gcc/12.3
 export TMPDIR=$SCRATCH/tmp
 mkdir -p $TMPDIR
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export WZ_SPLIT=4   # Optimization D: 4-layer split (33.5M combos) for load balancing
 
 N=42
 SIG_A=7
@@ -26,8 +27,8 @@ SIG_B=11
 SIG_C=0
 SIG_D=0
 
-CLUSTER_LO=262144
-CLUSTER_HI=393216
+CLUSTER_LO=16777216
+CLUSTER_HI=25165824
 NTASKS=10
 SPAN=$(( (CLUSTER_HI - CLUSTER_LO + NTASKS - 1) / NTASKS ))
 TASK_LO=$(( CLUSTER_LO + SLURM_ARRAY_TASK_ID * SPAN ))

@@ -13,12 +13,13 @@
 # Sig-targeted (a,b,c,d)=(7,11,0,0): Wang-Zhu BS(43,42) signature.
 # T23Filter precomputes 40824 valid m=3 4-tuples and looks up compatible (K,R)
 # from observed (P,Q) at CD-placement, narrowing the AB search ~100x.
-# Fir searches combo quarter [0,131072) of the 524288 first-3-layer combos.
+# Fir searches combo quarter [0,8388608) of the 33554432 first-4-layer combos (WZ_SPLIT=4).
 
 cd $SLURM_SUBMIT_DIR
 module load StdEnv/2023
 module load gcc/12.3
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export WZ_SPLIT=4   # Optimization D: 4-layer split (33.5M combos) for load balancing
 
 N=42
 SIG_A=7
@@ -27,7 +28,7 @@ SIG_C=0
 SIG_D=0
 
 CLUSTER_LO=0
-CLUSTER_HI=131072
+CLUSTER_HI=8388608
 NTASKS=10
 SPAN=$(( (CLUSTER_HI - CLUSTER_LO + NTASKS - 1) / NTASKS ))
 TASK_LO=$(( CLUSTER_LO + SLURM_ARRAY_TASK_ID * SPAN ))

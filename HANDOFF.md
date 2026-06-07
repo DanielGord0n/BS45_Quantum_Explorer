@@ -107,10 +107,21 @@ headroom via the residue angle is exhausted. Remaining honest options, in priori
    ~200·n/node); CD-first restructure; DFS reordering for faster *finds* (helps only if a
    solution exists in the searched space — a gamble for BS(45)).
 
+**SPLIT=4 EXHAUSTION SCRIPTS READY (2026-06-07).** All 4 `*_bs43_exact_t23.sh` updated to
+`export WZ_SPLIT=4` with recomputed quarters of the 33,554,432-combo space:
+Fir [0,8388608) · Rorqual [8388608,16777216) · Nibi [16777216,25165824) · Trillium
+[25165824,33554432). Validated in Python: the 4×10task×3wave ranges tile [0,33554432)
+EXACTLY (no gaps/overlaps), and the BS(43,42) solution — combo **18644967** at split=4 —
+is covered by **Nibi task 2 WAVE 0** (at split=3 it was WAVE 1, i.e. skipped by the default
+deploy; split=4 fixes that). Solver builds with cluster flags and reproduces BS(19,18) at
+both WZ_SPLIT=4 and default. This is the redeploy to run (scancel -u dangord first; current
+jobs are mostly PD so ~no progress lost). Switching split=3→4 restarts exhaustion in the
+finer space — fine, since little had run.
+
 **Uncommitted this session:** C + D + instrumentation + pq-prune(off) in `wz_exact_t23.cpp`,
-`find_combo_index.py` (deep-split indices), `repro294887.sh`. Job state: Fir 43180543
-(v5 exh [0,131k), PD), Nibi 15663068 (v5 exh, PD), Rorqual 13790401 (v5 exh, PD),
-Trillium 1703944 (v4 exh, running).
+`find_combo_index.py` (deep-split indices), `repro294887.sh`, split=4 SLURM scripts. Job
+state before redeploy: Fir 43180543 (v5/split3 exh, PD), Nibi 15663068 (PD), Rorqual
+13790401 (PD), Trillium 1703944 (v4, user reports finished).
 
 ---
 
