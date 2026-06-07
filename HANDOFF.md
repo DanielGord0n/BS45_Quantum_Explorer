@@ -7,6 +7,45 @@
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-07: BS(43,42) REPRODUCED end-to-end at n=42 (solver validated)
+
+**The validation gate is cleared.** Added a prefix-feed mode (env `WZ_PREFIX="ab0,cd0,..."`)
+that fixes the first k layers and searches the rest (the packed combo index overflows
+int64 past ~10 layers; this takes layer indices directly). Fed it 18 of the published
+BS(43,42) solution's 21 layers and the solver printed
+`*** REPRODUCTION CONFIRMED: BS(43,42) FOUND ***` in **2.9 ms**, full A/B/C/D, and
+`verify_npaf.py` (independent code path) confirms **NPAF[s]=0 for all s=1..43**, sig
+(7,11,0,0). Prefix string from `find_combo_index.py` (now prints k=14/16/18).
+
+**What this proves / doesn't:** PROVES the full n=42 machinery is correct — deep-layer
+bounds/sum/hall_ok prunes don't exclude the real solution, the T23 lookup + final NPAF
+check + output all work, and the result is independently valid. Does NOT prove a fully
+*blind* search reaches it quickly — that's the days-of-compute part the clusters are doing.
+**Bottom line: the solver is CORRECT; reproducing BS(43,42) blind is a compute cost, not a
+correctness question.** So BS(45) is gated on compute + sig-selection + whether a solution
+exists — NOT on whether the tool works. The tool works.
+
+`WZ_PREFIX` mode + `find_combo_index.py` prefix output are UNCOMMITTED (user committed
+earlier work before these).
+
+**BS(45,44) SIGNATURE PLAN (2026-06-07).** Read the repo's Russian construction paper
+(`A_NOTE_ON_CONSTRUCTION_OF_delta_CODES_Rus.pdf`, Sarukhanyan): it's recursive δ-code/
+Hadamard *existence* constructions from Turyn/Golay sequences — NOT a search-signature
+guide. So enumerated the sigs ourselves. BS(45,44): n=44, norm a²+b²+c²+d²=178, parity
+a,b ODD / c,d EVEN. **Only 12 canonical candidate signatures.** Ranked by symmetry pins
+(zero components → pin first element → 2× each):
+- **(13,3,0,0) — 4× reduction, the direct analog of BS(43)'s (7,11,0,0). PRIME first
+  target.** Verified viable: T23Filter = 47484 valid tuples, 724 (P,Q) keys, sym_pins
+  C0=D0=1 (4×). Run: `./wz_exact_t23 44 13 3 0 0`.
+- (3,5,0,12) and (9,9,0,4) — 2× reduction (one zero component) — second tier.
+- 9 more with no zeros (1×): (1,7,8,8),(1,13,2,2),(3,3,4,12),(5,5,8,8),(5,7,2,10),
+  (5,9,6,6),(5,11,4,4),(7,7,4,8),(7,11,2,2).
+**When BS(43) clears (or we're confident enough), point the clusters at BS(45,44)
+(13,3,0,0) first** — update the 4 SLURM scripts to `44 13 3 0 0` (keep WZ_SPLIT=4;
+recompute nothing else — same 33.5M combo space). Those BS(45) scripts are NOT yet built.
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-04: v4 rate measured (fix WORKED ~10×), now bandwidth-bound → v5 (opt C)
 
 **v4's contention fix worked.** First real v4 cluster rates (my deploys):

@@ -100,6 +100,19 @@ for K in (4, 6, 8, 10, 12):
         print(f"  WZ_SPLIT={K:2d}  combo={ck}   "
               f"run: WZ_SPLIT={K} ./wz_exact_t23 42 7 11 0 0 {ck} {ck+1}")
 
+# Prefix-feed strings: fix the first k layers' comb indices directly (no int64
+# overflow), then the solver searches the tiny remainder -> end-to-end repro proof.
+def prefix_string(k):
+    parts = [str(idx_in(comb8_neg, ab_pair(0))), str(idx_in(comb16, cd_pair(0)))]
+    for L in range(1, k):
+        parts += [str(idx_in(comb8_pos, ab_pair(L))), str(idx_in(comb8_pos, cd_pair(L)))]
+    return ",".join(parts)
+
+print("\n--- prefix-feed strings (WZ_PREFIX=... ./wz_exact_t23 42 7 11 0 0) ---")
+for k in (14, 16, 18):
+    if k <= half:
+        print(f"  k={k}: WZ_PREFIX=\"{prefix_string(k)}\"")
+
 # symmetry-pin check for sig (7,11,0,0): pins require C[0]=+1 and D[0]=+1
 print(f"\nsym-pin canonical? C[0]={C[0]:+d} D[0]={D[0]:+d} "
       f"({'OK - representative is searched' if C[0]==1 and D[0]==1 else 'NEEDS negation'})")

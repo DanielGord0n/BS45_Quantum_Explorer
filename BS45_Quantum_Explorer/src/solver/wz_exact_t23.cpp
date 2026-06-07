@@ -675,6 +675,44 @@ int main(int argc, char **argv) {
 
   G_T0 = Clock::now();
 
+  // ---- Prefix-feed validation mode (env WZ_PREFIX="ab0,cd0,ab1,cd1,...") ----
+  // Fixes the first k layers to the given comb indices, then searches the rest.
+  // Used to demonstrate end-to-end n=42 reproduction without a full blind search:
+  // hand it most of the published BS(43,42) solution's layers and confirm the
+  // solver completes + validates the remainder and prints the FOUND banner. The
+  // packed-combo index overflows int64 past ~10 layers, so this takes the layer
+  // indices directly. Single-threaded, one path.
+  if (const char *pfx = getenv("WZ_PREFIX")) {
+    vector<int> v;
+    for (const char *p = pfx; *p;) {
+      char *end; long val = strtol(p, &end, 10);
+      if (end == p) break;
+      v.push_back((int)val);
+      p = (*end == ',') ? end + 1 : end;
+    }
+    int k = (int)v.size() / 2;
+    cout << "PREFIX MODE: fixing " << k << " layers, searching from layer " << k << "\n" << flush;
+    int A[256], B[256], C[256], D[256], Dnpaf[256], Kund[256];
+    int Kpar[3] = {0,0,0}, Rpar[3] = {0,0,0}, Ppar[3] = {0,0,0}, Qpar[3] = {0,0,0};
+    memset(A, 0, sizeof(A)); memset(B, 0, sizeof(B));
+    memset(C, 0, sizeof(C)); memset(D, 0, sizeof(D));
+    memset(Dnpaf, 0, sizeof(Dnpaf));
+    for (int s = 0; s <= G_N; s++) {
+      if (s == 0) Kund[s] = 0;
+      else if (s < G_N) Kund[s] = 2 * (G_N1 - s) + 2 * (G_N - s);
+      else if (s == G_N) Kund[s] = 2 * (G_N1 - s);
+      else Kund[s] = 0;
+    }
+    for (int d = 0; d < k; d++)
+      place_and_update_layer(d, v[2*d], v[2*d+1], A, B, C, D,
+                             Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+    search(k, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+    if (!g_found.load())
+      cout << "PREFIX MODE: no solution completes this prefix (exhausted)\n";
+    delete G_FILTER;
+    return g_found.load() ? 0 : 2;
+  }
+
 #pragma omp parallel for schedule(dynamic, 64)
   for (long long combo = lo; combo < hi; combo++) {
     if (g_found.load(memory_order_relaxed)) continue;
