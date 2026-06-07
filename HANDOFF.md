@@ -87,10 +87,30 @@ Method: implement candidate → verify BS(7,6)/(11,10)/(19,18) still reproduce +
 → A/B node-count vs slowdown with the `-DINSTRUMENT` profiler → deploy only if net win.
 A wrong bound silently kills real solutions, so soundness proof before every deploy.
 
-**Uncommitted this session:** C + D + instrumentation in `wz_exact_t23.cpp`,
-`find_combo_index.py` (deep-split indices), `repro294887.sh`. Job state: Fir 43176687
-(repro294887, v5), Nibi 15663068 (v5 exh, PD), Rorqual 13790401 (v5 exh, PD — back
-online), Trillium 1703944 (v4 exh, running).
+**PRUNE CANDIDATE #1 — NEGATIVE RESULT (2026-06-06).** Implemented the incremental T23
+(P,Q) reachability prune (sound; `T23Filter::pq_reachable`, env `WZ_PQPRUNE`, off by
+default). Soundness verified (reproduces BS(7,6)/(11,10)/(19,18) + verify_npaf). A/B on
+BS(19,18) (7,5,0,0) combos[0,1100): nodes 5,392,560 → 5,350,832 = **0.77% cut**, fired
+560×, and wall-time got *worse*. Dead for the same reason v4 removed the class prune:
+middle-layer `rem` is large so partial (P,Q) almost always reaches some valid key; it's
+even weaker at n=42. Code left in, off by default, as a documented dead end.
+
+**Bigger finding: `t23_prunes=0` always — the existing d==half T23 lookup also never
+fires.** The real workhorses are the NPAF **bounds prune** + **sum prune**. The Thm-2.3
+residue *lookup* contributes ~nothing to pruning; the value of the T23 approach is the
+**sig-targeting** (searching only one signature), not the residue filter. So prune
+headroom via the residue angle is exhausted. Remaining honest options, in priority order:
+1. **Lean into exhaustion + throughput** — C done; deploy **D deeper-split** for load
+   balancing (now worth it since prune research stalled). Realistic path to BS(43) in days.
+2. **BS(45) sig-selection strategy** — which sig(s) to exhaust matters more than prunes.
+3. Riskier research bets (uncertain): partial-CD spectral bound at every layer (expensive
+   ~200·n/node); CD-first restructure; DFS reordering for faster *finds* (helps only if a
+   solution exists in the searched space — a gamble for BS(45)).
+
+**Uncommitted this session:** C + D + instrumentation + pq-prune(off) in `wz_exact_t23.cpp`,
+`find_combo_index.py` (deep-split indices), `repro294887.sh`. Job state: Fir 43180543
+(v5 exh [0,131k), PD), Nibi 15663068 (v5 exh, PD), Rorqual 13790401 (v5 exh, PD),
+Trillium 1703944 (v4 exh, running).
 
 ---
 

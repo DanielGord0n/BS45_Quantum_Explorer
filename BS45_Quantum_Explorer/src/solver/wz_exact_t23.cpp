@@ -46,6 +46,9 @@ static int G_N, G_N1, G_HALF;
 // skipping the wasted earlier-branch prefix. Layer 0 packs 7 bits (ab:3,cd16:4);
 // each deeper layer packs 6 (ab:3,cd:3) → total_combos = 1 << (7 + 6*(SPLIT-1)).
 static int G_SPLIT = 3;
+// Incremental T23 (P,Q) reachability prune (candidate #1). Off by default so the
+// same binary A/B-tests prune-on vs prune-off via env WZ_PQPRUNE=1.
+static bool G_PQPRUNE = false;
 static int G_SIG_A, G_SIG_B, G_SIG_C, G_SIG_D;
 static Clock::time_point G_T0;
 
@@ -168,6 +171,31 @@ public:
   size_t total_tuples() const { return total_; }
   size_t unique_PQ_keys() const { return by_PQ_.size(); }
 
+  // Incremental T23 (P,Q) reachability prune (candidate #1). During CD placement,
+  // the partial class sums (Ppar,Qpar) have `rem[c]` unplaced positions per class
+  // c (same positions for C and D). The final (P,Q) must equal some valid key in
+  // the filter; each unplaced position shifts its class sum by ±1, so key
+  // component v is reachable from partial p iff |v-p|<=rem and v-p has the same
+  // parity as rem. If NO valid key is reachable, this CD branch cannot extend to
+  // a solution -> prune. SOUND: a true solution's (P,Q) is a valid key and is
+  // always reachable from its own partial. (Looser per-class version was removed
+  // in v4; this checks whole keys jointly.)
+  bool pq_reachable(const int *Ppar, const int *Qpar, const int *rem) const {
+    for (const auto &t : pq_keys_) {
+      bool ok = true;
+      for (int c = 0; c < 3 && ok; c++) {
+        int dp = t[c] - Ppar[c];
+        if (dp < -rem[c] || dp > rem[c] || ((dp + rem[c]) & 1)) ok = false;
+      }
+      for (int c = 0; c < 3 && ok; c++) {
+        int dq = t[3 + c] - Qpar[c];
+        if (dq < -rem[c] || dq > rem[c] || ((dq + rem[c]) & 1)) ok = false;
+      }
+      if (ok) return true;
+    }
+    return false;
+  }
+
   // Per-class reachability: each component of K, R, P, Q (over all valid
   // (K,R,P,Q) tuples) is precomputed as a bitset. class_reachable returns
   // true iff for every class c, there exists some valid K[c] (resp. R, P, Q)
@@ -255,11 +283,20 @@ private:
           }
         }
       }
+    // Flatten the unique (P,Q) keys into [P0,P1,P2,Q0,Q1,Q2] tuples for the
+    // incremental reachability prune (decode the packed key; see encode_pq).
+    for (const auto &kv : by_PQ_) {
+      uint64_t k = kv.first;
+      array<int, 6> t;
+      for (int i = 5; i >= 0; i--) { t[i] = (int)(k & 63) - 32; k >>= 6; }
+      pq_keys_.push_back(t);
+    }
   }
 
   int n_;
   size_t total_ = 0;
   unordered_map<uint64_t, vector<KRPair>> by_PQ_;
+  vector<array<int, 6>> pq_keys_;
   vector<KRPair> empty_;
   bool allowed_K_set_[3][64];
   bool allowed_R_set_[3][64];
@@ -276,6 +313,7 @@ static atomic<long long> g_nodes{0};
 static atomic<long long> g_combos_done{0};
 static atomic<long long> g_t23_prunes{0};
 static atomic<long long> g_sum_prunes{0};
+static atomic<long long> g_pq_prunes{0};
 static atomic<long long> g_sym_skips{0};
 static atomic<int> g_last_print{0};
 
@@ -300,6 +338,7 @@ static atomic<long long> g_layer_sum[64];
 // a single compare.
 static thread_local long long tl_nodes = 0;
 static thread_local long long tl_sum_prunes = 0;
+static thread_local long long tl_pq_prunes = 0;
 static constexpr long long TL_FLUSH = 1 << 20;
 static int g_solA[256], g_solB[256], g_solC[256], g_solD[256];
 
@@ -309,6 +348,10 @@ static inline void flush_counters() {
   if (tl_sum_prunes) {
     g_sum_prunes.fetch_add(tl_sum_prunes, memory_order_relaxed);
     tl_sum_prunes = 0;
+  }
+  if (tl_pq_prunes) {
+    g_pq_prunes.fetch_add(tl_pq_prunes, memory_order_relaxed);
+    tl_pq_prunes = 0;
   }
 }
 
@@ -501,12 +544,25 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
         if (!sum_ok) {
           tl_sum_prunes++;
           INSTR(g_layer_sum[d].fetch_add(1, memory_order_relaxed));
-        } else if (d == half - 1) {
-          // C, D fully placed. Apply Thm 2.4 spectral filter.
-          if (hall_ok(C, n, D, n))
-            search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
         } else {
-          search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+          // Incremental T23 (P,Q) reachability prune (candidate #1, opt-in via
+          // WZ_PQPRUNE). rem[c] = unplaced C/D positions in class c after layer d.
+          bool pq_ok = true;
+          if (G_PQPRUNE) {
+            int rem[3] = {G_NC_CLASS[0] - G_PLACED_C_AFTER[d + 1][0],
+                          G_NC_CLASS[1] - G_PLACED_C_AFTER[d + 1][1],
+                          G_NC_CLASS[2] - G_PLACED_C_AFTER[d + 1][2]};
+            pq_ok = G_FILTER->pq_reachable(Ppar, Qpar, rem);
+          }
+          if (!pq_ok) {
+            tl_pq_prunes++;
+          } else if (d == half - 1) {
+            // C, D fully placed. Apply Thm 2.4 spectral filter.
+            if (hall_ok(C, n, D, n))
+              search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+          } else {
+            search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+          }
         }
       }
 
@@ -585,6 +641,7 @@ int main(int argc, char **argv) {
     if (G_SPLIT < 1) G_SPLIT = 1;
     if (G_SPLIT > G_HALF - 1) G_SPLIT = G_HALF - 1;
   }
+  if (const char *pq = getenv("WZ_PQPRUNE")) G_PQPRUNE = (atoi(pq) != 0);
   long long total_combos = 1LL << (7 + 6 * (G_SPLIT - 1));
   long long lo = (argc >= 7) ? atoll(argv[6]) : 0;
   long long hi = (argc >= 8) ? atoll(argv[7]) : total_combos;
@@ -599,7 +656,8 @@ int main(int argc, char **argv) {
   cout << "========================================================\n";
   cout << "  wz_exact_t23 — sig-targeted BS(" << G_N1 << "," << n
        << "), sig=(" << G_SIG_A << "," << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D << ")\n";
-  cout << "  threads=" << thr << "  split=" << G_SPLIT << "  combos[" << lo
+  cout << "  threads=" << thr << "  split=" << G_SPLIT
+       << "  pqprune=" << (G_PQPRUNE ? "on" : "off") << "  combos[" << lo
        << "," << hi << ")/" << total_combos << "\n";
   cout << "  sym_pins: A0=" << G_PIN_A0 << " B0=" << G_PIN_B0
        << " C0=" << G_PIN_C0 << " D0=" << G_PIN_D0;
@@ -708,6 +766,7 @@ int main(int argc, char **argv) {
          << "," << G_SIG_D << "). nodes=" << g_nodes.load()
          << " t23_prunes=" << g_t23_prunes.load()
          << " sum_prunes=" << g_sum_prunes.load()
+         << " pq_prunes=" << g_pq_prunes.load()
          << " sym_skips=" << g_sym_skips.load() << "\n";
   }
 #ifdef INSTRUMENT
