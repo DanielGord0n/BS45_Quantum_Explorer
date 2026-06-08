@@ -27,6 +27,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
+#include <string>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -316,6 +318,38 @@ static atomic<long long> g_sum_prunes{0};
 static atomic<long long> g_pq_prunes{0};
 static atomic<long long> g_sym_skips{0};
 static atomic<int> g_last_print{0};
+
+// Resumable work-queue + checkpointing. Combos are handed out in CHUNK blocks via
+// g_next_combo (replaces omp-for so we can record progress). g_chunk_start[tid] =
+// the chunk each thread is currently on; the checkpoint watermark = min over
+// threads (all combos below it are fully done — safe to resume from). Written to
+// the file in env WZ_CKPT every ~30s; read on startup so a walltime-killed job
+// resumes instead of restarting. Without this the search re-grinds the same
+// prefix every resubmit and never reaches a deep solution.
+static atomic<long long> g_next_combo{0};
+static atomic<long long> g_chunk_start[256];
+static atomic<int> g_last_ckpt{0};
+
+static void write_ckpt(const char *path, long long v) {
+  std::string tmp = std::string(path) + ".tmp";
+  std::ofstream f(tmp);
+  if (!f) return;
+  f << v << "\n";
+  f.close();
+  rename(tmp.c_str(), path);   // atomic replace
+}
+static void maybe_checkpoint(const char *path, long long hi, int nthreads) {
+  double t = chrono::duration<double>(Clock::now() - G_T0).count();
+  int now = (int)t, last = g_last_ckpt.load(memory_order_relaxed);
+  if (now - last < 30) return;
+  if (!g_last_ckpt.compare_exchange_strong(last, now, memory_order_relaxed)) return;
+  long long wm = hi;
+  for (int i = 0; i < nthreads && i < 256; i++) {
+    long long v = g_chunk_start[i].load(memory_order_relaxed);
+    if (v < wm) wm = v;
+  }
+  write_ckpt(path, wm);
+}
 
 // Research instrumentation (compile with -DINSTRUMENT; zero cost otherwise).
 // g_layer_nodes[d] = placements explored at layer d; g_layer_bounds[d] /
@@ -713,11 +747,33 @@ int main(int argc, char **argv) {
     return g_found.load() ? 0 : 2;
   }
 
-#pragma omp parallel for schedule(dynamic, 64)
-  for (long long combo = lo; combo < hi; combo++) {
-    if (g_found.load(memory_order_relaxed)) continue;
-    int ab0 = (int)(combo & 7);
-    int cd0 = (int)((combo >> 3) & 15);
+  // Resume from checkpoint (env WZ_CKPT) if present, else start at lo.
+  long long resume = lo;
+  const char *ckpt = getenv("WZ_CKPT");
+  if (ckpt) { std::ifstream cf(ckpt); long long v; if (cf >> v && v > resume && v <= hi) resume = v; }
+  if (resume > lo)
+    cout << "RESUME from checkpoint: combo " << resume << " / " << hi << "\n" << flush;
+  if (resume >= hi)
+    cout << "slice already complete per checkpoint; nothing to do\n" << flush;
+  for (int i = 0; i < 256; i++) g_chunk_start[i].store(resume, memory_order_relaxed);
+  g_next_combo.store(resume, memory_order_relaxed);
+  const long long CHUNK = 64;
+
+#pragma omp parallel
+  {
+    int tid = 0;
+#ifdef _OPENMP
+    tid = omp_get_thread_num();
+#endif
+    while (!g_found.load(memory_order_relaxed)) {
+      long long c0 = g_next_combo.fetch_add(CHUNK, memory_order_relaxed);
+      if (c0 >= hi) break;
+      g_chunk_start[tid].store(c0, memory_order_relaxed);
+      long long cend = (c0 + CHUNK < hi) ? c0 + CHUNK : hi;
+      for (long long combo = c0; combo < cend; combo++) {
+        if (g_found.load(memory_order_relaxed)) break;
+        int ab0 = (int)(combo & 7);
+        int cd0 = (int)((combo >> 3) & 15);
 
     // Symmetry-breaking pins on layer-0 first elements (A[0],B[0] in comb8_neg;
     // C[0],D[0] in comb16). Sound only for sequences whose target sum is 0.
@@ -795,7 +851,13 @@ int main(int argc, char **argv) {
              << "  found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
       }
     }
+      }
+      if (tid == 0 && ckpt) maybe_checkpoint(ckpt, hi, thr);
+    }
+    g_chunk_start[tid].store(hi, memory_order_relaxed);
   }
+  // Slice fully searched without a solution: record hi so the chain stops here.
+  if (ckpt && !g_found.load() && g_next_combo.load() >= hi) write_ckpt(ckpt, hi);
 
   double t = chrono::duration<double>(Clock::now() - G_T0).count();
   if (!g_found.load()) {

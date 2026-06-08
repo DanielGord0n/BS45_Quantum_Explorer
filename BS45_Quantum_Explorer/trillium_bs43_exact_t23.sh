@@ -32,13 +32,12 @@ SPAN=$(( (CLUSTER_HI - CLUSTER_LO + NTASKS - 1) / NTASKS ))
 TASK_LO=$(( CLUSTER_LO + SLURM_ARRAY_TASK_ID * SPAN ))
 TASK_HI=$(( TASK_LO + SPAN ))
 if [ $TASK_HI -gt $CLUSTER_HI ]; then TASK_HI=$CLUSTER_HI; fi
-NWAVES=3
-WAVE=${WAVE:-0}
-SUB_SPAN=$(( (SPAN + NWAVES - 1) / NWAVES ))
-LO=$(( TASK_LO + WAVE * SUB_SPAN ))
-HI=$(( LO + SUB_SPAN ))
-if [ $HI -gt $TASK_HI ]; then HI=$TASK_HI; fi
-if [ $LO -ge $TASK_HI ]; then echo "wave $WAVE past slice end; nothing to do"; exit 0; fi
+# Checkpoint-resume (replaces the old WAVE hack): each task does its FULL slice and
+# resumes from a per-task checkpoint, so every resubmit ADVANCES instead of redoing
+# the same prefix. The solver writes the watermark to WZ_CKPT every ~30s.
+LO=$TASK_LO
+HI=$TASK_HI
+export WZ_CKPT=$SCRATCH/bs45/ckpt_trillium_${SLURM_ARRAY_TASK_ID}.txt
 
 BIN=wz_exact_t23_${SLURM_ARRAY_TASK_ID}
 

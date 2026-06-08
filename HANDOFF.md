@@ -7,6 +7,38 @@
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-08: split=4 gave 5× rate, but search wasn't advancing → CHECKPOINTING added
+
+**split=4 (D) was a BIG win, not marginal:** cluster rates jumped to **440-553M/s** (Fir 553,
+Trillium 540, Rorqual 489, Nibi 443) vs split=3's ~100M/s = **~5×**. Finer combos keep all
+192 cores busy. (Earlier worry that D was marginal: wrong — it's the biggest throughput win.)
+
+**But the blind run could NOT reach the solution, and the checker proved it:** Nibi ran 24h,
+`found=no`. A task gets through only ~7-12% of its slice in 24h (`combos_done≈19k-33k`), and
+the solution sits ~23% into Nibi task-2's slice. **There was no checkpoint**, so every
+walltime-killed resubmit RESTARTED the same prefix — re-grinding ~11% forever, never reaching
+the solution. The blind search was spinning in place.
+
+**FIX — checkpoint-resume (validated locally):** replaced the omp-for with a manual atomic
+work-queue (`g_next_combo` hands out CHUNK=64 blocks; `g_chunk_start[tid]` per-thread). A
+safe contiguous watermark = min over threads' current chunk is written to env `WZ_CKPT` every
+~30s; read on startup so a resubmit RESUMES instead of restarting. Validated: exhaust writes
+hi; rerun says "already complete"; **resume from below the solution still FINDS it** (no false
+skip); all of BS(7,6)/(11,10)/(19,18) + the BS(43) prefix still reproduce. The 4 SLURM scripts
+dropped the WAVE hack — each task now does its FULL slice [TASK_LO,TASK_HI) with a per-task
+`ckpt_<cluster>_<task>.txt`. **Every resubmit now ADVANCES.** Multi-thread watermark logic is
+sound but UNTESTED on a real OpenMP run — watch the first cluster run: confirm `ckpt_*.txt`
+files appear and the number grows across resubmits.
+
+**Timeline this enables:** BS(43) blind ≈ ~6 resubmit-days (autonomous-ish); each resubmit is
+~1 Duo per cluster until `found=YES`. **NOT yet done: auto-chaining** (job self-resubmits
+before walltime so no daily Duo) — deferred as a tested follow-up; manual resubmit works now.
+
+**Redeploy all 4 (checkpointed v5).** scancel + tar source+script as usual. First run starts
+fresh (no ckpt file yet) and establishes the checkpoint; subsequent resubmits resume from it.
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-07: BS(43,42) REPRODUCED end-to-end at n=42 (solver validated)
 
 **The validation gate is cleared.** Added a prefix-feed mode (env `WZ_PREFIX="ab0,cd0,..."`)
