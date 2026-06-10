@@ -43,6 +43,20 @@ Full BS(43) quarter exhaustion ≈ 8.5 days/cluster within the MAXCHAIN=10 cap.
 the bug). **FUTURE CAMPAIGNS: use different WZ_CKPT filenames per target** (e.g. ckpt_bs45_*)
 or `rm ckpt_*` when restarting a campaign — stale checkpoints silently skip work.
 
+**DEPLOYED 2026-06-10 — the autonomous campaign (checkpoint + auto-chain), gen 0:**
+| Cluster | Job ID | Slice |
+|---------|--------|-------|
+| Fir | 43738740 | [0,8388608) |
+| Rorqual | 14145385 | [8388608,16777216) |
+| Nibi | 15871290 | [16777216,25165824) ← solution at 18644967, task 2 |
+| Trillium | 1748675 | [25165824,33554432) |
+All PD at submit; prior generations draining (CG). If the prior (broken-cadence) jobs
+managed any checkpoint writes, gen 0 auto-resumes from them. Expect: ckpt files + `ckpt=`
+in logs + a PD `(Dependency)` second generation within ~1 day; `REPRODUCTION CONFIRMED`
+on Nibi when ckpt_nibi_2.txt crosses 18,644,967 (~2-3 days). If that watermark passes
+18,644,967 with NO confirmed banner → BUG, investigate immediately. On CONFIRMED:
+`python3 verify_npaf.py < <output>`, then fire the staged `*_bs45_exact_t23.sh`.
+
 **Pre-submit audit (2026-06-10):**
 - Added a **single-lineage guard** to all 4 BS43 scripts: task 0 skips chaining if another
   pending generation of the campaign exists (`squeue -n <jobname> -t PD`, excluding own
