@@ -7,6 +7,61 @@
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-09: checkpoint writes never fired on cluster → time-driven fix + AUTO-CHAINING (deploy this)
+
+**Bug found via checker: ZERO `ckpt_*.txt` files on all clusters** despite the checkpointed
+jobs running up to 20.8h (Rorqual). Root cause: the write was gated on a thread finishing a
+64-combo chunk — locally instant, but one real n=42 combo ≈ 36 min/core, so the first write
+opportunity came ~10h in (or never, inside a monster combo). Local tests all finished in <2s,
+under the 30s gate, so the periodic path was NEVER exercised. Lesson: time-gated paths need
+an env override to be testable (added `WZ_CKPT_PERIOD`).
+
+**Fix (validated live this time):**
+- Checkpoint write now rides `maybe_progress`'s 20s gate (time-driven, fires regardless of
+  combo length) + per-chunk calls from all threads. Effective cluster cadence ~30-40s.
+- `CHUNK` 64→4 (watermark hugs the frontier; ~36min/combo × 64 would strand hours on resume).
+- Progress lines now print `ckpt=<watermark>` — advancement is visible in `tail`.
+- Tests: T1 periodic write lands mid-run (wm=1148 before the ~1152 find); T2 resume below
+  solution still finds; T3 **write fires at ~20s while a thread is stuck inside a deep n=42
+  combo** (the exact cluster failure mode); T4 completion-write + already-complete short-circuit.
+  All of BS(7,6)/(11,10)/(19,18)/BS(43)-prefix still reproduce.
+
+**AUTO-CHAINING added to all 4 SLURM scripts:** task 0 submits the next generation at STARTUP
+(`sbatch --dependency=afterany:$SLURM_ARRAY_JOB_ID --export=ALL,CHAIN=N+1`) — startup, because
+at walltime SLURM kills the script and end-of-script code never runs. Generations resume from
+checkpoints → the campaign advances unattended, no daily Duo. Stops on: solution found (grep
+guard, also makes every task of a post-find generation exit immediately), all task slices
+checkpoint-complete, or CHAIN ≥ MAXCHAIN (10). Kill switch: `scancel -u dangord` per cluster.
+Guards dry-run-tested; `bash -n` clean on all 4.
+
+**ETA math (from real rates):** task combos_done ≈ 4.1k/h; solution at 190k into Nibi task 2
+→ ~46h of cumulative task-2 runtime → **expect `REPRODUCTION CONFIRMED` on Nibi in ~2-3 days**
+of hands-off chaining (other clusters may hit unknown other solutions earlier — lottery).
+Full BS(43) quarter exhaustion ≈ 8.5 days/cluster within the MAXCHAIN=10 cap.
+
+**Redeploying KILLS the current un-checkpointed runs** (their hours are unresumable — that's
+the bug). **FUTURE CAMPAIGNS: use different WZ_CKPT filenames per target** (e.g. ckpt_bs45_*)
+or `rm ckpt_*` when restarting a campaign — stale checkpoints silently skip work.
+
+**Pre-submit audit (2026-06-10):**
+- Added a **single-lineage guard** to all 4 BS43 scripts: task 0 skips chaining if another
+  pending generation of the campaign exists (`squeue -n <jobname> -t PD`, excluding own
+  array id) — protects against double submits and SLURM-requeued task 0 spawning parallel
+  chains. Trillium's job name is `BS43_t23_trilli` (not `_trillium`) — guard uses it.
+- **BS45 scripts STAGED (not to be submitted until BS43 confirms):** `*_bs45_exact_t23.sh`
+  ×4 — N=44 sig (13,3,0,0), same quarters of the same 33.5M combo space, `ckpt_bs45_*`
+  checkpoint names, `bs45_t23_*` outputs, `BS45_t23_*` job names, distinct binary name
+  `wz45_*` (recompiling over a running BS43 binary would fail with ETXTBSY if campaigns
+  overlap). All `bash -n` clean; slices verified to tile [0,33554432).
+- **Considered and deliberately deferred** (risk > reward days before a result):
+  C↔D swap symmetry (sound extra ~2× when sig c=d=0, but needs lexicographic tie-breaking
+  threaded through the search core — the historically bug-prone area); intra-combo DFS
+  checkpointing (only matters if one combo's subtree exceeds 24h walltime — unlikely per
+  observed distributions); update_bounds_pos micro-optimizations (the double-counting-bug
+  zone, explicit don't-touch).
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-08: split=4 gave 5× rate, but search wasn't advancing → CHECKPOINTING added
 
 **split=4 (D) was a BIG win, not marginal:** cluster rates jumped to **440-553M/s** (Fir 553,

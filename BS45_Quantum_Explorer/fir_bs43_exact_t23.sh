@@ -41,6 +41,36 @@ LO=$TASK_LO
 HI=$TASK_HI
 export WZ_CKPT=$SCRATCH/bs45/ckpt_fir_${SLURM_ARRAY_TASK_ID}.txt
 
+# --- Auto-chain: task 0 submits the next generation (afterany on this whole
+# array) at STARTUP, so the chain survives walltime kills (code after the solver
+# never runs at walltime). Checkpoints make each generation resume + advance.
+# Stops when: a solution is found, all task slices are checkpoint-complete, or
+# CHAIN hits MAXCHAIN. To kill everything: scancel -u dangord (pending chain too).
+CHAIN=${CHAIN:-0}
+MAXCHAIN=${MAXCHAIN:-10}
+if ls bs43_t23_*output*.txt >/dev/null 2>&1 && \
+   grep -l 'REPRODUCTION CONFIRMED\|WORLD RECORD' bs43_t23_*output*.txt >/dev/null 2>&1; then
+  echo "solution already found; not running or chaining"; exit 0
+fi
+if [ "$SLURM_ARRAY_TASK_ID" -eq 0 ] && [ "$CHAIN" -lt "$MAXCHAIN" ]; then
+  # Single-lineage guard: if another pending generation of this campaign already
+  # exists (double submit, or a requeued task 0), don't start a second chain.
+  PEND_OTHER=$(squeue -h -u dangord -n BS43_t23_fir -t PD -o '%i' 2>/dev/null | grep -vc "^${SLURM_ARRAY_JOB_ID}_")
+  ALL_DONE=1
+  for t in $(seq 0 $((NTASKS-1))); do
+    TLO=$(( CLUSTER_LO + t * SPAN )); THI=$(( TLO + SPAN ))
+    [ $THI -gt $CLUSTER_HI ] && THI=$CLUSTER_HI
+    CK=$SCRATCH/bs45/ckpt_fir_$t.txt
+    if [ ! -f "$CK" ] || [ "$(cat "$CK" 2>/dev/null || echo 0)" -lt "$THI" ]; then ALL_DONE=0; break; fi
+  done
+  if [ "$ALL_DONE" -eq 0 ] && [ "${PEND_OTHER:-0}" -eq 0 ]; then
+    sbatch --export=ALL,CHAIN=$((CHAIN+1)) --dependency=afterany:$SLURM_ARRAY_JOB_ID fir_bs43_exact_t23.sh \
+      && echo "chained next generation (CHAIN=$((CHAIN+1)))"
+  else
+    echo "no chain (all_done=$ALL_DONE pending_other=${PEND_OTHER:-0})"
+  fi
+fi
+
 BIN=wz_exact_t23_${SLURM_ARRAY_TASK_ID}
 
 echo "=============================================="

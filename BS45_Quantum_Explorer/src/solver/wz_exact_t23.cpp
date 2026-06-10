@@ -330,6 +330,17 @@ static atomic<long long> g_next_combo{0};
 static atomic<long long> g_chunk_start[256];
 static atomic<int> g_last_ckpt{0};
 
+// Checkpoint config, set once in main() before the parallel region. Needed as
+// globals so maybe_progress() can piggyback checkpoint writes on its 20s gate:
+// the first deploy gated writes on a thread finishing a whole chunk, but one
+// real n=42 combo takes ~36 min on a core, so the write opportunity came hours
+// apart (or never, on a monster combo) and NO checkpoint files appeared on any
+// cluster. Writes must be time-driven, not chunk-completion-driven.
+static const char *G_CKPT_PATH = nullptr;
+static long long G_CKPT_HI = 0;
+static int G_NTHREADS = 1;
+static int G_CKPT_PERIOD = 30;  // seconds between writes (env WZ_CKPT_PERIOD)
+
 static void write_ckpt(const char *path, long long v) {
   std::string tmp = std::string(path) + ".tmp";
   std::ofstream f(tmp);
@@ -341,7 +352,7 @@ static void write_ckpt(const char *path, long long v) {
 static void maybe_checkpoint(const char *path, long long hi, int nthreads) {
   double t = chrono::duration<double>(Clock::now() - G_T0).count();
   int now = (int)t, last = g_last_ckpt.load(memory_order_relaxed);
-  if (now - last < 30) return;
+  if (now - last < G_CKPT_PERIOD) return;
   if (!g_last_ckpt.compare_exchange_strong(last, now, memory_order_relaxed)) return;
   long long wm = hi;
   for (int i = 0; i < nthreads && i < 256; i++) {
@@ -400,12 +411,26 @@ static void maybe_progress() {
   long long t23 = g_t23_prunes.load(memory_order_relaxed);
   long long sumP = g_sum_prunes.load(memory_order_relaxed);
   long long rate = (t > 0) ? (long long)(nodes / t) : 0;
+  long long wm = -1;
+  if (G_CKPT_PATH) {
+    wm = G_CKPT_HI;
+    for (int i = 0; i < G_NTHREADS && i < 256; i++) {
+      long long v = g_chunk_start[i].load(memory_order_relaxed);
+      if (v < wm) wm = v;
+    }
+  }
 #pragma omp critical(report)
-  cout << "[" << t << "s] nodes=" << nodes << " rate=" << rate
-       << "/s combos_done=" << cd << " t23_prunes=" << t23
-       << " sum_prunes=" << sumP
-       << " sym_skips=" << g_sym_skips.load(memory_order_relaxed)
-       << " found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
+  {
+    cout << "[" << t << "s] nodes=" << nodes << " rate=" << rate
+         << "/s combos_done=" << cd << " t23_prunes=" << t23
+         << " sum_prunes=" << sumP
+         << " sym_skips=" << g_sym_skips.load(memory_order_relaxed);
+    if (wm >= 0) cout << " ckpt=" << wm;
+    cout << " found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
+  }
+  // Time-driven checkpoint write: rides this 20s gate so it fires on schedule
+  // regardless of how long individual combos take (see G_CKPT_PATH comment).
+  if (G_CKPT_PATH) maybe_checkpoint(G_CKPT_PATH, G_CKPT_HI, G_NTHREADS);
 }
 
 static void record_solution(const int *A, const int *B, const int *C,
@@ -757,7 +782,17 @@ int main(int argc, char **argv) {
     cout << "slice already complete per checkpoint; nothing to do\n" << flush;
   for (int i = 0; i < 256; i++) g_chunk_start[i].store(resume, memory_order_relaxed);
   g_next_combo.store(resume, memory_order_relaxed);
-  const long long CHUNK = 64;
+  G_CKPT_PATH = ckpt;
+  G_CKPT_HI = hi;
+  G_NTHREADS = thr;
+  if (const char *cp = getenv("WZ_CKPT_PERIOD")) {
+    int v = atoi(cp);
+    if (v >= 1) G_CKPT_PERIOD = v;
+  }
+  // Small chunks keep the resume watermark close to the frontier: watermark =
+  // min over threads' current chunk start, so at ~36 min per real combo a
+  // 64-combo chunk would strand hours of completed work above the watermark.
+  const long long CHUNK = 4;
 
 #pragma omp parallel
   {
@@ -852,7 +887,7 @@ int main(int argc, char **argv) {
       }
     }
       }
-      if (tid == 0 && ckpt) maybe_checkpoint(ckpt, hi, thr);
+      if (ckpt) maybe_checkpoint(ckpt, hi, thr);
     }
     g_chunk_start[tid].store(hi, memory_order_relaxed);
   }
