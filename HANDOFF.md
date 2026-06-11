@@ -7,6 +7,42 @@
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-10 (later): first chained-campaign data → BITMAP checkpoints + Trillium chain fix (deploy this)
+
+**The first full checker on the autonomous campaign caught two real flaws:**
+1. **Trillium never chained.** Fir/Rorqual/Nibi all showed a PD `(Dependency)` next
+   generation; Trillium showed none — SciNet clusters disallow `sbatch` from compute
+   nodes, so in-job self-resubmit silently fails there. **Fix: pre-queue the chain from
+   the login node at deploy time** (gen1..gen5 submitted upfront with
+   `--dependency=afterany:<prev>`; the in-script PEND_OTHER guard is compatible — it just
+   sees a pending gen and skips its own submit).
+2. **Min-watermark pinning (the big one).** Combo subtrees are so heavy-tailed that the
+   min-over-in-flight watermark stayed pinned at one early monster combo: Rorqual task 1
+   had `combos_done=24,485` but watermark only **40** past slice start after 23h; Nibi
+   task 2: offset 92. On walltime death, resume would re-do ~the whole generation —
+   cumulative progress ≈ nil, and with each gen's queue reaching only ~98k units from a
+   pinned start, **the Nibi solution at offset 190k would NEVER be reached.**
+
+**Fix: completed-combo BITMAP checkpoint (validated).** Solver now records exactly which
+combos finished (`BMv1 lo hi` header + '0'/'1' byte per combo, ~840KB/task, atomic
+tmp+rename every ~30s) plus a `<path>.count` sidecar ("done total") that the scripts'
+all-done guard reads (the bitmap itself is binary — DON'T cat it; the old checker's
+`grep -H . ckpt_*` would dump garbage; grep `ckpt_*.count` instead). Resume loads the
+bitmap and skips done combos in microseconds; only unfinished monsters get retried, each
+generation with a fresh 24h. **Legacy bare-integer watermark files auto-convert** (prefix
+marked done) so nothing breaks on first contact with existing files. Progress lines now
+show `done=<n>/<span>`. Tests: fresh-exhaust sidecar `1100 1100`; rerun → "already
+complete"; legacy 500 converts + still finds the BS(19,18) solution at ~1152; range
+mismatch → fresh (conservative); full soundness suite still green.
+
+**Honest cost + ETA:** gen-0's ~day of cluster work is mostly lost (only the tiny pinned
+watermark prefix survives conversion — that loss IS the flaw being fixed). With bitmap
+accumulation at observed rates (~28-41k combo-units/task/24h), Nibi task 2 reaches the
+solution offset 190,029 in **~4-7 generations ≈ 4-7 days**, hands-off. One day of `done=`
+data will sharpen the estimate. Watch `ckpt_nibi_2.txt.count`.
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-09: checkpoint writes never fired on cluster → time-driven fix + AUTO-CHAINING (deploy this)
 
 **Bug found via checker: ZERO `ckpt_*.txt` files on all clusters** despite the checkpointed

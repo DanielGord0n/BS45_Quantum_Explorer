@@ -327,39 +327,55 @@ static atomic<int> g_last_print{0};
 // resumes instead of restarting. Without this the search re-grinds the same
 // prefix every resubmit and never reaches a deep solution.
 static atomic<long long> g_next_combo{0};
-static atomic<long long> g_chunk_start[256];
 static atomic<int> g_last_ckpt{0};
 
-// Checkpoint config, set once in main() before the parallel region. Needed as
-// globals so maybe_progress() can piggyback checkpoint writes on its 20s gate:
-// the first deploy gated writes on a thread finishing a whole chunk, but one
-// real n=42 combo takes ~36 min on a core, so the write opportunity came hours
-// apart (or never, on a monster combo) and NO checkpoint files appeared on any
-// cluster. Writes must be time-driven, not chunk-completion-driven.
+// Completed-combo BITMAP checkpoint (replaces the min-watermark). First real
+// cluster data showed per-combo subtree sizes are so heavy-tailed (one monster
+// combo can grind >20h while neighbors take seconds) that a min-over-in-flight
+// watermark stays pinned at the slowest combo: tasks had completed ~28k combos
+// while the watermark advanced only 40-2300. On resume that re-did nearly the
+// whole generation — cumulative progress across walltime deaths was ~nil. The
+// bitmap records exactly which combos finished; resume skips them in
+// microseconds, and only unfinished monsters are retried (fresh 24h each gen).
+// On-disk: "BMv1 <lo> <hi>\n" + '0'/'1' byte per combo. A legacy bare-integer
+// watermark file is converted on load (everything below it = done).
+static atomic<uint8_t> *g_done = nullptr;
+static atomic<long long> g_done_count{0};
 static const char *G_CKPT_PATH = nullptr;
-static long long G_CKPT_HI = 0;
-static int G_NTHREADS = 1;
+static long long G_CKPT_LO = 0, G_CKPT_HI = 0;
 static int G_CKPT_PERIOD = 30;  // seconds between writes (env WZ_CKPT_PERIOD)
 
-static void write_ckpt(const char *path, long long v) {
-  std::string tmp = std::string(path) + ".tmp";
-  std::ofstream f(tmp);
+// Dump bitmap + a tiny "<done> <total>" sidecar at <path>.count (the SLURM
+// scripts' all-done guard reads the sidecar; the bitmap is for the solver).
+// tmp+rename so readers never see a torn file.
+static void write_ckpt_files() {
+  long long span = G_CKPT_HI - G_CKPT_LO;
+  std::string tmp = std::string(G_CKPT_PATH) + ".tmp";
+  std::ofstream f(tmp, std::ios::binary);
   if (!f) return;
-  f << v << "\n";
+  f << "BMv1 " << G_CKPT_LO << " " << G_CKPT_HI << "\n";
+  long long done = 0;
+  for (long long i = 0; i < span; i++) {
+    uint8_t b = g_done[i].load(memory_order_relaxed);
+    f.put(b ? '1' : '0');
+    if (b) done++;
+  }
   f.close();
-  rename(tmp.c_str(), path);   // atomic replace
+  rename(tmp.c_str(), G_CKPT_PATH);
+  std::string cnt = std::string(G_CKPT_PATH) + ".count";
+  std::string ctmp = cnt + ".tmp";
+  std::ofstream g(ctmp);
+  if (!g) return;
+  g << done << " " << span << "\n";
+  g.close();
+  rename(ctmp.c_str(), cnt.c_str());
 }
-static void maybe_checkpoint(const char *path, long long hi, int nthreads) {
+static void maybe_checkpoint() {
   double t = chrono::duration<double>(Clock::now() - G_T0).count();
   int now = (int)t, last = g_last_ckpt.load(memory_order_relaxed);
   if (now - last < G_CKPT_PERIOD) return;
   if (!g_last_ckpt.compare_exchange_strong(last, now, memory_order_relaxed)) return;
-  long long wm = hi;
-  for (int i = 0; i < nthreads && i < 256; i++) {
-    long long v = g_chunk_start[i].load(memory_order_relaxed);
-    if (v < wm) wm = v;
-  }
-  write_ckpt(path, wm);
+  write_ckpt_files();
 }
 
 // Research instrumentation (compile with -DINSTRUMENT; zero cost otherwise).
@@ -411,26 +427,20 @@ static void maybe_progress() {
   long long t23 = g_t23_prunes.load(memory_order_relaxed);
   long long sumP = g_sum_prunes.load(memory_order_relaxed);
   long long rate = (t > 0) ? (long long)(nodes / t) : 0;
-  long long wm = -1;
-  if (G_CKPT_PATH) {
-    wm = G_CKPT_HI;
-    for (int i = 0; i < G_NTHREADS && i < 256; i++) {
-      long long v = g_chunk_start[i].load(memory_order_relaxed);
-      if (v < wm) wm = v;
-    }
-  }
 #pragma omp critical(report)
   {
     cout << "[" << t << "s] nodes=" << nodes << " rate=" << rate
          << "/s combos_done=" << cd << " t23_prunes=" << t23
          << " sum_prunes=" << sumP
          << " sym_skips=" << g_sym_skips.load(memory_order_relaxed);
-    if (wm >= 0) cout << " ckpt=" << wm;
+    if (G_CKPT_PATH)
+      cout << " done=" << g_done_count.load(memory_order_relaxed) << "/"
+           << (G_CKPT_HI - G_CKPT_LO);
     cout << " found=" << (g_found.load() ? "YES" : "no") << "\n" << flush;
   }
   // Time-driven checkpoint write: rides this 20s gate so it fires on schedule
-  // regardless of how long individual combos take (see G_CKPT_PATH comment).
-  if (G_CKPT_PATH) maybe_checkpoint(G_CKPT_PATH, G_CKPT_HI, G_NTHREADS);
+  // regardless of how long individual combos take (see bitmap comment above).
+  if (G_CKPT_PATH) maybe_checkpoint();
 }
 
 static void record_solution(const int *A, const int *B, const int *C,
@@ -772,41 +782,68 @@ int main(int argc, char **argv) {
     return g_found.load() ? 0 : 2;
   }
 
-  // Resume from checkpoint (env WZ_CKPT) if present, else start at lo.
-  long long resume = lo;
+  // Completed-combo bitmap + resume (env WZ_CKPT). Accepts both on-disk
+  // formats: "BMv1 lo hi" + '0'/'1' bytes (current), or a legacy bare-integer
+  // watermark (converted: everything below it is marked done).
   const char *ckpt = getenv("WZ_CKPT");
-  if (ckpt) { std::ifstream cf(ckpt); long long v; if (cf >> v && v > resume && v <= hi) resume = v; }
-  if (resume > lo)
-    cout << "RESUME from checkpoint: combo " << resume << " / " << hi << "\n" << flush;
-  if (resume >= hi)
-    cout << "slice already complete per checkpoint; nothing to do\n" << flush;
-  for (int i = 0; i < 256; i++) g_chunk_start[i].store(resume, memory_order_relaxed);
-  g_next_combo.store(resume, memory_order_relaxed);
+  long long span = hi - lo;
+  g_done = new atomic<uint8_t>[span]();
   G_CKPT_PATH = ckpt;
+  G_CKPT_LO = lo;
   G_CKPT_HI = hi;
-  G_NTHREADS = thr;
   if (const char *cp = getenv("WZ_CKPT_PERIOD")) {
     int v = atoi(cp);
     if (v >= 1) G_CKPT_PERIOD = v;
   }
-  // Small chunks keep the resume watermark close to the frontier: watermark =
-  // min over threads' current chunk start, so at ~36 min per real combo a
-  // 64-combo chunk would strand hours of completed work above the watermark.
+  if (ckpt) {
+    std::ifstream cf(ckpt, std::ios::binary);
+    std::string tag;
+    if (cf >> tag) {
+      if (tag == "BMv1") {
+        long long flo, fhi;
+        if (cf >> flo >> fhi && flo == lo && fhi == hi) {
+          cf.get();  // consume the newline before the bit bytes
+          std::string bits(span, '0');
+          cf.read(&bits[0], span);
+          long long n = 0;
+          for (long long i = 0; i < span; i++)
+            if (bits[i] == '1') { g_done[i].store(1, memory_order_relaxed); n++; }
+          g_done_count.store(n, memory_order_relaxed);
+        } else {
+          cout << "WARNING: checkpoint range mismatch (file " << flo << "," << fhi
+               << " vs run " << lo << "," << hi << "); starting fresh\n" << flush;
+        }
+      } else {
+        long long wm = atoll(tag.c_str());
+        if (wm > lo) {
+          if (wm > hi) wm = hi;
+          for (long long i = 0; i < wm - lo; i++) g_done[i].store(1, memory_order_relaxed);
+          g_done_count.store(wm - lo, memory_order_relaxed);
+          cout << "converted legacy watermark checkpoint (" << wm << ")\n" << flush;
+        }
+      }
+    }
+    long long n = g_done_count.load(memory_order_relaxed);
+    if (n > 0)
+      cout << "RESUME from checkpoint: " << n << "/" << span
+           << " combos already done\n" << flush;
+    if (n >= span)
+      cout << "slice already complete per checkpoint; nothing to do\n" << flush;
+  }
+  g_next_combo.store(lo, memory_order_relaxed);
   const long long CHUNK = 4;
 
 #pragma omp parallel
   {
-    int tid = 0;
-#ifdef _OPENMP
-    tid = omp_get_thread_num();
-#endif
     while (!g_found.load(memory_order_relaxed)) {
       long long c0 = g_next_combo.fetch_add(CHUNK, memory_order_relaxed);
       if (c0 >= hi) break;
-      g_chunk_start[tid].store(c0, memory_order_relaxed);
       long long cend = (c0 + CHUNK < hi) ? c0 + CHUNK : hi;
       for (long long combo = c0; combo < cend; combo++) {
         if (g_found.load(memory_order_relaxed)) break;
+        // Finished in a previous generation — skip (this is what makes resume
+        // accumulate real progress across walltime deaths).
+        if (g_done[combo - lo].load(memory_order_relaxed)) continue;
         int ab0 = (int)(combo & 7);
         int cd0 = (int)((combo >> 3) & 15);
 
@@ -817,6 +854,8 @@ int main(int argc, char **argv) {
         (G_PIN_B0 && comb8_neg[ab0][1] != 1) ||
         (G_PIN_C0 && comb16[cd0][0] != 1) ||
         (G_PIN_D0 && comb16[cd0][1] != 1)) {
+      g_done[combo - lo].store(1, memory_order_relaxed);
+      g_done_count.fetch_add(1, memory_order_relaxed);
       g_sym_skips.fetch_add(1, memory_order_relaxed);
       g_combos_done.fetch_add(1, memory_order_relaxed);
       continue;
@@ -872,8 +911,14 @@ int main(int argc, char **argv) {
     if (ok) search(G_SPLIT, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
 
     // End of a combo's subtree: flush this thread's accumulated counts so the
-    // global totals (and the COMBO DONE line below) stay current.
+    // global totals (and the COMBO DONE line below) stay current. Mark the
+    // combo done only if its subtree was fully searched — if g_found stopped
+    // us mid-tree, leave it unmarked (sound; it would be re-searched).
     flush_counters();
+    if (!g_found.load(memory_order_relaxed)) {
+      g_done[combo - lo].store(1, memory_order_relaxed);
+      g_done_count.fetch_add(1, memory_order_relaxed);
+    }
     long long done = g_combos_done.fetch_add(1, memory_order_relaxed) + 1;
     if (done % 64 == 0 || done == hi - lo) {
 #pragma omp critical(report)
@@ -887,12 +932,12 @@ int main(int argc, char **argv) {
       }
     }
       }
-      if (ckpt) maybe_checkpoint(ckpt, hi, thr);
+      if (ckpt) maybe_checkpoint();
     }
-    g_chunk_start[tid].store(hi, memory_order_relaxed);
   }
-  // Slice fully searched without a solution: record hi so the chain stops here.
-  if (ckpt && !g_found.load() && g_next_combo.load() >= hi) write_ckpt(ckpt, hi);
+  // Final dump so the bitmap + .count sidecar reflect everything this
+  // generation completed (after a clean exhaust, .count shows done == total).
+  if (ckpt) write_ckpt_files();
 
   double t = chrono::duration<double>(Clock::now() - G_T0).count();
   if (!g_found.load()) {

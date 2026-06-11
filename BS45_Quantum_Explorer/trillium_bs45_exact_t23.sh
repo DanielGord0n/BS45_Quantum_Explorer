@@ -52,7 +52,8 @@ if [ "$SLURM_ARRAY_TASK_ID" -eq 0 ] && [ "$CHAIN" -lt "$MAXCHAIN" ]; then
     TLO=$(( CLUSTER_LO + t * SPAN )); THI=$(( TLO + SPAN ))
     [ $THI -gt $CLUSTER_HI ] && THI=$CLUSTER_HI
     CK=$SCRATCH/bs45/ckpt_bs45_trillium_$t.txt
-    if [ ! -f "$CK" ] || [ "$(cat "$CK" 2>/dev/null || echo 0)" -lt "$THI" ]; then ALL_DONE=0; break; fi
+    DONE=$(awk '{print ($1>=$2 && $2>0)?"yes":"no"}' "$CK.count" 2>/dev/null)
+    if [ "$DONE" != "yes" ]; then ALL_DONE=0; break; fi
   done
   if [ "$ALL_DONE" -eq 0 ] && [ "${PEND_OTHER:-0}" -eq 0 ]; then
     sbatch --export=ALL,CHAIN=$((CHAIN+1)) --dependency=afterany:$SLURM_ARRAY_JOB_ID trillium_bs45_exact_t23.sh \
