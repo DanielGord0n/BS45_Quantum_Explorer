@@ -7,6 +7,44 @@
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-12: BITMAP VERIFIED IN PRODUCTION on Fir; Nibi maintenance-blocked → Fir backup campaign on Nibi's quarter
+
+**Checker (2026-06-12): the bitmap machinery works at cluster scale.** Fir ran a full
+generation: all 10 `.count` sidecars present (24k-38k done / 838,861 per task), `done=`
+in logs, legacy-watermark conversion credited (task 0 = 2,296 legacy + fresh work), and a
+chained generation (43902517) pending. Final verification = counts CLIMB at next check.
+Cluster weather elsewhere: **Rorqual** 14215284 never started (PD ReqNodeNotAvail ~1 day —
+queue/drained nodes, not ours); **Trillium** 6-gen chain intact, gen-0 PD (Priority);
+**Nibi** 15950232 still PD "Reserved for maintenance" — **the solution-holding quarter is
+idle, critical path blocked.**
+
+**Mitigation: `fir_bs43_nq_exact_t23.sh` (NEW, validated)** — an independent backup
+campaign on Fir covering **Nibi's quarter [16777216,25165824)** (contains the solution at
+combo 18,644,967 → its task 2, same offset ~190k). Distinct job name `BS43_t23_fir_nq`
+(squeue -n is exact-match → no PEND_OTHER cross-talk with Fir's own chain), distinct
+outputs `bs43_t23_fir_nq_*` + checkpoints `ckpt_fir_nq_*`, self-chains its own lineage.
+Deploy WITHOUT scancel (must not kill Fir's existing chain). Fresh bitmap (Nibi never ran
+the bitmap version, so there's nothing to transfer). Whichever cluster covers the
+solution offset first prints CONFIRMED; the other keeps grinding until scancel'd — fine.
+ETA on Fir rates: ~5-6 generations ≈ 5-6 days for its task 2 to reach the offset; Nibi
+resumes in parallel whenever maintenance ends — two independent shots at the result.
+
+**2026-06-12 deploys:** Fir backup campaign queued as **44086545** (`BS43_t23_fir_nq`,
+alongside Fir's own chain 43902517 — both PD, no interference). Rorqual re-kicked as
+**14225237** — still ReqNodeNotAvail with ~65 drained nodes listed (heavy drain, likely
+pre-maintenance; nothing actionable, starts when nodes clear). **Nibi maintenance window
+confirmed via scontrol: ACTIVE, ends 2026-06-12T16:00** (next one is July 11) — the queued
+job 15950232 auto-starts within hours of that; NO squeeze-in needed.
+
+**Nibi when back:** the queued 24h job starts by itself; optional pre-window squeeze:
+`scontrol show reservation` to see the window, and if >6h away, scancel the PD job and
+resubmit with `sbatch --time=6:00:00 nibi_bs43_exact_t23.sh` (CLI --time overrides
+#SBATCH; chained children revert to 24h). Do NOT let two arrays of the SAME campaign run
+concurrently on one cluster (they'd overwrite each other's bitmap files — last writer
+wins; sound but wasteful).
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-10 (later): first chained-campaign data → BITMAP checkpoints + Trillium chain fix (deploy this)
 
 **The first full checker on the autonomous campaign caught two real flaws:**
