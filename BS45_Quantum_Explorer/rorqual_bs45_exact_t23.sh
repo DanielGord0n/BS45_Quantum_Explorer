@@ -9,10 +9,10 @@
 #SBATCH --account=def-ikotsire
 #SBATCH --mail-type=END,FAIL
 
-# === BS(45,44) WORLD-RECORD ATTEMPT — wz_exact_t23, Fir ===
+# === BS(45,44) WORLD-RECORD ATTEMPT — wz_exact_t23, Rorqual ===
 # Sig-targeted (13,3,0,0): the prime BS(45,44) candidate (4x symmetry pins,
 # direct analog of BS(43)'s (7,11,0,0); T23Filter = 47484 valid tuples).
-# Fir searches combo quarter [8388608,16777216) of the 33554432 first-4-layer combos.
+# Rorqual searches combo quarter [8388608,16777216) of the 33554432 first-4-layer combos.
 # DO NOT SUBMIT until BS(43,42) is blind-reproduced (validates the pipeline).
 
 cd $SLURM_SUBMIT_DIR

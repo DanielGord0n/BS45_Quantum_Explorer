@@ -14,7 +14,7 @@ The current and only active solver is **`BS45_Quantum_Explorer/src/solver/wz_exa
 The SA solver (`wz_sa_v8.cpp`) was abandoned — never reproduced BS(43,42). Everything below the
 TOP OF MIND sections that references `wz_sa_v8.cpp` is historical context only.
 
-### Campaign snapshot (as of 2026-06-12 — update when checker results change)
+### Campaign snapshot (as of 2026-06-14 — update when checker results change)
 **BS(43,42) exhaustive search, sig (7,11,0,0), WZ_SPLIT=4 (33.5M combos):**
 
 | Campaign | Cluster | Combo quarter | Key fact |
@@ -23,11 +23,11 @@ TOP OF MIND sections that references `wz_sa_v8.cpp` is historical context only.
 | `rorqual_bs43_exact_t23.sh` | Rorqual | [8388608, 16777216) | Job 14225237 PD, drained nodes |
 | `nibi_bs43_exact_t23.sh` | Nibi | [16777216, 25165824) | **Contains solution at combo 18,644,967 (task 2)**; job 15950232 PD (maintenance ended 2026-06-12T16:00) |
 | `fir_bs43_nq_exact_t23.sh` | Fir (backup) | [16777216, 25165824) | Independent backup for Nibi's quarter; job 44086545 PD, self-chains separately |
-| `trillium_bs43_exact_t23.sh` | Trillium | [25165824, 33554432) | 6-gen chain pre-queued from login node (jobs 1752386–1752391) |
+| `trillium_bs45_exact_t23.sh` | Trillium | [25165824, 33554432) | **Pivoted to BS(45) 2026-06-14** — sig (13,3,0,0), jobs 1766288–93 (6-gen chain). No longer running BS(43); its quarter had no solution. |
 
-**What to watch:** `ckpt_nibi_2.txt.count` (or `ckpt_fir_nq_2.txt.count`) climbing past ~190,029 = solution imminent.
-**On REPRODUCTION CONFIRMED:** run `python3 verify_npaf.py < <output_file>`, then deploy the 4 BS(45) scripts below.
-**BS(45,44) scripts** (`*_bs45_exact_t23.sh` ×4) are STAGED — do NOT submit until BS(43) confirmed.
+**What to watch:** `ckpt_nibi_2.txt.count` (or `ckpt_fir_nq_2.txt.count`) climbing toward 190,029 (the solution's offset in task 2). **Baseline 2026-06-14: both = 23,021 (12%) — counts MUST be higher next check.** When the count crosses ~190,029, CONFIRMED follows within ~hours (a worker then has to grind the >20B-node solution combo — see 2026-06-14 section), NOT instantly; a small overshoot with no banner is normal, not a bug.
+**On REPRODUCTION CONFIRMED:** run `python3 verify_npaf.py < <output_file>`, then deploy the BS(45) scripts below.
+**BS(45,44) scripts** (`*_bs45_exact_t23.sh` ×4) — READINESS VERIFIED 2026-06-14 (sig (13,3,0,0): T23Filter 47,484 tuples / 724 keys / 4× pins, builds clean at N=44). Recommended action NOW: **pivot Trillium to BS(45)** while Nibi+Fir keep grinding the BS(43) validation — see the 2026-06-14 section + deploy command below.
 
 ### Checker script (paste into terminal — works from any machine)
 ```bash
@@ -89,17 +89,75 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
   ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs43_nq_exact_t23.sh && squeue -u dangord --format="%14i %22j %2t %12L %R"'
 ```
 
-### Deploy commands (BS(45,44) world-record attempt — STAGED, submit ONLY after BS(43,42) confirmed)
+### Deploy commands (BS(45,44) world-record attempt — sig (13,3,0,0), readiness VERIFIED 2026-06-14)
 
-After `REPRODUCTION CONFIRMED` appears, run `python3 verify_npaf.py < <output_file>` first, then:
+BS(45) and BS(43) coexist safely in `$SCRATCH/bs45` (distinct `wz45_*` binary, `bs45_t23_*`
+outputs, `ckpt_bs45_*` checkpoints, `BS45_t23_*` job names — no collision with the BS(43)
+campaign). So you can run BS(45) on one cluster while BS(43) validates on others.
 
-**FIR BS(45)**:
+**RECOMMENDED FIRST MOVE — pivot Trillium to BS(45)** (Trillium's BS(43) quarter has no
+solution → low-value exhaustion; scancel frees its nodes; Nibi+Fir keep the validation).
+Trillium compute nodes can't `sbatch`, so pre-queue the 6-gen chain from the login node:
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp trillium_bs45_exact_t23.sh | \
+  ssh dangord@trillium.alliancecan.ca '
+    scancel -u dangord 2>/dev/null;
+    cd $SCRATCH/bs45 && tar -xvf - &&
+    PREV=$(sbatch --parsable trillium_bs45_exact_t23.sh) && PREV=${PREV%%;*} && echo "gen0: $PREV" &&
+    for g in 1 2 3 4 5; do
+      PREV=$(sbatch --parsable --export=ALL,CHAIN=$g --dependency=afterany:$PREV trillium_bs45_exact_t23.sh) && PREV=${PREV%%;*} && echo "gen$g: $PREV" || break;
+    done;
+    squeue -u dangord --format="%12i %22j %2t %12L %R"'
+```
+
+**GO ALL-IN** (after Nibi prints BS(43) `REPRODUCTION CONFIRMED` → first `python3 verify_npaf.py
+< <output_file>`, or whenever you decide). These `scancel` the BS(43) campaign on each cluster:
+
+**FIR BS(45)** ([0,8388608)):
 ```bash
 cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp fir_bs45_exact_t23.sh | \
   ssh dangord@fir.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
-*(Repeat analogously for rorqual_bs45_exact_t23.sh, nibi_bs45_exact_t23.sh, and trillium_bs45_exact_t23.sh — same pattern, Trillium needs the 6-gen pre-queue above.)*
+**RORQUAL BS(45)** ([8388608,16777216)):
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp rorqual_bs45_exact_t23.sh | \
+  ssh dangord@rorqual.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch rorqual_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
+```
+**NIBI BS(45)** ([16777216,25165824)):
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp nibi_bs45_exact_t23.sh | \
+  ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
+```
+*(Trillium BS(45): use the pre-queue command above.)*
+
+---
+
+## ⚡ TOP OF MIND — 2026-06-14: checker analysis + SNIPER IS DEAD (don't retry) + BS(45) readiness PROVEN → pivot Trillium to BS(45)
+
+**Checker (2026-06-14) — all BS(43) campaigns healthy & self-chaining; baseline recorded for climb-tracking:**
+- **Fir** own quarter [0,8.4M): 18 tasks R (43902517 own + 44086545 `fir_nq` backup), next gens PD (Dependency). Counts 24k–38k. (Own quarter has no solution → pure exhaustion.)
+- **Fir backup `fir_nq`** = Nibi quarter, BS(43) solution shot #2: `ckpt_fir_nq_2.count = 23,021 / 190,029`.
+- **Rorqual** [8.4M,16.8M): job 14225237 PD `ReqNodeNotAvail` (~65 drained nodes), idle since 2026-06-11T04:00 (~3 days). NO ckpt files. Off critical path; Alliance drain, not actionable by us. No solution in its quarter.
+- **Nibi** [16.8M,25.2M) — solution quarter, shot #1: last gen hit walltime 2026-06-14T10:54:35, next gen 16010636 PD (Priority) auto-starts. `ckpt_nibi_2.count = 23,021 / 190,029`.
+- **Trillium** [25.2M,33.6M): 10 tasks R (1752386) + 5 gens pre-queued (1752387–91). Counts 22k–38k. No solution in its quarter.
+
+**BASELINE for next check (counts MUST climb):** task-2 on the solution quarter = **nibi_2 = fir_nq_2 = 23,021 / 190,029 (12%)**. Counts are CONTENT-determined (byte-identical across clusters working the same quarter; each quarter has its own distinct profile — expected & reassuring, not a bug). If either task-2 count is still 23,021 next check, task-2 has stalled — investigate. ETA to the find on rate ≈ a few more days to reach offset 190,029, then ~hours grinding the solution combo (below). Only one snapshot was available, so "climbing" couldn't be verified from data — the baseline above makes the next check a real diff.
+
+**SNIPER IS DEAD — do NOT re-attempt deep-split targeting of the known solution.** Tempting idea: jump straight to the solution's combo at a deep `WZ_SPLIT` and find it in minutes, skipping the ~190k-combo linear grind. **Tested empirically 2026-06-14 (local):** `WZ_SPLIT=8` (combo 19,137,822,490,599) AND `WZ_SPLIT=10` (combo 1,454,118,867,509,739,495) each ground **>20 BILLION nodes over ~76 min single-core, `found=no`.** This confirms the 2026-06-04 negative result with ~28× more evidence: the solution leaf is buried >20B nodes deep in DFS order even with 10 of 21 layers pinned. A single combo can't checkpoint mid-DFS, so a sniper can burn an entire walltime and never finish. **There is NO combo-targeting shortcut to a blind find — it is a pure compute cost. The only lever for faster FINDS is DFS reordering (risky, in the bug-prone search core; deferred).** (Verified along the way: `find_combo_index.py` gives split-4 = 18,644,967, split-6/8/10/12 indices; the solver parses combo ranges as `long long`/int64 so splits ≤10 are in range, split-12 overflows.)
+
+**Corrected watch-metric understanding:** when task-2's count crosses ~190,029, a worker has only just STARTED combo 18,644,967 — whose subtree is that same >20B-node monster. It then grinds ~hours single-core before hitting the solution leaf → CONFIRMED. So "count past 190,029" ⇒ CONFIRMED within hours, not instantly; and the count can legitimately drift a little past 190,029 while that one thread is still inside the monster (other threads keep completing later combos and incrementing the count). **Do NOT treat "count > 190,029 with no banner yet" as a bug unless it persists many hours.** (This refines the 2026-06-10 note that said passing the offset with no banner = bug.)
+
+**BS(45) READINESS PROVEN (concrete world-record progress).** Local smoke test 2026-06-14, `WZ_SPLIT=4 ./wz_exact_t23 44 13 3 0 0 0 40`: builds clean at N=44, **T23Filter = 47,484 valid tuples, 724 (P,Q) keys — exactly the 2026-06-07 plan**, sym_pins C0=D0=1 → 4× active. The prime sig (13,3,0,0) configuration is verified end-to-end. Also fixed the misleading "Fir" header comments in all 4 staged BS(45) scripts (quarters were already correct; functional bodies unchanged).
+
+**STRATEGY / RECOMMENDATION — start BS(45) now on the lowest-value cluster; keep BS(43) validation on the solution quarter.** Blind BS(43) reproduction is a *confidence check* on the mid-layer prunes at n=42 scale — NOT a correctness gate: prefix-feed already reproduced BS(43,42) end-to-end (2026-06-07, 2.9 ms), `verify_npaf.py` independently confirms it, and BS(19,18) reproduces fully blind. Three of four clusters are exhausting SOLUTION-FREE BS(43) quarters (Fir-own, Rorqual, Trillium) — that only proves "no *other* BS(43) solution there," low value. **Recommended: pivot Trillium (standalone, solution-free quarter, easy long walltimes) to BS(45) sig (13,3,0,0) now**, keeping Nibi (shot #1) + Fir `fir_nq` (shot #2) grinding the real validation. A *positive* BS(45) result is self-validating (`verify_npaf`); a *negative* one stays interpretable once Nibi confirms BS(43). Go all-in on the remaining BS(45) quarters when Nibi confirms (or when you decide). Deploy commands: QUICK REFERENCE → "Deploy commands (BS(45,44))". No new BS(43) jobs are needed — those campaigns self-chain; Rorqual is the only idle one and it's blocked by Alliance node drain, not by us.
+
+**DEPLOYED 2026-06-14:** Trillium pivoted to BS(45) sig (13,3,0,0) — jobs **1766288–1766293** (`BS45_t23_trilli`, 6-gen `afterany` chain, dependencies verified as a single clean lineage: gen0=1766288 null, gen1→gen0, …, gen5→gen4; old BS(43) Trillium 1752386 scancel'd → CG). Nibi + Fir remain on BS(43) validation. **First BS(45) cluster is live** — watch `bs45_t23_trilli` output + `ckpt_bs45_trillium_*` counts appearing. Go all-in on the other quarters per QUICK REFERENCE when Nibi confirms BS(43) (or whenever).
+
+**Next algorithmic lever (for whoever picks this up):** since FINDS can't be shortcut by targeting and prune-residue headroom is exhausted (`t23_prunes=0` always), the remaining real levers are (a) `update_bounds_pos` rewrite to iterate only filled positions (biggest throughput win, but the historical double-counting-bug zone — soundness proof + BS(7,6)/(11,10)/(19,18) repro + `verify_npaf` before any deploy), and (b) the C↔D swap symmetry — sound for sig (13,3,0,0) since c=d=0, would give another 2× (→ 8× total) for BS(45), but needs lexicographic tie-breaking threaded through the search core (bug-prone). Both deferred; neither should be attempted hot, days before a record run.
 
 ---
 
