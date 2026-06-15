@@ -1,0 +1,3 @@
+# macOS Finder / resource-fork cruft (a pattern without a slash matches at any depth)
+.DS_Store
+._*
