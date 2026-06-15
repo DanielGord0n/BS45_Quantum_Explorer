@@ -7,6 +7,102 @@
 
 ---
 
+## 🚀 QUICK REFERENCE — Checker + Deploy Commands (keep this at top; update when scripts change)
+
+### Active solver (important — ignore older sections referencing wz_sa_v8.cpp)
+The current and only active solver is **`BS45_Quantum_Explorer/src/solver/wz_exact_t23.cpp`**.
+The SA solver (`wz_sa_v8.cpp`) was abandoned — never reproduced BS(43,42). Everything below the
+TOP OF MIND sections that references `wz_sa_v8.cpp` is historical context only.
+
+### Campaign snapshot (as of 2026-06-12 — update when checker results change)
+**BS(43,42) exhaustive search, sig (7,11,0,0), WZ_SPLIT=4 (33.5M combos):**
+
+| Campaign | Cluster | Combo quarter | Key fact |
+|----------|---------|---------------|----------|
+| `fir_bs43_exact_t23.sh` | Fir | [0, 8388608) | Self-chaining; job 43902517 PD |
+| `rorqual_bs43_exact_t23.sh` | Rorqual | [8388608, 16777216) | Job 14225237 PD, drained nodes |
+| `nibi_bs43_exact_t23.sh` | Nibi | [16777216, 25165824) | **Contains solution at combo 18,644,967 (task 2)**; job 15950232 PD (maintenance ended 2026-06-12T16:00) |
+| `fir_bs43_nq_exact_t23.sh` | Fir (backup) | [16777216, 25165824) | Independent backup for Nibi's quarter; job 44086545 PD, self-chains separately |
+| `trillium_bs43_exact_t23.sh` | Trillium | [25165824, 33554432) | 6-gen chain pre-queued from login node (jobs 1752386–1752391) |
+
+**What to watch:** `ckpt_nibi_2.txt.count` (or `ckpt_fir_nq_2.txt.count`) climbing past ~190,029 = solution imminent.
+**On REPRODUCTION CONFIRMED:** run `python3 verify_npaf.py < <output_file>`, then deploy the 4 BS(45) scripts below.
+**BS(45,44) scripts** (`*_bs45_exact_t23.sh` ×4) are STAGED — do NOT submit until BS(43) confirmed.
+
+### Checker script (paste into terminal — works from any machine)
+```bash
+for c in fir rorqual nibi trillium; do echo ""; echo "════════ $c ════════"; \
+  ssh dangord@${c}.alliancecan.ca "squeue -u dangord --format='%12i %22j %2t %12L %R' 2>/dev/null; \
+    cd \$SCRATCH/bs45 2>/dev/null || exit 0; \
+    echo '--- SOLUTIONS ---'; \
+    grep -l 'REPRODUCTION CONFIRMED\|WORLD RECORD' bs4*_t23_*output*.txt 2>/dev/null || echo '(none yet)'; \
+    echo '--- PROGRESS (done/total per task; must climb between checks) ---'; \
+    grep -H . ckpt_*.count 2>/dev/null || echo '(none yet)'; \
+    echo '--- LATEST ---'; \
+    for f in \$(ls -t bs4*_t23_*output*.txt 2>/dev/null | head -2); do echo \"=== \$f ===\"; tail -3 \"\$f\"; done"; \
+done
+```
+Note: `ckpt_*.count` files show "done total" per task. The bitmap itself is binary — never `cat` it.
+Solution files: `REPRODUCTION CONFIRMED` = BS(43,42) validated; `WORLD RECORD` = BS(45,44) found.
+
+### Deploy commands (BS(43,42) campaign — current)
+
+**FIR** (own quarter [0,8388608)):
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp fir_bs43_exact_t23.sh | \
+  ssh dangord@fir.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs43_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
+```
+
+**RORQUAL** ([8388608,16777216)):
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp rorqual_bs43_exact_t23.sh | \
+  ssh dangord@rorqual.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch rorqual_bs43_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
+```
+
+**NIBI** ([16777216,25165824) — solution at combo 18,644,967 task 2):
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp nibi_bs43_exact_t23.sh | \
+  ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs43_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
+```
+
+**TRILLIUM** ([25165824,33554432)) — compute nodes can't sbatch; pre-queue 6-gen chain from login:
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp trillium_bs43_exact_t23.sh | \
+  ssh dangord@trillium.alliancecan.ca '
+    scancel -u dangord 2>/dev/null;
+    cd $SCRATCH/bs45 && tar -xvf - &&
+    PREV=$(sbatch --parsable trillium_bs43_exact_t23.sh) && PREV=${PREV%%;*} && echo "gen0: $PREV" &&
+    for g in 1 2 3 4 5; do
+      PREV=$(sbatch --parsable --export=ALL,CHAIN=$g --dependency=afterany:$PREV trillium_bs43_exact_t23.sh) && PREV=${PREV%%;*} && echo "gen$g: $PREV" || break;
+    done;
+    squeue -u dangord --format="%12i %22j %2t %12L %R"'
+```
+
+**FIR BACKUP CAMPAIGN** (Nibi's quarter on Fir — NO scancel; must not kill Fir's own chain):
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp fir_bs43_nq_exact_t23.sh | \
+  ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs43_nq_exact_t23.sh && squeue -u dangord --format="%14i %22j %2t %12L %R"'
+```
+
+### Deploy commands (BS(45,44) world-record attempt — STAGED, submit ONLY after BS(43,42) confirmed)
+
+After `REPRODUCTION CONFIRMED` appears, run `python3 verify_npaf.py < <output_file>` first, then:
+
+**FIR BS(45)**:
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+  tar -cf - src/solver/wz_exact_t23.cpp fir_bs45_exact_t23.sh | \
+  ssh dangord@fir.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
+```
+*(Repeat analogously for rorqual_bs45_exact_t23.sh, nibi_bs45_exact_t23.sh, and trillium_bs45_exact_t23.sh — same pattern, Trillium needs the 6-gen pre-queue above.)*
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-12: BITMAP VERIFIED IN PRODUCTION on Fir; Nibi maintenance-blocked → Fir backup campaign on Nibi's quarter
 
 **Checker (2026-06-12): the bitmap machinery works at cluster scale.** Fir ran a full
