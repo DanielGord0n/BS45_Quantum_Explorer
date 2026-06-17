@@ -184,6 +184,39 @@ ever leaves task-2 at 23,021, the wall is confirmed beyond doubt). Trillium BS(4
 the allocation covering BS(45) cheap-prefix space but will NOT crack monsters — **the solver fix is
 the real path to results.**
 
+**UPDATE (2026-06-16, later) — FEASIBILITY FRONTIER MEASURED; intra-combo checkpointing WON'T save
+it; the record is gated on a stronger PRUNE, not compute.** Measured nodes-to-find vs layers-fixed
+via `WZ_PREFIX` (fix k layers, blind-search the rest), solution sig (7,11,0,0):
+- k≥13 (≤8 free layers): found **instantly** (<20 s).
+- k=12 (9 free layers): does NOT finish quickly.
+- k=10 (11 free layers, = the split-10 sniper): >20B nodes / 76 min, no find.
+
+→ The solver's practical **feasibility frontier ≈ 8 freely-searched layers.** Full blind is 21
+(BS43) / 22 (BS45). No prune closes an 8→22 gap (>13 layers of exponential growth), and intra-combo
+checkpointing only makes monsters *resumable*, not *smaller* — grinding the ~167k monster combos
+before offset 190,029 is still ~years. **Conclusions: (1) full blind exhaustion is INFEASIBLE for
+BS43 and BS45; (2) BS(43,42) is DONE — validated, repro stands even with 8 free layers; (3) a
+*guaranteed* BS(45) record by exhaustion is out of reach. The only search-side shot is a solution
+sitting in a combo whose residual tree is within the ~8-layer frontier (a "cheap" combo) — but the
+BS(43) solution itself was a monster, so solutions likely live in monsters → the cheap-combo lottery
+is a long shot.** (So I did NOT build intra-combo checkpointing — it wouldn't deliver.)
+
+**BEST COURSE OF ACTION (2026-06-16):**
+1. **Clusters:** cancel the infeasible+validated blind BS(43); consolidate ALL on BS(45) (13,3,0,0)
+   for maximum passive coverage (the lottery). Deploy commands in QUICK REFERENCE → BS(45). Use
+   `--time=3:00:00` on first jobs that sit PD (backfill); Trillium already pivoted.
+2. **Real search-side lever — the partial-CD spectral bound.** Pull `hall_ok`'s Thm-2.4 spectral
+   filter into the MID layers as a partial bound (the 2026-06-04 profiling showed the tree explodes
+   mid-layers and only collapses at d==half-1; this is the one untried idea to collapse it earlier =
+   push the frontier deeper = search a larger fraction). Build TEST-FIRST: A/B with `-DINSTRUMENT`,
+   reproduce BS(7,6)/(11,10)/(19,18) + `verify_npaf`; deploy ONLY if net node-cut beats its
+   ~200·n-ops/node cost. Uncertain payoff, but the highest-leverage technical work left.
+3. **Honest framing:** BS(45,44) is an OPEN world record *because* it's hard by all known methods.
+   Nothing here guarantees a hit — prune + max compute maximize the searched fraction, beyond that
+   it depends on whether a solution sits within reach. The construction papers (Sarukhanian / Russian
+   note) are a separate paradigm worth a fresh look, but if standard constructions yielded BS(45,44)
+   it would not still be open.
+
 ---
 
 ## ⚡ TOP OF MIND — 2026-06-14: checker analysis + SNIPER IS DEAD (don't retry) + BS(45) readiness PROVEN → pivot Trillium to BS(45)
