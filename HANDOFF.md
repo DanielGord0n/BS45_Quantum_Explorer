@@ -136,6 +136,56 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-16: the MONSTER-COMBO WALL is real → blind brute force is stuck; next lever is intra-combo (mid-DFS) checkpointing
+
+**Day-3 checker (2026-06-16) exposed the wall the 2026-06-04 analysis predicted.** Task-2 on the
+solution quarter is FROZEN at the cheap-prefix boundary across 3 days and multiple runs:
+`ckpt_nibi_2 = ckpt_fir_nq_2 = ckpt_rorqual_2 = 23,021` — unchanged since the 2026-06-14 baseline.
+Hard evidence it's the per-combo walltime wall, not a transient:
+- The Nibi 3h backfill job (16104970) RAN and completed **combos_done=0** in 3h — a single thread
+  stuck inside one monster combo, finishing nothing.
+- fir_nq's full 24h gen-0 left task-2 at exactly 23,021: the ~23k cheap (sym-skipped / instantly-
+  pruned) combos fly by in minutes, then every thread hits monster combos whose subtrees exceed the
+  walltime. A combo can't checkpoint mid-DFS, so each generation re-grinds the same monsters from
+  scratch and the bitmap never advances past 23,021.
+
+**Consequence:** the earlier "4–8 days to offset 190,029" was the CHEAP-PREFIX rate and is wrong.
+Past offset 23,021 the effective rate collapses to monster-grinding speed; reaching the solution at
+offset 190,029 by linear blind exhaustion is likely **impractical** on these contended allocations.
+The walltime dilemma is fundamental: LONG jobs won't schedule (PD Priority for days); SHORT jobs
+backfill but can't crack a monster (Nibi 3h → 0 combos). Neither setting reaches the solution.
+
+**Root cause = search-TREE SIZE (the 2026-06-04 finding), now operational.** Also reconfirmed by the
+2026-06-14 sniper test (solution combo >20B nodes / 76 min single-core, no leaf). More cluster time
+does not fix it. Deeper `WZ_SPLIT` can't either: the bitmap is sized to the combo span, so a uniform
+deep split explodes memory, and the solution's deep-split index is astronomically large so a linear
+campaign never reaches it.
+
+**Validation is unaffected:** BS(43,42) correctness is ALREADY proven (prefix-feed repro 2.9 ms +
+`verify_npaf` + blind BS(19,18)). Blind BS(43) was only ever a confidence check and may simply be
+infeasible by brute force — that's acceptable. BS(45) faces the SAME wall, harder (n=44).
+
+**NEXT LEVER — intra-combo (mid-DFS) resume (solver change; build TEST-FIRST).** The search core is
+the historically bug-prone, solution-killing area: reproduce BS(7,6)/(11,10)/(19,18) + `verify_npaf`
++ a kill-and-resume test BEFORE any cluster deploy. Plan: persist a small per-combo **cursor** over
+the first M search layers (which layer-K..K+M-1 choice-branches are fully explored) alongside the
+bitmap; on resume, skip completed cursor positions. This subdivides each combo into up to 8^M
+resumable chunks (M=2 → 64×, M=3 → 512×) so a monster's progress survives walltime and accumulates
+across generations — WITHOUT enlarging the bitmap (stays split-4 + a few cursor bytes per in-flight
+combo). This is the one change that turns "stuck forever" into "slow-but-completes" for BOTH the
+BS(43) solution combo and BS(45) exhaustion. (Reframes the 2026-06-10 "intra-combo checkpointing
+deferred — combo subtrees unlikely to exceed 24h" note: the data now shows they DO.)
+
+**Cluster state 2026-06-16 / interim ops:** Fir back from the login outage but now PD "Reserved for
+maintenance" (auto-resumes). Rorqual recovered, running BS(43) exhaustion (no solution in its
+quarter). Nibi short-walltime chain riding — KEEP as the BS(43) decisive test (if a full 24h gen
+ever leaves task-2 at 23,021, the wall is confirmed beyond doubt). Trillium BS(45) gen0 sat PD
+(Priority) ~2 days — needs the short-walltime backfill kick to start. Interim cluster commands keep
+the allocation covering BS(45) cheap-prefix space but will NOT crack monsters — **the solver fix is
+the real path to results.**
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-14: checker analysis + SNIPER IS DEAD (don't retry) + BS(45) readiness PROVEN → pivot Trillium to BS(45)
 
 **Checker (2026-06-14) — all BS(43) campaigns healthy & self-chaining; baseline recorded for climb-tracking:**
