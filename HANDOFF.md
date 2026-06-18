@@ -167,6 +167,26 @@ n=44 (8-layer frontier + monster wall + exhausted prunes).
 action left — a long shot (solutions likely live in monster combos). Run it as a free background bet;
 the real chance at the record is the recent-methods path above.
 
+**FOLLOW-UP — read the SOTA method (arXiv:2506.20296 §4 "Sketch of the algorithm"). KEY FINDING: our
+solver IS essentially the state-of-the-art algorithm, and n=44 is OPEN for the entire field.** Their
+construction of n=41,42,43: (1) pick valid sum-tuples (sigs); (2) enumerate k/r/p/q residues mod 3;
+(3) **extend to modulus 6**, keeping compatible (P,Q) sets; (4) generate C,D, drop those with
+f_C(θ)+f_D(θ) > 4n+2 (Thm 2.4 = our `hall_ok`); (5) backtrack A,B for each valid C,D. That is exactly
+our pipeline (sig-target + Thm-2.3 residues + Thm-2.4 spectral + CD-then-AB) — **we independently
+built SOTA.** They state "existence of BS(n+1,n) for n>43 is still open"; NS(44) and NN(44) are both
+EMPTY (no subset shortcuts). So no one has cracked n=44.
+- **The one edge their method has over ours: residues mod 6** (we use mod 3 — and our mod-3 T23 lookup
+  fires 0% at runtime because the sum prune kills first; they use residues to *generate/constrain* the
+  C,D set up front, a structural difference). Plus they may have been compute-limited where we have 4
+  clusters.
+- **THE FORK (this is the strategic decision):**
+  (A) **Accept the frontier** — we matched SOTA and confirmed n=44 is beyond current methods. Run the
+      lottery; write up the validated solver + frontier + literature confirmation. Defensible.
+  (B) **Long-shot swing for the record** — match their mod-6 residue generation (rework the C,D side
+      of the search core) and throw cluster compute at n=44. Genuinely uncertain (they had mod-6 and
+      stopped at 43 — maybe fundamental, maybe compute), bug-prone core work, but the only path with a
+      real (small) chance. Our cluster compute is the asset they may not have had.
+
 ---
 
 ## ⚡ TOP OF MIND — 2026-06-18: partial-CD spectral prune = SOUND but NET-NEGATIVE → search-side levers EXHAUSTED
