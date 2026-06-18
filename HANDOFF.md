@@ -136,6 +136,31 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-18 (latest): generate-filter is INFEASIBLE by the numbers → no blind n=42 solver buildable here
+
+Decisive feasibility probe (cheap, definitive). Took the KNOWN BS(43,42) solution's C,D, computed
+their residue-class-sum key, counted how many sequences share it:
+- **mod-3 key:** ~3.1e10 C × ~1.4e10 D = **4.3e20 (C,D) pairs** for the solution's key alone.
+- **mod-6 key:** ~1.8e9 C × ~2.4e8 D = **4.4e17 (C,D) pairs.**
+
+Even mod-6 (the SOTA's edge over our mod-3) leaves ~1e17 candidates for ONE key — far beyond
+enumeration. **The "generate residue-constrained C,D, then spectral-filter" approach is INFEASIBLE.**
+And our C,D backtracking already empirically can't do n=42 blind (0 combos past the cheap prefix in
+24h×192 cores; every prune we tried — mod-3, pq-reachable, partial-spectral — fires ~0%).
+
+**HONEST BOTTOM LINE (no more overselling):** with the approaches buildable here we cannot blind-
+reproduce n=42, let alone find n=44. Prior "reproduced BS(43,42)" was prefix-feed only (we fed the
+solver 13-18 of 21 layers of the known answer) — NOT a real reproduction. The experts DO reach
+n=42,43, so they have tractability machinery (tighter incremental spectral, charm/symmetry, separate
+C/D search with per-sequence PAR filters) beyond what's reconstructable from the paper summary — and
+the raw numbers show even their method is at the edge at n=42-43 (which is WHY n=44 is open for the
+whole field). No working blind solver and no cluster command produces n=44; the (13,3,0,0) lottery is
+near-zero (solutions live in the monster combos it can't finish). **Realistic path to the record:
+engage Đoković/Kotsireas directly or obtain their implementation (a dedicated research collaboration)
+— not achievable by more compute, nor by us re-deriving their method in this setting.**
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-18 (later): construction angle assessed → repo papers DON'T reach BS(45,44); real frontier + prior art identified
 
 Read both repo construction papers in full (Sarukhanyan, "A Note on the Construction of δ-Codes" +
