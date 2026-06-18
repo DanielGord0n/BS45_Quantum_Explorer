@@ -51,6 +51,10 @@ static int G_SPLIT = 3;
 // Incremental T23 (P,Q) reachability prune (candidate #1). Off by default so the
 // same binary A/B-tests prune-on vs prune-off via env WZ_PQPRUNE=1.
 static bool G_PQPRUNE = false;
+// Partial-CD spectral lower-bound prune (a mid-layer relaxation of hall_ok/Thm 2.4).
+// Off by default; env WZ_SPECPRUNE=L applies it at search layers d in [L, half-2] (so
+// the same binary A/B-tests it and the start layer L is tunable). Cost ~ hall_ok/node.
+static int G_SPECPRUNE = 0;
 static int G_SIG_A, G_SIG_B, G_SIG_C, G_SIG_D;
 static Clock::time_point G_T0;
 
@@ -128,6 +132,33 @@ bool hall_ok(const int *X, int xlen, const int *Y, int ylen) {
     if (rx * rx + ix * ix + ry * ry + iy * iy > limit + 0.5) return false;
   }
   return true;
+}
+
+// Partial-CD spectral lower-bound prune: a mid-layer relaxation of hall_ok run while
+// C,D are only partially placed (unplaced entries are 0). With `rem` positions still
+// undetermined in each of C and D, the reverse triangle inequality gives a SOUND lower
+// bound on EVERY completion's spectrum at frequency theta:
+//   min |DFT_C|^2 + |DFT_D|^2  >=  max(0,|P_C|-rem)^2 + max(0,|P_D|-rem)^2
+// (each undetermined +/-1 moves a partial DFT by at most 1 in magnitude). If that floor
+// exceeds 4n+2 at any sampled theta, NO completion can satisfy hall_ok -> prune. Sound:
+// a real solution's full spectrum is <= 4n+2, so its prefix's floor is <= that too, so
+// it is never pruned. Returns true = prune this branch.
+static inline bool spec_lb_prunes(const int *C, const int *D, int n, int d) {
+  const double limit = 4.0 * G_N + 2.0 + 0.5;
+  const int rem = n - 2 * (d + 1);   // undetermined C positions (== undetermined D)
+  if (rem <= 0) return false;        // fully placed: hall_ok handles it exactly
+  for (int j = 1; j <= 200; j++) {
+    const double *cj = G_HALL_COS[j], *sj = G_HALL_SIN[j];
+    double rc = 0, ic = 0, rd = 0, id = 0;
+    for (int i = 0; i < n; i++) {
+      rc += C[i] * cj[i]; ic += C[i] * sj[i];
+      rd += D[i] * cj[i]; id += D[i] * sj[i];
+    }
+    double mc = sqrt(rc * rc + ic * ic) - rem; if (mc < 0) mc = 0;
+    double md = sqrt(rd * rd + id * id) - rem; if (md < 0) md = 0;
+    if (mc * mc + md * md > limit) return true;
+  }
+  return false;
 }
 
 int npaf_at(const int *A, const int *B, int n1, const int *C, const int *D,
@@ -316,6 +347,7 @@ static atomic<long long> g_combos_done{0};
 static atomic<long long> g_t23_prunes{0};
 static atomic<long long> g_sum_prunes{0};
 static atomic<long long> g_pq_prunes{0};
+static atomic<long long> g_spec_prunes{0};
 static atomic<long long> g_sym_skips{0};
 static atomic<int> g_last_print{0};
 
@@ -400,6 +432,7 @@ static atomic<long long> g_layer_sum[64];
 static thread_local long long tl_nodes = 0;
 static thread_local long long tl_sum_prunes = 0;
 static thread_local long long tl_pq_prunes = 0;
+static thread_local long long tl_spec_prunes = 0;
 static constexpr long long TL_FLUSH = 1 << 20;
 static int g_solA[256], g_solB[256], g_solC[256], g_solD[256];
 
@@ -413,6 +446,10 @@ static inline void flush_counters() {
   if (tl_pq_prunes) {
     g_pq_prunes.fetch_add(tl_pq_prunes, memory_order_relaxed);
     tl_pq_prunes = 0;
+  }
+  if (tl_spec_prunes) {
+    g_spec_prunes.fetch_add(tl_spec_prunes, memory_order_relaxed);
+    tl_spec_prunes = 0;
   }
 }
 
@@ -432,6 +469,7 @@ static void maybe_progress() {
     cout << "[" << t << "s] nodes=" << nodes << " rate=" << rate
          << "/s combos_done=" << cd << " t23_prunes=" << t23
          << " sum_prunes=" << sumP
+         << " spec_prunes=" << g_spec_prunes.load(memory_order_relaxed)
          << " sym_skips=" << g_sym_skips.load(memory_order_relaxed);
     if (G_CKPT_PATH)
       cout << " done=" << g_done_count.load(memory_order_relaxed) << "/"
@@ -629,6 +667,10 @@ static void search(int d, int *A, int *B, int *C, int *D, int *Dnpaf,
             // C, D fully placed. Apply Thm 2.4 spectral filter.
             if (hall_ok(C, n, D, n))
               search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
+          } else if (G_SPECPRUNE && d >= G_SPECPRUNE &&
+                     spec_lb_prunes(C, D, n, d)) {
+            // Partial-CD spectral lower bound proves no completion satisfies hall_ok.
+            tl_spec_prunes++;
           } else {
             search(d + 1, A, B, C, D, Dnpaf, Kund, Kpar, Rpar, Ppar, Qpar);
           }
@@ -711,6 +753,10 @@ int main(int argc, char **argv) {
     if (G_SPLIT > G_HALF - 1) G_SPLIT = G_HALF - 1;
   }
   if (const char *pq = getenv("WZ_PQPRUNE")) G_PQPRUNE = (atoi(pq) != 0);
+  if (const char *spp = getenv("WZ_SPECPRUNE")) {
+    G_SPECPRUNE = atoi(spp);
+    if (G_SPECPRUNE < 0) G_SPECPRUNE = 0;
+  }
   long long total_combos = 1LL << (7 + 6 * (G_SPLIT - 1));
   long long lo = (argc >= 7) ? atoll(argv[6]) : 0;
   long long hi = (argc >= 8) ? atoll(argv[7]) : total_combos;
@@ -726,7 +772,8 @@ int main(int argc, char **argv) {
   cout << "  wz_exact_t23 — sig-targeted BS(" << G_N1 << "," << n
        << "), sig=(" << G_SIG_A << "," << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D << ")\n";
   cout << "  threads=" << thr << "  split=" << G_SPLIT
-       << "  pqprune=" << (G_PQPRUNE ? "on" : "off") << "  combos[" << lo
+       << "  pqprune=" << (G_PQPRUNE ? "on" : "off")
+       << "  specprune=" << G_SPECPRUNE << "  combos[" << lo
        << "," << hi << ")/" << total_combos << "\n";
   cout << "  sym_pins: A0=" << G_PIN_A0 << " B0=" << G_PIN_B0
        << " C0=" << G_PIN_C0 << " D0=" << G_PIN_D0;
@@ -947,6 +994,7 @@ int main(int argc, char **argv) {
          << " t23_prunes=" << g_t23_prunes.load()
          << " sum_prunes=" << g_sum_prunes.load()
          << " pq_prunes=" << g_pq_prunes.load()
+         << " spec_prunes=" << g_spec_prunes.load()
          << " sym_skips=" << g_sym_skips.load() << "\n";
   }
 #ifdef INSTRUMENT

@@ -136,6 +136,50 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-18: partial-CD spectral prune = SOUND but NET-NEGATIVE → search-side levers EXHAUSTED
+
+Built + A/B-tested the one remaining search-side lever — the **partial-CD spectral bound** (the
+2026-06-04 "highest-leverage" candidate). Result: a documented **DEAD END**, same as the incremental
+T23 prune (2026-06-06).
+
+**Implementation** (`wz_exact_t23.cpp`, env `WZ_SPECPRUNE=L`, **OFF by default — leave it off**):
+a mid-layer relaxation of `hall_ok` run while C,D are partially placed. Sound via the reverse
+triangle inequality — with `rem` undetermined positions, every completion satisfies
+min |DFT_C|²+|DFT_D|² ≥ max(0,|P_C|−rem)² + max(0,|P_D|−rem)²; if that floor > 4n+2 at any sampled
+frequency, no completion can satisfy `hall_ok` → prune. (`spec_lb_prunes()`, `g_spec_prunes`
+counter, applies at layers d∈[L, half−2].)
+
+**SOUNDNESS verified — it does NOT kill real solutions:**
+- BS(43,42) REAL target via prefix-feed k=14 AND k=13, spec ON → still `REPRODUCTION CONFIRMED`.
+- BS(19,18) (7,5,0,0) FULL blind search, spec ON → still finds it (prune exercised on the path).
+- BS(7,6) (WZ_SPLIT=2) + BS(11,10) (5,1,4,0) still reproduce.
+
+**A/B (BS(19,18) (7,5,0,0), combos[0,1100), same binary):**
+- OFF : nodes = 5,392,560, 0.64 s
+- ON  : nodes = 5,381,040 (**−0.21%**), fired 180×, **0.80 s (+25% wall-time)**
+
+Same failure mode as the T23 prune: the `−rem` slack is large in the mid-layers (where the tree
+explodes), so the bound only bites at deep layers where `hall_ok` nearly fires anyway — ~0 nodes cut
+for a real per-node DFT cost ⇒ net loss. L=3 and L=5 gave identical 180 prunes (shallow layers never
+fire), confirming the slack diagnosis. **Code kept, OFF, as a documented dead end** (pq-prune precedent).
+
+**CONCLUSION — search-side prune levers are EXHAUSTED.** Every candidate has now been tried: T23
+residue lookup (never fires), per-class residue (net-neg, removed in v4), incremental T23 reachability
+(net-neg), partial-CD spectral (net-neg). Combined with the ~8-layer feasibility frontier, the
+validated bottom line is: **BS(45,44) by exhaustive search is out of reach, and no further pruning
+closes the gap.** Solid deliverables: (1) a correct, validated solver; (2) a rigorous characterization
+of *why* brute-force exhaustion is infeasible (8-layer frontier + monster wall + exhausted prunes).
+
+**Remaining real options (more compute will NOT help):**
+1. **Clusters:** run the BS(45) (13,3,0,0) cheap-combo LOTTERY — the only nonzero-chance passive move
+   (long shot: solutions likely live in monsters). Consolidate all clusters on it.
+2. **Different paradigm:** the construction papers (Sarukhanian / Russian note) — a direct BS(45,44)
+   construction would sidestep search entirely. Hard (it's an open record) but the only avenue with a
+   fundamentally different ceiling.
+3. **Write up** (validated solver + infeasibility result + the lottery) as the honest outcome.
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-16: the MONSTER-COMBO WALL is real → blind brute force is stuck; next lever is intra-combo (mid-DFS) checkpointing
 
 **Day-3 checker (2026-06-16) exposed the wall the 2026-06-04 analysis predicted.** Task-2 on the
