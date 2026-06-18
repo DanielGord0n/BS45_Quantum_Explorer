@@ -136,6 +136,39 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-18 (later): construction angle assessed → repo papers DON'T reach BS(45,44); real frontier + prior art identified
+
+Read both repo construction papers in full (Sarukhanyan, "A Note on the Construction of δ-Codes" +
+its Maple worksheet `Sarukhanian_construction.pdf`). **They do NOT yield BS(45,44).**
+- The constructions (Thm 1, Assertions 1-2, Corollary 1) build δ-codes / cyclic T-matrices of order
+  **2·11(2n−1)** and **2(2n−1)(2k+1)** from Turyn (length n) + Golay (length k) sequences — to
+  manufacture LARGE Hadamard matrices. The worksheet's length-110 example is Assertion 1 with n=3
+  (2·11·5 = 110); its NPAF came out nonzero because BS(3,2) was fed where a Turyn sequence is required.
+- Neither formula gives length 44: 22(2n−1) is never 44; 2(2n−1)(2k+1)=44 needs (2n−1)(2k+1)=22,
+  impossible for two odd factors. And the OUTPUT is an equal-length δ-code, not the near-square base
+  sequence BS(45,44) (lengths 45,45,44,44) we want. **Dead end for our target.**
+
+**Literature check (the part that matters).** BS(45,44) = n=44 is the genuine NEXT OPEN CASE of the
+Base Sequence Conjecture (BS(n+1,n) exist ∀n; stronger than the Hadamard conjecture). State of the
+art: verified n≤40, and **first constructions for n=41,42,43** given recently (Đoković/Kotsireas) —
+which is where the project's "published BS(43,42) solution" came from. n=44 is still open, and the
+near-normal subset NN(44) is EMPTY (no NNS(44) by exhaustive search), so the easy NN/NS shortcuts
+don't apply — that is WHY n=44 is hard.
+
+**Implication — the genuinely promising path (not brute force, not the old constructions):** study how
+n=41,42,43 were actually constructed and adapt it to n=44. Relevant prior art:
+- Đoković, "Classification of base sequences BS(n+1,n)" — arXiv:1002.1414
+- "On Base, Normal and Near-normal Sequences" (2025) — arXiv:2506.20296
+- "On the base sequence conjecture" — arXiv:1003.1454
+This is a literature/methods study, NOT a cluster job. Our solver stays validated but cannot reach
+n=44 (8-layer frontier + monster wall + exhausted prunes).
+
+**Cluster posture unchanged:** the BS(45) (13,3,0,0) cheap-combo lottery is the only direct-search
+action left — a long shot (solutions likely live in monster combos). Run it as a free background bet;
+the real chance at the record is the recent-methods path above.
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-18: partial-CD spectral prune = SOUND but NET-NEGATIVE → search-side levers EXHAUSTED
 
 Built + A/B-tested the one remaining search-side lever — the **partial-CD spectral bound** (the
