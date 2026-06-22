@@ -7,6 +7,33 @@ Wang–Zhu Theorem 2.3 residue prune + Theorem 2.4 (`hall_ok`) spectral filter +
 C,D-then-A,B backtracking**, parallelized with OpenMP and resumable via bitmap
 checkpoints.
 
+## wz_generate.cpp — Wang–Zhu generate-filter architecture (BLIND, independently verified)
+
+A second solver, `src/solver/wz_generate.cpp`, implements the **actual algorithm Wang & Zhu used
+to construct BS(n+1,n) for n=41,42,43** (arXiv:2506.20296): instead of a blind joint search, it
+**generates** the shorter pair C,D from mod-3/mod-6 residue-class-sum profiles (Thm 2.3) with the
+Thm 2.4 spectral filter applied *during* construction, then **backtracks A,B** for each surviving
+C,D, with an exact NPAF==0 recheck.
+
+Unlike the seeded `reproduce_bs43.sh`, this finds sequences **fully blind (no seed)**. An
+independent reviewer re-compiled it and re-verified every result with a separate NPAF checker:
+
+| Target | Result (blind, NPAF==0 verified) |
+|--------|-----------------------------------|
+| BS(7,6)   | found ~0.001 s |
+| BS(11,10) | found ~2.7 s   |
+| BS(13,12) | found ~12 s    |
+| BS(15,14) | found ~20 s    |
+
+Run: `g++ -O3 -std=c++17 [-fopenmp] -o wz_generate src/solver/wz_generate.cpp && ./wz_generate <n> <a> <b> <c> <d>`
+
+**Scope (honest):** the architecture is proven correct on the cases above. It does **not yet reach
+n=18+ or n=42** as written, because the A,B stage re-backtracks A,B for *every* generated C,D rather
+than generating A,B by the same residue/spectral filtering and **matching** C,D↔A,B by their
+(P,Q)/(K,R) profiles — the join that makes Wang–Zhu's method tractable at n=42. That profile-matching
+join (plus OpenMP parallelism) is the precise remaining step; n=42 feasibility is genuinely uncertain
+until it is built. See HANDOFF.md (2026-06-19) for the full gap analysis.
+
 ## Verified results
 
 **1. Blind discovery (no seed — found from scratch):**
