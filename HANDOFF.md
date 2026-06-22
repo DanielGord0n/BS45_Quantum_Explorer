@@ -136,7 +136,30 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-06-18 (latest): generate-filter is INFEASIBLE by the numbers → no blind n=42 solver buildable here
+## ⚡ TOP OF MIND — 2026-06-19: the PRECISE Wang-Zhu gap (verified + adversarially checked) — barrier is ARCHITECTURE, not compute; CORRECTS the 06-18 "generate-filter infeasible" over-claim
+
+Two multi-agent investigations with adversarial verification (SA cap; Wang-Zhu-method vs our solver). Verified conclusions:
+
+**ATTRIBUTION FIX (repo had this wrong):** the n=41,42,43 base-sequence constructions are **Xu Wang & Jiayi Zhu, arXiv:2506.20296 (2025)** — NOT Đoković/Kotsireas directly. Đoković/Kotsireas are the lineage for the classification and the residue/spectral TECHNIQUES; the n=41-43 results are Wang-Zhu's. Say "base sequences verified through n=43; n=44 the open frontier" (not "verified n≤40"). Earlier HANDOFF entries (e.g. 2026-06-18 "later") misattribute this — treat THIS as the correction.
+
+**THE PRECISE GAP (our wz_exact_t23 vs the method that reached n=42/43, Wang-Zhu §3):** we use the SAME theorems (Thm 2.3 residue, Thm 2.4 `hall_ok` spectral, sig-targeting, threshold 4n+2 on the j·π/100 200-pt grid — a faithful copy) but in a structurally weaker form. The ONE decisive difference is GENERATE-vs-PRUNE:
+- **WZ GENERATE** the SHORTER pair (C,D) up front: Thm 2.3 residue profiles at modulus 3, lifted to **modulus 6**, keep only the C,D (p,q) profiles, materialize C,D, PSD-filter them (Thm 2.4) DURING construction, then **backtrack A,B** for each surviving C,D. They never enter an explosive middle-layer DFS.
+- **OURS** uses the identical Thm 2.3 only as a RUNTIME LOOKUP at d==half (`compatible_KR`) — documented to fire **0%** (the cheap sum/bounds prune kills dead branches first) — and places all four sequences **INTERLEAVED per layer** (NOT "CD-then-AB" — correcting loose earlier shorthand), so C,D complete only one layer before A,B's middle and the decisive filters activate only at the very end, after the tree already exploded through the middle.
+- Secondary edge: modulus **6 vs our 3**. Symmetry is comparable in kind (their 5 Đoković transforms ~ our sig-0 pins) — not the gap.
+
+**VERDICT: the barrier is ALGORITHM/ARCHITECTURE, NOT compute** (overwhelming, repo-verified): 24h×192-core blind run completes 0 combos past the cheap ~23k prefix (monster subtree > walltime, no mid-DFS checkpoint → re-grinds); the known solution's own combo grinds >20B nodes/76min single-core with 10 of 21 layers PINNED; ~8-layer feasibility frontier vs 21/22 full-blind; every search-side prune we built is net-zero/negative. More cores = more threads each stuck in a monster. You cannot out-compute a tree no available prune shrinks.
+
+**CORRECTION to the 2026-06-18 "generate-filter INFEASIBLE (~1e17 candidates)" entry — it was OVER-PESSIMISTIC.** The ~4.4e17 figure is a naive CARTESIAN PRODUCT (~1.8e9 C × ~2.4e8 D for the solution's mod-6 key) with NO spectral filter, assuming all pairs materialized. **That is NOT Wang-Zhu's pipeline:** they generate C and D SEPARATELY, apply the per-sequence spectral/PAF bound DURING backtracking, and need only ONE surviving (C,D) before pivoting to A,B — they never form that product. Proof it's feasible: **WZ reached n=42 AND n=43 with exactly this method.** So the generate-constrained-C,D architecture IS feasible at n=42/43; the 1e17 figure only kills the naive flat-enumerate version (which is what a bolt-on to our prune-only solver would do).
+
+**BS(43,42) — realistic paths:** (a) prefix-feed (`reproduce_bs43.sh`) is a CORRECTNESS proof only (fix 13/21 layers) — never present as a blind find; (b) the real blind path is to **reimplement WZ's pipeline**: generate mod-6-constrained C,D for one signature, spectral-filter during construction (`hall_ok` exists+validated), backtrack A,B (exists). ~4-6 weeks. Feasible-IN-PRINCIPLE (WZ did it). Risks: reconstructing their per-sequence filter + separate C/D generation from the paper, and whether ≥1 signature's generated set is enumerable on our hardware (UNMEASURED; WZ published no timing). Honest odds: uncertain-but-realistic, contingent on that — could be a long shot or better than even. Do NOT quote a specific %.
+
+**BS(45,44) — chance ≈ 0 by search/generate-filter, for the student OR the field.** Next OPEN case for everyone incl. WZ; NS(44) and NN(44) both empty (no subset shortcut); 22 blind layers vs ~8 frontier; compute doesn't help. The ONLY non-zero routes are NEW MATHEMATICS: a middle-layer pruning theorem that actually bites, or an algebraic/constructive existence result (repo's Sarukhanyan papers do NOT reach length 44). Low-single-digit odds, research-grade.
+
+**BEST ACTION (Daniel):** take the proven diagnosis + a scoped mod-6 reimplementation plan to Kotsireas as a METHODS/collaboration question, NOT a compute request (a cluster-time ask is the one move guaranteed to read as not understanding the problem). Bring: (1) "our solver is a faithful WZ-style implementation validated by prefix-feed BS(43,42); the gap is we use Thm 2.3 as a mod-3 runtime lookup (fires 0%) instead of generating mod-6-constrained C,D up front." (2) the expert question: "what does WZ's generate step cost per signature, and is n=44 reachable by any residue/construction trick, or is it new-mathematics-only?" (3) a fundable plan: build the mod-6 generate pipeline (~4-6 wk) to attempt a BLIND BS(43,42) — a clean, publishable replication — while explicitly NOT promising n=44 by search.
+
+---
+
+## ⚡ TOP OF MIND — 2026-06-18 (latest): generate-filter is INFEASIBLE by the numbers → no blind n=42 solver buildable here  *(SUPERSEDED — see 2026-06-19 above: the ~1e17 figure is a naive flat-product, NOT Wang-Zhu's actual pipeline, which IS feasible at n=42/43)*
 
 Decisive feasibility probe (cheap, definitive). Took the KNOWN BS(43,42) solution's C,D, computed
 their residue-class-sum key, counted how many sequences share it:
