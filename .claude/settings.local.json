@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(g++ -O3 -std=c++17 -o /tmp/t23_filter src/solver/t23_filter.cpp)",
+      "Bash(/tmp/t23_filter 42 7 11 0 0)",
+      "Bash(g++ -O3 -march=native -std=c++17 -c -o /tmp/wz_exact_t23.o src/solver/wz_exact_t23.cpp)",
+      "Bash(echo \"=== EXIT: $? ===\")",
+      "Bash(/tmp/wz_exact_t23 6 1 5 0 0)",
+      "Bash(g++ -O3 -std=c++17 -fopenmp -o /tmp/wz_exact_t23 src/solver/wz_exact_t23.cpp)",
+      "Bash(g++ -O3 -std=c++17 -o /tmp/wz_exact_t23 src/solver/wz_exact_t23.cpp)",
+      "Bash(g++ -O3 -std=c++17 -o /tmp/wz_exact_t23 src/solver/wz_exact_t23.cpp 2>&1; ls -la /tmp/wz_exact_t23)",
+      "Read(//private/tmp/**)",
+      "Bash(timeout 30 /tmp/wz_exact_t23 6 5 1 0 0)",
+      "Bash(chmod +x BS45_Quantum_Explorer/*_bs43_exact_t23.sh)",
+      "Bash(chmod +x /Users/danielgordon/School/CP468/CP468-Assignments/CP468-Sarukhanian/BS45_Quantum_Explorer/fir_bs43_exact_t23.sh /Users/danielgordon/School/CP468/CP468-Assignments/CP468-Sarukhanian/BS45_Quantum_Explorer/rorqual_bs43_exact_t23.sh /Users/danielgordon/School/CP468/CP468-Assignments/CP468-Sarukhanian/BS45_Quantum_Explorer/nibi_bs43_exact_t23.sh /Users/danielgordon/School/CP468/CP468-Assignments/CP468-Sarukhanian/BS45_Quantum_Explorer/trillium_bs43_exact_t23.sh)",
+      "Bash(/tmp/wz_exact_t23_smoke 10 5 1 4 0)",
+      "Bash(python3 verify_npaf.py)",
+      "Bash(g++ -O2 -std=c++17 -Wall -Wno-unused-parameter -Wno-unused-variable -o /tmp/wz_t23_v3 src/solver/wz_exact_t23.cpp)",
+      "Bash(/tmp/wz_t23_v3 6 5 1 0 0)",
+      "Bash(/tmp/wz_t23_v3 10 5 1 4 0)",
+      "Bash(/tmp/wz_t23_v3 10 3 1 4 4)",
+      "Bash(g++ -O2 -std=c++17 -Wall -Wno-unused-parameter -Wno-unused-variable -o /tmp/wz_t23_v3b src/solver/wz_exact_t23.cpp)",
+      "Bash(/tmp/wz_t23_v3b 6 5 1 0 0)",
+      "Bash(/tmp/wz_t23_v3b 10 5 1 4 0)"
+    ]
+  }
+}
