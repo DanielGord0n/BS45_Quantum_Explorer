@@ -366,24 +366,60 @@ int main(int argc, char **argv) {
   size_t hash_records = 0;
   {
     auto t0 = Clock::now();
-    for (auto &prof : abProfs) {
+    // PARALLEL over A,B profiles. Each thread accumulates into a THREAD-LOCAL
+    // map; after the parallel region we MERGE the per-thread maps into the
+    // shared hashAB serially. No concurrent writes to the shared map.
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = omp_get_max_threads();
+#endif
+    vector<unordered_map<Key, vector<ABRec>, KeyHash>> localMaps(nthreads);
+    int nprof = (int)abProfs.size();
+
+    #pragma omp parallel for schedule(dynamic)
+    for (int pi = 0; pi < nprof; pi++) {
+      int tid = 0;
+#ifdef _OPENMP
+      tid = omp_get_thread_num();
+#endif
+      auto &prof = abProfs[pi];
+      auto &lmap = localMaps[tid];
       vector<vector<int>> As, Bs;
       long long aEx = 0, aOk = 0, bEx = 0, bOk = 0;
       gen_seqs_for_profile(G_N1, prof.px, pinA, As, aEx, aOk);
       gen_seqs_for_profile(G_N1, prof.py, pinB, Bs, bEx, bOk);
-      ab_examined += aEx + bEx; ab_specok += aOk + bOk;
+      long long lpairs = 0;
       for (auto &A : As) {
         for (auto &B : Bs) {
           if (!hall_ok(A.data(), G_N1, B.data(), G_N1)) continue;
-          ab_pairs++;
+          lpairs++;
           if (measure) continue;  // counting only
           Key key = autocorr_key(A.data(), B.data(), G_N1);
-          auto &bucket = hashAB[key];
+          auto &bucket = lmap[key];
           if ((int)bucket.size() < G_HASH_KEEP) {
             ABRec r;
             r.A.assign(A.begin(), A.end());
             r.B.assign(B.begin(), B.end());
             bucket.push_back(std::move(r));
+          }
+        }
+      }
+      #pragma omp atomic
+      ab_examined += aEx + bEx;
+      #pragma omp atomic
+      ab_specok += aOk + bOk;
+      #pragma omp atomic
+      ab_pairs += lpairs;
+    }
+
+    // Serial merge of per-thread maps into the shared hash, honoring G_HASH_KEEP.
+    if (!measure) {
+      for (auto &lmap : localMaps) {
+        for (auto &kv : lmap) {
+          auto &bucket = hashAB[kv.first];
+          for (auto &rec : kv.second) {
+            if ((int)bucket.size() >= G_HASH_KEEP) break;
+            bucket.push_back(std::move(rec));
             hash_records++;
           }
         }
@@ -400,23 +436,31 @@ int main(int argc, char **argv) {
   long long cd_examined = 0, cd_specok = 0, cd_pairs = 0, lookups = 0;
   {
     auto t0 = Clock::now();
-    for (auto &prof : cdProfs) {
-      if (g_found.load()) break;
+    // PARALLEL over C,D profiles. The shared hashAB is READ-ONLY here, so
+    // concurrent lookups are safe. On a HIT we do the exact NPAF==0 recheck,
+    // then record the solution + set the found flag under a critical section.
+    // g_found (atomic<bool>) lets other threads stop early.
+    int ncprof = (int)cdProfs.size();
+
+    #pragma omp parallel for schedule(dynamic)
+    for (int pi = 0; pi < ncprof; pi++) {
+      if (g_found.load()) continue;  // early-out (can't break in omp for)
+      auto &prof = cdProfs[pi];
       vector<vector<int>> Cs, Ds;
       long long cEx = 0, cOk = 0, dEx = 0, dOk = 0;
       gen_seqs_for_profile(n, prof.px, pinC, Cs, cEx, cOk);
       gen_seqs_for_profile(n, prof.py, pinD, Ds, dEx, dOk);
-      cd_examined += cEx + dEx; cd_specok += cOk + dOk;
+      long long lpairs = 0, llookups = 0;
       for (auto &C : Cs) {
         if (g_found.load()) break;
         for (auto &D : Ds) {
           if (!hall_ok(C.data(), n, D.data(), n)) continue;
-          cd_pairs++;
+          lpairs++;
           if (measure) continue;
           // Lookup key = (-CD[1..n-1], 0): s=n term is empty for L=n -> 0 already.
           Key cdk = autocorr_key(C.data(), D.data(), n);
           for (auto &v : cdk) v = (int16_t)(-v);
-          lookups++;
+          llookups++;
           auto it = hashAB.find(cdk);
           if (it == hashAB.end()) continue;
           // HIT candidate(s): EXACT NPAF==0 recheck before accepting.
@@ -427,15 +471,28 @@ int main(int argc, char **argv) {
             for (int s = 1; s <= n; s++)
               if (npaf_at(A, B, G_N1, C.data(), D.data(), n, s) != 0) { ok = false; break; }
             if (!ok) continue;  // int16 hash collision, not a real solution
-            memcpy(g_solA, A, G_N1 * sizeof(int));
-            memcpy(g_solB, B, G_N1 * sizeof(int));
-            for (int i = 0; i < n; i++) { g_solC[i] = C[i]; g_solD[i] = D[i]; }
-            g_found.store(true);
+            #pragma omp critical(record_solution)
+            {
+              if (!g_found.load()) {
+                memcpy(g_solA, A, G_N1 * sizeof(int));
+                memcpy(g_solB, B, G_N1 * sizeof(int));
+                for (int i = 0; i < n; i++) { g_solC[i] = C[i]; g_solD[i] = D[i]; }
+                g_found.store(true);
+              }
+            }
             break;
           }
           if (g_found.load()) break;
         }
       }
+      #pragma omp atomic
+      cd_examined += cEx + dEx;
+      #pragma omp atomic
+      cd_specok += cOk + dOk;
+      #pragma omp atomic
+      cd_pairs += lpairs;
+      #pragma omp atomic
+      lookups += llookups;
     }
     double dt = chrono::duration<double>(Clock::now() - t0).count();
     cout << "[side2 C,D] spec-ok seqs=" << cd_specok << "/" << cd_examined
