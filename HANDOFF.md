@@ -9,10 +9,15 @@
 
 ## 🚀 QUICK REFERENCE — Checker + Deploy Commands (keep this at top; update when scripts change)
 
-### Active solver (important — ignore older sections referencing wz_sa_v8.cpp)
-The current and only active solver is **`BS45_Quantum_Explorer/src/solver/wz_exact_t23.cpp`**.
-The SA solver (`wz_sa_v8.cpp`) was abandoned — never reproduced BS(43,42). Everything below the
-TOP OF MIND sections that references `wz_sa_v8.cpp` is historical context only.
+### Active solver (2026-06-24 — `wz_match.cpp` hash-join is the current best path)
+The current best/active solver is **`BS45_Quantum_Explorer/src/solver/wz_match.cpp`** — a Wang-Zhu
+generate-then-MATCH **hash-join** solver (OpenMP-parallel; 64-bit compact keys + dedup) that BLINDLY
+reproduced **BS(19,18) in 51 s on a 192-core node** — the scalable architecture the project was
+missing. Deploy via **`cluster_wz_match.sh`**. Lineage (all in `src/solver/`):
+`wz_exact_t23.cpp` (exhaustive backtracking — correct, but blind-walls ~n=18; the TIME wall) →
+`wz_generate.cpp` (generate-filter C,D, blind n≤14, but re-backtracks A,B per C,D) →
+`wz_match.cpp` (adds the hash-join match — generate A,B too, hash by autocorrelation, look up the
+negating C,D). `wz_sa_v8.cpp` (SA) abandoned (caps ~n=27-30). See the 2026-06-24 TOP OF MIND below.
 
 ### Campaign snapshot (as of 2026-06-14 — update when checker results change)
 **BS(43,42) exhaustive search, sig (7,11,0,0), WZ_SPLIT=4 (33.5M combos):**
@@ -133,6 +138,57 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
   ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 *(Trillium BS(45): use the pre-queue command above.)*
+
+---
+
+## ⚡ TOP OF MIND — 2026-06-24: HASH-JOIN solver `wz_match` WORKS at scale — blind BS(19,18) in 51 s on 192 cores; n=42 retry running
+
+**BREAKTHROUGH: built the missing architecture and it scales.** Acting on the 2026-06-19 gap analysis
+(barrier is ARCHITECTURE not compute — we'd used the Wang-Zhu theorems only as late-firing runtime
+prunes instead of as GENERATORS), built the real generate-then-MATCH pipeline:
+1. `wz_generate.cpp` — generate residue+spectral-filtered C,D up front, backtrack A,B per C,D. Blindly
+   reproduces BS(7,6)/(11,10)/(13,12)/(15,14), NPAF=0 independently verified. But re-backtracking A,B
+   per (C,D) walls ~n=18 (throughput).
+2. `wz_match.cpp` — the HASH-JOIN "matching" trick (Đoković-Kotsireas-Wang-Zhu): generate filtered A,B
+   too, hash by their autocorrelation vector AB[1..n]; generate filtered C,D, look up the negating
+   vector (−CD[1..n−1], 0). A hit ⇒ AB=−CD ⇒ NPAF=0 (exact `npaf_at` recheck before accept).
+   O(|A,B|+|C,D|) not O(product). OpenMP (per-thread-merge build, read-only parallel lookup).
+   **Blindly reproduced BS(19,18) (7,5,0,0) in 51 s on a 192-core node, NPAF=0 verified in the job
+   output** — the case that ground >36 min and never finished single-threaded. First genuine blind
+   result at this scale; architecture PROVEN to scale.
+
+**n=42 first attempt OOM-KILLED → memory fix done.** Direct BS(43,42) (7,11,0,0) on Rorqual enumerated
+709 A,B + 1441 C,D profiles then OOM'd (hash held every A,B keyed by the full autocorr vector). The
+problem CHANGED from a TIME wall (intractable) to a MEMORY wall (engineerable). Fix (committed): key on
+a **64-bit FNV-1a hash** (exact recheck catches collisions) + **dedup to one A,B per distinct
+autocorrelation** (SOUND — any A,B with AB=−CD cancels that C,D) + **hash the smaller side**. BS(11,10)
+still correct 3/3 threaded; hash ~8× smaller at n=10 (far more at n=42 via dedup).
+
+**CURRENT RUNS (2026-06-24, memory-optimized `wz_match` via `cluster_wz_match.sh`):**
+- **Rorqual 14727116 → BS(43,42) (7,11,0,0)** — THE GOAL retry (12 h). Known-solvable (published) sig.
+  Open question: does it FINISH in time now (OOM should be gone; generation set is still large)?
+- **Fir 45797874 → BS(37,36) (5,11,0,0)** — wall-test rung (6 h); completing proves the fix scales.
+- **Nibi 16694424 → BS(31,30) (1,11,0,0)** — lower rung (4 h). Trillium down (SciNet maint. thru ~06-25).
+
+**Checker / deploy (current):**
+```bash
+for c in fir rorqual nibi; do echo "════ $c ════"; ssh dangord@${c}.alliancecan.ca \
+  "squeue -u dangord -h -o '%.12i %.10j %.2t %.11L %R'; cd \$SCRATCH/bs45 2>/dev/null && \
+   for f in \$(ls -t wz_match_output_*.txt 2>/dev/null|head -1); do echo \"=== \$f ===\"; tail -10 \"\$f\"; done"; done
+```
+Deploy: `tar -cf - src/solver/wz_match.cpp cluster_wz_match.sh | ssh dangord@<cluster> 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch --export=ALL,WZ_N=<n>,WZ_A=<a>,WZ_B=<b>,WZ_C=<c>,WZ_D=<d> cluster_wz_match.sh'` (Nibi adds `--account=def-ikotsire_cpu`).
+
+**Honest status / next lever:** architecture proven (blind n=18 in 51 s). OPEN: does n=42's dedup'd
+generated set finish within walltime/RAM on a 192-core node? If Rorqual prints `*** BS(43,42) FOUND ***`
+(NPAF=0) → blind BS(43,42) achieved. If it OOMs/times-out again, the n=30/36 rungs bracket the ceiling
+and the next lever is **PARTITIONING** the join into memory-bounded sub-key blocks (always fits, more
+passes). A reproduced BS(43,42) + the frontier analysis = a defensible result for Kotsireas; **n=44
+stays open for the whole field (search-side ≈ 0; needs new math)** — do NOT promise it.
+
+**Process lesson (cost real time):** an inline timeout wrapper `perl -e 'alarm N; exec @ARGV' N <prog>`
+was BUGGED — the stray `N` became argv[0], so the program silently never ran (empty output, exit 0),
+producing several FALSE "it hangs / can't do n=X" diagnostics. Correct form omits the stray N:
+`perl -e 'alarm N; exec @ARGV' <prog> <args>`.
 
 ---
 
