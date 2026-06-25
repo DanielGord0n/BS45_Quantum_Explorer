@@ -51,9 +51,24 @@
  *   e.g.  ./wz_match 6  5 1 0 0     (BS(7,6))
  *         ./wz_match 10 5 1 4 0     (BS(11,10))
  *
+ * MEMORY OPTIMIZATION (compact-key + dedup, see CHANGE notes below):
+ *   - The hash key is NO LONGER the full length-n int16 autocorrelation vector. It
+ *     is a single 64-bit FNV-1a hash of that vector. Collisions are harmless: every
+ *     hit is still confirmed by the exact npaf_at==0 recheck over the full A,B,C,D,
+ *     so a false 64-bit collision simply fails the recheck and is skipped.
+ *   - We store AT MOST ONE (A,B) (or one (C,D), see below) per distinct 64-bit key.
+ *     This is sound: NPAF[s] = AB[s] + CD[s] depends only on the autocorrelations,
+ *     not on which specific A,B realized a given autocorrelation. So one
+ *     representative per key suffices to find a solution.
+ *   - We hash the SMALLER side (fewer hall_ok pairs, estimated by a quick count) and
+ *     stream the larger side. The match key is symmetric: we store one side's
+ *     length-n key vector (-CD[..],0 or AB[..]) and look up the IDENTICAL vector
+ *     produced by the other side, because a solution requires AB == -CD entrywise.
+ *
  * Env:
  *   WZ_MEASURE=1    count filtered A,B / C,D and project hash memory; skip the join.
- *   WZ_HASH_KEEP=k  keep up to k (A,B) records per autocorr key (default 4).
+ *   WZ_HASH_KEEP=k  IGNORED for memory (dedup keeps exactly 1 rec/key). Parsed for
+ *                   backward-compat but no longer affects storage.
  *
  * Compile (linux):  g++ -O3 -march=native -std=c++17 -fopenmp -o wz_match src/solver/wz_match.cpp
  * Compile (mac):    g++ -O3 -std=c++17 -o wz_match src/solver/wz_match.cpp
@@ -280,31 +295,38 @@ static vector<Profile> survive_profiles(int L, int sigX, int sigY,
   return out;
 }
 
-// ============================ autocorr key ===================================
+// ============================ autocorr key (compact) =========================
 //
-// Build the length-n join key for a pair (X,Y) of length L (=n1 for A,B; =n for
-// C,D). For s >= L the term is empty -> 0. For the CD side (L=n) entry s=n is
-// therefore 0, which pins AB[n]=0 on a match. Entries fit int16 (|val| <= 2n+2).
-using Key = vector<int16_t>;
-struct KeyHash {
-  size_t operator()(const Key &k) const noexcept {
-    size_t h = 1469598103934665603ULL;
-    for (int16_t v : k) { h ^= (uint16_t)v; h *= 1099511628211ULL; }
-    return h;
-  }
-};
-struct ABRec { vector<int8_t> A, B; };
+// COMPACT KEY: instead of storing the full length-n int16 autocorrelation vector
+// as the map key, we hash that vector down to a single 64-bit FNV-1a value and key
+// the map on that uint64_t. Collisions are sound to ignore here because every hit
+// is re-validated by the exact npaf_at==0 recheck over the full A,B,C,D.
+//
+// The length-n vector entries are: for s=1..n, the summed autocorr term (empty for
+// s>=L -> 0). For the CD side (L=n) entry s=n is 0, which pins AB[n]=0 on a match.
+// The two sides hash the SAME vector convention so identical autocorrelations
+// (AB[s] == -CD[s]) produce identical 64-bit keys. We mix the int16 value AND the
+// shift index s so a vector and a shifted/zero-padded variant don't alias.
+using Key = uint64_t;
 
-static Key autocorr_key(const int *X, const int *Y, int L) {
+// negate=true folds in -v (used for the CD side so its stored/lookup key matches
+// the AB side's raw autocorrelation: a solution needs AB[s] == -CD[s]).
+static inline uint64_t autocorr_key(const int *X, const int *Y, int L,
+                                    bool negate) {
   int n = G_N;
-  Key k(n);
+  uint64_t h = 1469598103934665603ULL;  // FNV-1a offset basis
   for (int s = 1; s <= n; s++) {
     int v = 0;
     if (s < L)
       for (int i = 0; i < L - s; i++) v += X[i] * X[i + s] + Y[i] * Y[i + s];
-    k[s - 1] = (int16_t)v;
+    if (negate) v = -v;
+    // fold the (s, value) pair in; value cast through uint16 to be sign-stable.
+    h ^= (uint64_t)(uint16_t)(int16_t)v;
+    h *= 1099511628211ULL;
+    h ^= (uint64_t)(uint16_t)s;
+    h *= 1099511628211ULL;
   }
-  return k;
+  return h;
 }
 
 // ============================ result =========================================
@@ -360,21 +382,74 @@ int main(int argc, char **argv) {
   bool pinA = (G_SIG_A == 0), pinB = (G_SIG_B == 0);
   bool pinC = (G_SIG_C == 0), pinD = (G_SIG_D == 0);
 
-  // ======================= GENERATE side 1: A,B -> hash =======================
-  unordered_map<Key, vector<ABRec>, KeyHash> hashAB;
-  long long ab_examined = 0, ab_specok = 0, ab_pairs = 0;
-  size_t hash_records = 0;
+  // ---- quick hall_ok-pair COUNT for each side (no record storage) to decide
+  //      which (smaller) side to hash. This regenerates sequences but stores
+  //      nothing, so it is cheap in MEMORY (the thing we are optimizing).
+  auto count_side = [&](vector<Profile> &profs, int L, bool pin0, bool pin1,
+                        long long &examined, long long &specok) -> long long {
+    long long pairs = 0;
+    examined = 0; specok = 0;
+    int nprof = (int)profs.size();
+    #pragma omp parallel for schedule(dynamic) reduction(+:pairs,examined,specok)
+    for (int pi = 0; pi < nprof; pi++) {
+      auto &prof = profs[pi];
+      vector<vector<int>> Xs, Ys;
+      long long xEx = 0, xOk = 0, yEx = 0, yOk = 0;
+      gen_seqs_for_profile(L, prof.px, pin0, Xs, xEx, xOk);
+      gen_seqs_for_profile(L, prof.py, pin1, Ys, yEx, yOk);
+      for (auto &X : Xs)
+        for (auto &Y : Ys)
+          if (hall_ok(X.data(), L, Y.data(), L)) pairs++;
+      examined += xEx + yEx;
+      specok += xOk + yOk;
+    }
+    return pairs;
+  };
+
+  long long ab_examined = 0, ab_specok = 0, ab_pairs;
+  long long cd_examined = 0, cd_specok = 0, cd_pairs;
   {
     auto t0 = Clock::now();
-    // PARALLEL over A,B profiles. Each thread accumulates into a THREAD-LOCAL
-    // map; after the parallel region we MERGE the per-thread maps into the
-    // shared hashAB serially. No concurrent writes to the shared map.
+    ab_pairs = count_side(abProfs, G_N1, pinA, pinB, ab_examined, ab_specok);
+    cd_pairs = count_side(cdProfs, n,    pinC, pinD, cd_examined, cd_specok);
+    double dt = chrono::duration<double>(Clock::now() - t0).count();
+    cout << "[count] A,B hall_ok pairs=" << ab_pairs
+         << "  C,D hall_ok pairs=" << cd_pairs
+         << "  [" << dt << "s]\n" << flush;
+  }
+
+  // CHANGE 3: hash the SMALLER side, stream the larger. Roles are symmetric:
+  // the stored side's key uses negate iff it is the CD side; the streamed side's
+  // lookup key uses negate iff IT is the CD side. A solution needs AB[s] = -CD[s],
+  // so storing raw-AB / lookup -CD  (or  store -CD / lookup raw-AB) both match.
+  bool storeAB = (ab_pairs <= cd_pairs);  // hash the smaller; tie -> A,B
+
+  // Stored-side record: P,Q are the two stored sequences (length sL each).
+  struct StoreRec { vector<int8_t> P, Q; };
+  unordered_map<Key, StoreRec> hashMap;   // ONE rec per distinct 64-bit key (dedup)
+  size_t hash_records = 0;
+
+  vector<Profile> *storeProfs = storeAB ? &abProfs : &cdProfs;
+  vector<Profile> *streamProfs = storeAB ? &cdProfs : &abProfs;
+  int sL  = storeAB ? G_N1 : n;          // length of stored sequences
+  int tL  = storeAB ? n    : G_N1;       // length of streamed sequences
+  bool storeNeg  = !storeAB;             // CD side keys are negated
+  bool streamNeg = storeAB;              // streamed side negates iff it is CD
+  bool sPin0 = storeAB ? pinA : pinC, sPin1 = storeAB ? pinB : pinD;
+  bool tPin0 = storeAB ? pinC : pinA, tPin1 = storeAB ? pinD : pinB;
+
+  // ======================= BUILD: hash the smaller side (dedup) ===============
+  if (!measure) {
+    auto t0 = Clock::now();
+    // PARALLEL over stored-side profiles. Each thread fills a THREAD-LOCAL map
+    // (deduped: at most one rec per key); then a SERIAL merge into the shared
+    // map, again deduped. No concurrent writes to the shared map.
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = omp_get_max_threads();
 #endif
-    vector<unordered_map<Key, vector<ABRec>, KeyHash>> localMaps(nthreads);
-    int nprof = (int)abProfs.size();
+    vector<unordered_map<Key, StoreRec>> localMaps(nthreads);
+    int nprof = (int)storeProfs->size();
 
     #pragma omp parallel for schedule(dynamic)
     for (int pi = 0; pi < nprof; pi++) {
@@ -382,140 +457,121 @@ int main(int argc, char **argv) {
 #ifdef _OPENMP
       tid = omp_get_thread_num();
 #endif
-      auto &prof = abProfs[pi];
+      auto &prof = (*storeProfs)[pi];
       auto &lmap = localMaps[tid];
-      vector<vector<int>> As, Bs;
-      long long aEx = 0, aOk = 0, bEx = 0, bOk = 0;
-      gen_seqs_for_profile(G_N1, prof.px, pinA, As, aEx, aOk);
-      gen_seqs_for_profile(G_N1, prof.py, pinB, Bs, bEx, bOk);
-      long long lpairs = 0;
-      for (auto &A : As) {
-        for (auto &B : Bs) {
-          if (!hall_ok(A.data(), G_N1, B.data(), G_N1)) continue;
-          lpairs++;
-          if (measure) continue;  // counting only
-          Key key = autocorr_key(A.data(), B.data(), G_N1);
-          auto &bucket = lmap[key];
-          if ((int)bucket.size() < G_HASH_KEEP) {
-            ABRec r;
-            r.A.assign(A.begin(), A.end());
-            r.B.assign(B.begin(), B.end());
-            bucket.push_back(std::move(r));
+      vector<vector<int>> Ps, Qs;
+      long long e0 = 0, o0 = 0, e1 = 0, o1 = 0;
+      gen_seqs_for_profile(sL, prof.px, sPin0, Ps, e0, o0);
+      gen_seqs_for_profile(sL, prof.py, sPin1, Qs, e1, o1);
+      for (auto &P : Ps) {
+        for (auto &Q : Qs) {
+          if (!hall_ok(P.data(), sL, Q.data(), sL)) continue;
+          Key key = autocorr_key(P.data(), Q.data(), sL, storeNeg);
+          // DEDUP: keep at most ONE (P,Q) per key. emplace = no-op if present.
+          auto ins = lmap.try_emplace(key);
+          if (ins.second) {
+            ins.first->second.P.assign(P.begin(), P.end());
+            ins.first->second.Q.assign(Q.begin(), Q.end());
           }
         }
       }
-      #pragma omp atomic
-      ab_examined += aEx + bEx;
-      #pragma omp atomic
-      ab_specok += aOk + bOk;
-      #pragma omp atomic
-      ab_pairs += lpairs;
     }
 
-    // Serial merge of per-thread maps into the shared hash, honoring G_HASH_KEEP.
-    if (!measure) {
-      for (auto &lmap : localMaps) {
-        for (auto &kv : lmap) {
-          auto &bucket = hashAB[kv.first];
-          for (auto &rec : kv.second) {
-            if ((int)bucket.size() >= G_HASH_KEEP) break;
-            bucket.push_back(std::move(rec));
-            hash_records++;
-          }
+    // Serial merge of per-thread maps into the shared hash, deduped again.
+    for (auto &lmap : localMaps) {
+      for (auto &kv : lmap) {
+        auto ins = hashMap.try_emplace(kv.first);
+        if (ins.second) {
+          ins.first->second = std::move(kv.second);
+          hash_records++;
         }
       }
     }
     double dt = chrono::duration<double>(Clock::now() - t0).count();
-    cout << "[side1 A,B] spec-ok seqs=" << ab_specok << "/" << ab_examined
-         << "  hall_ok pairs=" << ab_pairs
-         << "  hash keys=" << hashAB.size() << "  records=" << hash_records
-         << "  [" << dt << "s]\n" << flush;
+    cout << "[build " << (storeAB ? "A,B" : "C,D") << "] hash keys="
+         << hashMap.size() << "  records=" << hash_records
+         << " (1/key dedup)  [" << dt << "s]\n" << flush;
   }
 
-  // ======================= GENERATE side 2: C,D -> lookup =====================
-  long long cd_examined = 0, cd_specok = 0, cd_pairs = 0, lookups = 0;
-  {
+  // ======================= STREAM: larger side -> lookup ======================
+  long long lookups = 0;
+  if (!measure) {
     auto t0 = Clock::now();
-    // PARALLEL over C,D profiles. The shared hashAB is READ-ONLY here, so
-    // concurrent lookups are safe. On a HIT we do the exact NPAF==0 recheck,
-    // then record the solution + set the found flag under a critical section.
-    // g_found (atomic<bool>) lets other threads stop early.
-    int ncprof = (int)cdProfs.size();
+    // PARALLEL over streamed-side profiles. The shared hashMap is READ-ONLY here,
+    // so concurrent lookups are safe. On a HIT we do the exact NPAF==0 recheck
+    // over the FULL A,B,C,D, then record under a critical section. g_found
+    // (atomic<bool>) lets other threads stop early. The recheck makes the 64-bit
+    // key SOUND: a false collision simply fails it and is skipped.
+    int nprof = (int)streamProfs->size();
 
-    #pragma omp parallel for schedule(dynamic)
-    for (int pi = 0; pi < ncprof; pi++) {
+    #pragma omp parallel for schedule(dynamic) reduction(+:lookups)
+    for (int pi = 0; pi < nprof; pi++) {
       if (g_found.load()) continue;  // early-out (can't break in omp for)
-      auto &prof = cdProfs[pi];
-      vector<vector<int>> Cs, Ds;
-      long long cEx = 0, cOk = 0, dEx = 0, dOk = 0;
-      gen_seqs_for_profile(n, prof.px, pinC, Cs, cEx, cOk);
-      gen_seqs_for_profile(n, prof.py, pinD, Ds, dEx, dOk);
-      long long lpairs = 0, llookups = 0;
-      for (auto &C : Cs) {
+      auto &prof = (*streamProfs)[pi];
+      vector<vector<int>> Us, Vs;
+      long long e0 = 0, o0 = 0, e1 = 0, o1 = 0;
+      gen_seqs_for_profile(tL, prof.px, tPin0, Us, e0, o0);
+      gen_seqs_for_profile(tL, prof.py, tPin1, Vs, e1, o1);
+      for (auto &U : Us) {
         if (g_found.load()) break;
-        for (auto &D : Ds) {
-          if (!hall_ok(C.data(), n, D.data(), n)) continue;
-          lpairs++;
-          if (measure) continue;
-          // Lookup key = (-CD[1..n-1], 0): s=n term is empty for L=n -> 0 already.
-          Key cdk = autocorr_key(C.data(), D.data(), n);
-          for (auto &v : cdk) v = (int16_t)(-v);
-          llookups++;
-          auto it = hashAB.find(cdk);
-          if (it == hashAB.end()) continue;
-          // HIT candidate(s): EXACT NPAF==0 recheck before accepting.
-          for (auto &rec : it->second) {
-            int A[256], B[256];
-            for (int i = 0; i < G_N1; i++) { A[i] = rec.A[i]; B[i] = rec.B[i]; }
-            bool ok = true;
-            for (int s = 1; s <= n; s++)
-              if (npaf_at(A, B, G_N1, C.data(), D.data(), n, s) != 0) { ok = false; break; }
-            if (!ok) continue;  // int16 hash collision, not a real solution
-            #pragma omp critical(record_solution)
-            {
-              if (!g_found.load()) {
-                memcpy(g_solA, A, G_N1 * sizeof(int));
-                memcpy(g_solB, B, G_N1 * sizeof(int));
-                for (int i = 0; i < n; i++) { g_solC[i] = C[i]; g_solD[i] = D[i]; }
-                g_found.store(true);
-              }
-            }
-            break;
+        for (auto &V : Vs) {
+          if (!hall_ok(U.data(), tL, V.data(), tL)) continue;
+          Key key = autocorr_key(U.data(), V.data(), tL, streamNeg);
+          lookups++;
+          auto it = hashMap.find(key);
+          if (it == hashMap.end()) continue;
+          // HIT candidate: map A,B (length n1) and C,D (length n) to the right
+          // roles, then EXACT NPAF==0 recheck over all s=1..n before accepting.
+          const int8_t *Pp = it->second.P.data();
+          const int8_t *Qp = it->second.Q.data();
+          int A[256], B[256], C[256], D[256];
+          if (storeAB) {            // stored = A,B (len n1); streamed = C,D (len n)
+            for (int i = 0; i < G_N1; i++) { A[i] = Pp[i]; B[i] = Qp[i]; }
+            for (int i = 0; i < n;   i++) { C[i] = U[i];  D[i] = V[i];  }
+          } else {                  // stored = C,D (len n); streamed = A,B (len n1)
+            for (int i = 0; i < n;   i++) { C[i] = Pp[i]; D[i] = Qp[i]; }
+            for (int i = 0; i < G_N1; i++) { A[i] = U[i];  B[i] = V[i];  }
           }
-          if (g_found.load()) break;
+          bool ok = true;
+          for (int s = 1; s <= n; s++)
+            if (npaf_at(A, B, G_N1, C, D, n, s) != 0) { ok = false; break; }
+          if (!ok) continue;  // 64-bit hash collision, not a real solution
+          #pragma omp critical(record_solution)
+          {
+            if (!g_found.load()) {
+              memcpy(g_solA, A, G_N1 * sizeof(int));
+              memcpy(g_solB, B, G_N1 * sizeof(int));
+              memcpy(g_solC, C, n   * sizeof(int));
+              memcpy(g_solD, D, n   * sizeof(int));
+              g_found.store(true);
+            }
+          }
+          break;
         }
       }
-      #pragma omp atomic
-      cd_examined += cEx + dEx;
-      #pragma omp atomic
-      cd_specok += cOk + dOk;
-      #pragma omp atomic
-      cd_pairs += lpairs;
-      #pragma omp atomic
-      lookups += llookups;
     }
     double dt = chrono::duration<double>(Clock::now() - t0).count();
-    cout << "[side2 C,D] spec-ok seqs=" << cd_specok << "/" << cd_examined
-         << "  hall_ok pairs=" << cd_pairs << "  hash lookups=" << lookups
-         << "  [" << dt << "s]\n" << flush;
+    cout << "[stream " << (storeAB ? "C,D" : "A,B") << "] hash lookups="
+         << lookups << "  [" << dt << "s]\n" << flush;
   }
 
   double t = chrono::duration<double>(Clock::now() - G_T0).count();
 
-  // Hash memory estimate.
-  size_t key_bytes = (size_t)n * sizeof(int16_t);
-  size_t rec_bytes = (size_t)2 * G_N1 * sizeof(int8_t);
-  double hash_mb = (hashAB.size() * (key_bytes + 64.0) +
-                    hash_records * (rec_bytes + 32.0)) / 1e6;
+  // Hash memory estimate (compact key: 8-byte key, 1 rec/key after dedup).
+  size_t key_bytes = sizeof(Key);            // 8 bytes (was n*int16)
+  size_t rec_bytes = (size_t)2 * sL * sizeof(int8_t);
+  double hash_mb = (hashMap.size() * (key_bytes + 48.0) +
+                    hash_records * (rec_bytes + 24.0)) / 1e6;
 
   if (measure) {
-    double proj_mb = (ab_pairs * (key_bytes + 64.0) +
-                      ab_pairs * (rec_bytes + 32.0)) / 1e6;
+    double proj_mb = (ab_pairs * (key_bytes + 48.0) +
+                      ab_pairs * (rec_bytes + 24.0)) / 1e6;
     cout << "\n=== MEASURE (n=" << n << ") ===\n";
     cout << "filtered A,B (hall_ok pairs) = " << ab_pairs << "\n";
     cout << "filtered C,D (hall_ok pairs) = " << cd_pairs << "\n";
     cout << "A,B spec-ok seqs = " << ab_specok << "   C,D spec-ok seqs = " << cd_specok << "\n";
-    cout << "projected hash memory (1 rec/pair) ~ " << proj_mb << " MB = "
+    cout << "hashed side = " << (storeAB ? "A,B" : "C,D") << " (smaller)\n";
+    cout << "projected hash memory (worst case, no dedup) ~ " << proj_mb << " MB = "
          << (proj_mb / 1024.0) << " GB\n";
     cout << "Time (gen+count only): " << t << "s\n" << flush;
     return 0;
