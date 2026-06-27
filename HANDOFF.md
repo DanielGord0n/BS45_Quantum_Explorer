@@ -9,15 +9,24 @@
 
 ## 🚀 QUICK REFERENCE — Checker + Deploy Commands (keep this at top; update when scripts change)
 
-### Active solver (2026-06-24 — `wz_match.cpp` hash-join is the current best path)
-The current best/active solver is **`BS45_Quantum_Explorer/src/solver/wz_match.cpp`** — a Wang-Zhu
-generate-then-MATCH **hash-join** solver (OpenMP-parallel; 64-bit compact keys + dedup) that BLINDLY
-reproduced **BS(19,18) in 51 s on a 192-core node** — the scalable architecture the project was
-missing. Deploy via **`cluster_wz_match.sh`**. Lineage (all in `src/solver/`):
-`wz_exact_t23.cpp` (exhaustive backtracking — correct, but blind-walls ~n=18; the TIME wall) →
-`wz_generate.cpp` (generate-filter C,D, blind n≤14, but re-backtracks A,B per C,D) →
-`wz_match.cpp` (adds the hash-join match — generate A,B too, hash by autocorrelation, look up the
-negating C,D). `wz_sa_v8.cpp` (SA) abandoned (caps ~n=27-30). See the 2026-06-24 TOP OF MIND below.
+### Active solver (2026-06-27 — STRATEGY CORRECTION: metaheuristic ladder is the active path to the BEST result)
+**The goal is to FIND one solution at the highest n — that does NOT need completeness.** The active
+campaign is therefore the **metaheuristic** that already FOUND + Kotsireas-verified **BS(28,27)**:
+**`BS45_Quantum_Explorer/src/solver/wz_sa_v8.cpp`** (simulated annealing, OpenMP), deployed at scale
+via **`cluster_sa_ladder.sh`** (SLURM array of full 192-thread nodes ≈ 1,536 chains/cluster, climbing
+the n-ladder). It is **O(n) memory — it never OOMs.**
+
+**Why NOT the hash-join `wz_match.cpp`:** it is provably COMPLETE and blindly found BS(19,18) in 51 s,
+BUT it materializes the whole residue/spectral-filtered candidate set, which grows exponentially —
+**confirmed OOM-killed at n=36 (Fir) AND n=42 (Rorqual) on 2026-06-25**, even after the compact-key +
+dedup memory fix. So it caps ~n=18-20 in RAM. Retained for **small-n verification only**; our filter is
+~10^3× looser than Wang-Zhu's (that gap = the research route to n=42; under investigation). Deploy
+via `cluster_wz_match.sh`.
+
+Lineage (all in `src/solver/`): `wz_sa_v8.cpp` (SA — **ACTIVE**, found BS(28,27)) ·
+`wz_exact_t23.cpp` (exhaustive backtracking — correct, blind-walls ~n=18, TIME wall) →
+`wz_generate.cpp` (generate-filter C,D, blind n≤14) → `wz_match.cpp` (hash-join match — complete but
+**MEMORY wall ~n=34**). See the 2026-06-27 TOP OF MIND below.
 
 ### Campaign snapshot (as of 2026-06-14 — update when checker results change)
 **BS(43,42) exhaustive search, sig (7,11,0,0), WZ_SPLIT=4 (33.5M combos):**
@@ -141,7 +150,58 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-06-24: HASH-JOIN solver `wz_match` WORKS at scale — blind BS(19,18) in 51 s on 192 cores; n=42 retry running
+## ⚡ TOP OF MIND — 2026-06-27: STRATEGY CORRECTION — completeness was the wrong goal; the metaheuristic (found BS(28,27)) is the active path. SA ladder climbing n=30→33 across 4 clusters.
+
+**The mistake I corrected:** I had been chasing the *provably complete* hash-join (`wz_match`), which
+caps at **n≈18-20 in RAM** — WORSE than the metaheuristic we already had. But the goal is to **FIND one
+solution at the highest n**, which does NOT require completeness. The SA solver `wz_sa_v8.cpp` already
+**found + Kotsireas-verified BS(28,27)** and is O(n) memory (never OOMs). That is the right engine; I
+wandered away from it. (User, rightly: "we literally found bs23 before… there must be some way to get a
+better result than bs23 using absolutely any method.")
+
+**Hash-join is dead for high n (confirmed):** the 06-24 "n=42 retry running" → **OOM-killed at n=42
+(Rorqual) AND n=36 (Fir) on 2026-06-25**, even after compact-key+dedup. Candidate set ~10^9-10^10 at
+n=36, fills node RAM in seconds. Retained for small-n verification only. (Our filter is ~10^3× looser
+than Wang-Zhu's — closing THAT gap is the only route to a complete n=42; see research below.)
+
+**ACTIVE CAMPAIGN — SA ladder (deployed 2026-06-27).** `cluster_sa_ladder.sh` = SLURM array
+(`--array=0-7`) of full 192-thread nodes, each a node of independent SA chains sharing champions;
+distinct RNG seed base per task ⇒ ~1,536 chains/cluster at the target n. Memory-light. Each cluster
+climbs a different rung above the banked n=28:
+
+| Cluster | Job | Target | sig | walltime |
+|---------|-----|--------|-----|----------|
+| Fir | `46029916_[0-7]` | **BS(31,30)** | blind | 12h |
+| Nibi | `16777632_[0-7]` | **BS(32,31)** | blind | 12h |
+| Rorqual | `14814631_[0-7]` | **BS(33,32)** | blind | 12h |
+| Trillium | `1820254_[0-7]` | **BS(34,33)** (stretch) | blind | 12h |
+
+Highest rung that prints `*** REPRODUCTION CONFIRMED: BS(n+1,n) FOUND ***` = new best (beats 23 AND 28).
+Expectation (honest): n=30 likely, 31-32 plausible, 33-34 near v8's historical plateau (BS34 stalled at
+coupled cost 12-24). On a hit: `scancel <jobid>` the rest of that array, then `python3 verify_npaf.py`.
+
+**Deploy command (tar-pipe over ssh — scp does NOT expand $SCRATCH; one Duo/cluster):**
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer
+tar -cf - cluster_sa_ladder.sh src/solver/wz_sa_v8.cpp | \
+  ssh dangord@fir.alliancecan.ca 'mkdir -p $SCRATCH/bs45 && cd $SCRATCH/bs45 && tar -xf - && sbatch --export=ALL,WZ_N=30 cluster_sa_ladder.sh'
+# repeat per cluster with WZ_N=30(fir)/31(nibi)/32(rorqual)/33(trillium)
+```
+
+**Research in flight (workflow `wc8gvwaqu`, launched 2026-06-27):** 4-strand investigation + adversarial
+review to find concrete ways past the plateau — (1) why SA stalls at cost ~16 & the highest-leverage move/
+objective fix, (2) what the literature actually uses to FIND high-n base sequences (PSD-filtering DURING
+search), (3) why our hash-join filter is ~10^3× looser than Wang-Zhu's (route to a complete n=42), (4)
+memory-bounded exact join feasibility. Output → one recommended next build (likely: add a PSD/spectral
+feasibility constraint to the SA acceptance to push toward the low-mid 30s). Update here when it lands.
+
+**Honest frontier:** beating n=23/28 is in hand (28 banked; ladder targets 30-33). n=42 needs the
+filter-tightening research to pan out (uncertain). **n=44 (BS(45,44)) remains OPEN for the whole field** —
+needs new math, not more compute. Don't promise it.
+
+---
+
+## ⚡ TOP OF MIND — 2026-06-24: HASH-JOIN solver `wz_match` WORKS at scale — blind BS(19,18) in 51 s on 192 cores  *(SUPERSEDED 2026-06-27: the "n=42 retry" OOM-killed at n=36 AND n=42; hash-join caps ~n=18-20 in RAM — see 2026-06-27 above)*
 
 **BREAKTHROUGH: built the missing architecture and it scales.** Acting on the 2026-06-19 gap analysis
 (barrier is ARCHITECTURE not compute — we'd used the Wang-Zhu theorems only as late-firing runtime
