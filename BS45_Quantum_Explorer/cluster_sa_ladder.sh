@@ -41,8 +41,10 @@ SEED=$(( ${WZ_SEED_BASE:-1000} + SLURM_ARRAY_TASK_ID * 100000 ))
 SIG=${WZ_SIG:-}
 BIN=wz_sa_v8_bin_${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID}
 
-echo "=== BS($((N+1)),$N) SA-ladder — node $(hostname) — task ${SLURM_ARRAY_TASK_ID} seed ${SEED} — ${OMP_NUM_THREADS} threads — $(date) ==="
-g++ -O3 -march=native -std=c++17 -fopenmp -o "$BIN" src/solver/wz_sa_v8.cpp || exit 1
+# Robust to deploy layout: src tree (git checkout) OR flat scp into $SCRATCH/bs45.
+SRC=src/solver/wz_sa_v8.cpp; [ -f "$SRC" ] || SRC=wz_sa_v8.cpp
+echo "=== BS($((N+1)),$N) SA-ladder — node $(hostname) — task ${SLURM_ARRAY_TASK_ID} seed ${SEED} — ${OMP_NUM_THREADS} threads — src ${SRC} — $(date) ==="
+g++ -O3 -march=native -std=c++17 -fopenmp -o "$BIN" "$SRC" || exit 1
 if [ -n "$SIG" ]; then
   ./"$BIN" "$N" "$SEED" "$SIG"
 else
