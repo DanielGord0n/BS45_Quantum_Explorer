@@ -25,6 +25,7 @@
 #include <chrono>
 #include <climits>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -51,6 +52,12 @@ static atomic<int> g_best_ab_cost{INT_MAX};
 static atomic<long long> g_cd_attempts{0};
 static atomic<long long> g_cd_successes{0};
 static atomic<long long> g_ab_attempts{0};
+
+// Experimental PSD/flatness tie-breaker for the coupled CD objective.
+// env WZ_PSD_BIAS = right-shift amount (0 = OFF = default = behavior unchanged).
+// Set ONCE in main() before the parallel region, then read-only — see
+// CDState::cost. Larger shift = gentler bias (bias = sum|corr_CD| >> shift).
+static int g_psd_bias_shift = 0;
 
 static inline void update_min_atomic(atomic<int> &a, int v) {
   int cur = a.load(memory_order_relaxed);
@@ -202,6 +209,17 @@ struct CDState {
       // exactly. cost 0 here == full NPAF=0 solution for (this CD, that AB).
       for (int s = 1; s < ms; s++)
         pen += abs(corr[s] + ab_full[s]);
+      // Experimental (env WZ_PSD_BIAS, default OFF): nudge the BCD random walk
+      // toward low own-autocorrelation CDs (flatter spectrum / more joint-PSD
+      // headroom — the Wang-Zhu Thm 2.4 intuition). Gated on pen > 4 so it can
+      // NEVER perturb the final descent or the cost==0 success predicate; the
+      // success test (and BS(28,27) regression) is byte-identical when OFF.
+      if (g_psd_bias_shift > 0 && pen > 4) {
+        long long l1 = 0;
+        for (int s = 1; s < ms; s++)
+          l1 += abs(corr[s]);
+        pen += (int)(l1 >> g_psd_bias_shift);
+      }
     } else {
       // Warm-start objective: sum-matching only. NOTE: the magnitude term
       // below is always 0 for any valid CD, since |corr_CD[s]| <= 2(n-s) <
@@ -1344,6 +1362,11 @@ int main(int argc, char **argv) {
   int n1 = n + 1;
   int ms = max(n1, n);
 
+  // Experimental coupled-objective PSD bias (default OFF). Read once here,
+  // before any parallel region, so CDState::cost reads it race-free.
+  if (const char *e = getenv("WZ_PSD_BIAS"))
+    g_psd_bias_shift = atoi(e);
+
   init_combs();
 
   int thr = 1;
@@ -1356,6 +1379,9 @@ int main(int argc, char **argv) {
   cout << "  BS(" << n1 << "," << n << ") v8 — Phased CD then AB SA" << endl;
   cout << "  [ Threads: " << thr << " | Seed offset: " << seed_offset << " ]"
        << endl;
+  cout << "  [ WZ_PSD_BIAS shift: " << g_psd_bias_shift
+       << (g_psd_bias_shift > 0 ? " (coupled tie-breaker ON)" : " (OFF)")
+       << " ]" << endl;
   cout << "========================================================" << endl;
 
   G_T0 = Clock::now();
