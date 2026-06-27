@@ -201,6 +201,49 @@ needs new math, not more compute. Don't promise it.
 
 ---
 
+## ⚡ TOP OF MIND — 2026-06-27 (later): incremental-PAF verdict = DO-NOT-BUILD; blind n≥36 is RIGOROUSLY infeasible by exhaustion (code+arithmetic, adversarially verified)
+
+Investigated (workflow `w5moc8foa`, paper read in full + code-verified + adversarial review)
+whether a Wang-Zhu-style **incremental per-sequence PSD/PAF prune** (prune partial sequences
+DURING construction) is the missing lever to a complete n=36-42 solver. **It is not — and we
+have direct measurements, not projections:**
+
+- **The device ALREADY EXISTS and was measured dead.** `wz_exact_t23.cpp:spec_lb_prunes()`
+  (lines 146-162, wired 670-672) IS the incremental partial-PSD bound (reverse triangle
+  inequality). A/B-tested at BS(19,18): **−0.21% nodes for +25% wall-time** (HANDOFF 374-381).
+  The incremental PAF bound (`|Dnpaf[s]|>Kund[s]`, lines 629-632) and reachability prune
+  (`pq_reachable`, 216-230) are also present and also net-negative.
+- **Why it can't bite:** the slack term (`rem` unplaced symbols / `Kund[s]` undetermined pairs)
+  is LARGE in the mid-layers where the DFS tree explodes, so the bound is vacuous exactly where
+  you need it; it only bites at deep layers where `hall_ok` nearly fires anyway. ~0 nodes cut.
+- **The arithmetic on blind n=42 (from the known solution's own residue key, HANDOFF 282-283):**
+  one **mod-6** key = ~4.4×10¹⁷ C×D pairs ≈ **1,200 cluster-weeks**; **mod-3** (what wz_match
+  does) = ~4.3×10²⁰ ≈ **10⁶ cluster-weeks**. A full cluster-week buys ~3.6×10¹⁴ pair-tests.
+  Every prune we have fires ~0% against this. **n=36** is ~10¹⁵-10¹⁸ joint pairs (OOMs in
+  seconds) — also out of reach. **Blind n≥36 by exhaustion is infeasible by 6-15 orders of
+  magnitude. This is now proven, not estimated.**
+
+**Realistic highest n for a COMPLETE/blind solver here: n≈28-30** (SA banks 28; ladder targets
+30-33). **n=36/42/44 are NOT reachable by exhaustion, hash-join, generate-backtrack, OR SA.**
+
+**The one genuine architectural insight (strong hypothesis — the paper WAS read this session):**
+Wang-Zhu do NOT enumerate the Cartesian product. They **generate C,D (mod-3→mod-6 residue +
+complete-sequence spectral filter), then backtrack-FILL A,B per surviving C,D and STOP AT THE
+FIRST solution** — *existence, not exhaustion*. That first-hit asymmetric structure is what
+`wz_generate.cpp` attempts (and why it's the closer architecture), but it walls ~n=18 as
+written. First-hit only helps if solutions are dense enough in the filtered/ordered C,D stream
+to hit one before the work explodes — WZ apparently exploited that, and **even they are at the
+edge at n=42-43** (which is why n=44 is open for the whole field). Whether a faithful,
+optimized WZ-architecture reproduction could beat our n=18/n=30 ceilings is the ONLY open lever
+— uncertain payoff, a real build, NOT a guaranteed path to 42.
+
+**Action:** stop investing in incremental-PSD/PAF pruning (documented dead end). The honest
+deliverable = the SA-found sequences (n=28 banked, ladder→30/31) + this rigorous "why blind
+n≥36 is infeasible" characterization (a legitimate, presentable result). Pursuing the WZ
+first-hit architecture is the only way to gamble on higher — decide explicitly before building.
+
+---
+
 ## ⚡ TOP OF MIND — 2026-06-24: HASH-JOIN solver `wz_match` WORKS at scale — blind BS(19,18) in 51 s on 192 cores  *(SUPERSEDED 2026-06-27: the "n=42 retry" OOM-killed at n=36 AND n=42; hash-join caps ~n=18-20 in RAM — see 2026-06-27 above)*
 
 **BREAKTHROUGH: built the missing architecture and it scales.** Acting on the 2026-06-19 gap analysis
