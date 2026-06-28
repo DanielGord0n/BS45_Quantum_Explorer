@@ -1,9 +1,11 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-06-03 (project moved to ~/Projects; cluster reality + combo-294887 finding — read TOP OF MIND first)
+**Date**: 2026-06-28 (read the TOP OF MIND entries first — 2026-06-27 has the current strategy + honest frontier)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
-**Goal**: Find BS(45,44) δ-codes — a world record. Currently validating with BS(43,42).
+**Goal**: Find the highest-n BS(n+1,n) δ-code we can. BS(28,27) banked; SA ladder hunting n=30–33.
+BS(45,44) (n=44) is the dream/world-record but is OPEN for the whole field — blind n≥36 is rigorously
+infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path = the metaheuristic ladder.
 
 ---
 
@@ -28,36 +30,67 @@ Lineage (all in `src/solver/`): `wz_sa_v8.cpp` (SA — **ACTIVE**, found BS(28,2
 `wz_generate.cpp` (generate-filter C,D, blind n≤14) → `wz_match.cpp` (hash-join match — complete but
 **MEMORY wall ~n=34**). See the 2026-06-27 TOP OF MIND below.
 
-### Campaign snapshot (as of 2026-06-14 — update when checker results change)
-**BS(43,42) exhaustive search, sig (7,11,0,0), WZ_SPLIT=4 (33.5M combos):**
+### Campaign snapshot — SA LADDER (active 2026-06-28; update when checker results change)
+**Blind metaheuristic search (`wz_sa_v8` via `cluster_sa_ladder.sh`) climbing n above the banked
+BS(28,27). Each job = SLURM array of full 192-thread nodes (~1,536 SA chains/cluster). Watch
+`bestAB` → 0 = solution. Memory-light — never OOMs.**
 
-| Campaign | Cluster | Combo quarter | Key fact |
-|----------|---------|---------------|----------|
-| `fir_bs43_exact_t23.sh` | Fir | [0, 8388608) | Self-chaining; job 43902517 PD |
-| `rorqual_bs43_exact_t23.sh` | Rorqual | [8388608, 16777216) | Job 14225237 PD, drained nodes |
-| `nibi_bs43_exact_t23.sh` | Nibi | [16777216, 25165824) | **Contains solution at combo 18,644,967 (task 2)**; job 15950232 PD (maintenance ended 2026-06-12T16:00) |
-| `fir_bs43_nq_exact_t23.sh` | Fir (backup) | [16777216, 25165824) | Independent backup for Nibi's quarter; job 44086545 PD, self-chains separately |
-| `trillium_bs45_exact_t23.sh` | Trillium | [25165824, 33554432) | **Pivoted to BS(45) 2026-06-14** — sig (13,3,0,0), jobs 1766288–93 (6-gen chain). No longer running BS(43); its quarter had no solution. |
+| Cluster | Target | First full-12h run (2026-06-27) | Status |
+|---------|--------|----------------------------------|--------|
+| Fir | **BS(31,30)** | plateau floor **bestAB=4** — closest to a new result | resubmitted; **bias arm `WZ_PSD_BIAS=8`** under test here |
+| Nibi | **BS(31,30)** | n/a — **never scheduled** (PENDING 12h+) | plain control; Nibi unreliable |
+| Rorqual | **BS(33,32)** | plateau floor **bestAB=8** | resubmitted (`--requeue`) |
+| Trillium | **BS(34,33)** | plateau floor **bestAB=12–16** | resubmitted (`--requeue`) |
 
-**What to watch:** `ckpt_nibi_2.txt.count` (or `ckpt_fir_nq_2.txt.count`) climbing toward 190,029 (the solution's offset in task 2). **Baseline 2026-06-14: both = 23,021 (12%) — counts MUST be higher next check.** When the count crosses ~190,029, CONFIRMED follows within ~hours (a worker then has to grind the >20B-node solution combo — see 2026-06-14 section), NOT instantly; a small overshoot with no banner is normal, not a bug.
-**On REPRODUCTION CONFIRMED:** run `python3 verify_npaf.py < <output_file>`, then deploy the BS(45) scripts below.
-**BS(45,44) scripts** (`*_bs45_exact_t23.sh` ×4) — READINESS VERIFIED 2026-06-14 (sig (13,3,0,0): T23Filter 47,484 tuples / 724 keys / 4× pins, builds clean at N=44). Recommended action NOW: **pivot Trillium to BS(45)** while Nibi+Fir keep grinding the BS(43) validation — see the 2026-06-14 section + deploy command below.
+**Measured SA plateau floors (full 12h × ~1,536 chains, 2026-06-27):** n=30→4, n=32→8, n=33→12–16.
+Solution needs `bestAB=0`; n=30 at 4 is genuinely close but a *real floor* — a plain replay is a
+stochastic shot, not a guarantee. The `WZ_PSD_BIAS` tie-breaker (default OFF; see 2026-06-27 entries)
+is the designed escape, under test on Fir n=30. **Jobs TIMEOUT at 12h (full runs) — not a failure.**
+**Nibi does NOT schedule reliably — lean on Fir/Rorqual/Trillium.**
+**On `FOUND`/bestAB=0:** `python3 verify_npaf.py < <that sa_ladder file>`, then `scancel` the rest.
 
 ### Checker script — SA LADDER (active 2026-06-27; paste into terminal, works from any machine)
 Watch `bestAB`: it should DESCEND between checks; **`bestAB=0` = solution** (and a `FOUND` banner).
 ```bash
 for c in fir nibi rorqual trillium; do
   echo "════════ $c ════════"
-  ssh dangord@${c}.alliancecan.ca 'squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R" 2>/dev/null; cd $SCRATCH/bs45 2>/dev/null || exit 0; echo "--- FOUND? ---"; grep -l "FOUND" sa_ladder_*.txt 2>/dev/null || echo "(none yet)"; echo "--- progress (newest tasks: target | lowest bestAB so far | latest line) ---"; for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -4); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1); echo "$(basename $f) [$hdr] lowest=$best | $(tail -1 "$f" | cut -c1-70)"; done'
+  ssh dangord@${c}.alliancecan.ca 'squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R" 2>/dev/null; cd $SCRATCH/bs45 2>/dev/null || exit 0; echo "--- FOUND? ---"; grep -l "FOUND" sa_ladder_*.txt 2>/dev/null || echo "(none yet)"; echo "--- progress: file [target bias] bestAB_min | latest ---"; for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -5); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); bias=$(grep -oE "WZ_PSD_BIAS shift: [0-9]+" "$f" | head -1 | grep -oE "[0-9]+$"); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1 | grep -oE "[0-9]+$"); echo "$(basename $f) [$hdr bias=$bias] bestAB_min=$best | $(tail -1 "$f" | cut -c1-55)"; done'
 done
 ```
 *On a hit:* `python3 verify_npaf.py < <that sa_ladder file>`, then `scancel <jobid>` the rest of that array.
 *Old exhaustive-campaign checker (`ckpt_*.count` / `bs4*_t23_*output*.txt`) is retired — that campaign was superseded; see the 2026-06-27 TOP OF MIND.*
-```
-Note: `ckpt_*.count` files show "done total" per task. The bitmap itself is binary — never `cat` it.
-Solution files: `REPRODUCTION CONFIRMED` = BS(43,42) validated; `WORLD RECORD` = BS(45,44) found.
 
-### Deploy commands (BS(43,42) campaign — current)
+### Deploy commands — SA LADDER (active; tar-pipe over ssh — scp does NOT expand $SCRATCH; one Duo/cluster)
+
+**Initial ladder** (one rung per cluster; ships `wz_sa_v8.cpp` so the build can't miss its source):
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer
+tar -cf - cluster_sa_ladder.sh src/solver/wz_sa_v8.cpp | \
+  ssh dangord@fir.alliancecan.ca 'mkdir -p $SCRATCH/bs45 && cd $SCRATCH/bs45 && tar -xf - && sbatch --requeue --export=ALL,WZ_N=30 cluster_sa_ladder.sh'
+# repeat per cluster: WZ_N=30(fir) / 30 or 31(nibi) / 32(rorqual) / 33(trillium)
+```
+
+**Resubmit a rung** (script + binary already on cluster — no tar needed):
+```bash
+ssh dangord@rorqual.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32 cluster_sa_ladder.sh'
+```
+
+**Bias arm** (`WZ_PSD_BIAS=8` tie-breaker; re-tar PATCHED solver, auto-fallback to plain on scratch I/O error):
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer
+tar -cf - src/solver/wz_sa_v8.cpp | \
+  ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && ( tar -xf - && sbatch --requeue --export=ALL,WZ_N=30,WZ_PSD_BIAS=8 cluster_sa_ladder.sh && echo ">>> BIAS submitted" ) || ( echo ">>> tar failed - plain instead"; sbatch --requeue --export=ALL,WZ_N=30 cluster_sa_ladder.sh )'
+```
+
+*Diagnose a finished job:* `ssh dangord@<cluster>.alliancecan.ca "sacct -X -u dangord -S 2026-06-27 -o JobID,State%26,Elapsed | tail"` — `TIMEOUT`@12:00:00 = full run (normal); `CANCELLED by <n>` = manual scancel; `PREEMPTED` = reclaim (`--requeue` auto-restarts).
+
+---
+
+### ⛔ RETIRED — exhaustive BS(43)/BS(45) `*_exact_t23.sh` deploys below — DO NOT RUN
+That campaign is **dead** (2026-06-27 TOP OF MIND: blind n≥36 infeasible by exhaustion; hash-join OOMs).
+These commands `scancel -u dangord` and **would kill the SA ladder**. Kept for historical reference only.
+
+#### (retired) BS(43,42) exhaustive deploy
 
 **FIR** (own quarter [0,8388608)):
 ```bash
@@ -101,7 +134,7 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
   ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs43_nq_exact_t23.sh && squeue -u dangord --format="%14i %22j %2t %12L %R"'
 ```
 
-### Deploy commands (BS(45,44) world-record attempt — sig (13,3,0,0), readiness VERIFIED 2026-06-14)
+#### (retired) BS(45,44) exhaustive deploy — sig (13,3,0,0)
 
 BS(45) and BS(43) coexist safely in `$SCRATCH/bs45` (distinct `wz45_*` binary, `bs45_t23_*`
 outputs, `ckpt_bs45_*` checkpoints, `BS45_t23_*` job names — no collision with the BS(43)
