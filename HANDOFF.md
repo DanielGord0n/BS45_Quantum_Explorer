@@ -43,18 +43,16 @@ Lineage (all in `src/solver/`): `wz_sa_v8.cpp` (SA — **ACTIVE**, found BS(28,2
 **On REPRODUCTION CONFIRMED:** run `python3 verify_npaf.py < <output_file>`, then deploy the BS(45) scripts below.
 **BS(45,44) scripts** (`*_bs45_exact_t23.sh` ×4) — READINESS VERIFIED 2026-06-14 (sig (13,3,0,0): T23Filter 47,484 tuples / 724 keys / 4× pins, builds clean at N=44). Recommended action NOW: **pivot Trillium to BS(45)** while Nibi+Fir keep grinding the BS(43) validation — see the 2026-06-14 section + deploy command below.
 
-### Checker script (paste into terminal — works from any machine)
+### Checker script — SA LADDER (active 2026-06-27; paste into terminal, works from any machine)
+Watch `bestAB`: it should DESCEND between checks; **`bestAB=0` = solution** (and a `FOUND` banner).
 ```bash
-for c in fir rorqual nibi trillium; do echo ""; echo "════════ $c ════════"; \
-  ssh dangord@${c}.alliancecan.ca "squeue -u dangord --format='%12i %22j %2t %12L %R' 2>/dev/null; \
-    cd \$SCRATCH/bs45 2>/dev/null || exit 0; \
-    echo '--- SOLUTIONS ---'; \
-    grep -l 'REPRODUCTION CONFIRMED\|WORLD RECORD' bs4*_t23_*output*.txt 2>/dev/null || echo '(none yet)'; \
-    echo '--- PROGRESS (done/total per task; must climb between checks) ---'; \
-    grep -H . ckpt_*.count 2>/dev/null || echo '(none yet)'; \
-    echo '--- LATEST ---'; \
-    for f in \$(ls -t bs4*_t23_*output*.txt 2>/dev/null | head -2); do echo \"=== \$f ===\"; tail -3 \"\$f\"; done"; \
+for c in fir nibi rorqual trillium; do
+  echo "════════ $c ════════"
+  ssh dangord@${c}.alliancecan.ca 'squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R" 2>/dev/null; cd $SCRATCH/bs45 2>/dev/null || exit 0; echo "--- FOUND? ---"; grep -l "FOUND" sa_ladder_*.txt 2>/dev/null || echo "(none yet)"; echo "--- progress (newest tasks: target | lowest bestAB so far | latest line) ---"; for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -4); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1); echo "$(basename $f) [$hdr] lowest=$best | $(tail -1 "$f" | cut -c1-70)"; done'
 done
+```
+*On a hit:* `python3 verify_npaf.py < <that sa_ladder file>`, then `scancel <jobid>` the rest of that array.
+*Old exhaustive-campaign checker (`ckpt_*.count` / `bs4*_t23_*output*.txt`) is retired — that campaign was superseded; see the 2026-06-27 TOP OF MIND.*
 ```
 Note: `ckpt_*.count` files show "done total" per task. The bitmap itself is binary — never `cat` it.
 Solution files: `REPRODUCTION CONFIRMED` = BS(43,42) validated; `WORLD RECORD` = BS(45,44) found.
