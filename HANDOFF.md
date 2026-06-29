@@ -1,6 +1,6 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-06-28 (read the TOP OF MIND entries first — 2026-06-27 has the current strategy + honest frontier)
+**Date**: 2026-06-29 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
 **Goal**: Find the highest-n BS(n+1,n) δ-code we can. BS(28,27) banked; SA ladder hunting n=30–33.
@@ -30,6 +30,27 @@ Lineage (all in `src/solver/`): `wz_sa_v8.cpp` (SA — **ACTIVE**, found BS(28,2
 `wz_generate.cpp` (generate-filter C,D, blind n≤14) → `wz_match.cpp` (hash-join match — complete but
 **MEMORY wall ~n=34**). See the 2026-06-27 TOP OF MIND below.
 
+### Repo structure (reorganized + flattened 2026-06-29 — all paths below are from the repo root)
+```
+src/{solver,verifier}/   C++ solvers (wz_sa_v8, wz_exact_t23, wz_match, wz_generate, wz_exact,
+                         t23_filter, enum_m3_tuples) + verify_bs43.cpp
+cluster/deploy/          ACTIVE deploy + helpers: cluster_sa_ladder.sh, cluster_wz_match.sh,
+                         cluster_bs_sa.sh, check_all.sh
+cluster/jobs/            30 per-cluster SLURM scripts (mostly the RETIRED exhaustive campaign)
+tools/                   verify_npaf.py, find_combo_index.py   (independent NPAF checker)
+docs/                    RESULTS.md, deploy_v8.md, hpc_interview_prep.md, solver_README.md
+results/champions/       champion_v3_n7/n11/n27.txt  (banked solver outputs)
+sarukhanian/             SEPARATE length-110 δ-code CONSTRUCTION sub-project (papers/, submission/,
+                         report/) — NOT the BS solver; excluded from the graph via .graphifyignore
+```
+⚠️ **Sections of THIS doc dated before 2026-06-29 use the OLD pre-reorg paths** (double-nested
+`BS45_Quantum_Explorer/BS45_Quantum_Explorer/…`, bare script names, `verify_npaf.py` at root).
+The QUICK REFERENCE above (checker + deploy) is current; mentally map old → new when reading history.
+
+**graphify knowledge graph:** `graphify-out/graph.html` (interactive) + `GRAPH_REPORT.md`. Query with
+`/graphify "<question>"`. Auto-rebuilds on every commit (post-commit hook, code-only). After editing
+docs (like this file), refresh prose with `/graphify . --update`.
+
 ### Campaign snapshot — SA LADDER (active 2026-06-28; update when checker results change)
 **Blind metaheuristic search (`wz_sa_v8` via `cluster/deploy/cluster_sa_ladder.sh`) climbing n above the banked
 BS(28,27). Each job = SLURM array of full 192-thread nodes (~1,536 SA chains/cluster). Watch
@@ -47,7 +68,7 @@ Solution needs `bestAB=0`; n=30 at 4 is genuinely close but a *real floor* — a
 stochastic shot, not a guarantee. The `WZ_PSD_BIAS` tie-breaker (default OFF; see 2026-06-27 entries)
 is the designed escape, under test on Fir n=30. **Jobs TIMEOUT at 12h (full runs) — not a failure.**
 **Nibi does NOT schedule reliably — lean on Fir/Rorqual/Trillium.**
-**On `FOUND`/bestAB=0:** `python3 verify_npaf.py < <that sa_ladder file>`, then `scancel` the rest.
+**On `FOUND`/bestAB=0:** `python3 tools/verify_npaf.py < <that sa_ladder file>`, then `scancel` the rest.
 
 ### Checker script — SA LADDER (active 2026-06-27; paste into terminal, works from any machine)
 Watch `bestAB`: it should DESCEND between checks; **`bestAB=0` = solution** (and a `FOUND` banner).
@@ -57,7 +78,7 @@ for c in fir nibi rorqual trillium; do
   ssh dangord@${c}.alliancecan.ca 'squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R" 2>/dev/null; cd $SCRATCH/bs45 2>/dev/null || exit 0; echo "--- FOUND? ---"; grep -l "FOUND" sa_ladder_*.txt 2>/dev/null || echo "(none yet)"; echo "--- progress: file [target bias] bestAB_min | latest ---"; for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -5); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); bias=$(grep -oE "WZ_PSD_BIAS shift: [0-9]+" "$f" | head -1 | grep -oE "[0-9]+$"); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1 | grep -oE "[0-9]+$"); echo "$(basename $f) [$hdr bias=$bias] bestAB_min=$best | $(tail -1 "$f" | cut -c1-55)"; done'
 done
 ```
-*On a hit:* `python3 verify_npaf.py < <that sa_ladder file>`, then `scancel <jobid>` the rest of that array.
+*On a hit:* `python3 tools/verify_npaf.py < <that sa_ladder file>`, then `scancel <jobid>` the rest of that array.
 *Old exhaustive-campaign checker (`ckpt_*.count` / `bs4*_t23_*output*.txt`) is retired — that campaign was superseded; see the 2026-06-27 TOP OF MIND.*
 
 ### Deploy commands — SA LADDER (active; tar-pipe over ssh — scp does NOT expand $SCRATCH; one Duo/cluster)
@@ -156,7 +177,7 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
     squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 
-**GO ALL-IN** (after Nibi prints BS(43) `REPRODUCTION CONFIRMED` → first `python3 verify_npaf.py
+**GO ALL-IN** (after Nibi prints BS(43) `REPRODUCTION CONFIRMED` → first `python3 tools/verify_npaf.py
 < <output_file>`, or whenever you decide). These `scancel` the BS(43) campaign on each cluster:
 
 **FIR BS(45)** ([0,8388608)):
