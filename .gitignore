@@ -5,9 +5,18 @@
 # graphify generated knowledge-graph output (regenerable; rebuilt by the post-commit hook)
 graphify-out/
 
-# Python caches
+# Python / tooling caches
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.env
+.ipynb_checkpoints/
+.mplconfig/
+.cache/
 
 # generated logs
 *.log
+
+# Sarukhanian report figures (generated plots — were never tracked)
+sarukhanian/report/figures/

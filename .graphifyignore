@@ -1,11 +1,7 @@
 # graphify scope — keep the knowledge graph focused on the main
 # BS(n+1,n) base-sequence δ-code SOLVER work.
 #
-# The Sarukhanian δ-code CONSTRUCTION (length-110) is a SEPARATE sub-project and
-# is deliberately excluded here so it never mixes into the main solver graph.
-# To build a standalone graph for it later:  /graphify BS45_Quantum_Explorer/submission
-BS45_Quantum_Explorer/submission/
-BS45_Quantum_Explorer/report/
-A_NOTE_ON_CONSTRUCTION_OF_delta_CODES_Rus.pdf
-Sarukhanian_construction.pdf
-2025_11_19_e6345bc646db19d78d2bg.tex
+# The Sarukhanian δ-code CONSTRUCTION (length-110) is a SEPARATE sub-project,
+# self-contained under sarukhanian/, and deliberately excluded here.
+# Build a standalone graph for it any time with:  /graphify sarukhanian
+sarukhanian/

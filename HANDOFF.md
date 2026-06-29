@@ -14,8 +14,8 @@ infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path =
 ### Active solver (2026-06-27 — STRATEGY CORRECTION: metaheuristic ladder is the active path to the BEST result)
 **The goal is to FIND one solution at the highest n — that does NOT need completeness.** The active
 campaign is therefore the **metaheuristic** that already FOUND + Kotsireas-verified **BS(28,27)**:
-**`BS45_Quantum_Explorer/src/solver/wz_sa_v8.cpp`** (simulated annealing, OpenMP), deployed at scale
-via **`cluster_sa_ladder.sh`** (SLURM array of full 192-thread nodes ≈ 1,536 chains/cluster, climbing
+**`src/solver/wz_sa_v8.cpp`** (simulated annealing, OpenMP), deployed at scale
+via **`cluster/deploy/cluster_sa_ladder.sh`** (SLURM array of full 192-thread nodes ≈ 1,536 chains/cluster, climbing
 the n-ladder). It is **O(n) memory — it never OOMs.**
 
 **Why NOT the hash-join `wz_match.cpp`:** it is provably COMPLETE and blindly found BS(19,18) in 51 s,
@@ -23,7 +23,7 @@ BUT it materializes the whole residue/spectral-filtered candidate set, which gro
 **confirmed OOM-killed at n=36 (Fir) AND n=42 (Rorqual) on 2026-06-25**, even after the compact-key +
 dedup memory fix. So it caps ~n=18-20 in RAM. Retained for **small-n verification only**; our filter is
 ~10^3× looser than Wang-Zhu's (that gap = the research route to n=42; under investigation). Deploy
-via `cluster_wz_match.sh`.
+via `cluster/deploy/cluster_wz_match.sh`.
 
 Lineage (all in `src/solver/`): `wz_sa_v8.cpp` (SA — **ACTIVE**, found BS(28,27)) ·
 `wz_exact_t23.cpp` (exhaustive backtracking — correct, blind-walls ~n=18, TIME wall) →
@@ -31,7 +31,7 @@ Lineage (all in `src/solver/`): `wz_sa_v8.cpp` (SA — **ACTIVE**, found BS(28,2
 **MEMORY wall ~n=34**). See the 2026-06-27 TOP OF MIND below.
 
 ### Campaign snapshot — SA LADDER (active 2026-06-28; update when checker results change)
-**Blind metaheuristic search (`wz_sa_v8` via `cluster_sa_ladder.sh`) climbing n above the banked
+**Blind metaheuristic search (`wz_sa_v8` via `cluster/deploy/cluster_sa_ladder.sh`) climbing n above the banked
 BS(28,27). Each job = SLURM array of full 192-thread nodes (~1,536 SA chains/cluster). Watch
 `bestAB` → 0 = solution. Memory-light — never OOMs.**
 
@@ -64,22 +64,22 @@ done
 
 **Initial ladder** (one rung per cluster; ships `wz_sa_v8.cpp` so the build can't miss its source):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer
-tar -cf - cluster_sa_ladder.sh src/solver/wz_sa_v8.cpp | \
-  ssh dangord@fir.alliancecan.ca 'mkdir -p $SCRATCH/bs45 && cd $SCRATCH/bs45 && tar -xf - && sbatch --requeue --export=ALL,WZ_N=30 cluster_sa_ladder.sh'
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer
+tar -cf - cluster/deploy/cluster_sa_ladder.sh src/solver/wz_sa_v8.cpp | \
+  ssh dangord@fir.alliancecan.ca 'mkdir -p $SCRATCH/bs45 && cd $SCRATCH/bs45 && tar -xf - && sbatch --requeue --export=ALL,WZ_N=30 cluster/deploy/cluster_sa_ladder.sh'
 # repeat per cluster: WZ_N=30(fir) / 30 or 31(nibi) / 32(rorqual) / 33(trillium)
 ```
 
 **Resubmit a rung** (script + binary already on cluster — no tar needed):
 ```bash
-ssh dangord@rorqual.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32 cluster_sa_ladder.sh'
+ssh dangord@rorqual.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32 cluster/deploy/cluster_sa_ladder.sh'
 ```
 
 **Bias arm** (`WZ_PSD_BIAS=8` tie-breaker; re-tar PATCHED solver, auto-fallback to plain on scratch I/O error):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer
 tar -cf - src/solver/wz_sa_v8.cpp | \
-  ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && ( tar -xf - && sbatch --requeue --export=ALL,WZ_N=30,WZ_PSD_BIAS=8 cluster_sa_ladder.sh && echo ">>> BIAS submitted" ) || ( echo ">>> tar failed - plain instead"; sbatch --requeue --export=ALL,WZ_N=30 cluster_sa_ladder.sh )'
+  ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && ( tar -xf - && sbatch --requeue --export=ALL,WZ_N=30,WZ_PSD_BIAS=8 cluster/deploy/cluster_sa_ladder.sh && echo ">>> BIAS submitted" ) || ( echo ">>> tar failed - plain instead"; sbatch --requeue --export=ALL,WZ_N=30 cluster/deploy/cluster_sa_ladder.sh )'
 ```
 
 *Diagnose a finished job:* `ssh dangord@<cluster>.alliancecan.ca "sacct -X -u dangord -S 2026-06-27 -o JobID,State%26,Elapsed | tail"` — `TIMEOUT`@12:00:00 = full run (normal); `CANCELLED by <n>` = manual scancel; `PREEMPTED` = reclaim (`--requeue` auto-restarts).
@@ -94,28 +94,28 @@ These commands `scancel -u dangord` and **would kill the SA ladder**. Kept for h
 
 **FIR** (own quarter [0,8388608)):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp fir_bs43_exact_t23.sh | \
   ssh dangord@fir.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs43_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 
 **RORQUAL** ([8388608,16777216)):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp rorqual_bs43_exact_t23.sh | \
   ssh dangord@rorqual.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch rorqual_bs43_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 
 **NIBI** ([16777216,25165824) — solution at combo 18,644,967 task 2):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp nibi_bs43_exact_t23.sh | \
   ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs43_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 
 **TRILLIUM** ([25165824,33554432)) — compute nodes can't sbatch; pre-queue 6-gen chain from login:
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp trillium_bs43_exact_t23.sh | \
   ssh dangord@trillium.alliancecan.ca '
     scancel -u dangord 2>/dev/null;
@@ -129,7 +129,7 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
 
 **FIR BACKUP CAMPAIGN** (Nibi's quarter on Fir — NO scancel; must not kill Fir's own chain):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp fir_bs43_nq_exact_t23.sh | \
   ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs43_nq_exact_t23.sh && squeue -u dangord --format="%14i %22j %2t %12L %R"'
 ```
@@ -144,7 +144,7 @@ campaign). So you can run BS(45) on one cluster while BS(43) validates on others
 solution → low-value exhaustion; scancel frees its nodes; Nibi+Fir keep the validation).
 Trillium compute nodes can't `sbatch`, so pre-queue the 6-gen chain from the login node:
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp trillium_bs45_exact_t23.sh | \
   ssh dangord@trillium.alliancecan.ca '
     scancel -u dangord 2>/dev/null;
@@ -161,19 +161,19 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
 
 **FIR BS(45)** ([0,8388608)):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp fir_bs45_exact_t23.sh | \
   ssh dangord@fir.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 **RORQUAL BS(45)** ([8388608,16777216)):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp rorqual_bs45_exact_t23.sh | \
   ssh dangord@rorqual.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch rorqual_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 **NIBI BS(45)** ([16777216,25165824)):
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp nibi_bs45_exact_t23.sh | \
   ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
@@ -195,7 +195,7 @@ better result than bs23 using absolutely any method.")
 n=36, fills node RAM in seconds. Retained for small-n verification only. (Our filter is ~10^3× looser
 than Wang-Zhu's — closing THAT gap is the only route to a complete n=42; see research below.)
 
-**ACTIVE CAMPAIGN — SA ladder (deployed 2026-06-27).** `cluster_sa_ladder.sh` = SLURM array
+**ACTIVE CAMPAIGN — SA ladder (deployed 2026-06-27).** `cluster/deploy/cluster_sa_ladder.sh` = SLURM array
 (`--array=0-7`) of full 192-thread nodes, each a node of independent SA chains sharing champions;
 distinct RNG seed base per task ⇒ ~1,536 chains/cluster at the target n. Memory-light. Each cluster
 climbs a different rung above the banked n=28:
@@ -213,9 +213,9 @@ coupled cost 12-24). On a hit: `scancel <jobid>` the rest of that array, then `p
 
 **Deploy command (tar-pipe over ssh — scp does NOT expand $SCRATCH; one Duo/cluster):**
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer
-tar -cf - cluster_sa_ladder.sh src/solver/wz_sa_v8.cpp | \
-  ssh dangord@fir.alliancecan.ca 'mkdir -p $SCRATCH/bs45 && cd $SCRATCH/bs45 && tar -xf - && sbatch --export=ALL,WZ_N=30 cluster_sa_ladder.sh'
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer
+tar -cf - cluster/deploy/cluster_sa_ladder.sh src/solver/wz_sa_v8.cpp | \
+  ssh dangord@fir.alliancecan.ca 'mkdir -p $SCRATCH/bs45 && cd $SCRATCH/bs45 && tar -xf - && sbatch --export=ALL,WZ_N=30 cluster/deploy/cluster_sa_ladder.sh'
 # repeat per cluster with WZ_N=30(fir)/31(nibi)/32(rorqual)/33(trillium)
 ```
 
@@ -298,7 +298,7 @@ a **64-bit FNV-1a hash** (exact recheck catches collisions) + **dedup to one A,B
 autocorrelation** (SOUND — any A,B with AB=−CD cancels that C,D) + **hash the smaller side**. BS(11,10)
 still correct 3/3 threaded; hash ~8× smaller at n=10 (far more at n=42 via dedup).
 
-**CURRENT RUNS (2026-06-24, memory-optimized `wz_match` via `cluster_wz_match.sh`):**
+**CURRENT RUNS (2026-06-24, memory-optimized `wz_match` via `cluster/deploy/cluster_wz_match.sh`):**
 - **Rorqual 14727116 → BS(43,42) (7,11,0,0)** — THE GOAL retry (12 h). Known-solvable (published) sig.
   Open question: does it FINISH in time now (OOM should be gone; generation set is still large)?
 - **Fir 45797874 → BS(37,36) (5,11,0,0)** — wall-test rung (6 h); completing proves the fix scales.
@@ -310,7 +310,7 @@ for c in fir rorqual nibi; do echo "════ $c ════"; ssh dangord@$
   "squeue -u dangord -h -o '%.12i %.10j %.2t %.11L %R'; cd \$SCRATCH/bs45 2>/dev/null && \
    for f in \$(ls -t wz_match_output_*.txt 2>/dev/null|head -1); do echo \"=== \$f ===\"; tail -10 \"\$f\"; done"; done
 ```
-Deploy: `tar -cf - src/solver/wz_match.cpp cluster_wz_match.sh | ssh dangord@<cluster> 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch --export=ALL,WZ_N=<n>,WZ_A=<a>,WZ_B=<b>,WZ_C=<c>,WZ_D=<d> cluster_wz_match.sh'` (Nibi adds `--account=def-ikotsire_cpu`).
+Deploy: `tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_wz_match.sh | ssh dangord@<cluster> 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch --export=ALL,WZ_N=<n>,WZ_A=<a>,WZ_B=<b>,WZ_C=<c>,WZ_D=<d> cluster/deploy/cluster_wz_match.sh'` (Nibi adds `--account=def-ikotsire_cpu`).
 
 **Honest status / next lever:** architecture proven (blind n=18 in 51 s). OPEN: does n=42's dedup'd
 generated set finish within walltime/RAM on a 192-core node? If Rorqual prints `*** BS(43,42) FOUND ***`
@@ -957,7 +957,7 @@ Use the corrected checker in the "Checker script" section (greps `bs43_t23_*`).
 
 **Combo-294887 finding (validation lever).** The published BS(43,42) solution (hardcoded
 in `src/verifier/verify_bs43.cpp`) was decoded into the wz_exact_t23 combo encoding by
-`BS45_Quantum_Explorer/find_combo_index.py`:
+`tools/find_combo_index.py`:
 - All 21 layers fit the Wang-Zhu encoding; sig confirmed (7,11,0,0), a²+b²+c²+d²=170, NPAF≡0.
 - It maps to **combo index 294887**, which lies in **Nibi's slice [262144,393216)**.
 - C[0]=D[0]=+1, so it IS the symmetry-pin canonical representative (not skipped).
@@ -997,7 +997,7 @@ just running ~50× too slow and dying at walltime. **Deploy v4, read `rate`, dec
 2. **Fixed stale paths** in this doc (`School/CP468/...` → `~/Projects/...`, 2 places).
 3. **Verified v4 builds + reproduces BS(7,6)** locally after the move (sym_pins active,
    4× reduction; `g++ -O3 -std=c++17`, no `-fopenmp` on macOS).
-4. **Wrote `BS45_Quantum_Explorer/find_combo_index.py`** (NEW, uncommitted) — decodes the
+4. **Wrote `tools/find_combo_index.py`** (NEW, uncommitted) — decodes the
    published BS(43,42) solution to **combo 294887** and verifies all 21 layers fit the
    encoding. This is reusable for any future known-solution → combo-index mapping.
 5. **Started a local single-combo reproduction** `./wz_exact_t23 42 7 11 0 0 294887
@@ -1196,7 +1196,7 @@ the tight sig (7,11,0,0).
 
 ### Files touched in this session
 
-- `BS45_Quantum_Explorer/src/solver/wz_exact_t23.cpp` — added globals
+- `src/solver/wz_exact_t23.cpp` — added globals
   `G_NA_CLASS`, `G_NC_CLASS`, `G_PLACED_A_AFTER`, `G_PLACED_C_AFTER`;
   extended `T23Filter` with `allowed_K_set_[3][64]` etc. + new method
   `class_reachable`; inserted sum + class prune blocks in both
@@ -1276,7 +1276,7 @@ At n=12 the solver ran 7800/524288 combos in 15s with `t23_prunes` growing corre
 
 **Double-counting in `update_bounds_pos` when batched after `place_layer`.** Original `wz_exact_t23.cpp` first placed all 8 layer positions, then called `update_bounds_pos` once per position. But `update_bounds_pos` scans **bidirectionally** (forward p+s AND backward p-s), so the within-layer partner term (e.g., A[d]*A[n-d] at shift s=n-2d) got counted twice — once when updating A[d] (which finds A[n-d] forward) and once when updating A[n-d] (which finds A[d] backward). Symptom: `Dnpaf[s]` was 2× correct, `Kund[s]` went negative, layer 0 then pruned **every** combo with `t23_prunes=0`.
 
-Fix: new `place_and_update_layer` helper interleaves set + update one position at a time, mirroring `wz_exact.cpp` lines 213-225. Driver lambda and `search()` recursion both use it. See `BS45_Quantum_Explorer/src/solver/wz_exact_t23.cpp:254-283`.
+Fix: new `place_and_update_layer` helper interleaves set + update one position at a time, mirroring `wz_exact.cpp` lines 213-225. Driver lambda and `search()` recursion both use it. See `src/solver/wz_exact_t23.cpp:254-283`.
 
 ### Files added in this session (uncommitted as of 2026-05-28)
 
@@ -1308,7 +1308,7 @@ Each cluster runs `--array=0-9`, splitting its 131072 combos across 10 tasks. Ea
 ### Deploy pattern (mirrors prior tar | ssh, one Duo prompt per cluster)
 
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_exact_t23.cpp <cluster>_bs43_exact_t23.sh | \
   ssh dangord@<cluster>.alliancecan.ca '
     scancel --user=dangord --name=BS43_exact_<cluster> 2>/dev/null;
@@ -1533,7 +1533,7 @@ Plus the in-SA k-pair kick: triggers at `no_improve > 30000 && best_cost > 0`, r
 
 ## The Canonical Solver File
 
-**`BS45_Quantum_Explorer/src/solver/wz_sa_v8.cpp`** (now ~1320 lines after Commits A-E)
+**`src/solver/wz_sa_v8.cpp`** (now ~1320 lines after Commits A-E)
 
 This is the only solver being used. All other solver files in the repo are historical or deleted.
 
@@ -1556,7 +1556,7 @@ The optional 3rd arg `a,b,c,d` locks signature selection to a single sig — use
 
 ## Encoding Verification (2026-05-17)
 
-Critical sanity check: do the known Wang-Zhu solutions actually live in the search space our solver explores? **YES.** Verified via Python check against the hardcoded sequences in [`src/verifier/verify_bs43.cpp`](BS45_Quantum_Explorer/src/verifier/verify_bs43.cpp):
+Critical sanity check: do the known Wang-Zhu solutions actually live in the search space our solver explores? **YES.** Verified via Python check against the hardcoded sequences in [`src/verifier/verify_bs43.cpp`](src/verifier/verify_bs43.cpp):
 
 | Property | BS(43,42) | BS(44,43) |
 |----------|-----------|-----------|
@@ -1632,7 +1632,7 @@ The entire `BS45_Quantum_Explorer/` folder is synced there.
 `tar | ssh` bundles upload + extract + sbatch in one SSH session = **one Duo prompt per cluster**:
 
 ```bash
-cd /Users/danielgordon/Projects/BS45_Quantum_Explorer/BS45_Quantum_Explorer && \
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   tar -cf - src/solver/wz_sa_v8.cpp <script1>.sh <script2>.sh ... | \
   ssh dangord@<cluster>.alliancecan.ca '
     scancel --user=dangord --name=<job_name> 2>/dev/null;
@@ -1693,7 +1693,7 @@ for c in fir rorqual nibi trillium; do echo ""; echo "════════�
 
 ## Independent NPAF Verifier (2026-05-17)
 
-**`BS45_Quantum_Explorer/verify_npaf.py`** — standalone Python script. Independent code path from `wz_sa_v8.cpp::npaf_at` — critical for any world-record claim (don't trust the same code that found it).
+**`tools/verify_npaf.py`** — standalone Python script. Independent code path from `wz_sa_v8.cpp::npaf_at` — critical for any world-record claim (don't trust the same code that found it).
 
 Usage:
 ```bash
