@@ -1,3 +1,13 @@
 # macOS Finder / resource-fork cruft (a pattern without a slash matches at any depth)
 .DS_Store
 ._*
+
+# graphify generated knowledge-graph output (regenerable; rebuilt by the post-commit hook)
+graphify-out/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# generated logs
+*.log
