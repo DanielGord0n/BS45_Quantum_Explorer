@@ -20,3 +20,6 @@ __pycache__/
 
 # Sarukhanian report figures (generated plots — were never tracked)
 sarukhanian/report/figures/
+
+# Claude Code personal/local settings (keep out of version control; file stays on disk)
+.claude/settings.local.json
