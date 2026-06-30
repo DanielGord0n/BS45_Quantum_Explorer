@@ -1,9 +1,9 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-06-29 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
+**Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
-**Goal**: Find the highest-n BS(n+1,n) δ-code we can. BS(28,27) banked; SA ladder hunting n=30–33.
+**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(31,30) (n=30) banked 2026-06-30** (blind SA find, NPAF-verified — new best, beats the prior BS(28,27)); plus two BS(30,29) (n=29). Ladder now pushing n≥31.
 BS(45,44) (n=44) is the dream/world-record but is OPEN for the whole field — blind n≥36 is rigorously
 infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path = the metaheuristic ladder.
 
@@ -51,23 +51,35 @@ The QUICK REFERENCE above (checker + deploy) is current; mentally map old → ne
 `/graphify "<question>"`. Auto-rebuilds on every commit (post-commit hook, code-only). After editing
 docs (like this file), refresh prose with `/graphify . --update`.
 
-### Campaign snapshot — SA LADDER (active 2026-06-28; update when checker results change)
-**Blind metaheuristic search (`wz_sa_v8` via `cluster/deploy/cluster_sa_ladder.sh`) climbing n above the banked
-BS(28,27). Each job = SLURM array of full 192-thread nodes (~1,536 SA chains/cluster). Watch
+### Campaign snapshot — SA LADDER (UPDATED 2026-06-30 post-result; update when checker results change)
+**Blind metaheuristic search (`wz_sa_v8` via `cluster_sa_ladder.sh`) climbing n above the banked best.
+Each job = SLURM array of full 192-thread nodes (~1,536 SA chains/cluster). Watch
 `bestAB` → 0 = solution. Memory-light — never OOMs.**
 
-| Cluster | Target | First full-12h run (2026-06-27) | Status |
-|---------|--------|----------------------------------|--------|
-| Fir | **BS(31,30)** | plateau floor **bestAB=4** — closest to a new result | resubmitted; **bias arm `WZ_PSD_BIAS=8`** under test here |
-| Nibi | **BS(31,30)** | n/a — **never scheduled** (PENDING 12h+) | plain control; Nibi unreliable |
-| Rorqual | **BS(33,32)** | plateau floor **bestAB=8** | resubmitted (`--requeue`) |
-| Trillium | **BS(34,33)** | plateau floor **bestAB=12–16** | resubmitted (`--requeue`) |
+**RESULT 2026-06-30: BS(31,30) (n=30) FOUND + verified — new banked best (see TOP OF MIND 2026-06-30).
+Plus two BS(30,29) (n=29). The `WZ_PSD_BIAS=8` bias arm cracked the n=30 plateau, so the live round
+puts the bias arm on EVERY higher rung (n=31/32/33) with disjoint seed bases.**
 
-**Measured SA plateau floors (full 12h × ~1,536 chains, 2026-06-27):** n=30→4, n=32→8, n=33→12–16.
-Solution needs `bestAB=0`; n=30 at 4 is genuinely close but a *real floor* — a plain replay is a
-stochastic shot, not a guarantee. The `WZ_PSD_BIAS` tie-breaker (default OFF; see 2026-06-27 entries)
-is the designed escape, under test on Fir n=30. **Jobs TIMEOUT at 12h (full runs) — not a failure.**
-**Nibi does NOT schedule reliably — lean on Fir/Rorqual/Trillium.**
+| Cluster | Job (live, 2026-06-30) | Target | Arm / role |
+|---------|------------------------|--------|------------|
+| Fir | `46372036` | **BS(32,31)** n=31 | **bias `WZ_PSD_BIAS=8`**, seed base 1000 — next-best target |
+| Rorqual | `14972152` | **BS(33,32)** n=32 | **bias `WZ_PSD_BIAS=8`**, `WZ_SEED_BASE=3000000` |
+| Trillium | `1846489` | **BS(34,33)** n=33 | **bias `WZ_PSD_BIAS=8`**, `WZ_SEED_BASE=6000000` (queued behind maintenance) |
+| Nibi | `16945067` | **BS(32,31)** n=31 | **plain control** — bias-vs-plain A/B vs Fir's n=31 (`--account=def-ikotsire_cpu`); unreliable scheduler |
+
+**Prior round delivered (2026-06-29/30, now retired):** Fir `46274622` n=30 bias → FOUND; Rorqual
+`14923090` n=29 plain → FOUND ×2; Trillium `1844425` n=30 (redundant after the find) → scancelled.
+
+**Measured SA plateau floors (full 12h × ~1,536 chains):** n=30→4 (plain) but **bias reached 0**; n=32→8,
+n=33→12–16 (plain). The open question this round answers: **does the bias arm break the n=31/32/33 floors
+the way it broke n=30?** A `bestAB=0` / FOUND banner on any rung = the next new best.
+
+⚠️ **SEED-COLLISION GOTCHA (why Trillium carries `WZ_SEED_BASE=9000000`):** the script computes
+`SEED = WZ_SEED_BASE(default 1000) + ARRAY_TASK_ID*100000`. Two same-n runs at the DEFAULT base
+explore IDENTICAL trajectories — a wasted duplicate. To run the SAME n on two clusters additively,
+give one a base offset by ≫ 8×100000 (e.g. 9000000). Stride 100000 ≫ 192 threads ⇒ no intra-run overlap.
+
+**Jobs TIMEOUT at 12h (full runs) — not a failure. Nibi does NOT schedule reliably.**
 **On `FOUND`/bestAB=0:** `python3 tools/verify_npaf.py < <that sa_ladder file>`, then `scancel` the rest.
 
 ### Checker script — SA LADDER (active 2026-06-27; paste into terminal, works from any machine)
@@ -199,6 +211,36 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 *(Trillium BS(45): use the pre-queue command above.)*
+
+---
+
+## ⚡ TOP OF MIND — 2026-06-30: RESULT — blind BS(31,30) (n=30) FOUND + NPAF-verified; new banked best. Plus two blind BS(30,29) (n=29). The WZ_PSD_BIAS arm cracked the n=30 plateau.
+
+**Three blind SA solutions found and independently verified (`tools/verify_npaf.py`, NPAF[s]=0 all shifts, self-test on WZ BS(43)/BS(44) passed):**
+
+| Solution | n | Cluster / job | sig | seed off | runtime | banked file |
+|----------|---|---------------|-----|----------|---------|-------------|
+| **BS(31,30)** | **30** | **Fir 46274622 task 4 — `WZ_PSD_BIAS=8`** | (1,-7,6,6) | 401000 | 40543.7s | `results/champions/champion_sa_bs31_30.txt` |
+| BS(30,29) | 29 | Rorqual 14923090 task 2 (plain) | (4,-10,1,1) | 201000 | 14072.1s | `results/champions/champion_sa_bs30_29_a.txt` |
+| BS(30,29) | 29 | Rorqual 14923090 task 6 (plain) | (0,6,9,1) | 601000 | 40001.6s | `results/champions/champion_sa_bs30_29_b.txt` |
+
+**Significance:** new banked best **BS(31,30)**, up from BS(28,27). All three are genuine **blind** finds (no
+prefix fed; `./bin N SEED`, signature discovered by search). The headline methodological win: **the
+`WZ_PSD_BIAS=8` bias arm broke the n=30 plateau** — plain SA never got below `bestAB=4` at n=30 over a full
+12h, but the bias arm reached a true `bestAB=0` solution. That validates `WZ_PSD_BIAS` as a real
+plateau-escape lever, so **apply it to the higher rungs (n=31/32/33) where plain SA stalled at 8 / 8 / 12–16.**
+
+**Read note on the FOUND files:** the periodic progress line shows a *stale* `bestAB=8` (a per-signature
+counter); the solution arrives via a different signature's refinement and is reported only in the
+`*** REPRODUCTION CONFIRMED: BS(n+1,n) FOUND ***` banner with printed A/B/C/D. So the checker's
+`grep -l "FOUND"` correctly flags real hits, but `bestAB_min` from the progress lines can read 8 on a
+solved file — **trust the banner + `verify_npaf.py`, not the progress `bestAB`.**
+
+**NEXT (clusters were in a maintenance window when this was found — Nibi/Trillium `PD Reserved for
+maintenance`, Fir/Rorqual idle):** once nodes free up, resubmit the ladder ABOVE 30 **with the bias arm on
+every rung** (it's the proven escape). Suggested allocation: Fir/Rorqual/Trillium → n=31/32/33 each with
+`WZ_PSD_BIAS=8` and DISJOINT `WZ_SEED_BASE` per cluster (see seed-collision gotcha in the snapshot below);
+keep one plain control if you want a clean bias A/B. n=31 is the next-best target.
 
 ---
 

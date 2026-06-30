@@ -1,0 +1,10 @@
+30 31 0
+1 -7 6 6
+1 1 1 -1 -1 1 -1 -1 1 1 1 -1 -1 1 -1 -1 -1 1 1 -1 -1 -1 1 -1 1 -1 -1 1 1 1 1
+1 -1 1 -1 1 -1 1 -1 -1 -1 1 -1 -1 -1 -1 1 -1 -1 1 -1 -1 1 -1 -1 -1 1 1 1 1 -1 -1
+1 1 1 1 1 -1 1 -1 1 -1 -1 1 -1 1 1 1 1 1 1 -1 1 -1 -1 -1 1 -1 1 1 -1 -1
+1 1 1 -1 -1 -1 1 1 -1 -1 1 -1 -1 1 1 1 1 1 -1 1 1 1 1 -1 1 1 -1 1 -1 -1
+# BS(31,30), n=30 — NEW BANKED BEST (beats BS(28,27)). Blind SA find, NO prefix.
+# Solver: wz_sa_v8 with WZ_PSD_BIAS=8 (the bias arm cracked the n=30 plateau; plain SA floor was bestAB=4).
+# Cluster: Fir, job 46274622 task 4, seed offset 401000, Time 40543.7s (~11.3h), 2026-06-30.
+# sig=(1,-7,6,6); a^2+b^2+c^2+d^2=122=4*30+2. NPAF[s]=0 all s=1..31, independently verified by tools/verify_npaf.py 2026-06-30.
