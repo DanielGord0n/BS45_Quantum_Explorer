@@ -57,22 +57,30 @@ Each job = SLURM array of full 192-thread nodes (~1,536 SA chains/cluster). Watc
 `bestAB` → 0 = solution. Memory-light — never OOMs.**
 
 **RESULT 2026-06-30: BS(31,30) (n=30) FOUND + verified — new banked best (see TOP OF MIND 2026-06-30).
-Plus two BS(30,29) (n=29). The `WZ_PSD_BIAS=8` bias arm cracked the n=30 plateau, so the live round
-puts the bias arm on EVERY higher rung (n=31/32/33) with disjoint seed bases.**
+Plus two BS(30,29) (n=29). The `WZ_PSD_BIAS=8` bias arm cracked the n=30 plateau.**
 
-| Cluster | Job (live, 2026-06-30) | Target | Arm / role |
-|---------|------------------------|--------|------------|
-| Fir | `46372036` | **BS(32,31)** n=31 | **bias `WZ_PSD_BIAS=8`**, seed base 1000 — next-best target |
-| Rorqual | `14972152` | **BS(33,32)** n=32 | **bias `WZ_PSD_BIAS=8`**, `WZ_SEED_BASE=3000000` |
-| Trillium | `1846489` | **BS(34,33)** n=33 | **bias `WZ_PSD_BIAS=8`**, `WZ_SEED_BASE=6000000` (queued behind maintenance) |
-| Nibi | `16945067` | **BS(32,31)** n=31 | **plain control** — bias-vs-plain A/B vs Fir's n=31 (`--account=def-ikotsire_cpu`); unreliable scheduler |
+**2026-07-02 — shift-8 bias round at n=31/32/33 ANSWERED (all full 12h TIMEOUT, negative): bias@8 does
+NOT break the higher rungs. Measured bias@8 floors: n=31→8, n=32→8 (= plain), n=33→8 (matches best-yet
+plain tail). No FOUND. Diagnosis from source ([wz_sa_v8.cpp:57-60] bias = Σ|corr_CD| >> shift, LARGER
+shift = GENTLER): shift 8 = ÷256 ≈ +0–2 cost at this n — too gentle where the floor is 8. Untested
+lever = STRONGER bias (shift 6 = ÷64, shift 4 = ÷16). Also: all 3 hits landed at 3.9h/11.1h/11.3h —
+late-window ⇒ within-run champion accumulation matters ⇒ a 24h arm is worth one slot.**
 
-**Prior round delivered (2026-06-29/30, now retired):** Fir `46274622` n=30 bias → FOUND; Rorqual
-`14923090` n=29 plain → FOUND ×2; Trillium `1844425` n=30 (redundant after the find) → scancelled.
+**LIVE ROUND (2026-07-02) — bias-STRENGTH sweep, ALL clusters on n=31 (next record needs one rung):**
 
-**Measured SA plateau floors (full 12h × ~1,536 chains):** n=30→4 (plain) but **bias reached 0**; n=32→8,
-n=33→12–16 (plain). The open question this round answers: **does the bias arm break the n=31/32/33 floors
-the way it broke n=30?** A `bestAB=0` / FOUND banner on any rung = the next new best.
+| Cluster | Job | Target | Arm | Seed base | Walltime |
+|---------|-----|--------|-----|-----------|----------|
+| Fir | `46651703` | n=31 | **`WZ_PSD_BIAS=6`** (stronger, ÷64) | 12000000 | 12h |
+| Rorqual | `15049861` | n=31 | **`WZ_PSD_BIAS=4`** (strongest, ÷16 — may distort walk; single arm on purpose) | 15000000 | 12h |
+| Trillium | `1856596` | n=31 | **`WZ_PSD_BIAS=8`** (proven) | 18000000 | **24h** (`sbatch --time=24:00:00`, = Trillium max — queues slower) — long-run arm |
+| Nibi | `16945067` | n=31 | plain control (`--account=def-ikotsire_cpu`) | default | 12h; unreliable scheduler |
+
+**Retired rounds:** 06-29/30: Fir `46274622` n=30 bias → FOUND; Rorqual `14923090` n=29 → FOUND ×2;
+Trillium `1844425` scancelled. 07-01: Fir `46372036` n=31@8 / Rorqual `14972152` n=32@8 /
+Trillium `1846489` n=33@8 — full 12h, floors above, no FOUND.
+
+**Measured SA plateau floors (full 12h × ~1,536 chains):** plain: n=30→4, n=32→8, n=33→12–16;
+bias@8: n=30→**0 (SOLVED)**, n=31→8, n=32→8, n=33→8. A `bestAB=0` / FOUND banner at n=31 = next new best.
 
 ⚠️ **SEED-COLLISION GOTCHA (why Trillium carries `WZ_SEED_BASE=9000000`):** the script computes
 `SEED = WZ_SEED_BASE(default 1000) + ARRAY_TASK_ID*100000`. Two same-n runs at the DEFAULT base
