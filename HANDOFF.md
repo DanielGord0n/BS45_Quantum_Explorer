@@ -261,8 +261,21 @@ hall_ok, length-n join key, npaf_at) is length-generic.
 
 **Fix + validation (2026-07-03):** guard relaxed to `n >= 4` (one line). Empirical: **blind odd-n
 finds at n=7 sig (2,4,3,1) and n=11 sig (2,4,5,1)** — both `NPAF==0 confirmed` by the solver AND
-independently PASSed by `tools/verify_npaf.py`; even-n regression n=10 (5,1,4,0) intact. An
-adversarial code-audit for hidden parity assumptions was also dispatched (result pending).
+independently PASSed by `tools/verify_npaf.py`; even-n regression n=10 (5,1,4,0) intact.
+
+**Adversarial audit (2026-07-03, completed): verdict SOUND for odd n.** Line-by-line parity audit
+of all 14 pipeline stages + exhaustive filter-free ground truth at n=5/6/7/9: wz_match found
+**280/280** solution-admitting signatures (incl. negative-sig + sign-pinned cases), NPAF==0, zero
+over-pruning. The residue filter's norm identity (Σ class-sum² = 4n+2) is parity-independent.
+Two PRE-EXISTING caveats (present at even n too) that govern how results are read:
+1. **Negative verdicts need a 2nd run.** Dedup-by-FNV-64 has a false-NEGATIVE channel (two distinct
+   autocorr vectors colliding → a real solution silently dropped; ~K²/2⁶⁵ for K stored keys).
+   Positives are immune (exact npaf recheck). Any "no solution for sig X" at n=31 must be confirmed
+   by one re-run with a perturbed hash basis (change the FNV offset at wz_match.cpp:~317).
+2. wz_match is EXISTENCE-complete (stops at first hit) — don't read solution multiplicity from it.
+Also fixed (2026-07-03): measure-mode memory projection used the A,B count even when C,D is the
+hashed side — now projects from the stored side. (Probes already queued carry the old binary:
+read their PAIR COUNTS, which are correct, and compute GB from the smaller side by hand.)
 
 **Why this matters:** BS(32,31) is KNOWN to exist (literature: all n≤40 verified). A COMPLETE
 per-signature search that fits in memory MUST find one — deterministic, not a stochastic shot.

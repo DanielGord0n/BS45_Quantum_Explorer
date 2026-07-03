@@ -568,8 +568,11 @@ int main(int argc, char **argv) {
                     hash_records * (rec_bytes + 24.0)) / 1e6;
 
   if (measure) {
-    double proj_mb = (ab_pairs * (key_bytes + 48.0) +
-                      ab_pairs * (rec_bytes + 24.0)) / 1e6;
+    // Project from the side that would actually be hashed (the smaller one);
+    // rec_bytes above already uses sL = the stored side's length.
+    long long store_pairs = storeAB ? ab_pairs : cd_pairs;
+    double proj_mb = (store_pairs * (key_bytes + 48.0) +
+                      store_pairs * (rec_bytes + 24.0)) / 1e6;
     cout << "\n=== MEASURE (n=" << n << ") ===\n";
     cout << "filtered A,B (hall_ok pairs) = " << ab_pairs << "\n";
     cout << "filtered C,D (hall_ok pairs) = " << cd_pairs << "\n";
