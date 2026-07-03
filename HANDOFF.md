@@ -66,21 +66,48 @@ shift = GENTLER): shift 8 = ÷256 ≈ +0–2 cost at this n — too gentle where
 lever = STRONGER bias (shift 6 = ÷64, shift 4 = ÷16). Also: all 3 hits landed at 3.9h/11.1h/11.3h —
 late-window ⇒ within-run champion accumulation matters ⇒ a 24h arm is worth one slot.**
 
-**LIVE ROUND (2026-07-02) — bias-STRENGTH sweep, ALL clusters on n=31 (next record needs one rung):**
+**2026-07-03 — bias-STRENGTH sweep at n=31 ANSWERED (negative): stronger bias does NOT break the n=31
+floor either. Shift 6 (Fir `46651703`) → floor 8 (one task 9); shift 4 (Rorqual `15049861`) → floor 8;
+both full 12h, no FOUND. Bias strength is now an EXHAUSTED lever at n=31 (8/8/8 across shifts 4/6/8).**
+
+**⚠️ Cost-reporting subtlety discovered (the odd `bestAB=9`):** with bias ON, the logged `bestAB`
+INCLUDES the bias term (pure pen is always even — |even+even| sums — so an odd 9 is only possible as
+pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias floors may sit slightly
+BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
+`bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
+
+**LIVE ROUND (2026-07-03) — SA lottery continues in background; NEW PRIMARY LEVER = complete
+hash-join at n=29/31 (see the 2026-07-03 TOP OF MIND above the 06-30 one):**
 
 | Cluster | Job | Target | Arm | Seed base | Walltime |
 |---------|-----|--------|-----|-----------|----------|
-| Fir | `46651703` | n=31 | **`WZ_PSD_BIAS=6`** (stronger, ÷64) | 12000000 | 12h |
-| Rorqual | `15049861` | n=31 | **`WZ_PSD_BIAS=4`** (strongest, ÷16 — may distort walk; single arm on purpose) | 15000000 | 12h |
-| Trillium | `1856596` | n=31 | **`WZ_PSD_BIAS=8`** (proven) | 18000000 | **24h** (`sbatch --time=24:00:00`, = Trillium max — queues slower) — long-run arm |
-| Nibi | `16945067` | n=31 | plain control (`--account=def-ikotsire_cpu`) | default | 12h; unreliable scheduler |
+| Trillium | `1856596` | n=31 SA | **`WZ_PSD_BIAS=8`, 24h long-run arm** — tests the late-hit hypothesis (all 3 wins landed at 3.9/11.1/11.3h) | 18000000 | 24h; still PD as of 07-03 (max-walltime queues slow) |
+| Fir | `46882836` | n=31 SA | `WZ_PSD_BIAS=8` (proven) fresh seeds | 21000000 | 12h |
+| Rorqual | `15122104` | n=31 SA | `WZ_PSD_BIAS=8` (proven) fresh seeds | 24000000 | 12h |
+| Nibi | `16945067` | n=31 SA | plain control; task 0 R since 07-03 (bestAB=16 @ 7h, 192 chains only), 1-7 PD | default | 12h |
+| Fir | `46885452` | **n=29 JOIN canary** sig (0,6,9,1) | complete hash-join — MUST print FOUND (banked sol'n in this class) | — | 6h |
+| Rorqual | `15122875` | **n=31 MEASURE** sig (6,4,7,5) | `WZ_MEASURE=1` — worst-case (balanced) set sizes + hash GB | — | 3h |
+| Nibi | `17147932` | **n=31 MEASURE** sig (10,4,3,1) | `WZ_MEASURE=1` — best-case (skewed) bracket (moved off Trillium; `--account=def-ikotsire_cpu`) | — | 3h |
 
-**Retired rounds:** 06-29/30: Fir `46274622` n=30 bias → FOUND; Rorqual `14923090` n=29 → FOUND ×2;
-Trillium `1844425` scancelled. 07-01: Fir `46372036` n=31@8 / Rorqual `14972152` n=32@8 /
-Trillium `1846489` n=33@8 — full 12h, floors above, no FOUND.
+**⚠️ Trillium SSH DOWN 2026-07-03:** repeated `Permission denied (keyboard-interactive,hostbased)`
+BEFORE the Duo prompt — auth-layer failure on their side. Its queued 24h SA arm `1856596` is
+unaffected (Slurm runs it regardless of login access). Skip Trillium in the checker until SSH
+recovers; check status.alliancecan.ca if it persists past a day.
+
+**IF THE 24h ARM WINS (Trillium FOUND but 12h arms don't):** the time hypothesis is confirmed → the
+next build is CHAMPION PERSISTENCE (checkpoint best CD/AB state to scratch, reload on requeue) so runs
+accumulate instead of restarting. Decide only on that evidence — do NOT build it preemptively
+(repo lesson: verify before build). **IF nothing hits at n=31 after the 24h arm + 2 more fresh-seed
+rounds:** n=31 may be past SA's practical reach; the honest fallback = bank n=30 as the campaign
+result and write up the measured-floor frontier (n=30 solved, n≥31 floor=8 across bias strengths).
+
+**Retired rounds:** 06-29/30: Fir `46274622` n=30 bias → FOUND; Rorqual `14923090` n=29 → FOUND ×2.
+07-01: n=31@8/n=32@8/n=33@8 (Fir `46372036`/Rorqual `14972152`/Trillium `1846489`) — floors 8/8/8.
+07-03: bias-strength sweep (Fir `46651703` shift 6, Rorqual `15049861` shift 4) — floors 8/8.
 
 **Measured SA plateau floors (full 12h × ~1,536 chains):** plain: n=30→4, n=32→8, n=33→12–16;
-bias@8: n=30→**0 (SOLVED)**, n=31→8, n=32→8, n=33→8. A `bestAB=0` / FOUND banner at n=31 = next new best.
+bias@8: n=30→**0 (SOLVED)**, n=31→8, n=32→8, n=33→8; bias@6/@4: n=31→8 (reported; true pen ≥6).
+A `bestAB=0` / FOUND banner at n=31 = next new best.
 
 ⚠️ **SEED-COLLISION GOTCHA (why Trillium carries `WZ_SEED_BASE=9000000`):** the script computes
 `SEED = WZ_SEED_BASE(default 1000) + ARRAY_TASK_ID*100000`. Two same-n runs at the DEFAULT base
@@ -219,6 +246,48 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 *(Trillium BS(45): use the pre-queue command above.)*
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-03: STRATEGIC UNLOCK — the COMPLETE hash-join was never tried at n=31-33 because of a one-line even-n guard; guard removed + odd-n validated. If it fits in RAM, n=31 is GUARANTEED (no lottery).
+
+**The realization:** SA is stochastic and its floors deepen with n (n=31 stuck at 8 across bias
+strengths). But `wz_match` — the PROVABLY COMPLETE hash-join that blindly found BS(19,18) in 51 s —
+was written off after OOMing at n=36/n=42 and **never actually tried in the n=31-34 window** (its
+documented memory wall is ~n=34). Why not even once? **`wz_match.cpp` had a hard input guard
+rejecting ODD n** (line 343, `n % 2 != 0` → error) — a legacy artifact from the even-n campaign
+(18/30/36/42), NOT mathematics: every pipeline stage (enum_class_sums, gen_seqs_for_profile,
+hall_ok, length-n join key, npaf_at) is length-generic.
+
+**Fix + validation (2026-07-03):** guard relaxed to `n >= 4` (one line). Empirical: **blind odd-n
+finds at n=7 sig (2,4,3,1) and n=11 sig (2,4,5,1)** — both `NPAF==0 confirmed` by the solver AND
+independently PASSed by `tools/verify_npaf.py`; even-n regression n=10 (5,1,4,0) intact. An
+adversarial code-audit for hidden parity assumptions was also dispatched (result pending).
+
+**Why this matters:** BS(32,31) is KNOWN to exist (literature: all n≤40 verified). A COMPLETE
+per-signature search that fits in memory MUST find one — deterministic, not a stochastic shot.
+n=31 has exactly **8 valid signature families** (a,b even for len-32 A,B; c,d odd for len-31 C,D;
+a²+b²+c²+d²=126): (10,4,3,1) (10,0,5,1) (8,6,5,1) (8,2,7,3) (6,4,7,5) (6,0,9,3) (4,2,9,5)
+(2,0,11,1). Sweep all 8 → guaranteed BS(32,31) if RAM/time fit. Same logic at n=32 (4n+2=130) and
+n=33 (134) until the ~n=34 wall. **This converts "we have compute" into certainty instead of
+lottery tickets.**
+
+**Probes queued 2026-07-03 (see live-round table in QUICK REFERENCE):** (1) Fir n=29 FULL-JOIN
+canary at banked sig (0,6,9,1) — completeness test at scale: it MUST print FOUND since we hold a
+verified solution in that class; if it exhausts without FOUND, odd-n has a hole and n=31 negatives
+can't be trusted. (2) Rorqual + Trillium `WZ_MEASURE=1` at n=31, sigs (6,4,7,5) (balanced=worst
+case) and (10,4,3,1) (skewed=best case) — prints filtered-pair counts + projected hash GB, zero OOM
+risk. **Read results → if canary FOUNDs and measure fits node RAM (~750 GB): submit the full
+8-sig n=31 join sweep. That is the result path.**
+
+**Honest world-record framing (say it straight):** our finds (n=29/30, next 31-33) are solver-
+capability results — the sequences themselves are known to the literature (n≤40 verified,
+41-43 constructed by Wang-Zhu). They are NOT records. The record is n=44, which needs new
+mathematics (adversarially established 2026-06-27). The realistic ceiling here: complete-join
+n≈33-34 (+ partitioned join maybe 35), SA opportunistically above that. Getting into genuine
+41-43 replication territory requires the Wang-Zhu first-hit generate architecture (the repo's one
+identified open lever — a multi-week research build, uncertain odds). Compute is NOT the
+bottleneck and never was; architecture is.
 
 ---
 

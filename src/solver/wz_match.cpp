@@ -340,7 +340,11 @@ int main(int argc, char **argv) {
     return 1;
   }
   int n = atoi(argv[1]);
-  if (n < 4 || n % 2 != 0) { cerr << "ERROR: n even and >=4\n"; return 1; }
+  // n >= 4, odd OR even. (A legacy guard rejected odd n, but every stage —
+  // enum_class_sums, gen_seqs_for_profile, hall_ok, the length-n join key,
+  // npaf_at — is length-generic. Odd n validated blind at n=7 and n=11
+  // against the banked v3 champions, NPAF==0 independently confirmed.)
+  if (n < 4) { cerr << "ERROR: n must be >= 4\n"; return 1; }
   G_N = n; G_N1 = n + 1;
   G_SIG_A = atoi(argv[2]); G_SIG_B = atoi(argv[3]);
   G_SIG_C = atoi(argv[4]); G_SIG_D = atoi(argv[5]);
