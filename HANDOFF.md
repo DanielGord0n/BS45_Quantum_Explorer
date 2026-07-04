@@ -76,18 +76,21 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-03) — SA lottery continues in background; NEW PRIMARY LEVER = complete
-hash-join at n=29/31 (see the 2026-07-03 TOP OF MIND above the 06-30 one):**
+**LIVE ROUND (2026-07-04) — streaming COUNT-ONLY probes (the streaming-join go/no-go numbers)
++ SA refills. See the 2026-07-04 TOP OF MIND for the decision rule.**
 
-| Cluster | Job | Target | Arm | Seed base | Walltime |
-|---------|-----|--------|-----|-----------|----------|
-| Trillium | `1856596` | n=31 SA | **`WZ_PSD_BIAS=8`, 24h long-run arm** — tests the late-hit hypothesis (all 3 wins landed at 3.9/11.1/11.3h) | 18000000 | 24h; still PD as of 07-03 (max-walltime queues slow) |
-| Fir | `46882836` | n=31 SA | `WZ_PSD_BIAS=8` (proven) fresh seeds | 21000000 | 12h |
-| Rorqual | `15122104` | n=31 SA | `WZ_PSD_BIAS=8` (proven) fresh seeds | 24000000 | 12h |
-| Nibi | `16945067` | n=31 SA | plain control; task 0 R since 07-03 (bestAB=16 @ 7h, 192 chains only), 1-7 PD | default | 12h |
-| Fir | `46885452` | **n=29 JOIN canary** sig (0,6,9,1) | complete hash-join — MUST print FOUND (banked sol'n in this class) | — | 6h |
-| Rorqual | `15122875` | **n=31 MEASURE** sig (6,4,7,5) | `WZ_MEASURE=1` — worst-case (balanced) set sizes + hash GB | — | 3h |
-| Nibi | `17147932` | **n=31 MEASURE** sig (10,4,3,1) | `WZ_MEASURE=1` — best-case (skewed) bracket (moved off Trillium; `--account=def-ikotsire_cpu`) | — | 3h |
+| Cluster | Job | Target | Arm | Walltime |
+|---------|-----|--------|-----|----------|
+| Fir | (ID on submit) | **n=29 COUNT-ONLY** sig (0,6,9,1) | `WZ_COUNT_ONLY=1` — calibration (solvable instance; what must a streaming join handle) | 12h |
+| Rorqual | (ID on submit) | **n=31 COUNT-ONLY** sig (6,4,7,5) | `WZ_COUNT_ONLY=1` — the n=31 worst-case decision number | 12h |
+| Fir | (ID on submit) | n=31 SA | `WZ_PSD_BIAS=8` fresh seeds, base 27000000 | 12h |
+| Rorqual | (ID on submit) | n=31 SA | `WZ_PSD_BIAS=8` fresh seeds, base 30000000 | 12h |
+| Nibi | `16945067_[1-7]` | n=31 SA | plain control, PD (task 0 done → floor 8, = bias) | 12h |
+| Nibi | `17147932` | n=31 MEASURE sig (10,4,3,1) | old-binary measure, still PD — will OOM like Rorqual's UNLESS the skewed sig is small enough to survive; either way a data point | 3h |
+| Trillium | `1856596` | n=31 SA 24h arm | status unknown — **SSH still down 07-04** | 24h |
+
+**Completed 07-03/04:** Fir `46885452` n=29 canary → **OOM** (count phase); Rorqual `15122875`
+n=31 measure → **OOM** (same); SA `46882836`/`15122104`/Nibi task 0 → all floor 8 (plain==bias at n=31).
 
 **⚠️ Trillium SSH DOWN 2026-07-03:** repeated `Permission denied (keyboard-interactive,hostbased)`
 BEFORE the Duo prompt — auth-layer failure on their side. Its queued 24h SA arm `1856596` is
@@ -249,7 +252,37 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-03: STRATEGIC UNLOCK — the COMPLETE hash-join was never tried at n=31-33 because of a one-line even-n guard; guard removed + odd-n validated. If it fits in RAM, n=31 is GUARANTEED (no lottery).
+## ⚡ TOP OF MIND — 2026-07-04: PROBE VERDICT — the join OOMs at n=29 ALREADY (count-phase materialization, NOT the hash). The "n≤34 window" is dead AS IMPLEMENTED; the 06-27 "caps ~18-20" note was right. New streaming COUNT-ONLY probe built+validated to decide if a streaming join is buildable.
+
+**Measured 2026-07-03/04:** Fir n=29 canary join (`46885452`) and Rorqual n=31 measure (`15122875`)
+both **OOM-killed ~20-30 s in, right after printing profiles** — same signature as the old n=36/42
+OOMs. Diagnosis (code-level, certain): the OOM is in `count_side` — `gen_seqs_for_profile`
+**materializes every passing sequence per profile** (`vector<vector<int>>`), on 192 threads
+concurrently. It is NOT the hash (never got there) and NOT odd-n (n=36/42 even, same death).
+The 2026-06-27 "hash-join caps ~n=18-20 in RAM" was correct; the lineage note "MEMORY wall ~n=34"
+was wrong. **The odd-n guard fix + soundness audit remain valid and banked** — they're prerequisites
+for ANY odd-n join, just not sufficient.
+
+**The wall is an implementation artifact, not physics:** counting/hashing needs no materialization.
+Whether a STREAMING join (generate-and-process, O(L)/thread; partition hash if needed) is worth
+building depends on two numbers nobody has ever measured: per-side spec-ok counts and pair-work
+Σ|X|·|Y| at n=29/31. **Built + validated 2026-07-04: `WZ_COUNT_ONLY=1` mode in wz_match.cpp**
+(streaming twin of the generator, zero storage, progress every 32 profiles so TIMEOUT still yields
+partial data). Validated exact vs the materializing path at n=11 AND n=13 (both sides, to the digit);
+full-join regression intact.
+
+**Decision rule when the count probes land:** pair-work ≲10^13 and records ≲ RAM ⇒ build the
+streaming join (real shot at deterministic n=29-31); pair-work ≳10^15-16 ⇒ the complete-join route
+is dead by TIME at n≥29 — document as the measured frontier and stay on SA/architecture research.
+
+**SA round verdict (07-04):** three more full 12h arrays at n=31 all floored at 8 — Fir `46882836`
+(bias@8 fresh seeds), Rorqual `15122104` (bias@8 fresh seeds), and **Nibi plain control task 0 → 8:
+plain == bias at n=31** (the bias only mattered at n=30). ~7 arrays now stuck at 8; the n=31 SA
+lottery has sharply diminishing returns. Trillium (24h arm) unknown — SSH still down 07-04.
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-03: STRATEGIC UNLOCK — the COMPLETE hash-join was never tried at n=31-33 because of a one-line even-n guard; guard removed + odd-n validated. If it fits in RAM, n=31 is GUARANTEED (no lottery). *(07-04: the window is NOT reachable as-implemented — OOM at n=29 in the count phase; see 07-04 entry. Odd-n fix + audit still stand.)*
 
 **The realization:** SA is stochastic and its floors deepen with n (n=31 stuck at 8 across bias
 strengths). But `wz_match` — the PROVABLY COMPLETE hash-join that blindly found BS(19,18) in 51 s —

@@ -247,6 +247,44 @@ static void gen_seqs_for_profile(int L, const vector<int> &target3, bool pin0,
   rec(0, {0, 0, 0}, {0, 0, 0});
 }
 
+// COUNT-ONLY twin of gen_seqs_for_profile: identical DFS + spectral filter but
+// stores NOTHING — O(L) memory however many sequences pass. Exists because the
+// materializing path OOM-kills a 192-thread node from n=29 up (measured
+// 2026-07-03: canary n=29 and measure n=31 both died in the count phase, before
+// any hash was built). Used by the WZ_COUNT_ONLY probe.
+static void count_seqs_for_profile(int L, const vector<int> &target3, bool pin0,
+                                   long long &examined, long long &spec_ok) {
+  int total_in_class[3];
+  for (int c = 0; c < 3; c++) total_in_class[c] = class_count(L, c, 3);
+
+  vector<int> X(L, 0);
+  function<void(int, array<int,3>, array<int,3>)> rec =
+      [&](int i, array<int,3> partial, array<int,3> placed) {
+    for (int c = 0; c < 3; c++) {
+      int rem = total_in_class[c] - placed[c];
+      int diff = target3[c] - partial[c];
+      if (diff < -rem || diff > rem) return;
+      if (((diff - (-rem)) & 1) != 0) return;
+    }
+    if (i == L) {
+      examined++;
+      if (hall_ok_single(X.data(), L)) spec_ok++;
+      return;
+    }
+    int c = i % 3;
+    int lo = -1, hi = 1;
+    if (i == 0 && pin0) lo = 1;
+    for (int v = hi; v >= lo; v -= 2) {
+      X[i] = v;
+      auto np = partial; np[c] += v;
+      auto pl = placed; pl[c]++;
+      rec(i + 1, np, pl);
+    }
+    X[i] = 0;
+  };
+  rec(0, {0, 0, 0}, {0, 0, 0});
+}
+
 // ============================ profile enumeration ============================
 //
 // Surviving mod-3 (px,py) pair-profiles for a side of length L (sigX,sigY). A
@@ -385,6 +423,59 @@ int main(int argc, char **argv) {
 
   bool pinA = (G_SIG_A == 0), pinB = (G_SIG_B == 0);
   bool pinC = (G_SIG_C == 0), pinD = (G_SIG_D == 0);
+
+  // ---- WZ_COUNT_ONLY probe: streaming per-profile sequence counts, O(L)/thread
+  //      memory, no materialization anywhere. Usable at n where WZ_MEASURE and
+  //      the join OOM (n>=29 measured). Reports the streaming-join decision
+  //      numbers: per-side spec-ok counts and pair-work SUM|X|*|Y| = exact number
+  //      of joint-hall_ok tests a join must run (also a pre-dedup upper bound on
+  //      hash records). Progress lines every 32 profiles so a TIMEOUT still
+  //      leaves partial data.
+  if (getenv("WZ_COUNT_ONLY")) {
+    auto count_stream = [&](vector<Profile> &profs, int L, bool pin0, bool pin1,
+                            const char *label) -> double {
+      double sum_x = 0, sum_y = 0, pairwork = 0, max_pw = 0, ex_total = 0;
+      long long done = 0;
+      int nprof = (int)profs.size();
+      #pragma omp parallel for schedule(dynamic)
+      for (int pi = 0; pi < nprof; pi++) {
+        long long xe = 0, xok = 0, ye = 0, yok = 0;
+        count_seqs_for_profile(L, profs[pi].px, pin0, xe, xok);
+        count_seqs_for_profile(L, profs[pi].py, pin1, ye, yok);
+        double pw = (double)xok * (double)yok;
+        #pragma omp critical
+        {
+          sum_x += (double)xok; sum_y += (double)yok;
+          pairwork += pw; ex_total += (double)(xe + ye);
+          if (pw > max_pw) max_pw = pw;
+          done++;
+          if ((done % 32) == 0 || done == nprof) {
+            double t = chrono::duration<double>(Clock::now() - G_T0).count();
+            cout << "[count-only " << label << " " << done << "/" << nprof
+                 << "] X~" << sum_x << " Y~" << sum_y << " pairwork~" << pairwork
+                 << " [" << t << "s]\n" << flush;
+          }
+        }
+      }
+      cout << "=== COUNT-ONLY " << label << " (L=" << L << ", profiles="
+           << nprof << ") ===\n"
+           << "  DFS-examined=" << ex_total << "  spec-ok X=" << sum_x
+           << "  Y=" << sum_y << "\n"
+           << "  pair-work SUM|X|*|Y| = " << pairwork
+           << "  (largest profile " << max_pw << ")\n" << flush;
+      return pairwork;
+    };
+    double ab_pw = count_stream(abProfs, G_N1, pinA, pinB, "A,B");
+    double cd_pw = count_stream(cdProfs, n,   pinC, pinD, "C,D");
+    double t = chrono::duration<double>(Clock::now() - G_T0).count();
+    cout << "\n=== COUNT-ONLY SUMMARY (n=" << n << ") ===\n";
+    cout << "hash side would be " << (ab_pw <= cd_pw ? "A,B" : "C,D")
+         << ": records (pre-dedup, pre-joint-hall_ok) <= "
+         << (ab_pw <= cd_pw ? ab_pw : cd_pw) << "\n";
+    cout << "join pair-tests ~= " << (ab_pw + cd_pw) << "\n";
+    cout << "Time: " << t << "s\n" << flush;
+    return 0;
+  }
 
   // ---- quick hall_ok-pair COUNT for each side (no record storage) to decide
   //      which (smaller) side to hash. This regenerates sequences but stores
