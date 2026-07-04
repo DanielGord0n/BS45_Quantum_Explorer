@@ -81,10 +81,10 @@ BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefor
 
 | Cluster | Job | Target | Arm | Walltime |
 |---------|-----|--------|-----|----------|
-| Fir | (ID on submit) | **n=29 COUNT-ONLY** sig (0,6,9,1) | `WZ_COUNT_ONLY=1` — calibration (solvable instance; what must a streaming join handle) | 12h |
-| Rorqual | (ID on submit) | **n=31 COUNT-ONLY** sig (6,4,7,5) | `WZ_COUNT_ONLY=1` — the n=31 worst-case decision number | 12h |
-| Fir | (ID on submit) | n=31 SA | `WZ_PSD_BIAS=8` fresh seeds, base 27000000 | 12h |
-| Rorqual | (ID on submit) | n=31 SA | `WZ_PSD_BIAS=8` fresh seeds, base 30000000 | 12h |
+| Fir | `46980640` | **n=29 COUNT-ONLY** sig (0,6,9,1) | `WZ_COUNT_ONLY=1` — calibration (solvable instance; what must a streaming join handle) | 12h |
+| Rorqual | `15319742` | **n=31 COUNT-ONLY** sig (6,4,7,5) | `WZ_COUNT_ONLY=1` — the n=31 worst-case decision number | 12h |
+| Fir | `46980641` | n=31 SA | `WZ_PSD_BIAS=8` fresh seeds, base 27000000 | 12h |
+| Rorqual | `15319743` | n=31 SA | `WZ_PSD_BIAS=8` fresh seeds, base 30000000 | 12h |
 | Nibi | `16945067_[1-7]` | n=31 SA | plain control, PD (task 0 done → floor 8, = bias) | 12h |
 | Nibi | `17147932` | n=31 MEASURE sig (10,4,3,1) | old-binary measure, still PD — will OOM like Rorqual's UNLESS the skewed sig is small enough to survive; either way a data point | 3h |
 | Trillium | `1856596` | n=31 SA 24h arm | status unknown — **SSH still down 07-04** | 24h |
