@@ -76,10 +76,16 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-06) — n=31 CONFIRMED + BANKED (champion_sa_bs32_31.txt). n=32 SA blitz live:
-Fir `47220679` (bias@8, seed 33M) / Rorqual `15413159` (plain, 36M) / Nibi `17229284` (plain, 39M).
-Trillium rejoins when SSH recovers. Prior measured n=32 floor: 8 (bias@8, 12h) — expect a grind;
-playbook = ticket volume with fresh disjoint seed bases each round (next: 42M/45M/48M...).**
+**LIVE ROUND (2026-07-06) — n=31 CONFIRMED + BANKED (champion_sa_bs32_31.txt). n=32 SA blitz live
+on ALL FOUR clusters: Fir `47220679` (bias@8, seed 33M) / Rorqual `15413159` (plain, 36M) /
+Nibi `17229284` (plain, 39M) / Trillium `1884181` (bias@8, 42M — SSH recovered 07-06). Prior
+measured n=32 floor: 8 (bias@8, 12h) — expect a grind; playbook = ticket volume with fresh
+disjoint seed bases each round (next: 45M/48M/51M...).**
+
+**Long-run lever ANSWERED (07-06, negative):** Trillium's 24h arm `1856596` ran ALL 8 tasks the
+full 24h at n=31 → floors 8, no FOUND. Doubling walltime does NOT beat the floor — consistent with
+the ticket-volume model (the n=31 winner hit 41 min into its run). Stick to 12h arrays; do not
+spend queue-priority on 24h requests again.
 
 **Completed 07-04/06:** COUNT-ONLY probes `46980640` (n=29 → pair-work 1.58e15) + `15319742`
 (n=31 → 4.0e16) — join route CLOSED (see 07-06 TOP OF MIND). SA n=31: Fir `46980641` floors 8/8/12,
