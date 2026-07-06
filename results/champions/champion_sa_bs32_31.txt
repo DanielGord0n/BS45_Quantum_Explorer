@@ -1,0 +1,10 @@
+31 32 0
+0 -6 9 -3
+1 1 -1 1 1 1 -1 -1 -1 -1 -1 -1 1 -1 1 -1 1 -1 -1 1 -1 -1 1 1 -1 1 -1 -1 1 1 1 1
+1 -1 1 -1 -1 -1 1 -1 -1 -1 -1 1 1 -1 1 -1 1 -1 -1 1 1 -1 1 1 -1 -1 1 1 -1 -1 -1 -1
+1 1 1 1 1 1 1 -1 1 1 1 -1 -1 1 -1 1 1 1 -1 -1 -1 1 1 1 1 1 -1 1 -1 -1 -1
+-1 1 1 -1 1 -1 1 1 -1 1 -1 1 -1 -1 1 1 -1 -1 -1 1 1 1 -1 -1 1 -1 -1 -1 -1 -1 1
+# BS(32,31), n=31 — NEW BANKED BEST (beats BS(31,30)). Blind SA find, NO prefix.
+# Solver: wz_sa_v8 PLAIN (no bias) — the ~9th full 12h array at n=31; ticket volume, not bias, is the driver at this rung.
+# Cluster: Nibi (the "unreliable" one), job 16945067 task 3, seed offset 301000, Time 2450.98s (~41 min into the run), 2026-07-04.
+# sig=(0,-6,9,-3); a^2+b^2+c^2+d^2=126=4*31+2. NPAF[s]=0 all s=1..32, independently verified by tools/verify_npaf.py 2026-07-06.

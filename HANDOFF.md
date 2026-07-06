@@ -3,7 +3,7 @@
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
-**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(31,30) (n=30) banked 2026-06-30** (blind SA find, NPAF-verified — new best, beats the prior BS(28,27)); plus two BS(30,29) (n=29). Ladder now pushing n≥31.
+**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(32,31) (n=31) banked 2026-07-06** (blind SA find on Nibi's PLAIN arm, NPAF-verified — new best; ladder history: 28 → 29 ×2 → 30 → 31). Ladder now blitzing n=32.
 BS(45,44) (n=44) is the dream/world-record but is OPEN for the whole field — blind n≥36 is rigorously
 infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path = the metaheuristic ladder.
 
@@ -76,21 +76,16 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-04) — streaming COUNT-ONLY probes (the streaming-join go/no-go numbers)
-+ SA refills. See the 2026-07-04 TOP OF MIND for the decision rule.**
+**LIVE ROUND (2026-07-06) — n=31 CONFIRMED + BANKED (champion_sa_bs32_31.txt). n=32 SA blitz live:
+Fir `47220679` (bias@8, seed 33M) / Rorqual `15413159` (plain, 36M) / Nibi `17229284` (plain, 39M).
+Trillium rejoins when SSH recovers. Prior measured n=32 floor: 8 (bias@8, 12h) — expect a grind;
+playbook = ticket volume with fresh disjoint seed bases each round (next: 42M/45M/48M...).**
 
-| Cluster | Job | Target | Arm | Walltime |
-|---------|-----|--------|-----|----------|
-| Fir | `46980640` | **n=29 COUNT-ONLY** sig (0,6,9,1) | `WZ_COUNT_ONLY=1` — calibration (solvable instance; what must a streaming join handle) | 12h |
-| Rorqual | `15319742` | **n=31 COUNT-ONLY** sig (6,4,7,5) | `WZ_COUNT_ONLY=1` — the n=31 worst-case decision number | 12h |
-| Fir | `46980641` | n=31 SA | `WZ_PSD_BIAS=8` fresh seeds, base 27000000 | 12h |
-| Rorqual | `15319743` | n=31 SA | `WZ_PSD_BIAS=8` fresh seeds, base 30000000 | 12h |
-| Nibi | `16945067_[1-7]` | n=31 SA | plain control, PD (task 0 done → floor 8, = bias) | 12h |
-| Nibi | `17147932` | n=31 MEASURE sig (10,4,3,1) | old-binary measure, still PD — will OOM like Rorqual's UNLESS the skewed sig is small enough to survive; either way a data point | 3h |
-| Trillium | `1856596` | n=31 SA 24h arm | status unknown — **SSH still down 07-04** | 24h |
-
-**Completed 07-03/04:** Fir `46885452` n=29 canary → **OOM** (count phase); Rorqual `15122875`
-n=31 measure → **OOM** (same); SA `46882836`/`15122104`/Nibi task 0 → all floor 8 (plain==bias at n=31).
+**Completed 07-04/06:** COUNT-ONLY probes `46980640` (n=29 → pair-work 1.58e15) + `15319742`
+(n=31 → 4.0e16) — join route CLOSED (see 07-06 TOP OF MIND). SA n=31: Fir `46980641` floors 8/8/12,
+Rorqual `15319743` floors 8, Nibi `16945067` tasks 1-7 done → **task 3 flags FOUND (verify!)**,
+rest floor 8. Nibi `17147932` old-binary measure → OOM (expected). Earlier OOMs: `46885452`,
+`15122875`. Trillium `1856596` 24h arm: unknown, SSH down since 07-03.
 
 **⚠️ Trillium SSH DOWN 2026-07-03:** repeated `Permission denied (keyboard-interactive,hostbased)`
 BEFORE the Duo prompt — auth-layer failure on their side. Its queued 24h SA arm `1856596` is
@@ -249,6 +244,32 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 *(Trillium BS(45): use the pre-queue command above.)*
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-06: (a) PROBABLE BS(32,31) n=31 SA HIT on Nibi (VERIFY FIRST); (b) count probes CLOSED the join question — dead by TIME above n≈29, measured not guessed.
+
+**(a) ✅ CONFIRMED 2026-07-06: BS(32,31) n=31 — NEW BANKED BEST.** Nibi `16945067` task 3 (PLAIN
+arm, seed offset 301000, hit at 2450.98 s ≈ 41 min into the run), sig (0,-6,9,-3), norm 126=4·31+2.
+Independently verified: `verify_npaf.py` PASS, NPAF[s]=0 all s=1..32. Banked:
+`results/champions/champion_sa_bs32_31.txt`. Found by the plain arm on the "unreliable" cluster
+after ~9 full arrays at n=31 — confirming TICKET VOLUME (not the PSD bias) is the SA driver at this
+rung (bias mattered only at n=30; plain==bias floors at 31). **n=32 blitz LIVE (2026-07-06):
+Fir `47220679` bias@8 seed 33M / Rorqual `15413159` plain 36M / Nibi `17229284` plain 39M
+(`--account=def-ikotsire_cpu`); Trillium rejoins when SSH recovers.**
+
+**(b) COUNT-ONLY probes (both clean, no OOM — the streaming counter worked exactly as designed):**
+- **n=29 sig (0,6,9,1):** join pair-tests ~**1.58e15** (C,D side spec-ok 1.8e8 X / 5.4e8 Y;
+  pre-dedup records ≤2.3e14). ≈2 node-days PER SIGNATURE — and n=29 is already banked. 94 s to count.
+- **n=31 sig (6,4,7,5) (worst):** pair-tests ~**4.0e16**, pre-dedup records ≤8.2e15 — months/node,
+  dead by TIME before memory even enters. 565 s to count.
+- Growth ~5-30×/rung ⇒ n≥32 strictly worse. **Per the pre-registered decision rule (≳1e15-16 =
+  dead): the complete/streaming-join route above n≈29 is CLOSED — a measured frontier, not a guess.**
+  Enumeration itself is cheap (all of n=31 counted in ~10 min): the wall is pair-test VOLUME — the
+  quantitative demonstration of why Wang-Zhu-grade filters (~10³× tighter) are the only route to a
+  complete solver at 40+. Prime evidence for the frontier writeup.
+- Do NOT build the streaming join. The count-only mode stays as the frontier-measurement tool
+  (`WZ_COUNT_ONLY=1`, validated exact at n=11/13).
 
 ---
 
