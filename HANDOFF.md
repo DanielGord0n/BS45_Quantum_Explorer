@@ -78,14 +78,18 @@ BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefor
 
 **LIVE ROUND (2026-07-07) — n=32 blitz, round 2. Round 1 verdict: floors 8 everywhere
 (Fir `47220679` 8/8/8/12, Rorqual `15413159` 8/8/12/16, Nibi `17229284` tasks 0-3 → 8; Nibi 4-7 +
-Trillium `1884181` still PD). Round 2 refills: Fir seed 45M (bias@8) + Rorqual 48M (plain) — IDs on
-submit. Seed ledger used: 1000, 3M...48M; next 51M/54M. Expect a multi-round grind (n=31 took ~9 arrays).**
+Trillium `1884181` still PD). Round 2 refills LIVE: Fir `47433547` (bias@8, seed 45M) +
+Rorqual `15452301` (plain, 48M). Seed ledger used: 1000, 3M...48M; next 51M/54M.
+Expect a multi-round grind (n=31 took ~9 arrays).**
 
 **PROJECT SCAFFOLDING ADDED 2026-07-07 (Fable handover day):** repo `CLAUDE.md` (session entry
 point — routes every future model to HANDOFF + skill) · `.claude/skills/bs45-campaign/SKILL.md`
 (THE campaign playbook: daily loop, output-reading traps, measured-dead list with numbers,
 verification discipline, decision doctrine, escalation ladder) · `docs/kotsireas_brief.md`
-(one-page results + measured-frontier brief for the methods conversation — READY TO SEND).
+(one-page results + measured-frontier brief for the methods conversation — READY TO SEND) ·
+`docs/wz_firsthit_plan.md` (**the executable build plan for the Wang-Zhu first-hit
+architecture** — the only credible route toward n=42-43: Phase-0 measurement gates with
+pre-registered pass/KILL criteria BEFORE any build; start there, cheap and decisive).
 
 **Long-run lever ANSWERED (07-06, negative):** Trillium's 24h arm `1856596` ran ALL 8 tasks the
 full 24h at n=31 → floors 8, no FOUND. Doubling walltime does NOT beat the floor — consistent with

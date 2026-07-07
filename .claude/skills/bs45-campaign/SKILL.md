@@ -94,8 +94,8 @@ Nibi — the "unreliable" cluster — 41 minutes into a run). Buy tickets everyw
 1. **Now:** SA blitz at the current rung, fresh seeds each round (this is the engine).
 2. **Ready:** the Kotsireas methods conversation — brief at `docs/kotsireas_brief.md`
    (results + measured frontier + the filter-gap question). A methods ask, NOT a compute ask.
-3. **Research-grade gamble (weeks, uncertain, decide explicitly):** reimplement the Wang-Zhu
-   first-hit architecture — generate mod-6-residue-constrained C,D with their per-sequence
-   filter DURING construction, backtrack A,B per survivor, stop at first hit. Our filter is
-   ~10³× looser (measured); closing that gap is the only known route to n=42–43 territory.
+3. **Research-grade gamble (weeks, uncertain, decide explicitly):** the Wang-Zhu first-hit
+   architecture. **Full executable plan: `docs/wz_firsthit_plan.md`** — start with its
+   Phase-0 measurement gates (days, cheap, pre-registered pass/KILL criteria); do NOT start
+   Phase 1+ builds before the gates pass and Daniel explicitly opts in.
 4. **Not a lever:** more compute on current methods above the SA ceiling (~n≈33–35).
