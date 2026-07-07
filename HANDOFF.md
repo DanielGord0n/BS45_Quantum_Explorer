@@ -76,11 +76,16 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-06) — n=31 CONFIRMED + BANKED (champion_sa_bs32_31.txt). n=32 SA blitz live
-on ALL FOUR clusters: Fir `47220679` (bias@8, seed 33M) / Rorqual `15413159` (plain, 36M) /
-Nibi `17229284` (plain, 39M) / Trillium `1884181` (bias@8, 42M — SSH recovered 07-06). Prior
-measured n=32 floor: 8 (bias@8, 12h) — expect a grind; playbook = ticket volume with fresh
-disjoint seed bases each round (next: 45M/48M/51M...).**
+**LIVE ROUND (2026-07-07) — n=32 blitz, round 2. Round 1 verdict: floors 8 everywhere
+(Fir `47220679` 8/8/8/12, Rorqual `15413159` 8/8/12/16, Nibi `17229284` tasks 0-3 → 8; Nibi 4-7 +
+Trillium `1884181` still PD). Round 2 refills: Fir seed 45M (bias@8) + Rorqual 48M (plain) — IDs on
+submit. Seed ledger used: 1000, 3M...48M; next 51M/54M. Expect a multi-round grind (n=31 took ~9 arrays).**
+
+**PROJECT SCAFFOLDING ADDED 2026-07-07 (Fable handover day):** repo `CLAUDE.md` (session entry
+point — routes every future model to HANDOFF + skill) · `.claude/skills/bs45-campaign/SKILL.md`
+(THE campaign playbook: daily loop, output-reading traps, measured-dead list with numbers,
+verification discipline, decision doctrine, escalation ladder) · `docs/kotsireas_brief.md`
+(one-page results + measured-frontier brief for the methods conversation — READY TO SEND).
 
 **Long-run lever ANSWERED (07-06, negative):** Trillium's 24h arm `1856596` ran ALL 8 tasks the
 full 24h at n=31 → floors 8, no FOUND. Doubling walltime does NOT beat the floor — consistent with
