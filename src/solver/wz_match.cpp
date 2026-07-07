@@ -333,6 +333,86 @@ static vector<Profile> survive_profiles(int L, int sigX, int sigY,
   return out;
 }
 
+// Modulus-m generalization of the COUNT-ONLY DFS (m <= 8). Same per-sequence
+// spectral filter, class constraints at modulus m instead of 3; stores nothing.
+// Used by the WZ_COUNT_MOD6 Gate-A probe (docs/wz_firsthit_plan.md).
+static void count_seqs_for_profile_m(int L, const vector<int> &target, int m,
+                                     bool pin0, long long &examined,
+                                     long long &spec_ok) {
+  int total_in_class[8];
+  for (int c = 0; c < m; c++) total_in_class[c] = class_count(L, c, m);
+  vector<int> X(L, 0);
+  function<void(int, array<int,8>, array<int,8>)> rec =
+      [&](int i, array<int,8> partial, array<int,8> placed) {
+    for (int c = 0; c < m; c++) {
+      int rem = total_in_class[c] - placed[c];
+      int diff = target[c] - partial[c];
+      if (diff < -rem || diff > rem) return;
+      if (((diff - (-rem)) & 1) != 0) return;
+    }
+    if (i == L) {
+      examined++;
+      if (hall_ok_single(X.data(), L)) spec_ok++;
+      return;
+    }
+    int c = i % m;
+    int lo = -1, hi = 1;
+    if (i == 0 && pin0) lo = 1;
+    for (int v = hi; v >= lo; v -= 2) {
+      X[i] = v;
+      auto np = partial; np[c] += v;
+      auto pl = placed; pl[c]++;
+      rec(i + 1, np, pl);
+    }
+    X[i] = 0;
+  };
+  rec(0, array<int,8>{}, array<int,8>{});
+}
+
+// Surviving mod-6 (px,py) pair-profiles for one side: norm budget + EXACT
+// complement completion at mod-6 (same norm identity as mod-3 — parity-generic,
+// audit-verified 2026-07-03). This is the GENERATION-level mod-6 constraint (the
+// Wang-Zhu lift), vs survive_profiles' mod-3 profiles with existential tighten.
+// Guard: bails once `cap` pairs accumulate — an exploding profile space is
+// itself a Gate-A verdict, not an error.
+static vector<Profile> survive_profiles6(int L, int sigX, int sigY,
+                                         const PairNormSet &comp3,
+                                         const PairNormSet &comp6,
+                                         size_t cap = 20000000) {
+  int tgt = 4 * G_N + 2;
+  auto PX = enum_class_sums(L, sigX, 6);
+  auto PY = enum_class_sums(L, sigY, 6);
+  auto reduce63 = [](const vector<int> &v6) {
+    return vector<int>{v6[0]+v6[3], v6[1]+v6[4], v6[2]+v6[5]};
+  };
+  vector<Profile> out;
+  for (auto &px : PX) {
+    int npx = norm_vec(px);
+    if (npx > tgt) continue;
+    auto px3 = reduce63(px);
+    int npx3 = norm_vec(px3);
+    if (npx3 > tgt) continue;
+    for (auto &py : PY) {
+      int need = tgt - npx - norm_vec(py);
+      if (need < 0) continue;
+      if (!comp6.feasible(need)) continue;
+      // A real solution satisfies the norm identity at EVERY modulus: the
+      // pair's mod-3 reduction must ALSO complete (without this, mod-6
+      // "survivors" include pairs mod-3 already kills — measured at n=11:
+      // mod-6 pairwork exceeded mod-3, impossible for a true refinement).
+      int need3 = tgt - npx3 - norm_vec(reduce63(py));
+      if (need3 < 0 || !comp3.feasible(need3)) continue;
+      out.push_back({px, py});
+      if (out.size() >= cap) {
+        cout << "[mod6] WARNING: profile-pair space hit cap " << cap
+             << " — mod-6 PROFILE space itself explodes (Gate-A data)\n" << flush;
+        return out;
+      }
+    }
+  }
+  return out;
+}
+
 // ============================ autocorr key (compact) =========================
 //
 // COMPACT KEY: instead of storing the full length-n int16 autocorrelation vector
@@ -415,6 +495,53 @@ int main(int argc, char **argv) {
   cd3.build(n,    G_SIG_C, G_SIG_D, 3);
   cd6.build(n,    G_SIG_C, G_SIG_D, 6);
 
+  // ---- WZ_PROFILE_CHECK: Gate-A soundness canary. Feed a SOLVED banner-format
+  //      A/B/C/D on stdin (with the matching SIGNED sig on argv); verifies the
+  //      real solution's own class-sum profiles pass the exact survival
+  //      predicates the mod-3 and mod-6 paths use. FAIL = the residue lift
+  //      would exclude a real solution -> do NOT trust Gate-A counts.
+  //      Usage: WZ_PROFILE_CHECK=1 ./wz_match 31 0 -6 9 -3 < champion_banner.txt
+  if (getenv("WZ_PROFILE_CHECK")) {
+    string all, line;
+    while (getline(cin, line)) all += line + "\n";
+    auto parse = [&](char name, int L) {
+      vector<int> v;
+      size_t p = all.find(string(1, name) + " = {");
+      if (p == string::npos) { cerr << "PROFILE_CHECK: '" << name << " = {' not found\n"; exit(2); }
+      p += 5;
+      while (p < all.size() && all[p] != '}') {
+        if (all[p] == '-') { v.push_back(-1); p += 2; }
+        else if (all[p] == '1') { v.push_back(1); p++; }
+        else p++;
+      }
+      if ((int)v.size() != L) { cerr << "PROFILE_CHECK: " << name << " length " << v.size() << " != " << L << "\n"; exit(2); }
+      return v;
+    };
+    auto A = parse('A', G_N1), B = parse('B', G_N1);
+    auto C = parse('C', n),   D = parse('D', n);
+    auto csums = [](const vector<int> &X, int m) {
+      vector<int> s(m, 0);
+      for (int i = 0; i < (int)X.size(); i++) s[i % m] += X[i];
+      return s;
+    };
+    int tgt = 4 * n + 2;
+    bool allok = true;
+    auto check = [&](const char *side, const vector<int> &X, const vector<int> &Y,
+                     int m, const PairNormSet &comp) {
+      auto px = csums(X, m), py = csums(Y, m);
+      int need = tgt - norm_vec(px) - norm_vec(py);
+      bool ok = need >= 0 && comp.feasible(need);
+      cout << "PROFILE_CHECK " << side << " mod-" << m << ": own-norm=" << (tgt - need)
+           << " complement-needs=" << need << " -> " << (ok ? "PASS" : "FAIL") << "\n";
+      allok &= ok;
+    };
+    check("A,B", A, B, 3, cd3); check("A,B", A, B, 6, cd6);
+    check("C,D", C, D, 3, ab3); check("C,D", C, D, 6, ab6);
+    cout << (allok ? "PROFILE_CHECK: ALL PASS — residue lift keeps this solution\n"
+                   : "PROFILE_CHECK: FAIL — residue lift would EXCLUDE this solution\n") << flush;
+    return allok ? 0 : 1;
+  }
+
   // --- surviving profiles for each side (complement = the OTHER side) ---
   auto abProfs = survive_profiles(G_N1, G_SIG_A, G_SIG_B, cd3, cd6);
   auto cdProfs = survive_profiles(n,    G_SIG_C, G_SIG_D, ab3, ab6);
@@ -423,6 +550,60 @@ int main(int argc, char **argv) {
 
   bool pinA = (G_SIG_A == 0), pinB = (G_SIG_B == 0);
   bool pinC = (G_SIG_C == 0), pinD = (G_SIG_D == 0);
+
+  // ---- WZ_COUNT_MOD6: GATE A of docs/wz_firsthit_plan.md. Streaming counts of
+  //      the MOD-6-constrained stream (the Wang-Zhu lift), zero materialization.
+  //      Compare against a separate WZ_COUNT_ONLY (mod-3) run of the same sig:
+  //      the reduction ratio is the gate metric. Progress lines leave partial
+  //      data on TIMEOUT. Takes precedence over WZ_COUNT_ONLY if both are set.
+  if (getenv("WZ_COUNT_MOD6")) {
+    auto ab6Profs = survive_profiles6(G_N1, G_SIG_A, G_SIG_B, cd3, cd6);
+    auto cd6Profs = survive_profiles6(n,    G_SIG_C, G_SIG_D, ab3, ab6);
+    cout << "[mod6 profiles] A,B side: " << ab6Profs.size()
+         << "   C,D side: " << cd6Profs.size() << "\n" << flush;
+    auto count6 = [&](vector<Profile> &profs, int L, bool pin0, bool pin1,
+                      const char *label) -> double {
+      double sum_x = 0, sum_y = 0, pairwork = 0, max_pw = 0, ex_total = 0;
+      long long done = 0;
+      int nprof = (int)profs.size();
+      long long stride = nprof > 6400 ? nprof / 100 : 32;
+      #pragma omp parallel for schedule(dynamic)
+      for (int pi = 0; pi < nprof; pi++) {
+        long long xe = 0, xok = 0, ye = 0, yok = 0;
+        count_seqs_for_profile_m(L, profs[pi].px, 6, pin0, xe, xok);
+        count_seqs_for_profile_m(L, profs[pi].py, 6, pin1, ye, yok);
+        double pw = (double)xok * (double)yok;
+        #pragma omp critical
+        {
+          sum_x += (double)xok; sum_y += (double)yok;
+          pairwork += pw; ex_total += (double)(xe + ye);
+          if (pw > max_pw) max_pw = pw;
+          done++;
+          if ((done % stride) == 0 || done == nprof) {
+            double t = chrono::duration<double>(Clock::now() - G_T0).count();
+            cout << "[mod6 " << label << " " << done << "/" << nprof
+                 << "] X~" << sum_x << " Y~" << sum_y << " pairwork~" << pairwork
+                 << " [" << t << "s]\n" << flush;
+          }
+        }
+      }
+      cout << "=== MOD6 COUNT " << label << " (L=" << L << ", profiles=" << nprof
+           << ") ===\n  DFS-examined=" << ex_total << "  spec-ok X=" << sum_x
+           << "  Y=" << sum_y << "\n  pair-work SUM|X|*|Y| = " << pairwork
+           << "  (largest profile " << max_pw << ")\n" << flush;
+      return pairwork;
+    };
+    double ab_pw = count6(ab6Profs, G_N1, pinA, pinB, "A,B");
+    double cd_pw = count6(cd6Profs, n,   pinC, pinD, "C,D");
+    double t = chrono::duration<double>(Clock::now() - G_T0).count();
+    cout << "\n=== GATE A SUMMARY (n=" << n << ", mod-6 constrained) ===\n"
+         << "mod-6 pair-work: A,B " << ab_pw << "  C,D " << cd_pw
+         << "  total " << (ab_pw + cd_pw) << "\n"
+         << "Compare vs the same sig's WZ_COUNT_ONLY (mod-3) run for the reduction ratio.\n"
+         << "Gate rule (docs/wz_firsthit_plan.md): C,D stream <= ~1e9 at n=36 PASS; >= 1e12 KILL.\n"
+         << "Time: " << t << "s\n" << flush;
+    return 0;
+  }
 
   // ---- WZ_COUNT_ONLY probe: streaming per-profile sequence counts, O(L)/thread
   //      memory, no materialization anywhere. Usable at n where WZ_MEASURE and

@@ -91,6 +91,15 @@ verification discipline, decision doctrine, escalation ladder) · `docs/kotsirea
 architecture** — the only credible route toward n=42-43: Phase-0 measurement gates with
 pre-registered pass/KILL criteria BEFORE any build; start there, cheap and decisive).
 
+**GATE A IS LIVE (2026-07-07, queued alongside the blitz — read results against the plan's
+pass/KILL rule):** `WZ_COUNT_MOD6=1` instrument built, bug-fixed (mod-3-reduction check),
+≤-invariant validated at n=11/13, and canaried (all 4 banked solutions PASS `WZ_PROFILE_CHECK`
+at both moduli). Jobs (IDs on submit): Nibi n=31 (6,4,7,5) — ratio vs the measured 8.2e15
+mod-3 baseline · Fir n=36 (5,11,0,0) — THE gate rung · Rorqual n=42 (7,11,0,0) — goal-rung
+bonus (partial progress lines still count). Output files: `wz_match_output_*`, look for
+`=== GATE A SUMMARY ===`. Small-n calibration: reduction is only ~1-2× at n=11/13 — the gate
+asks whether it reaches 10²-10³× by n=36.
+
 **Long-run lever ANSWERED (07-06, negative):** Trillium's 24h arm `1856596` ran ALL 8 tasks the
 full 24h at n=31 → floors 8, no FOUND. Doubling walltime does NOT beat the floor — consistent with
 the ticket-volume model (the n=31 winner hit 41 min into its run). Stick to 12h arrays; do not

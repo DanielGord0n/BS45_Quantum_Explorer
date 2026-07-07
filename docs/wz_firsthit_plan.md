@@ -20,11 +20,18 @@ That bet is MEASURABLE before it is BUILDABLE — hence the gates.
 
 ## Phase 0 — measurement gates (days; mostly reuses existing code; do FIRST)
 
-**Gate A — mod-6 stream size.** Extend `WZ_COUNT_ONLY` (wz_match.cpp) to count sequences
-under **mod-6** class-sum profiles instead of mod-3 (the profile machinery already builds
-mod-6 norm-sets; generation currently constrains only mod-3). Count C,D at n=31, 36, 42 for
-1-2 signatures each.
-*PASS: mod-6 + per-sequence spectral stream ≤ ~10⁹ per signature at n=36. KILL: ≥10¹² at n=36.*
+**Gate A — mod-6 stream size. INSTRUMENT BUILT + VALIDATED 2026-07-07 (Fable's last act):**
+`WZ_COUNT_MOD6=1` in wz_match.cpp — streaming count under mod-6 profile pairs that must
+satisfy the norm identity at BOTH moduli (a real bug was caught here by the ≤-invariant:
+without the mod-3-reduction check, mod-6 "survivors" exceeded mod-3 — impossible for a true
+refinement; fixed and revalidated at n=11/13). Soundness canary `WZ_PROFILE_CHECK=1`
+(feed a banner-format solution + its SIGNED sig): **all four banked solutions PASS at both
+moduli.** Honest calibration: at n=11/13 the mod-6 reduction is only ~1-2× (identity has
+slack at small n; A,B side at n=11 reduced 0×) — **the gate question is whether the factor
+grows to 10²-10³× by n=36, as WZ's results imply it must.** Jobs: count C,D at n=31
+(sig 6,4,7,5 — mod-3 baseline measured: 8.2e15 CD pairwork), n=36 (5,11,0,0), n=42 (7,11,0,0).
+*PASS: mod-6 stream (pair-work) ≤ ~10⁹ per signature at n=36. KILL: ≥10¹² at n=36.
+If n=36 lands between: measure the per-candidate A,B completion cost (Gate B) before judging.*
 
 **Gate B — targeted A,B completion cost.** `wz_generate.cpp` already backtracks A,B per
 (C,D) — isolate and measure its per-candidate cost (nodes, ms) at n=19, 29, 31 using banked
