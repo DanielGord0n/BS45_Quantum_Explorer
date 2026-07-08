@@ -369,6 +369,89 @@ static void count_seqs_for_profile_m(int L, const vector<int> &target, int m,
   rec(0, array<int,8>{}, array<int,8>{});
 }
 
+// ---- Thm 2.2 pair-encoding tables (Wang-Zhu arXiv:2506.20296 Thm 2.2; matches
+// wz_sa_v8's comb8/comb4 and verify_npaf.py's pair-encoding check). Symmetric
+// position pairs (d, L-1-d) of (X,Y) take joint values with product +1
+// (P22_POS) for d>=1; at d=0 the A,B side requires product -1 (P22_NEG), the
+// C,D side is unconstrained (P22_16). Odd-L middle is free (P22_4). Every
+// banked champion AND the published WZ BS(43)/BS(44) satisfy this encoding.
+static int P22_16[16][4], P22_POS[8][4], P22_NEG[8][4], P22_4[4][2];
+static void init_p22() {
+  int np = 0, nn = 0;
+  for (int i = 0; i < 16; i++) {
+    int v[4] = {(i&8)?1:-1, (i&4)?1:-1, (i&2)?1:-1, (i&1)?1:-1};
+    memcpy(P22_16[i], v, sizeof v);
+    if (v[0]*v[1]*v[2]*v[3] == 1) memcpy(P22_POS[np++], v, sizeof v);
+    else                          memcpy(P22_NEG[nn++], v, sizeof v);
+  }
+  int m4[4][2] = {{1,1},{1,-1},{-1,1},{-1,-1}};
+  memcpy(P22_4, m4, sizeof m4);
+}
+
+// GATE A' (2026-07-08): count (X,Y) pairs of length L JOINTLY satisfying
+// Thm 2.2 encoding + exact mod-3 class sums (tx, ty) + per-sequence and joint
+// spectral bounds. This is the TRUE WZ-constrained pair stream. The earlier
+// count instruments generated the sides INDEPENDENTLY (Thm 2.2 never applied
+// in wz_match's enumeration — only in wz_sa_v8/wz_exact), so every measured
+// pair-work number overstates this stream by ~2^(L/2). O(L) memory.
+static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
+                          bool abSide, bool pinX, bool pinY,
+                          long long &leaves, long long &ok) {
+  int total_in_class[3];
+  for (int c = 0; c < 3; c++) total_in_class[c] = class_count(L, c, 3);
+  int half = L / 2;
+  vector<int> X(L, 0), Y(L, 0);
+  int px[3] = {0,0,0}, py[3] = {0,0,0}, placed[3] = {0,0,0};
+  function<void(int)> rec = [&](int d) {
+    for (int c = 0; c < 3; c++) {
+      int rem = total_in_class[c] - placed[c];
+      int dx = tx[c] - px[c], dy = ty[c] - py[c];
+      if (dx < -rem || dx > rem || dy < -rem || dy > rem) return;
+      if (((dx - (-rem)) & 1) != 0 || ((dy - (-rem)) & 1) != 0) return;
+    }
+    if (d == half) {
+      auto finish = [&]() {
+        leaves++;
+        if (hall_ok_single(X.data(), L) && hall_ok_single(Y.data(), L) &&
+            hall_ok(X.data(), L, Y.data(), L)) ok++;
+      };
+      auto exact = [&]() {
+        for (int cc = 0; cc < 3; cc++)
+          if (px[cc] != tx[cc] || py[cc] != ty[cc]) return false;
+        return true;
+      };
+      if (L % 2 == 1) {
+        int mid = half, c = mid % 3;
+        for (int k = 0; k < 4; k++) {
+          X[mid] = P22_4[k][0]; Y[mid] = P22_4[k][1];
+          px[c] += X[mid]; py[c] += Y[mid]; placed[c]++;
+          if (exact()) finish();
+          px[c] -= X[mid]; py[c] -= Y[mid]; placed[c]--;
+        }
+        X[mid] = Y[mid] = 0;
+      } else if (exact()) finish();
+      return;
+    }
+    int i1 = d, i2 = L - 1 - d;
+    int c1 = i1 % 3, c2 = i2 % 3;
+    bool d0free = (d == 0 && !abSide);
+    const int (*S)[4] = (d == 0) ? (abSide ? P22_NEG : P22_16) : P22_POS;
+    int ns = d0free ? 16 : 8;
+    for (int k = 0; k < ns; k++) {
+      if (d == 0 && pinX && S[k][0] != 1) continue;
+      if (d == 0 && pinY && S[k][1] != 1) continue;
+      X[i1] = S[k][0]; Y[i1] = S[k][1]; X[i2] = S[k][2]; Y[i2] = S[k][3];
+      px[c1] += S[k][0]; py[c1] += S[k][1]; px[c2] += S[k][2]; py[c2] += S[k][3];
+      placed[c1]++; placed[c2]++;
+      rec(d + 1);
+      px[c1] -= S[k][0]; py[c1] -= S[k][1]; px[c2] -= S[k][2]; py[c2] -= S[k][3];
+      placed[c1]--; placed[c2]--;
+    }
+    X[i1] = Y[i1] = X[i2] = Y[i2] = 0;
+  };
+  rec(0);
+}
+
 // Surviving mod-6 (px,py) pair-profiles for one side: norm budget + EXACT
 // complement completion at mod-6 (same norm identity as mod-3 — parity-generic,
 // audit-verified 2026-07-03). This is the GENERATION-level mod-6 constraint (the
@@ -550,6 +633,49 @@ int main(int argc, char **argv) {
 
   bool pinA = (G_SIG_A == 0), pinB = (G_SIG_B == 0);
   bool pinC = (G_SIG_C == 0), pinD = (G_SIG_D == 0);
+
+  // ---- WZ_COUNT_PAIR22: GATE A' — the TRUE Wang-Zhu-constrained stream.
+  //      Joint (X,Y) generation under Thm 2.2 pair encoding + class sums +
+  //      per-sequence AND joint spectral. Directly comparable to the plan's
+  //      thresholds; `ok` IS the stream size (no |X|*|Y| product inflation).
+  if (getenv("WZ_COUNT_PAIR22")) {
+    init_p22();
+    auto countP = [&](vector<Profile> &profs, int L, bool abSide,
+                      bool pin0, bool pin1, const char *label) -> double {
+      double leaves_t = 0, ok_t = 0;
+      long long done = 0;
+      int nprof = (int)profs.size();
+      #pragma omp parallel for schedule(dynamic)
+      for (int pi = 0; pi < nprof; pi++) {
+        long long lv = 0, okc = 0;
+        count_pairs22(L, profs[pi].px, profs[pi].py, abSide, pin0, pin1, lv, okc);
+        #pragma omp critical
+        {
+          leaves_t += (double)lv; ok_t += (double)okc; done++;
+          if ((done % 32) == 0 || done == nprof) {
+            double t = chrono::duration<double>(Clock::now() - G_T0).count();
+            cout << "[pair22 " << label << " " << done << "/" << nprof
+                 << "] leaves~" << leaves_t << " stream~" << ok_t
+                 << " [" << t << "s]\n" << flush;
+          }
+        }
+      }
+      cout << "=== PAIR22 COUNT " << label << " (L=" << L << ", profiles="
+           << nprof << ") ===\n  encoding-leaves=" << leaves_t
+           << "  STREAM (all filters) = " << ok_t << "\n" << flush;
+      return ok_t;
+    };
+    double abS = countP(abProfs, G_N1, true,  pinA, pinB, "A,B");
+    double cdS = countP(cdProfs, n,   false, pinC, pinD, "C,D");
+    double t = chrono::duration<double>(Clock::now() - G_T0).count();
+    cout << "\n=== GATE A' SUMMARY (n=" << n << ", Thm-2.2-constrained) ===\n"
+         << "TRUE streams: A,B " << abS << "   C,D " << cdS << "\n"
+         << "vs independent-side pair-work (earlier Gate A/count-only runs): the\n"
+         << "ratio quantifies Thm 2.2's pruning power at this n.\n"
+         << "Gate rule (docs/wz_firsthit_plan.md): C,D stream <= ~1e9 at n=36 PASS; >= 1e12 KILL.\n"
+         << "Time: " << t << "s\n" << flush;
+    return 0;
+  }
 
   // ---- WZ_COUNT_MOD6: GATE A of docs/wz_firsthit_plan.md. Streaming counts of
   //      the MOD-6-constrained stream (the Wang-Zhu lift), zero materialization.

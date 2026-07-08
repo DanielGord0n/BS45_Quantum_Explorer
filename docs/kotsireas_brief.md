@@ -44,11 +44,19 @@ Wang-Zhu's n=41–43 constructions (arXiv:2506.20296) is filter strength, not co
 Their per-sequence filtering during construction appears effectively ~10³× tighter than
 what we reconstruct from the paper.
 
+One more measurement (2026-07-08): we implemented the "extend to modulus 6" step as mod-6
+class-sum profiles constrained by the norm identity at both moduli (validated: all our banked
+solutions pass it; exact agreement with brute-force ground truth at small n). At n=31 it
+reduces the filtered stream by **0.15%** over mod-3; at n=36 the mod-6 profile space alone
+is ~1.7×10⁶ pairs and the stream exceeds 4×10¹⁷. So the class-sum reading of the mod-6 lift
+does essentially no pruning at scale — whatever carries Wang-Zhu to n=41–43 must be a
+different (or additional) constraint.
+
 ## The questions
 
 1. What does the Wang-Zhu-style generate step actually cost per signature at n≈40 — and
-   which part of their filtering does the heavy lifting beyond the published Thm 2.3/2.4
-   forms?
+   which constraint does the heavy lifting? Measured: it is not the mod-6 class-sum lift
+   (0.15% at n=31) and not the published Thm 2.3/2.4 forms as we apply them.
 2. Is a faithful first-hit reproduction (generate constrained C,D → backtrack A,B → stop at
    first solution) realistically within reach of ~4×192-core clusters at n=42–43, and would
    a careful reimplementation be a useful replication?

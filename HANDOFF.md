@@ -76,11 +76,16 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-07) — n=32 blitz, round 2. Round 1 verdict: floors 8 everywhere
-(Fir `47220679` 8/8/8/12, Rorqual `15413159` 8/8/12/16, Nibi `17229284` tasks 0-3 → 8; Nibi 4-7 +
-Trillium `1884181` still PD). Round 2 refills LIVE: Fir `47433547` (bias@8, seed 45M) +
-Rorqual `15452301` (plain, 48M). Seed ledger used: 1000, 3M...48M; next 51M/54M.
-Expect a multi-round grind (n=31 took ~9 arrays).**
+**LIVE ROUND (2026-07-08) — n=32 blitz, round 3: Fir `47625295` (bias@8, seed 51M) /
+Rorqual `15498203` (plain, 54M) / Nibi `17349690` (plain, 57M) / Trillium `1884181` (round-1
+array, still PD). Rounds 1-2 verdict: floors 8 everywhere (~5 arrays done at n=32 so far;
+n=31 took ~9 — keep buying tickets). Seed ledger used: 1000, 3M...57M; next 60M/63M/66M.**
+
+**FABLE EXTENDED TO 2026-07-14 (learned 07-08):** the handover artifacts below stand, but the
+week's agenda is now: (1) daily blitz refills; (2) **re-derive Wang-Zhu's ACTUAL step-3
+constraint from the paper** (the class-sum reading is now measured-false — Gate A) and, if a
+candidate is found, implement + re-run Gate A against the banked baselines; (3) Daniel sends
+the Kotsireas brief in parallel (expert answer beats re-derivation).**
 
 **PROJECT SCAFFOLDING ADDED 2026-07-07 (Fable handover day):** repo `CLAUDE.md` (session entry
 point — routes every future model to HANDOFF + skill) · `.claude/skills/bs45-campaign/SKILL.md`
@@ -91,14 +96,40 @@ verification discipline, decision doctrine, escalation ladder) · `docs/kotsirea
 architecture** — the only credible route toward n=42-43: Phase-0 measurement gates with
 pre-registered pass/KILL criteria BEFORE any build; start there, cheap and decisive).
 
-**GATE A IS LIVE (2026-07-07, queued alongside the blitz — read results against the plan's
-pass/KILL rule):** `WZ_COUNT_MOD6=1` instrument built, bug-fixed (mod-3-reduction check),
-≤-invariant validated at n=11/13, and canaried (all 4 banked solutions PASS `WZ_PROFILE_CHECK`
-at both moduli). Jobs: Nibi `17291892` n=31 (6,4,7,5) — ratio vs the measured 8.2e15
-mod-3 baseline · Fir `47434558` n=36 (5,11,0,0) — THE gate rung · Rorqual `15452618`
-n=42 (7,11,0,0) — goal-rung bonus (partial progress lines still count). Output files: `wz_match_output_*`, look for
-`=== GATE A SUMMARY ===`. Small-n calibration: reduction is only ~1-2× at n=11/13 — the gate
-asks whether it reaches 10²-10³× by n=36.
+**⚡ GATE A VERDICT (2026-07-08): KILL — by the pre-registered rule, decisively. Do NOT build
+Phases 1-3 of the first-hit plan on the class-sum mod-6 lift.**
+- Nibi `17291892` n=31 (6,4,7,5), completed 10.6h: mod-6 pair-work total **4.00457e16** vs the
+  mod-3 baseline 4.01066e16 → **0.15% reduction. The mod-6 class-sum lift prunes ~nothing.**
+- Fir `47434558` n=36: 12h TIMEOUT partial — mod-6 profile space alone 1.65M pairs; at 26%
+  counted, A,B pair-work already **4.3e17** (KILL line was 1e12 — exceeded by 5+ orders).
+- Rorqual `15452618` n=42: mod-6 profile enumeration hit 2.9M/13.6M per side; counting could
+  not finish in 12h. Explosion trend confirmed.
+
+**Interpretation (matters for the writeup + Kotsireas):** this does NOT falsify Wang-Zhu's
+method (they reached 41-43) — it falsifies OUR reconstruction of their "extend to modulus 6"
+step as class-sum norm-identity filtering. Whatever their step 3 actually prunes with, it is
+NOT class sums. The Kotsireas question sharpens from "your filter seems ~10³× tighter" to the
+measured: "the mod-6 class-sum lift gives 0.15% at n=31 — what constraint does the real work?"
+(brief updated accordingly). **Escalation ladder collapses to: SA blitz (the engine) + the
+Kotsireas methods conversation (the door). The instruments (`WZ_COUNT_MOD6`,
+`WZ_PROFILE_CHECK`) stay banked for measuring any future filter idea against these baselines.**
+
+**⚡ SAME-DAY REVERSAL — GATE A′ (2026-07-08, Fable extension): the REAL WZ constraint found.**
+Re-reading arXiv:2506.20296 with the falsified hypothesis in hand: **Theorem 2.2** — the joint
+symmetric-position pair constraint (a_i+b_i+a_{n+2-i}+b_{n+2-i} ≡ 0 mod 4, i.e. the comb8 pair
+encoding wz_sa_v8 generates with natively) — **was NEVER applied in wz_match's enumeration**
+(sides generated independently). Every frontier count therefore overstates the true
+WZ-constrained stream by ~2^(L/2). New instrument `WZ_COUNT_PAIR22=1` (Gate A′): joint (X,Y)
+DFS under Thm 2.2 + class sums + single AND joint spectral — the TRUE stream, O(L) memory.
+**Validated EXACTLY vs exhaustive independent Python ground truth at n=7 (A,B 66/66, C,D
+91/91 — every one of the 82k possible pairs checked); n=11 shows 147× (A,B) / 30× (C,D)
+reduction vs the independent-side counts, factor GROWS with n.** All banked champions + WZ's
+43/44 satisfy the encoding (verify_npaf PASS) ⇒ sound for existence search. **Gate A′ probes ALL LIVE 07-08: Fir `47665509` n=29 (calibration vs 2.3e14) · Rorqual
+`15499976` n=31 (vs 8.2e15 baseline) · Nibi `17350617` n=36 (THE gate: C,D stream ≤~1e9
+PASS / ≥1e12 KILL).** If the n=36 C,D stream lands ≤~1e9, the first-hit plan UN-pauses with
+the real constraint (Phase 1 = JOINT comb8 pair generation, per the amended plan).
+**Daniel: hold the Kotsireas brief 1-2 days — A′ results may substantially change (or
+upgrade) the questions.**
 
 **Long-run lever ANSWERED (07-06, negative):** Trillium's 24h arm `1856596` ran ALL 8 tasks the
 full 24h at n=31 → floors 8, no FOUND. Doubling walltime does NOT beat the floor — consistent with
@@ -139,15 +170,21 @@ give one a base offset by ≫ 8×100000 (e.g. 9000000). Stride 100000 ≫ 192 th
 **Jobs TIMEOUT at 12h (full runs) — not a failure. Nibi does NOT schedule reliably.**
 **On `FOUND`/bestAB=0:** `python3 tools/verify_npaf.py < <that sa_ladder file>`, then `scancel` the rest.
 
-### Checker script — SA LADDER (active 2026-06-27; paste into terminal, works from any machine)
-Watch `bestAB`: it should DESCEND between checks; **`bestAB=0` = solution** (and a `FOUND` banner).
+### Checker script — SA blitz + GATE A (current 2026-07-07; paste into terminal, works from any machine)
+`NEW FOUND?` filters out the already-banked hits — anything it lists is real news. GATE A section
+shows the summary when a count finishes, or the last progress lines while it runs.
+**⚠️ When banking a new hit, ADD its filename to the `grep -vE` exclusion list** or every later
+run cries wolf.
 ```bash
 for c in fir nibi rorqual trillium; do
   echo "════════ $c ════════"
-  ssh dangord@${c}.alliancecan.ca 'squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R" 2>/dev/null; cd $SCRATCH/bs45 2>/dev/null || exit 0; echo "--- FOUND? ---"; grep -l "FOUND" sa_ladder_*.txt 2>/dev/null || echo "(none yet)"; echo "--- progress: file [target bias] bestAB_min | latest ---"; for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -5); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); bias=$(grep -oE "WZ_PSD_BIAS shift: [0-9]+" "$f" | head -1 | grep -oE "[0-9]+$"); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1 | grep -oE "[0-9]+$"); echo "$(basename $f) [$hdr bias=$bias] bestAB_min=$best | $(tail -1 "$f" | cut -c1-55)"; done'
+  ssh dangord@${c}.alliancecan.ca 'squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R" 2>/dev/null; cd $SCRATCH/bs45 2>/dev/null || exit 0; echo "--- NEW FOUND? ---"; grep -l "FOUND" sa_ladder_*.txt 2>/dev/null | grep -vE "46274622_4|14923090_[26]|16945067_3" || echo "(none yet)"; echo "--- n=32 progress ---"; for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -3); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1 | grep -oE "[0-9]+$"); echo "$(basename $f) [$hdr] bestAB_min=$best | $(tail -1 "$f" | cut -c1-55)"; done; echo "--- GATE PROBES ---"; for f in $(ls -t wz_match_output_*.txt 2>/dev/null | head -2); do echo "=== $f ==="; grep -A5 "SUMMARY (n=" "$f" || tail -3 "$f"; done'
 done
 ```
-*On a hit:* `python3 tools/verify_npaf.py < <that sa_ladder file>`, then `scancel <jobid>` the rest of that array.
+*On a hit:* dump the banner (`grep -B3 -A12 "REPRODUCTION CONFIRMED" <file>`), verify with
+`python3 tools/verify_npaf.py`, bank per the bs45-campaign skill, then `scancel` the rest of that array.
+*Transient cluster errors:* `Connection closed by <ip>` = login-node drop, retry later (jobs unaffected);
+`Permission denied` pre-Duo = auth-layer outage (Trillium had one 07-03→07-06), retry next day.
 *Old exhaustive-campaign checker (`ckpt_*.count` / `bs4*_t23_*output*.txt`) is retired — that campaign was superseded; see the 2026-06-27 TOP OF MIND.*
 
 ### Deploy commands — SA LADDER (active; tar-pipe over ssh — scp does NOT expand $SCRATCH; one Duo/cluster)

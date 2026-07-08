@@ -33,6 +33,30 @@ grows to 10²-10³× by n=36, as WZ's results imply it must.** Jobs: count C,D a
 *PASS: mod-6 stream (pair-work) ≤ ~10⁹ per signature at n=36. KILL: ≥10¹² at n=36.
 If n=36 lands between: measure the per-candidate A,B completion cost (Gate B) before judging.*
 
+**⚡ GATE A RESULT (2026-07-08): KILL.** n=31 mod-6 pair-work 4.00457e16 vs mod-3 4.01066e16 —
+**0.15% reduction**; n=36 partial already 4.3e17 (KILL line 1e12, exceeded 5+ orders); n=42
+profile space alone 2.9M/13.6M pairs, uncountable in 12h. **Consequence: do NOT build Phases
+1-3 on the class-sum mod-6 lift.** What this does and does not mean: it does NOT falsify
+Wang-Zhu's pipeline (they reached 41-43); it falsifies the reading of their "extend to
+modulus 6" as class-sum norm-identity filtering — whatever prunes their stream ~10³× is a
+DIFFERENT constraint (per-sequence PSD during construction? something in their "compatible
+(P,Q) sets" richer than sums?). The plan is PAUSED at Phase 0, pending exactly one input: the
+answer to the sharpened question now in `docs/kotsireas_brief.md`. If a genuinely tighter
+per-sequence constraint is identified, re-run Gate A with it (`WZ_COUNT_MOD6` machinery
+generalizes; baselines above are banked) before any build. Until then: SA blitz only.
+
+**⚡ GATE A′ (2026-07-08, same day): the tighter constraint WAS identified — Wang-Zhu
+Theorem 2.2** (joint symmetric-position pair encoding, = wz_sa_v8's comb8 tables), which
+wz_match's independent-side enumeration never applied. New instrument `WZ_COUNT_PAIR22=1`
+counts the TRUE jointly-constrained stream (Thm 2.2 + class sums + single + joint spectral).
+Validated exactly vs exhaustive n=7 ground truth (66/66, 91/91); n=11 reduction 147×/30× and
+growing with n. Probes queued n=29/31/36. **Read against the same gate rule: n=36 C,D stream
+≤~1e9 PASS → resume Phase 1 with joint-pair generation as the architecture (note Phase 1/2
+change: generate C,D PAIRS with comb8 DFS, not independent sequences); ≥1e12 KILL → back to
+the brief.** If PASS also recheck the JOIN's feasibility at n=31-33 — the 2^(L/2) factor
+shrinks the hash-side stream too, and the "join dead by time" verdict was measured on the
+inflated independent-side counts.
+
 **Gate B — targeted A,B completion cost.** `wz_generate.cpp` already backtracks A,B per
 (C,D) — isolate and measure its per-candidate cost (nodes, ms) at n=19, 29, 31 using banked
 solutions' signatures. This was never measured separately from its enumeration throughput wall.
