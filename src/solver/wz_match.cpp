@@ -394,9 +394,15 @@ static void init_p22() {
 // count instruments generated the sides INDEPENDENTLY (Thm 2.2 never applied
 // in wz_match's enumeration — only in wz_sa_v8/wz_exact), so every measured
 // pair-work number overstates this stream by ~2^(L/2). O(L) memory.
+// Optional `sink`: called on every pair that passes ALL filters (Thm 2.2 +
+// class sums + single + joint spectral). nullptr = count only (behavior of the
+// validated Gate-A' instrument, unchanged). Non-null turns this DFS into the
+// GENERATOR for the 2.2-joint join (WZ_JOIN22) — same filters, zero
+// materialization outside what the sink itself stores.
 static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
                           bool abSide, bool pinX, bool pinY,
-                          long long &leaves, long long &ok) {
+                          long long &leaves, long long &ok,
+                          const function<void(const vector<int>&, const vector<int>&)> *sink = nullptr) {
   int total_in_class[3];
   for (int c = 0; c < 3; c++) total_in_class[c] = class_count(L, c, 3);
   int half = L / 2;
@@ -413,7 +419,10 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
       auto finish = [&]() {
         leaves++;
         if (hall_ok_single(X.data(), L) && hall_ok_single(Y.data(), L) &&
-            hall_ok(X.data(), L, Y.data(), L)) ok++;
+            hall_ok(X.data(), L, Y.data(), L)) {
+          ok++;
+          if (sink) (*sink)(X, Y);
+        }
       };
       auto exact = [&]() {
         for (int cc = 0; cc < 3; cc++)
@@ -634,6 +643,139 @@ int main(int argc, char **argv) {
   bool pinA = (G_SIG_A == 0), pinB = (G_SIG_B == 0);
   bool pinC = (G_SIG_C == 0), pinD = (G_SIG_D == 0);
 
+  // ---- WZ_JOIN22: the COMPLETE hash-join over the Thm-2.2-constrained space.
+  //      Rebuilt 2026-07-09 after Gate A' measured the true streams ~10^5x
+  //      smaller than the independent-side enumeration the old join used
+  //      (n=29: C,D 1.74e9 / A,B 2.46e9 — hash fits a node again). Store the
+  //      C,D side (smaller in every measured case, dedup one rec per 64-bit
+  //      key — sound, exact npaf recheck guards collisions), stream A,B.
+  //      Completeness caveats: (1) FNV-shadowing means a negative needs a
+  //      perturbed-basis re-run (audit 2026-07-03); (2) completeness is
+  //      relative to the Thm-2.2 space — every banked + published solution
+  //      lies inside it, but a per-signature negative is "no 2.2-normalized
+  //      solution with this SIGNED sig".
+  if (getenv("WZ_JOIN22")) {
+    init_p22();
+    // Fixed-size inline record (no per-record heap blocks): at ~1.7e9 records
+    // (measured n=29 C,D stream) this is ~40% less RAM than vector<int8_t>s.
+    struct Rec22 { int8_t P[64], Q[64]; };
+    unordered_map<Key, Rec22> map22;
+    {
+      int nthreads = 1;
+#ifdef _OPENMP
+      nthreads = omp_get_max_threads();
+#endif
+      vector<unordered_map<Key, Rec22>> lm(nthreads);
+      int nprof = (int)cdProfs.size();
+      atomic<long long> built{0};
+      #pragma omp parallel for schedule(dynamic)
+      for (int pi = 0; pi < nprof; pi++) {
+        int tid = 0;
+#ifdef _OPENMP
+        tid = omp_get_thread_num();
+#endif
+        auto &m = lm[tid];
+        long long lv = 0, okc = 0;
+        function<void(const vector<int>&, const vector<int>&)> ins =
+            [&](const vector<int> &C, const vector<int> &D) {
+          Key k = autocorr_key(C.data(), D.data(), n, true);
+          if (m.find(k) == m.end()) {
+            Rec22 r{};
+            for (int i = 0; i < n; i++) { r.P[i] = (int8_t)C[i]; r.Q[i] = (int8_t)D[i]; }
+            m.emplace(k, r);
+          }
+        };
+        count_pairs22(n, cdProfs[pi].px, cdProfs[pi].py, false, pinC, pinD,
+                      lv, okc, &ins);
+        long long b = ++built;
+        if ((b % 32) == 0 || b == nprof) {
+          #pragma omp critical
+          cout << "[join22 build " << b << "/" << nprof << "] ["
+               << chrono::duration<double>(Clock::now()-G_T0).count() << "s]\n" << flush;
+        }
+      }
+      size_t recs = 0;
+      for (auto &m : lm) recs += m.size();
+      cout << "[join22] merging " << recs << " thread-local records...\n" << flush;
+      map22.reserve(recs);
+      for (auto &m : lm) {
+        for (auto &kv : m) map22.emplace(kv.first, std::move(kv.second));
+        m.clear();
+      }
+      double gb = map22.size() * (8.0 + sizeof(Rec22) + 48.0) / 1e9;
+      cout << "[join22] hash: " << map22.size() << " records ~" << gb << " GB  ["
+           << chrono::duration<double>(Clock::now()-G_T0).count() << "s]\n" << flush;
+    }
+    {
+      int nprof = (int)abProfs.size();
+      atomic<long long> streamed{0};
+      #pragma omp parallel for schedule(dynamic)
+      for (int pi = 0; pi < nprof; pi++) {
+        if (g_found.load()) continue;
+        long long lv = 0, okc = 0;
+        function<void(const vector<int>&, const vector<int>&)> look =
+            [&](const vector<int> &A, const vector<int> &B) {
+          if (g_found.load()) return;
+          Key k = autocorr_key(A.data(), B.data(), G_N1, false);
+          auto it = map22.find(k);
+          if (it == map22.end()) return;
+          int Ai[64], Bi[64], Ci[64], Di[64];
+          for (int i = 0; i < G_N1; i++) { Ai[i] = A[i]; Bi[i] = B[i]; }
+          for (int i = 0; i < n; i++) { Ci[i] = it->second.P[i]; Di[i] = it->second.Q[i]; }
+          for (int s = 1; s <= n; s++)
+            if (npaf_at(Ai, Bi, G_N1, Ci, Di, n, s) != 0) return;
+          #pragma omp critical
+          {
+            if (!g_found.load()) {
+              memcpy(g_solA, Ai, G_N1 * sizeof(int));
+              memcpy(g_solB, Bi, G_N1 * sizeof(int));
+              memcpy(g_solC, Ci, n * sizeof(int));
+              memcpy(g_solD, Di, n * sizeof(int));
+              g_found.store(true);
+            }
+          }
+        };
+        count_pairs22(G_N1, abProfs[pi].px, abProfs[pi].py, true, pinA, pinB,
+                      lv, okc, &look);
+        long long s = ++streamed;
+        if ((s % 32) == 0 || s == nprof) {
+          #pragma omp critical
+          cout << "[join22 stream " << s << "/" << nprof
+               << (g_found.load() ? " FOUND" : "") << "] ["
+               << chrono::duration<double>(Clock::now()-G_T0).count() << "s]\n" << flush;
+        }
+      }
+    }
+    double t = chrono::duration<double>(Clock::now() - G_T0).count();
+    if (g_found.load()) {
+      int n1 = G_N1;
+      int sa = 0, sb = 0, sc = 0, sd = 0;
+      for (int i = 0; i < n1; i++) { sa += g_solA[i]; sb += g_solB[i]; }
+      for (int i = 0; i < n; i++)  { sc += g_solC[i]; sd += g_solD[i]; }
+      cout << "\n*** BS(" << n1 << "," << n << ") FOUND ***\n";
+      cout << "sig = (" << sa << "," << sb << "," << sc << "," << sd << ")\n";
+      cout << "A = {"; for (int i=0;i<n1;i++) cout << g_solA[i] << (i<n1-1?",":""); cout << "};\n";
+      cout << "B = {"; for (int i=0;i<n1;i++) cout << g_solB[i] << (i<n1-1?",":""); cout << "};\n";
+      cout << "C = {"; for (int i=0;i<n;i++)  cout << g_solC[i] << (i<n-1?",":"");  cout << "};\n";
+      cout << "D = {"; for (int i=0;i<n;i++)  cout << g_solD[i] << (i<n-1?",":"");  cout << "};\n";
+      int maxv = 0;
+      for (int s = 1; s <= n; s++) {
+        int v = npaf_at(g_solA, g_solB, n1, g_solC, g_solD, n, s);
+        if (abs(v) > maxv) maxv = abs(v);
+      }
+      cout << "VERIFY: max |NPAF[s]| over s=1.." << n << " = " << maxv
+           << (maxv == 0 ? "  (NPAF==0 confirmed)\n" : "  (NONZERO!)\n");
+      cout << "Time: " << t << "s\n" << flush;
+    } else {
+      cout << "\n=== JOIN22 EXHAUSTED (n=" << n << ") — no solution in the "
+           << "Thm-2.2 space for sig (" << G_SIG_A << "," << G_SIG_B << ","
+           << G_SIG_C << "," << G_SIG_D << ") ===\n"
+           << "(negative claims need a perturbed-hash re-run + signed-sig sweep; see plan)\n"
+           << "Time: " << t << "s\n" << flush;
+    }
+    return g_found.load() ? 0 : 3;
+  }
+
   // ---- WZ_COUNT_PAIR22: GATE A' — the TRUE Wang-Zhu-constrained stream.
   //      Joint (X,Y) generation under Thm 2.2 pair encoding + class sums +
   //      per-sequence AND joint spectral. Directly comparable to the plan's
@@ -665,11 +807,18 @@ int main(int argc, char **argv) {
            << "  STREAM (all filters) = " << ok_t << "\n" << flush;
       return ok_t;
     };
-    double abS = countP(abProfs, G_N1, true,  pinA, pinB, "A,B");
-    double cdS = countP(cdProfs, n,   false, pinC, pinD, "C,D");
+    // WZ_PAIR22_SIDE=CD (or AB): count only that side. The C,D stream is the
+    // gate/sizing metric, and full both-side counts TIMEOUT at n>=31 because
+    // the A,B side runs first — CD-only gets the decision number in one job.
+    const char *sideSel = getenv("WZ_PAIR22_SIDE");
+    double abS = -1, cdS = -1;
+    if (!sideSel || strcmp(sideSel, "CD") != 0)
+      abS = countP(abProfs, G_N1, true,  pinA, pinB, "A,B");
+    if (!sideSel || strcmp(sideSel, "AB") != 0)
+      cdS = countP(cdProfs, n,   false, pinC, pinD, "C,D");
     double t = chrono::duration<double>(Clock::now() - G_T0).count();
     cout << "\n=== GATE A' SUMMARY (n=" << n << ", Thm-2.2-constrained) ===\n"
-         << "TRUE streams: A,B " << abS << "   C,D " << cdS << "\n"
+         << "TRUE streams: A,B " << abS << "   C,D " << cdS << "  (-1 = side skipped)\n"
          << "vs independent-side pair-work (earlier Gate A/count-only runs): the\n"
          << "ratio quantifies Thm 2.2's pruning power at this n.\n"
          << "Gate rule (docs/wz_firsthit_plan.md): C,D stream <= ~1e9 at n=36 PASS; >= 1e12 KILL.\n"

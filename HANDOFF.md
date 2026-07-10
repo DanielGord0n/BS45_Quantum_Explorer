@@ -308,6 +308,36 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
+## ⚡ TOP OF MIND — 2026-07-10: GATE A′ RESULTS — Thm 2.2 shrinks the true stream ~10⁵× (measured at n=29). THE COMPLETE JOIN IS BACK: WZ_JOIN22 built + validated; n=29 canary queued; if it re-finds the banked solution, n=32 becomes a DETERMINISTIC target.
+
+**Gate A′ measurements:**
+- **n=29 (Fir `47665509`, complete, 8.2h): TRUE streams A,B 2.458e9 / C,D 1.737e9** — vs
+  independent-side counts 1.35e15 / 2.33e14 ⇒ **reduction ~5.5e5× / 1.3e5×.** Thm 2.2 + joint
+  filtering IS the missing pruning power (or a big share of it).
+- n=31 (Rorqual `15499976`, 12h TIMEOUT): A,B side partial 3.9e9 at 416/730 profiles ⇒ full
+  A,B ≈ 7e9 (extrapolation crude — schedule(dynamic) ordering). C,D side not reached.
+- n=36 (Nibi `17350617`): still PD behind Nibi's SA array.
+
+**WZ_JOIN22 built 2026-07-10 (the payoff):** complete hash-join over the Thm-2.2 space —
+`count_pairs22` generalized with a sink (count path regression-identical: 66/91 @ n=7,
+1564/809 @ n=11); C,D side hashed via fixed-size inline records (~184 B/rec ⇒ n=29 hash
+≈ 320 GB, fits a node), A,B streamed, exact npaf recheck, FOUND banner + exhausted verdict.
+**Canaries: JOIN22 re-finds BS(11,10), BS(12,11), BS(14,13), all NPAF==0.** Negative-claim
+caveats printed by the tool itself (perturbed-hash re-run + signed-sig sweep needed).
+
+**Sequencing: (1) n=29 JOIN22 canary — Rorqual `15587012` (queued 07-10; MUST re-find the
+banked (0,6,9,1) class; its build/stream times + DEDUP RATIO are the sizing inputs for n≥30
+joins); (2) C,D-STREAM SIZING PROBES LIVE (07-10, `WZ_PAIR22_SIDE=CD` — new env, CD-only counting
+so 12h actually reaches the decision number; validated 809-exact at n=11): Fir `47870642`
+n=31 (6,4,7,5) · Trillium `1904644` n=32 (7,3,6,6) · Nibi `17434023` n=36 (5,11,0,0) — the
+old both-sides n=36 probe `17350617` scancelled (it would TIMEOUT on A,B before counting C,D);
+(3) decision matrix tomorrow: canary PASS + n=32 C,D stream × dedup fits a node → run the
+n=32 JOIN for a DETERMINISTIC BS(33,32); memory too big → partitioned/disk join OR first-hit
+(Gate B still unmeasured); (4) SA blitz round 4 live underneath: Fir `47870263` (bias@8,
+60M) / Rorqual `15587013` (plain, 63M). HOLD the Kotsireas brief until the canary verdict.**
+
+---
+
 ## ⚡ TOP OF MIND — 2026-07-06: (a) PROBABLE BS(32,31) n=31 SA HIT on Nibi (VERIFY FIRST); (b) count probes CLOSED the join question — dead by TIME above n≈29, measured not guessed.
 
 **(a) ✅ CONFIRMED 2026-07-06: BS(32,31) n=31 — NEW BANKED BEST.** Nibi `16945067` task 3 (PLAIN
