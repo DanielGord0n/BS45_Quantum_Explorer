@@ -37,19 +37,35 @@ Do not re-run the checker.
      Explicitly note "insufficient runtime, no action" — do NOT invent changes.
    - **Idle cluster(s), same method** → refill. Get seeds deterministically:
      `cluster/deploy/next_seeds.sh take <#idle>` (never pick seeds yourself).
-     Submit with the standard block (add `--account=def-ikotsire_cpu` for Nibi):
+     **Submit ONLY via `duo_run.sh`** — plain `ssh` cannot get past the Duo menu
+     unattended and will silently fail (add `--account=def-ikotsire_cpu` for Nibi):
      ```
-     ssh dangord@<cluster>.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --requeue \
+     ./cluster/deploy/duo_run.sh <cluster> 'cd $SCRATCH/bs45 && sbatch --requeue \
        --export=ALL,WZ_N=<n>,WZ_SEED_BASE=<base> ./cluster_sa_ladder.sh'
      ```
-     (The checker left SSH masters open, so this usually needs no new Duo tap.)
-   - **A code/deploy change is warranted** → make it, then obey **R1**. Ship new
-     source via tar-pipe from repo root (scp does not expand `$SCRATCH`), then
-     submit. If validation fails, R1 applies (branch + NEEDS_HUMAN).
+     It auto-types the Duo "1"; Daniel taps his phone to approve. **Confirm each
+     submit echoed a `Submitted batch job <id>` before treating it as queued** —
+     if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
+     ledger for a submit that did not echo a job ID.
+   - **A code/deploy change is warranted** → make it and validate it (**R1**), but
+     do **NOT** try to ship it. Shipping source needs the tar-pipe, and the
+     tar-pipe cannot be driven through the Duo auto-answer (it needs stdin, which
+     the Duo driver occupies). So: commit the validated change on branch
+     `auto/YYYY-MM-DD`, set NEEDS_HUMAN, and put the exact tar-pipe command in the
+     summary for Daniel to paste. Code deploys are a human step by design.
    - **Verified hit** → obey **R2**; bank champion; if it clears a new rung, bump
      `next_seeds.sh set-n <n+1>`.
 
-3. **Record.** Update HANDOFF (new job IDs on the LIVE ROUND line, round verdict,
+3. **Keep the checker current.** The remote checker command lives in
+   `cluster/deploy/checker_cmd.txt` and is EXPECTED to evolve — edit it whenever:
+   - a solution gets banked → add its file id to the `grep -vE` exclusion list, or
+     "NEW FOUND?" will cry wolf on old banked files every run;
+   - the ladder climbs a rung → update the `n=32 progress` label and any globs;
+   - the live probe changes → update the GATE PROBES section.
+   Never put `exit` in that file (it would drop the END marker and make a good run
+   look like a failure).
+
+4. **Record.** Update HANDOFF (new job IDs on the LIVE ROUND line, round verdict,
    seed ledger already advanced by the helper). Capture submit job IDs from the
    sbatch echoes.
 

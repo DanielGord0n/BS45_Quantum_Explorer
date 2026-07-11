@@ -7,9 +7,14 @@
 # (Fir 48072964 / Rorqual 15719455 / Nibi 17483618), so NEXT_BASE was
 # corrected 60M -> 75M before the first take.
 #
+# Base-audit 2026-07-11 (run 2): bases 75M/78M/81M (run-1 paste block, never
+# pasted) and 84M/87M/90M (allocated but never submitted) are RETIRED UNUSED —
+# do not resurrect them; round 6 actually flew on 93M/96M/99M
+# (Fir 48213931 / Rorqual 15754557 / Nibi 17500261).
+#
 # SEED = NEXT_BASE + ARRAY_TASK_ID*100000 inside cluster_sa_ladder.sh.
 # Bases are handed out STRIDE apart, one per cluster, never reused.
 
 N=32
-NEXT_BASE=84000000
+NEXT_BASE=102000000
 STRIDE=3000000

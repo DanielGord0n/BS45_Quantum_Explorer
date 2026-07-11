@@ -1,19 +1,21 @@
 #!/bin/bash
-# daily_auto.sh — the fully autonomous 1pm loop.
+# daily_auto.sh — the autonomous 1pm loop.
 #   check (you tap Duo) -> headless Claude interprets/acts/commits/pushes -> phone summary.
 #
 # Pieces:
-#   check_all_retry.sh   collects status (retries Duo until you tap)
-#   auto_prompt.md       the unattended agent instructions (with the 2 rails)
+#   check_all_retry.sh   collects status (auto-types the Duo "1"; you tap the push)
+#   checker_cmd.txt      the remote checker command — the agent keeps this current
+#   auto_prompt.md       unattended agent instructions (incl. the 2 rails)
 #   next_seeds.sh        deterministic seed allocation (model never picks seeds)
+#   duo_run.sh           how the agent SUBMITS jobs (plain ssh can't pass Duo)
 #
 # SAFETY / CONTROL:
-#   * Kill switch: `touch cluster/deploy/AUTOPILOT_OFF` to disable without
-#     unloading launchd. Remove the file to re-enable.
-#   * Everything is logged to results/auto_YYYY-MM-DD.log.
-#   * Requires headless Claude CLI authenticated on this Mac (see AUTOMATION.md).
-#
-# Env you may override: CLAUDE_BIN, CLAUDE_ARGS.
+#   * Kill switch: `touch cluster/deploy/AUTOPILOT_OFF` disables the run.
+#   * Full transcript: results/auto_YYYY-MM-DD.log
+#   * ⚠️ CLAUDE_ARGS below uses --dangerously-skip-permissions so the agent can run
+#     duo_run.sh / git / bash unattended. That means it can run ANY command in this
+#     repo context without asking. That is the price of a hands-off loop — read the
+#     logs, and use the kill switch if anything looks wrong.
 
 set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,8 +25,13 @@ cd "$REPO"
 [ -f "$DIR/notify.conf" ] && . "$DIR/notify.conf"
 NTFY_URL="${NTFY_URL:-}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
-# Headless + non-interactive tool use. Adjust in AUTOMATION.md to taste.
-CLAUDE_ARGS="${CLAUDE_ARGS:---permission-mode acceptEdits}"
+
+# --- model: primary + fallback ----------------------------------------------
+# If your CLI uses different identifiers, fix them HERE (one place).
+MODEL_PRIMARY="${MODEL_PRIMARY:-claude-fable-5}"
+MODEL_FALLBACK="${MODEL_FALLBACK:-claude-opus-4-8}"
+# Permissions: the agent must run bash (duo_run.sh) and git unattended.
+CLAUDE_ARGS="${CLAUDE_ARGS:---dangerously-skip-permissions}"
 
 STAMP="$(date +%Y-%m-%d)"
 LOG="$REPO/results/auto_${STAMP}.log"
@@ -34,54 +41,62 @@ export CHECK_OUTPUT
 mkdir -p "$REPO/results"
 
 log() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
-ntfy_push() {  # title message priority tags
+ntfy_push() {  # title message [priority] [tags]
   [ -z "$NTFY_URL" ] && return 0
-  curl -s -H "Title: ${1}" -H "Priority: ${3:-default}" -H "Tags: ${4:-satellite}" \
+  curl -s -m 15 -H "Title: ${1}" -H "Priority: ${3:-default}" -H "Tags: ${4:-satellite}" \
        -d "${2}" "$NTFY_URL" >/dev/null 2>&1
 }
 
-# --- kill switch ------------------------------------------------------------
 if [ -f "$DIR/AUTOPILOT_OFF" ]; then
-  log "AUTOPILOT_OFF present — skipping autonomous run."
-  ntfy_push "BS45 autopilot OFF" "Kill switch is on; skipped today's run." "low" "no_entry"
+  log "AUTOPILOT_OFF present — skipping."
+  ntfy_push "BS45 autopilot OFF" "Kill switch on; skipped today's run." "low" "no_entry"
   exit 0
 fi
-
-# --- 1. check (gentle retry so it nudges, not spams) ------------------------
-log "Running checker…"
-RETRY_INTERVAL="${RETRY_INTERVAL:-600}" MAX_WAIT="${MAX_WAIT:-5400}" \
-  "$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"
-
-if grep -q "UNREACHABLE" "$CHECK_OUTPUT" && ! grep -qE "^[[:space:]]*[0-9]" "$CHECK_OUTPUT"; then
-  log "No clusters answered (no Duo taps). Aborting before agent."
-  ntfy_push "BS45: no Duo taps" "Nothing was reachable today — approve the pushes and re-run when you can." "default" "warning"
-  exit 0
-fi
-
-# --- 2. headless agent ------------------------------------------------------
-log "Invoking headless Claude…"
-: > "$SUMMARY"
 if ! command -v "$CLAUDE_BIN" >/dev/null 2>&1; then
-  log "ERROR: '$CLAUDE_BIN' not found on PATH. See AUTOMATION.md."
-  ntfy_push "BS45 autopilot error" "Claude CLI not found on PATH; loop did not run. Results collected only." "high" "warning"
+  log "ERROR: '$CLAUDE_BIN' not on PATH."
+  ntfy_push "BS45 autopilot error" "Claude CLI not found on PATH; loop did not run." "high" "warning"
   exit 1
 fi
 
+# --- 1. check ---------------------------------------------------------------
+log "Running checker…"
+"$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"
+
+if ! grep -q "BS45\|---" "$CHECK_OUTPUT" 2>/dev/null || ! grep -q "NEW FOUND" "$CHECK_OUTPUT"; then
+  log "No cluster answered (no Duo taps). Aborting before the agent."
+  ntfy_push "BS45: no Duo taps" "Nothing was reachable — approve the pushes and re-run." "default" "warning"
+  exit 0
+fi
+
+# --- 2. pick a model (probe once, so we never run the real loop twice) -------
+choose_model() {
+  if "$CLAUDE_BIN" -p "reply with just: OK" --model "$MODEL_PRIMARY" >/dev/null 2>&1; then
+    echo "$MODEL_PRIMARY"
+  else
+    echo "$MODEL_FALLBACK"
+  fi
+}
+MODEL="$(choose_model)"
+log "Model: $MODEL (primary=$MODEL_PRIMARY fallback=$MODEL_FALLBACK)"
+
+# --- 3. the agent (runs exactly ONCE — a retry could double-submit jobs) -----
+log "Invoking headless Claude…"
+: > "$SUMMARY"
 # shellcheck disable=SC2086
-"$CLAUDE_BIN" -p "$(cat "$DIR/auto_prompt.md")" $CLAUDE_ARGS >>"$LOG" 2>&1
+"$CLAUDE_BIN" -p "$(cat "$DIR/auto_prompt.md")" --model "$MODEL" $CLAUDE_ARGS >>"$LOG" 2>&1
 rc=$?
 log "Claude exited rc=$rc"
 
-# --- 3. phone summary -------------------------------------------------------
+# --- 4. phone summary -------------------------------------------------------
 if [ -s "$SUMMARY" ]; then
   msg="$(head -c 900 "$SUMMARY")"
 else
-  msg="Run finished (rc=$rc) but no summary was written — check results/auto_${STAMP}.log."
+  msg="Run finished (rc=$rc) but no summary was written — see results/auto_${STAMP}.log."
 fi
 
 if grep -qi '^NEEDS_HUMAN' "$SUMMARY" 2>/dev/null; then
   ntfy_push "⚠️ BS45 needs you" "$msg" "high" "warning"
-elif grep -qiE 'verified|record|champion banked' "$SUMMARY" 2>/dev/null; then
+elif grep -qiE 'verified|champion banked' "$SUMMARY" 2>/dev/null; then
   ntfy_push "🏆 BS45 — verified result!" "$msg" "urgent" "rotating_light,tada"
 else
   ntfy_push "BS45 daily" "$msg" "default" "satellite"

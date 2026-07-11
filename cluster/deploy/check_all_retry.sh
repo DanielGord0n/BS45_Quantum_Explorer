@@ -27,8 +27,9 @@ USER_ID="${CLUSTER_USER:-dangord}"
 CLUSTERS="fir nibi rorqual trillium"
 PUSH_WAIT="${PUSH_WAIT:-180}"     # seconds to wait for you to tap each push
 DUO="$SCRIPT_DIR/duo_ssh.py"
-# Banked-solution IDs hidden from "NEW FOUND?" — keep in sync with HANDOFF.
-EXCLUDE="46274622_4|14923090_[26]|16945067_3"
+# The remote checker command lives in checker_cmd.txt so Claude Code can evolve it
+# (exclusion filter, rung label, gate probes) without touching this driver.
+CMD_FILE="$SCRIPT_DIR/checker_cmd.txt"
 
 mkdir -p "$REPO_ROOT/results"
 OUT="$REPO_ROOT/results/latest_check.txt"
@@ -40,8 +41,15 @@ ntfy_push() {  # title message [priority] [tags]
        -d "${2}" "$NTFY_URL" >/dev/null 2>&1
 }
 
-INNER='squeue -u '"$USER_ID"' -h -o "%.14i %.10j %.2t %.11L %R" 2>/dev/null; cd $SCRATCH/bs45 2>/dev/null || exit 0; echo "--- NEW FOUND? ---"; grep -l "FOUND" sa_ladder_*.txt 2>/dev/null | grep -vE "'"$EXCLUDE"'" || echo "(none yet)"; echo "--- n=32 progress ---"; for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -3); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1 | grep -oE "[0-9]+$"); echo "$(basename $f) [$hdr] bestAB_min=$best | $(tail -1 "$f" | cut -c1-55)"; done; echo "--- GATE PROBES ---"; for f in $(ls -t wz_match_output_*.txt 2>/dev/null | head -2); do echo "=== $f ==="; grep -A5 "SUMMARY (n=" "$f" || tail -3 "$f"; done'
-REMOTE='echo ===BS45BEGIN===; '"$INNER"'; echo ===BS45END==='
+if [ ! -f "$CMD_FILE" ]; then
+  echo "Missing $CMD_FILE — the checker command lives there." >&2
+  exit 2
+fi
+# Strip comment/blank lines; keep the command verbatim (no local expansion).
+INNER="$(grep -vE '^[[:space:]]*(#|$)' "$CMD_FILE")"
+REMOTE='echo ===BS45BEGIN===
+'"$INNER"'
+echo ===BS45END==='
 
 ntfy_push "BS45 check starting" "4 Duo pushes coming one at a time — tap each to approve." "low" "hourglass"
 

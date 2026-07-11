@@ -76,12 +76,14 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-11) — n=32 blitz, round 6 PENDING SUBMIT (loop run 1 was
-permission-blocked; paste the round-6 block in the 07-11 TOP OF MIND). Round 5 done, full
-12h, no FOUND: Fir `48072964` (bias@8, 66M) floor 12 / Rorqual `15719455` (plain, 69M)
-floor 8 / Nibi `17483618` (plain, 72M) floor 16. Trillium `1884181` round-1 array still
-draining (task 0 R, 1-7 PD). ~8 arrays done at n=32 (n=31 took ~9 — keep buying tickets).
-Seed ledger used: 1000, 3M...72M; round 6 allocated 75M/78M/81M; next free 84M.**
+**LIVE ROUND (2026-07-11, loop run 2) — n=32 blitz, round 6 SUBMITTED by the autonomous
+loop: Fir `48213931` (bias@8, seed 93M) / Rorqual `15754557` (plain, 96M) / Nibi `17500261`
+(plain, 99M), all echoed job IDs. ⚠️ Run-1's 75M/78M/81M paste block is OBSOLETE — do NOT
+paste it (duplicate arrays). Round 5 was full 12h, no FOUND: Fir `48072964` (bias@8, 66M)
+floor 12 / Rorqual `15719455` (plain, 69M) floor 8 / Nibi `17483618` (plain, 72M) floor 16.
+Trillium `1884181` round-1 array still draining (task 0 R ~9.5h bestAB 12, 1-7 PD); its
+n=32 CD probe `1904644` still PD. ~8 arrays done at n=32 (n=31 took ~9 — keep buying
+tickets). Seed ledger: 75M-90M retired unused (see ledger audit note); next free 102M.**
 
 **FABLE EXTENDED TO 2026-07-14 (learned 07-08):** the handover artifacts below stand, but the
 week's agenda is now: (1) daily blitz refills; (2) **re-derive Wang-Zhu's ACTUAL step-3
@@ -310,7 +312,30 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-11 (1pm autonomous loop, run 1): NO HIT AT n=32 ROUND 5. REFILL BLOCKED BY PERMISSIONS — round-6 block below needs a paste. Canary reached resolve with FOUND markers but hit walltime (NOT a pass yet).
+## ⚡ TOP OF MIND — 2026-07-11 (loop run 2, 1pm): ROUND 6 SUBMITTED AUTONOMOUSLY — Fir `48213931` (bias@8, 93M) / Rorqual `15754557` (plain, 96M) / Nibi `17500261` (plain, 99M). Run-1's 75M/78M/81M paste block below is OBSOLETE — do NOT paste it.
+
+**How run 2 unblocked:** `daily_auto.sh` now launches Claude with
+`--dangerously-skip-permissions`, so the run-1 allowlist blocker is moot (the proposed
+settings.local.json entries below are no longer needed for the loop). One trap fixed en
+route: `duo_run.sh` had lost its execute bit in the morning's edits (exit 126 —
+`permission denied`); `chmod +x` applied and committed. All three submits echoed
+`Submitted batch job <id>` before the ledger state was trusted.
+
+**Seed hygiene:** run 1 allocated 75M/78M/81M (never pasted) and loop testing burned
+84M/87M/90M on paper (never submitted). All six bases RETIRED UNUSED rather than reused —
+if Daniel had pasted the old block after a reuse, same-base duplicate trajectories would
+have wasted the round. Round 6 flew on fresh 93M/96M/99M; next free 102M. Audit note in
+`cluster/deploy/seed_ledger.txt`.
+
+**JOIN22 v2 n=29 canary `15719454` — fuller tail captured this run (still
+INCONCLUSIVE-POSITIVE, not a PASS):** phase-2 stream COMPLETED (541/541, 18,660 raw key
+hits, 37,549s ≈ 10.4h — the stream itself fits 12h with ~1.5h to spare), then resolve
+reached 128/342 with FOUND markers before walltime. Resolve pace ⇒ full pass needs roughly
+14-15h total. Options for the attended rerun: Trillium (24h walltime) once its queue
+drains, or shard the resolve phase. No final banner/dedup summary yet ⇒ per the
+verification rule the canary has NOT passed.
+
+## ⚡ (superseded by run 2 above) 2026-07-11 run 1: NO HIT AT n=32 ROUND 5. REFILL BLOCKED BY PERMISSIONS — round-6 block below is now OBSOLETE (do not paste). Canary reached resolve with FOUND markers but hit walltime (NOT a pass yet).
 
 **Round 5 verdict (all full 12h TIMEOUT = completed, no FOUND):** Fir `48072964` (bias@8,
 66M) floor 12 · Rorqual `15719455` (plain, 69M) floor 8 · Nibi `17483618` (plain, 72M)
@@ -339,7 +364,7 @@ submitted this cycle. Seeds were still allocated by hand-applying the ledger ari
 was stale at NEXT_BASE=60M while 60–72M were already burned (rounds 4–5) — corrected
 before allocation, audit note left in the file.
 
-**Round 6 — PASTE THIS (one Duo tap per line; Fir keeps the bias arm):**
+**Round 6 — ⛔ OBSOLETE, DO NOT PASTE (run 2 already submitted round 6 on seeds 93M/96M/99M; pasting this would queue duplicate arrays on retired bases):**
 ```bash
 cd /Users/danielgordon/Projects/BS45_Quantum_Explorer
 ./cluster/deploy/duo_run.sh fir 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32,WZ_PSD_BIAS=8,WZ_SEED_BASE=75000000 ./cluster_sa_ladder.sh'
