@@ -312,6 +312,52 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
+## ⚡ TOP OF MIND — 2026-07-11 (evening): **GATE A′ IS FINALLY RUNNABLE AND IS RUNNING — Nibi `17518826`, 20-task array.** This is THE decision number for the whole n=42-43 route. Collect it before anything else.
+
+**What was actually broken (and it was not the mathematics).** `WZ_COUNT_PAIR22` was
+OpenMP-parallel WITHIN a node but could not span nodes. At n=36 it finished only 96 of 985
+C,D profiles in a 12h walltime (~19.6 thread-hours/profile ⇒ ~19,300 thread-hours total), so
+THE gate number was unreachable by *any* single job. Nibi `17434023` was marked
+"do-not-rerun" — but it was never a bad result, it was an **unfinishable** one. The gate has
+been blocked on a scheduling limitation, not on a measurement, since 07-08.
+
+**Fix (2026-07-11):** profile-range sharding — `WZ_PROF_LO` / `WZ_PROF_HI` (half-open) in
+`src/solver/wz_match.cpp`, driven by `cluster/deploy/cluster_pair22_gate.sh` (20-task array,
+192 threads each ⇒ ~5h, fits one walltime). **Sharding is EXACT, validated locally at n=10:
+a 3-way partition summed 92+125+87 = 304 = the unsharded total.** Shard math verified to
+cover [0,985) exactly once — no gaps, no overlaps.
+
+**LIVE: Nibi `17518826`** — n=36, sig (5,11,0,0), `WZ_PAIR22_SIDE=CD`, tasks 0-19.
+
+**COLLECT (do this first, next session):**
+```
+grep -h SHARD_STREAM pair22_gate_output_17518826_*.txt | awk '{s+=$5} END {print "TOTAL C,D STREAM =", s}'
+```
+**⚠️ ALL-SHARDS-OR-NOTHING.** There must be exactly **20** SHARD_STREAM lines. A missing,
+failed, or still-running shard makes the sum an UNDERCOUNT — **and an undercount looks
+exactly like a PASS.** Verify the count is 20 before believing the number. Resubmit missing
+shards rather than reporting a partial sum.
+
+**PRE-REGISTERED RULE (do not move the line now that the number is visible —
+`docs/wz_firsthit_plan.md`):** C,D stream **≤ ~1e9 at n=36 → PASS** ⇒ the Wang-Zhu
+Theorem-2.2 route to n=41-43 is alive, resume Phase 1 with joint-pair generation.
+**≥ 1e12 → KILL** ⇒ the Thm-2.2 lift is not the lever either. **In between → run Gate B**
+(per-candidate A,B completion cost) before judging. Deciding to *build* Phase 1 is Daniel's
+call, not the loop's.
+
+*Prior partial from the dead job was `leaves~0 stream~0` at 96/985. Encouraging. NOT evidence.
+Get the number.*
+
+**Also added 2026-07-11 — the loop now has an EXIT CONDITION** (`cluster/deploy/rung_state.txt`
++ `rung_status.sh`). Pre-registered: rung n=32 budget = 27 arrays (3× the ~9 that cracked
+n=31); currently **11/27, floor 8, status ACTIVE** so refills are still justified. On
+EXHAUSTED the loop STOPS buying SA tickets and escalates to the method experiments (this
+gate, then Phase-0 gates) instead of grinding forever. A floor improvement extends the budget;
+a verified hit promotes the rung. **Honest framing unchanged: SA is measured to cap ~n≈33-35.
+n=42-45 is a METHODS problem, not a compute problem — which is exactly what `17518826` is testing.**
+
+---
+
 ## ⚡ TOP OF MIND — 2026-07-11 (loop run 2, 1pm): ROUND 6 SUBMITTED AUTONOMOUSLY — Fir `48213931` (bias@8, 93M) / Rorqual `15754557` (plain, 96M) / Nibi `17500261` (plain, 99M). Run-1's 75M/78M/81M paste block below is OBSOLETE — do NOT paste it.
 
 **Two loop-infrastructure notes for Daniel:** (1) the `guard_git_push.py` hook blocks

@@ -72,6 +72,23 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+   - **A GATE ARRAY is running or finished** (e.g. `cluster_pair22_gate.sh`, job name
+     `P22_GATE`) → this outranks any refill; it is the decision the campaign is waiting on.
+     - Still running (any task R/PD) → do NOT touch it, do NOT resubmit, and say so in
+       the summary. It is not "idle capacity".
+     - All tasks finished → collect it:
+       ```
+       grep -h SHARD_STREAM pair22_gate_output_<JOBID>_*.txt | awk '{s+=$5} END {print s}'
+       ```
+       **⚠️ ALL-SHARDS-OR-NOTHING.** Count the SHARD_STREAM lines first: there must be
+       exactly one per array task (20). If ANY shard is missing, failed, or still running,
+       the sum is an UNDERCOUNT — and an undercount looks exactly like a PASS. Do NOT
+       report it, do NOT act on it. Resubmit the missing shards and wait.
+     - With a COMPLETE sum, read it against the pre-registered rule (do NOT move the line
+       now that you can see the number): **≤ ~1e9 = PASS** → the Thm-2.2 route to n=42-43 is
+       alive; **≥ 1e12 = KILL**; in between → Gate B first. Record the number + verdict in
+       HANDOFF, and set NEEDS_HUMAN — deciding to build Phase 1 is Daniel's call, not yours.
+
    - **A code/deploy change is warranted** → make it and validate it (**R1**), but
      do **NOT** try to ship it. Shipping source needs the tar-pipe, and the
      tar-pipe cannot be driven through the Duo auto-answer (it needs stdin, which
