@@ -847,29 +847,46 @@ int main(int argc, char **argv) {
   //      thresholds; `ok` IS the stream size (no |X|*|Y| product inflation).
   if (getenv("WZ_COUNT_PAIR22")) {
     init_p22();
+    // PROFILE-RANGE SHARDING (2026-07-11). The counter was OpenMP-parallel WITHIN a
+    // node but could not span nodes, so n=36 CD finished only 96/985 profiles in a
+    // 12h walltime (~19.6 thread-hours/profile => ~19,300 thread-hours total). That
+    // put THE gate number out of reach of any single job. WZ_PROF_LO/WZ_PROF_HI slice
+    // the profile list so a SLURM array counts disjoint chunks; sum the per-shard
+    // STREAM values to get the total. 20 tasks x 192 threads ~= 5h. Half-open [LO,HI).
+    // Invariant (validated at n=11): sum over a partition == the unsharded total.
     auto countP = [&](vector<Profile> &profs, int L, bool abSide,
                       bool pin0, bool pin1, const char *label) -> double {
       double leaves_t = 0, ok_t = 0;
       long long done = 0;
       int nprof = (int)profs.size();
+      int lo = 0, hi = nprof;
+      if (const char *e = getenv("WZ_PROF_LO")) lo = max(0, atoi(e));
+      if (const char *e = getenv("WZ_PROF_HI")) hi = min(nprof, atoi(e));
+      if (lo > hi) lo = hi;
+      int nshard = hi - lo;
+      cout << "[pair22 " << label << "] shard profiles [" << lo << "," << hi
+           << ") of " << nprof << "\n" << flush;
       #pragma omp parallel for schedule(dynamic)
-      for (int pi = 0; pi < nprof; pi++) {
+      for (int pi = lo; pi < hi; pi++) {
         long long lv = 0, okc = 0;
         count_pairs22(L, profs[pi].px, profs[pi].py, abSide, pin0, pin1, lv, okc);
         #pragma omp critical
         {
           leaves_t += (double)lv; ok_t += (double)okc; done++;
-          if ((done % 32) == 0 || done == nprof) {
+          if ((done % 32) == 0 || done == nshard) {
             double t = chrono::duration<double>(Clock::now() - G_T0).count();
-            cout << "[pair22 " << label << " " << done << "/" << nprof
-                 << "] leaves~" << leaves_t << " stream~" << ok_t
-                 << " [" << t << "s]\n" << flush;
+            cout << "[pair22 " << label << " " << done << "/" << nshard
+                 << " (shard " << lo << "-" << hi << ")] leaves~" << leaves_t
+                 << " stream~" << ok_t << " [" << t << "s]\n" << flush;
           }
         }
       }
       cout << "=== PAIR22 COUNT " << label << " (L=" << L << ", profiles="
-           << nprof << ") ===\n  encoding-leaves=" << leaves_t
-           << "  STREAM (all filters) = " << ok_t << "\n" << flush;
+           << nshard << "/" << nprof << " shard [" << lo << "," << hi << ")) ===\n"
+           << "  encoding-leaves=" << leaves_t
+           << "  STREAM (all filters) = " << ok_t << "\n"
+           << "  SHARD_STREAM " << label << " " << lo << " " << hi << " " << ok_t
+           << "\n" << flush;   // <- grep 'SHARD_STREAM' and sum column 5
       return ok_t;
     };
     // WZ_PAIR22_SIDE=CD (or AB): count only that side. The C,D stream is the
