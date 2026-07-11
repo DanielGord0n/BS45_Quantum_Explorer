@@ -76,10 +76,12 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-08) — n=32 blitz, round 3: Fir `47625295` (bias@8, seed 51M) /
-Rorqual `15498203` (plain, 54M) / Nibi `17349690` (plain, 57M) / Trillium `1884181` (round-1
-array, still PD). Rounds 1-2 verdict: floors 8 everywhere (~5 arrays done at n=32 so far;
-n=31 took ~9 — keep buying tickets). Seed ledger used: 1000, 3M...57M; next 60M/63M/66M.**
+**LIVE ROUND (2026-07-11) — n=32 blitz, round 6 PENDING SUBMIT (loop run 1 was
+permission-blocked; paste the round-6 block in the 07-11 TOP OF MIND). Round 5 done, full
+12h, no FOUND: Fir `48072964` (bias@8, 66M) floor 12 / Rorqual `15719455` (plain, 69M)
+floor 8 / Nibi `17483618` (plain, 72M) floor 16. Trillium `1884181` round-1 array still
+draining (task 0 R, 1-7 PD). ~8 arrays done at n=32 (n=31 took ~9 — keep buying tickets).
+Seed ledger used: 1000, 3M...72M; round 6 allocated 75M/78M/81M; next free 84M.**
 
 **FABLE EXTENDED TO 2026-07-14 (learned 07-08):** the handover artifacts below stand, but the
 week's agenda is now: (1) daily blitz refills; (2) **re-derive Wang-Zhu's ACTUAL step-3
@@ -305,6 +307,54 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
   ssh dangord@nibi.alliancecan.ca 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch nibi_bs45_exact_t23.sh && squeue -u dangord --format="%12i %22j %2t %12L %R"'
 ```
 *(Trillium BS(45): use the pre-queue command above.)*
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-11 (1pm autonomous loop, run 1): NO HIT AT n=32 ROUND 5. REFILL BLOCKED BY PERMISSIONS — round-6 block below needs a paste. Canary reached resolve with FOUND markers but hit walltime (NOT a pass yet).
+
+**Round 5 verdict (all full 12h TIMEOUT = completed, no FOUND):** Fir `48072964` (bias@8,
+66M) floor 12 · Rorqual `15719455` (plain, 69M) floor 8 · Nibi `17483618` (plain, 72M)
+floor 16. Trillium round-1 array `1884181` still draining (task 0 running, bestAB 12 so
+far, tasks 1-7 PD); its n=32 CD probe `1904644` still PD. ~8 arrays done at n=32.
+
+**JOIN22 v2 n=29 canary `15719454` (Rorqual): INCONCLUSIVE-POSITIVE.** It got through
+build+stream into phase-3 resolve, and the progress lines carry FOUND markers
+(`[join22v2 resolve 64/342 FOUND]`, `128/342 FOUND`) — consistent with re-finding the
+banked class — but the job hit the 12h walltime at resolve ~128/342, so there is NO final
+banner/dedup/timing summary. Per the verification rule this is NOT a canary PASS yet.
+Attended next step: tail the output (the round-6 rorqual command below does it), then
+re-run the canary sharded across array tasks or on Trillium 24h — the 07-10 note already
+says one 12h walltime cannot cover both enumerations at n≥29.
+
+**Gate-probe status:** Fir `47870642` n=31 CD → TIMEOUT at 640/715, stream ~1.27e10
+(consistent with the ~2e10 full-side estimate — the n=31 table still FITS a node). Nibi
+`17434023` n=36 CD → TIMEOUT, ~0 stream at 96/985 (already marked do-not-rerun). The n=32
+join decision stays blocked on Trillium `1904644`.
+
+**⚠️ AUTONOMOUS-LOOP BLOCKER (run 1): the permission allowlist predates the loop.**
+Headless Claude was denied every submit path — `bash/./cluster/deploy/next_seeds.sh`,
+`duo_run.sh`, `python3 duo_ssh.py`, and plain `ssh` all "require approval" — so NOTHING was
+submitted this cycle. Seeds were still allocated by hand-applying the ledger arithmetic
+(75M/78M/81M taken; ledger advanced to 84M). Also fixed: `cluster/deploy/seed_ledger.txt`
+was stale at NEXT_BASE=60M while 60–72M were already burned (rounds 4–5) — corrected
+before allocation, audit note left in the file.
+
+**Round 6 — PASTE THIS (one Duo tap per line; Fir keeps the bias arm):**
+```bash
+cd /Users/danielgordon/Projects/BS45_Quantum_Explorer
+./cluster/deploy/duo_run.sh fir 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32,WZ_PSD_BIAS=8,WZ_SEED_BASE=75000000 ./cluster_sa_ladder.sh'
+./cluster/deploy/duo_run.sh rorqual 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32,WZ_SEED_BASE=78000000 ./cluster_sa_ladder.sh; echo ---CANARY-TAIL---; tail -15 wz_match_output_15719454_4294967294.txt'
+./cluster/deploy/duo_run.sh nibi 'cd $SCRATCH/bs45 && sbatch --requeue --account=def-ikotsire_cpu --export=ALL,WZ_N=32,WZ_SEED_BASE=81000000 ./cluster_sa_ladder.sh'
+```
+
+**Permanent fix so tomorrow's 1pm run can submit itself — add to
+`.claude/settings.local.json` → `permissions.allow` (proposed, not self-applied):**
+```json
+"Bash(bash cluster/deploy/next_seeds.sh:*)",
+"Bash(./cluster/deploy/duo_run.sh:*)",
+"Bash(bash cluster/deploy/duo_run.sh:*)",
+"Bash(python3 cluster/deploy/duo_ssh.py:*)"
+```
 
 ---
 
