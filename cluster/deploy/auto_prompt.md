@@ -41,8 +41,27 @@ Do not re-run the checker.
    sentence of why). Branches:
    - **Jobs still running / too early for results** → do nothing but bookkeeping.
      Explicitly note "insufficient runtime, no action" — do NOT invent changes.
-   - **Idle cluster(s), same method** → refill. Get seeds deterministically:
+   - **Idle cluster(s)** → **FIRST run the exit condition. It is not advisory.**
+     ```
+     cluster/deploy/rung_status.sh check
+     ```
+     - Exit 3 / `EXHAUSTED` → **DO NOT refill SA at this rung.** More tickets here
+       is measured-dead (SA caps ~n≈33-35). Follow the escalation the check prints:
+       finish the JOIN22 / Theorem-2.2 canary (never passed — a ~15h slot on
+       Trillium's 24h queue), then the Phase-0 gates in `docs/wz_firsthit_plan.md`.
+       Those are PRE-REGISTERED experiments, so you may submit them autonomously via
+       `duo_run.sh`. Anything beyond them is a NEW research direction → NEEDS_HUMAN.
+       Put "SA ladder capped at n=<N> — escalated to <experiment>" in the summary,
+       and remind Daniel that `docs/kotsireas_brief.md` is READY TO SEND (the methods
+       ask is the door to 42+; compute is not).
+     - Exit 0 / `ACTIVE` → refilling is still justified; proceed.
+
+   - **Refill (only when ACTIVE)** — get seeds deterministically:
      `cluster/deploy/next_seeds.sh take <#idle>` (never pick seeds yourself).
+     After the submits echo job IDs, record them: `cluster/deploy/rung_status.sh add <#submitted>`.
+     Record each observed floor: `cluster/deploy/rung_status.sh floor <bestAB>` (a floor
+     that IMPROVES extends the budget — that is progress, not grinding).
+     On a VERIFIED hit (R2 passed): `cluster/deploy/rung_status.sh promote`.
      **Submit ONLY via `duo_run.sh`** — plain `ssh` cannot get past the Duo menu
      unattended and will silently fail (add `--account=def-ikotsire_cpu` for Nibi):
      ```

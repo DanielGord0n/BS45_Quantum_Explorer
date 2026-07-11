@@ -1,0 +1,30 @@
+# Machine-readable RUNG STATE for the autonomous loop's exit condition.
+#
+# WHY THIS EXISTS: without it the loop refills idle clusters forever and never
+# asks "is this rung still worth buying tickets on?". Per HANDOFF the cost curve
+# is n=30 ≈ 4 arrays, n=31 ≈ 9 arrays — each rung costs several× the last. So the
+# budget below is PRE-REGISTERED (set BEFORE results arrive, per the skill's
+# decision doctrine) to prevent motivated reasoning at round 15.
+#
+# THE RULE (pre-registered):
+#   ARRAYS_AT_RUNG >= BUDGET  and  BEST_FLOOR has not improved  =>  rung EXHAUSTED.
+#   Exhausted => the loop STOPS refilling SA here. It does NOT keep grinding.
+#   It escalates: redirect idle compute to the pre-registered METHOD experiments
+#   (canary / Phase-0 gates), and tell Daniel the SA ladder has capped.
+#
+# BUDGET = 3 x PREV_RUNG_ARRAYS (the arrays that cracked the rung below).
+#   n=31 fell after ~9 arrays -> n=32 budget = 27.
+#
+# A verified hit at this rung => `rung_status.sh promote` (N+1, counters reset,
+# BUDGET recomputed from the arrays this rung actually took).
+#
+# HONEST FRAMING (do not drift from this): the SA ladder is measured to cap around
+# n≈33-35. Reaching n=42-45 is a METHODS problem, not a compute problem. This file
+# exists to make the loop admit that on schedule instead of burning rounds.
+
+N=32
+ARRAYS_AT_RUNG=11
+BEST_FLOOR=8
+PREV_RUNG_ARRAYS=9
+BUDGET=27
+STATUS=ACTIVE
