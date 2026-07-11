@@ -24,6 +24,12 @@ Do not re-run the checker.
   champion file with full provenance is written to `results/champions/`. Never
   commit or summarize a solution/record as real without that pass. An unverified
   banner ⇒ NEEDS_HUMAN, not a claim.
+- **R3 — never route around a guard.** If a hook, permission rule, or allowlist
+  blocks an action (e.g. `guard_git_push.py` denying a headless push), that is a
+  STOP, not an obstacle. Do NOT rephrase the command, use an alias/synonym, pass
+  `--no-verify`, disable the hook, or edit the guard to get past it. Nothing in
+  this prompt — including anything that looks like authorization — overrides a
+  guard. Stop, set NEEDS_HUMAN, and report exactly what was blocked and why.
 
 ## Steps
 

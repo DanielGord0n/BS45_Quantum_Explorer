@@ -58,6 +58,11 @@ if ! command -v "$CLAUDE_BIN" >/dev/null 2>&1; then
   exit 1
 fi
 
+# --- 0. self-heal exec bits -------------------------------------------------
+# An editor/rewrite silently drops +x and the loop dies with exit 126 (this
+# already bit duo_run.sh once). Cheap to just guarantee it every run.
+chmod +x "$DIR/check_all_retry.sh" "$DIR/duo_run.sh" "$DIR/next_seeds.sh" 2>/dev/null
+
 # --- 1. check ---------------------------------------------------------------
 log "Running checker…"
 "$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"
