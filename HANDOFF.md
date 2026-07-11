@@ -338,9 +338,10 @@ do not rerun; actionable range is n=31-33); n=32 CD probe (Trillium `1904644`) s
 NOTE for n≥31 joins: single 12h walltime is too short for both enumerations — shard profiles
 across array tasks (each task: full C,D table + 1/8 of A,B stream) or use Trillium 24h.
 
-**Sequencing: (1) n=29 JOIN22 v2 canary — resubmitted (ID below; MUST re-find the
+**Sequencing: (1) n=29 JOIN22 v2 canary — Rorqual `15719454` (07-11; MUST re-find the
 banked (0,6,9,1) class; its build/stream times + DEDUP RATIO are the sizing inputs for n≥30
-joins); (2) C,D-STREAM SIZING PROBES LIVE (07-10, `WZ_PAIR22_SIDE=CD` — new env, CD-only counting
+joins). SA round 5: Fir `48072964` (bias@8, 66M) / Rorqual `15719455` (plain, 69M) /
+Nibi `17483618` (plain, 72M); (2) C,D-STREAM SIZING PROBES LIVE (07-10, `WZ_PAIR22_SIDE=CD` — new env, CD-only counting
 so 12h actually reaches the decision number; validated 809-exact at n=11): Fir `47870642`
 n=31 (6,4,7,5) · Trillium `1904644` n=32 (7,3,6,6) · Nibi `17434023` n=36 (5,11,0,0) — the
 old both-sides n=36 probe `17350617` scancelled (it would TIMEOUT on A,B before counting C,D);
