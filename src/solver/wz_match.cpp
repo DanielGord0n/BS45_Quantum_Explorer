@@ -656,96 +656,161 @@ int main(int argc, char **argv) {
   //      solution with this SIGNED sig".
   if (getenv("WZ_JOIN22")) {
     init_p22();
-    // Fixed-size inline record (no per-record heap blocks): at ~1.7e9 records
-    // (measured n=29 C,D stream) this is ~40% less RAM than vector<int8_t>s.
-    struct Rec22 { int8_t P[64], Q[64]; };
-    unordered_map<Key, Rec22> map22;
-    {
-      int nthreads = 1;
-#ifdef _OPENMP
-      nthreads = omp_get_max_threads();
-#endif
-      vector<unordered_map<Key, Rec22>> lm(nthreads);
+    // v2 (2026-07-11): the v1 unordered_map<Key,Rec> hash OOM-killed the n=29
+    // canary (~1.7e9 records x real map overhead >> node RAM). v2 stores ONLY
+    // bare 64-bit keys in a flat open-addressed table (lock-free CAS inserts,
+    // linear probing, 0 = empty sentinel): ~8 B/slot, so n=29 fits in ~34 GB
+    // and n=31 (~2e10 keys, measured stream) in ~275 GB. Three phases:
+    //   1. BUILD: enumerate the C,D 2.2-stream, insert keys.
+    //   2. STREAM: enumerate the A,B 2.2-stream, probe; collect raw hits.
+    //   3. RESOLVE: re-enumerate C,D (deterministic DFS), exact npaf recheck
+    //      of every (hit A,B) x (C,D with that key); print on NPAF==0.
+    // Same completeness caveats as v1 (FNV-shadowing; Thm-2.2 space).
+    int slots_log2 = 32;  // 2^32 slots = 34 GB; override for bigger n
+    if (const char *e = getenv("WZ_JOIN22_SLOTS_LOG2")) slots_log2 = atoi(e);
+    const uint64_t nslots = 1ull << slots_log2;
+    const uint64_t mask = nslots - 1;
+    cout << "[join22v2] key table: 2^" << slots_log2 << " slots = "
+         << (nslots * 8.0 / 1e9) << " GB\n" << flush;
+    vector<uint64_t> table_v(nslots, 0);
+    atomic<uint64_t> *table = reinterpret_cast<atomic<uint64_t>*>(table_v.data());
+    atomic<long long> nkeys{0};
+    auto fixkey = [](Key k) -> Key { return k ? k : 1; };  // 0 is the empty sentinel
+
+    {  // ---- phase 1: BUILD key table from the C,D stream ----
       int nprof = (int)cdProfs.size();
       atomic<long long> built{0};
-      #pragma omp parallel for schedule(dynamic)
+      double cd_stream = 0;
+      #pragma omp parallel for schedule(dynamic) reduction(+:cd_stream)
       for (int pi = 0; pi < nprof; pi++) {
-        int tid = 0;
-#ifdef _OPENMP
-        tid = omp_get_thread_num();
-#endif
-        auto &m = lm[tid];
         long long lv = 0, okc = 0;
         function<void(const vector<int>&, const vector<int>&)> ins =
             [&](const vector<int> &C, const vector<int> &D) {
-          Key k = autocorr_key(C.data(), D.data(), n, true);
-          if (m.find(k) == m.end()) {
-            Rec22 r{};
-            for (int i = 0; i < n; i++) { r.P[i] = (int8_t)C[i]; r.Q[i] = (int8_t)D[i]; }
-            m.emplace(k, r);
+          Key k = fixkey(autocorr_key(C.data(), D.data(), n, true));
+          uint64_t idx = k & mask;
+          while (true) {
+            uint64_t cur = table[idx].load(memory_order_relaxed);
+            if (cur == k) break;  // dedup
+            if (cur == 0) {
+              uint64_t exp = 0;
+              if (table[idx].compare_exchange_strong(exp, k, memory_order_relaxed)) {
+                nkeys.fetch_add(1, memory_order_relaxed);
+                break;
+              }
+              continue;  // lost the race; re-read this slot
+            }
+            idx = (idx + 1) & mask;
           }
         };
         count_pairs22(n, cdProfs[pi].px, cdProfs[pi].py, false, pinC, pinD,
                       lv, okc, &ins);
+        cd_stream += (double)okc;
         long long b = ++built;
         if ((b % 32) == 0 || b == nprof) {
           #pragma omp critical
-          cout << "[join22 build " << b << "/" << nprof << "] ["
+          cout << "[join22v2 build " << b << "/" << nprof << "] keys~"
+               << nkeys.load() << " ["
                << chrono::duration<double>(Clock::now()-G_T0).count() << "s]\n" << flush;
         }
       }
-      size_t recs = 0;
-      for (auto &m : lm) recs += m.size();
-      cout << "[join22] merging " << recs << " thread-local records...\n" << flush;
-      map22.reserve(recs);
-      for (auto &m : lm) {
-        for (auto &kv : m) map22.emplace(kv.first, std::move(kv.second));
-        m.clear();
-      }
-      double gb = map22.size() * (8.0 + sizeof(Rec22) + 48.0) / 1e9;
-      cout << "[join22] hash: " << map22.size() << " records ~" << gb << " GB  ["
-           << chrono::duration<double>(Clock::now()-G_T0).count() << "s]\n" << flush;
+      double load = (double)nkeys.load() / (double)nslots;
+      cout << "[join22v2] C,D stream=" << cd_stream << "  distinct keys="
+           << nkeys.load() << "  (dedup x" << (nkeys.load() ? cd_stream / nkeys.load() : 0)
+           << ")  table load=" << load << "\n" << flush;
+      if (load > 0.85)
+        cout << "[join22v2] WARNING: load>0.85 — probing degrades; raise WZ_JOIN22_SLOTS_LOG2\n" << flush;
     }
-    {
+
+    struct HitAB { Key k; int8_t A[64], B[64]; };
+    vector<HitAB> hits;
+    {  // ---- phase 2: STREAM A,B, probe the table, collect raw key hits ----
       int nprof = (int)abProfs.size();
       atomic<long long> streamed{0};
       #pragma omp parallel for schedule(dynamic)
       for (int pi = 0; pi < nprof; pi++) {
-        if (g_found.load()) continue;
-        long long lv = 0, okc = 0;
         function<void(const vector<int>&, const vector<int>&)> look =
             [&](const vector<int> &A, const vector<int> &B) {
-          if (g_found.load()) return;
-          Key k = autocorr_key(A.data(), B.data(), G_N1, false);
-          auto it = map22.find(k);
-          if (it == map22.end()) return;
-          int Ai[64], Bi[64], Ci[64], Di[64];
-          for (int i = 0; i < G_N1; i++) { Ai[i] = A[i]; Bi[i] = B[i]; }
-          for (int i = 0; i < n; i++) { Ci[i] = it->second.P[i]; Di[i] = it->second.Q[i]; }
-          for (int s = 1; s <= n; s++)
-            if (npaf_at(Ai, Bi, G_N1, Ci, Di, n, s) != 0) return;
+          Key k = fixkey(autocorr_key(A.data(), B.data(), G_N1, false));
+          uint64_t idx = k & mask;
+          while (true) {
+            uint64_t cur = table[idx].load(memory_order_relaxed);
+            if (cur == 0) return;          // absent
+            if (cur == k) break;           // hit
+            idx = (idx + 1) & mask;
+          }
           #pragma omp critical
           {
-            if (!g_found.load()) {
-              memcpy(g_solA, Ai, G_N1 * sizeof(int));
-              memcpy(g_solB, Bi, G_N1 * sizeof(int));
-              memcpy(g_solC, Ci, n * sizeof(int));
-              memcpy(g_solD, Di, n * sizeof(int));
-              g_found.store(true);
-            }
+            HitAB h; h.k = k;
+            for (int i = 0; i < G_N1; i++) { h.A[i] = (int8_t)A[i]; h.B[i] = (int8_t)B[i]; }
+            hits.push_back(h);
+            if (hits.size() % 100000 == 0)
+              cout << "[join22v2] hits=" << hits.size() << " (unusually many)\n" << flush;
           }
         };
+        long long lv = 0, okc = 0;
         count_pairs22(G_N1, abProfs[pi].px, abProfs[pi].py, true, pinA, pinB,
                       lv, okc, &look);
         long long s = ++streamed;
         if ((s % 32) == 0 || s == nprof) {
           #pragma omp critical
-          cout << "[join22 stream " << s << "/" << nprof
+          cout << "[join22v2 stream " << s << "/" << nprof << "] hits="
+               << hits.size() << " ["
+               << chrono::duration<double>(Clock::now()-G_T0).count() << "s]\n" << flush;
+        }
+      }
+      cout << "[join22v2] phase 2 done: " << hits.size() << " raw key hits\n" << flush;
+    }
+
+    if (!hits.empty()) {  // ---- phase 3: RESOLVE — re-enumerate C,D, exact recheck ----
+      unordered_multimap<Key, size_t> hitmap;
+      hitmap.reserve(hits.size() * 2);
+      for (size_t i = 0; i < hits.size(); i++) hitmap.emplace(hits[i].k, i);
+      int nprof = (int)cdProfs.size();
+      atomic<long long> resolved{0};
+      #pragma omp parallel for schedule(dynamic)
+      for (int pi = 0; pi < nprof; pi++) {
+        if (g_found.load()) continue;
+        function<void(const vector<int>&, const vector<int>&)> res =
+            [&](const vector<int> &C, const vector<int> &D) {
+          if (g_found.load()) return;
+          Key k = fixkey(autocorr_key(C.data(), D.data(), n, true));
+          auto range = hitmap.equal_range(k);
+          if (range.first == range.second) return;
+          int Ai[64], Bi[64], Ci[64], Di[64];
+          for (int i = 0; i < n; i++) { Ci[i] = C[i]; Di[i] = D[i]; }
+          for (auto it = range.first; it != range.second; ++it) {
+            const HitAB &h = hits[it->second];
+            for (int i = 0; i < G_N1; i++) { Ai[i] = h.A[i]; Bi[i] = h.B[i]; }
+            bool okall = true;
+            for (int s = 1; s <= n; s++)
+              if (npaf_at(Ai, Bi, G_N1, Ci, Di, n, s) != 0) { okall = false; break; }
+            if (!okall) continue;
+            #pragma omp critical
+            {
+              if (!g_found.load()) {
+                memcpy(g_solA, Ai, G_N1 * sizeof(int));
+                memcpy(g_solB, Bi, G_N1 * sizeof(int));
+                memcpy(g_solC, Ci, n * sizeof(int));
+                memcpy(g_solD, Di, n * sizeof(int));
+                g_found.store(true);
+              }
+            }
+            return;
+          }
+        };
+        long long lv = 0, okc = 0;
+        count_pairs22(n, cdProfs[pi].px, cdProfs[pi].py, false, pinC, pinD,
+                      lv, okc, &res);
+        long long r = ++resolved;
+        if ((r % 64) == 0 || r == nprof) {
+          #pragma omp critical
+          cout << "[join22v2 resolve " << r << "/" << nprof
                << (g_found.load() ? " FOUND" : "") << "] ["
                << chrono::duration<double>(Clock::now()-G_T0).count() << "s]\n" << flush;
         }
       }
     }
+
     double t = chrono::duration<double>(Clock::now() - G_T0).count();
     if (g_found.load()) {
       int n1 = G_N1;

@@ -325,7 +325,20 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 **Canaries: JOIN22 re-finds BS(11,10), BS(12,11), BS(14,13), all NPAF==0.** Negative-claim
 caveats printed by the tool itself (perturbed-hash re-run + signed-sig sweep needed).
 
-**Sequencing: (1) n=29 JOIN22 canary — Rorqual `15587012` (queued 07-10; MUST re-find the
+**07-11 UPDATE — canary v1 OOM → JOIN22 v2 built + validated same day:** v1's
+`unordered_map<Key,Rec>` hash OOM-killed the n=29 canary `15587012` (real map overhead ≫ the
+184 B/rec estimate). **v2 = flat open-addressed table of BARE 64-bit keys** (lock-free CAS,
+~8 B/slot: 2^32 slots = 34 GB default, `WZ_JOIN22_SLOTS_LOG2` to scale) **+ 3-phase join**
+(build keys → stream A,B collecting raw hits → re-enumerate C,D and exact-recheck hits).
+Canaries re-pass: BS(11,10)/BS(12,11)/BS(14,13) FOUND, NPAF==0; count paths regression-
+identical; v2 also prints the DEDUP ratio (n=11: ×7 — stream 809 → 115 distinct keys).
+Sizing data gathered 07-10/11: **n=31 C,D stream ~1.3e10 at 90% counted (≈2e10 full → ~275 GB
+table, FITS)**; n=36 CD probe inconclusive (12h in near-empty profiles, ~0 stream at 10% —
+do not rerun; actionable range is n=31-33); n=32 CD probe (Trillium `1904644`) still PD.
+NOTE for n≥31 joins: single 12h walltime is too short for both enumerations — shard profiles
+across array tasks (each task: full C,D table + 1/8 of A,B stream) or use Trillium 24h.
+
+**Sequencing: (1) n=29 JOIN22 v2 canary — resubmitted (ID below; MUST re-find the
 banked (0,6,9,1) class; its build/stream times + DEDUP RATIO are the sizing inputs for n≥30
 joins); (2) C,D-STREAM SIZING PROBES LIVE (07-10, `WZ_PAIR22_SIDE=CD` — new env, CD-only counting
 so 12h actually reaches the decision number; validated 809-exact at n=11): Fir `47870642`
