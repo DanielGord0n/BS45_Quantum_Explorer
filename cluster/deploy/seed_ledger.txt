@@ -1,0 +1,14 @@
+# Machine-readable seed ledger for the autonomous loop.
+# next_seeds.sh reads and advances this so the MODEL never picks seeds
+# (a reused base = identical SA trajectories = a wasted cluster round).
+#
+# ⚠️ BEFORE ENABLING: set NEXT_BASE to the true next-free base. As of HANDOFF
+# 2026-07-08 the n=32 blitz had used up to 57M and listed next 60M/63M/66M.
+# Confirm nothing newer was submitted, then adjust NEXT_BASE if needed.
+#
+# SEED = NEXT_BASE + ARRAY_TASK_ID*100000 inside cluster_sa_ladder.sh.
+# Bases are handed out STRIDE apart, one per cluster, never reused.
+
+N=32
+NEXT_BASE=60000000
+STRIDE=3000000

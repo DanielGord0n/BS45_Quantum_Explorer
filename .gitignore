@@ -23,3 +23,14 @@ sarukhanian/report/figures/
 
 # Claude Code personal/local settings (keep out of version control; file stays on disk)
 .claude/settings.local.json
+
+# local notification topic (private)
+cluster/deploy/notify.conf
+results/.ntfy_found_state
+results/auto_*.log
+results/latest_check.txt
+results/last_summary.txt
+results/launchd.out
+results/launchd.err
+results/daily_check.log
+cluster/deploy/AUTOPILOT_OFF
