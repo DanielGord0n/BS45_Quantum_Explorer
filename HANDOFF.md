@@ -76,18 +76,28 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-12, loop run 3) — n=32 blitz, round 7 PARTIAL refill: Rorqual
-`15933496` (plain, seed 102M) submitted + echoed. Nibi NOT refilled — Gate A' array
-`17518826` (P22_GATE, 20 tasks) is PD under a maintenance reservation and the gate
-outranks any refill; do not touch it. Fir NOT refilled — checker Duo push missed fir,
-state unknown (round-6 `48213931` bias@8/93M presumably finished but unverified).
-Round 6 verdict (full 12h, no FOUND): Nibi `17500261` floors 8/8/12, Rorqual `15754557`
-floors 8/8/12. Trillium round-1 `1884181` task 7 still R (~8.6h); its n=32 CD probe
-`1904644` R and streaming healthy ([pair22 C,D 32/380] leaves~5.3e10 stream~8.1e8).
-Rung ledger: 12/27 arrays, floor 8, ACTIVE. Next free seed 105M. Checker now surfaces
-P22 gate shards (all-20-or-nothing sum) — see checker_cmd.txt. Rorqual JOIN22 canary
-`15719454` again hit 12h TIME LIMIT mid-resolve (128/342) — still NEVER passed; it needs
-the ~15h Trillium 24h-queue slot when the SA rung exhausts.**
+**LIVE ROUND (2026-07-12 evening, loop run 4 — the 1pm run's Fir gap closed) — n=32
+blitz, round 7 now 2/3 filled: Fir `48409027` (plain, seed 105M) submitted + echoed THIS
+run; Rorqual `15933496` (plain, 102M, from the 1pm run) R ~6.2h, progress floors 12/12/16
+so far. Nibi still NOT refilled — Gate A' array `17518826` (P22_GATE, 20 tasks) remains
+PD under a maintenance reservation; the gate outranks any refill, do not touch it. Round
+6 is now FULLY CLOSED (all three arrays full 12h, no FOUND): Fir `48213931` (bias@8)
+floors 8/12/12 — the verdict the 1pm run couldn't reach — plus Nibi `17500261` 8/8/12 and
+Rorqual `15754557` 8/8/12. Trillium round-1 `1884181` task 7 still R (requeued; output at
+~10.8h/29k epochs); its n=32 CD probe `1904644` R and healthy ([pair22 C,D 160/380]
+leaves~4.6e11 stream~7.65e9 ⇒ crude full-side ≈1.8e10, table would fit a node). Rung
+ledger: 13/27 arrays, floor 8, ACTIVE. Next free seed 108M. Fir's Gate A' n=29
+calibration summary (TRUE streams A,B 2.458e9 / C,D 1.737e9) re-surfaced in this check —
+already recorded in the 07-10 TOP OF MIND, no new information. Rorqual JOIN22 canary
+`15719454` unchanged: TIME LIMIT mid-resolve (128/342), still NEVER passed; it needs the
+~15h Trillium 24h-queue slot when the SA rung exhausts. Checker unchanged (no new banks,
+same live probes; the fir glob picks up `48409027` automatically). ⚠️ PUSH BLOCKED by
+`guard_git_push.py` (correctly, per R3 left blocked): `cluster/deploy/rung_state.txt` is
+bookkeeping-in-spirit but is NOT in the guard's BOOKKEEPING allowlist (the guard and the
+rung ledger were both added 07-11; the list predates the file). This commit sits LOCAL.
+Daniel: add `"cluster/deploy/rung_state.txt",` to the BOOKKEEPING tuple in
+`~/.claude/tools/guard_git_push.py`, then `git push origin main` — every future loop run
+touches rung_state.txt, so until then no autonomous run can push.**
 
 **PREVIOUS ROUND (2026-07-11, loop run 2) — round 6: Fir `48213931` (bias@8, 93M) /
 Rorqual `15754557` (plain, 96M) / Nibi `17500261` (plain, 99M). Round 5 full 12h, no
