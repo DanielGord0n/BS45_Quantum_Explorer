@@ -76,14 +76,23 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-11, loop run 2) — n=32 blitz, round 6 SUBMITTED by the autonomous
-loop: Fir `48213931` (bias@8, seed 93M) / Rorqual `15754557` (plain, 96M) / Nibi `17500261`
-(plain, 99M), all echoed job IDs. ⚠️ Run-1's 75M/78M/81M paste block is OBSOLETE — do NOT
-paste it (duplicate arrays). Round 5 was full 12h, no FOUND: Fir `48072964` (bias@8, 66M)
-floor 12 / Rorqual `15719455` (plain, 69M) floor 8 / Nibi `17483618` (plain, 72M) floor 16.
-Trillium `1884181` round-1 array still draining (task 0 R ~9.5h bestAB 12, 1-7 PD); its
-n=32 CD probe `1904644` still PD. ~8 arrays done at n=32 (n=31 took ~9 — keep buying
-tickets). Seed ledger: 75M-90M retired unused (see ledger audit note); next free 102M.**
+**LIVE ROUND (2026-07-12, loop run 3) — n=32 blitz, round 7 PARTIAL refill: Rorqual
+`15933496` (plain, seed 102M) submitted + echoed. Nibi NOT refilled — Gate A' array
+`17518826` (P22_GATE, 20 tasks) is PD under a maintenance reservation and the gate
+outranks any refill; do not touch it. Fir NOT refilled — checker Duo push missed fir,
+state unknown (round-6 `48213931` bias@8/93M presumably finished but unverified).
+Round 6 verdict (full 12h, no FOUND): Nibi `17500261` floors 8/8/12, Rorqual `15754557`
+floors 8/8/12. Trillium round-1 `1884181` task 7 still R (~8.6h); its n=32 CD probe
+`1904644` R and streaming healthy ([pair22 C,D 32/380] leaves~5.3e10 stream~8.1e8).
+Rung ledger: 12/27 arrays, floor 8, ACTIVE. Next free seed 105M. Checker now surfaces
+P22 gate shards (all-20-or-nothing sum) — see checker_cmd.txt. Rorqual JOIN22 canary
+`15719454` again hit 12h TIME LIMIT mid-resolve (128/342) — still NEVER passed; it needs
+the ~15h Trillium 24h-queue slot when the SA rung exhausts.**
+
+**PREVIOUS ROUND (2026-07-11, loop run 2) — round 6: Fir `48213931` (bias@8, 93M) /
+Rorqual `15754557` (plain, 96M) / Nibi `17500261` (plain, 99M). Round 5 full 12h, no
+FOUND: Fir `48072964` floor 12 / Rorqual `15719455` floor 8 / Nibi `17483618` floor 16.
+Seed ledger: 75M-90M retired unused (ledger audit note).**
 
 **FABLE EXTENDED TO 2026-07-14 (learned 07-08):** the handover artifacts below stand, but the
 week's agenda is now: (1) daily blitz refills; (2) **re-derive Wang-Zhu's ACTUAL step-3
