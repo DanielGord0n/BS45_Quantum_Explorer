@@ -29,6 +29,8 @@ EXCEPTION_REPO = "BS45_Quantum_Explorer"
 BOOKKEEPING = (
     "HANDOFF.md",
     "cluster/deploy/seed_ledger.txt",
+    "cluster/deploy/rung_state.txt",     # added 07-12: the rung ledger postdated this list,
+                                         # so the guard (correctly) blocked a legit push.
     "cluster/deploy/checker_cmd.txt",
     "results/",              # prefix
 )

@@ -20,5 +20,5 @@ echo "--- n=32 progress ---"
 for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -3); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1 | grep -oE "[0-9]+$"); echo "$(basename $f) [$hdr] bestAB_min=$best | $(tail -1 "$f" | cut -c1-55)"; done
 echo "--- GATE PROBES ---"
 for f in $(ls -t wz_match_output_*.txt 2>/dev/null | head -2); do echo "=== $f ==="; grep -A5 "SUMMARY (n=" "$f" || tail -3 "$f"; done
-echo "--- P22 GATE SHARDS (Nibi 17518826; sum valid ONLY at shards_reported=20) ---"
-if ls pair22_gate_output_*.txt >/dev/null 2>&1; then grep -h SHARD_STREAM pair22_gate_output_*.txt 2>/dev/null | awk '{s+=$5; n++} END {print "shards_reported=" n+0 " partial_CD_stream_sum=" s+0}'; else echo "(no gate output files on this cluster)"; fi
+echo "--- P22 GATE SHARDS (sum valid ONLY at shards=20, and ONLY within one job id) ---"
+if ls pair22_gate_output_*.txt >/dev/null 2>&1; then for j in $(ls pair22_gate_output_*.txt 2>/dev/null | sed -E 's/.*output_([0-9]+)_.*/\1/' | sort -u); do grep -h SHARD_STREAM pair22_gate_output_${j}_*.txt 2>/dev/null | awk -v J="$j" '{s+=$5; n++} END {print "job " J ": shards=" n+0 "/20  CD_stream_sum=" s+0 (n==20 ? "  <-- COMPLETE, usable" : "  <-- PARTIAL, do NOT act on this")}'; done; else echo "(no gate output files on this cluster)"; fi
