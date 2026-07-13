@@ -93,7 +93,13 @@ deliberately left clear of SA so nothing competes with them post-maintenance. Ni
 superseded gate array `17518826` is GONE from its queue with no output files (it was
 "harmless; cancel whenever" — evidently cancelled/purged); nothing to collect there.
 Checker unchanged (no new banks; the `ls -t` globs pick up the new arrays
-automatically). Fir refill for Daniel to paste when convenient:**
+automatically). ⚠️ PUSH BLOCKED by `guard_git_push.py` (correctly, per R3 left
+blocked): the push range includes the 07-12 21:26 loop-audit commit `e6d6f63`, which
+touches loop CODE (`check_all_retry.sh`, `daily_auto.sh`, `AUTOMATION.md`,
+`checker_cmd.txt`) and was never pushed by that session — the 07-12 [RESOLVED] note
+predates it. Today's bookkeeping commit sits on top, so the whole range needs
+Daniel: run `git push origin main` and confirm the guard prompt. Fir refill for
+Daniel to paste when convenient:**
 ```
 ./cluster/deploy/duo_run.sh fir 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32,WZ_SEED_BASE=111000000 ./cluster_sa_ladder.sh'
 ```
