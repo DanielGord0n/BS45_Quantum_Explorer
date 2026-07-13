@@ -76,36 +76,34 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-12 evening, loop run 4 — the 1pm run's Fir gap closed) — n=32
-blitz, round 7 now 2/3 filled: Fir `48409027` (plain, seed 105M) submitted + echoed THIS
-run; Rorqual `15933496` (plain, 102M, from the 1pm run) R ~6.2h, progress floors 12/12/16
-so far. Nibi still NOT refilled — Gate A' array `17518826` (P22_GATE, 20 tasks) remains
-PD under a maintenance reservation; the gate outranks any refill, do not touch it. Round
-6 is now FULLY CLOSED (all three arrays full 12h, no FOUND): Fir `48213931` (bias@8)
-floors 8/12/12 — the verdict the 1pm run couldn't reach — plus Nibi `17500261` 8/8/12 and
-Rorqual `15754557` 8/8/12. Trillium round-1 `1884181` task 7 still R (requeued; output at
-~10.8h/29k epochs); its n=32 CD probe `1904644` R and healthy ([pair22 C,D 160/380]
-leaves~4.6e11 stream~7.65e9 ⇒ crude full-side ≈1.8e10, table would fit a node). Rung
-ledger: 13/27 arrays, floor 8, ACTIVE. Next free seed 108M. Fir's Gate A' n=29
-calibration summary (TRUE streams A,B 2.458e9 / C,D 1.737e9) re-surfaced in this check —
-already recorded in the 07-10 TOP OF MIND, no new information. Rorqual JOIN22 canary
-`15719454` unchanged: TIME LIMIT mid-resolve (128/342), still NEVER passed; it needs the
-~15h Trillium 24h-queue slot when the SA rung exhausts. Checker unchanged (no new banks,
-same live probes; the fir glob picks up `48409027` automatically). ⚠️ PUSH BLOCKED by
-`guard_git_push.py` (correctly, per R3 left blocked): `cluster/deploy/rung_state.txt` is
-bookkeeping-in-spirit but is NOT in the guard's BOOKKEEPING allowlist (the guard and the
-rung ledger were both added 07-11; the list predates the file). This commit sits LOCAL.
-Daniel: add `"cluster/deploy/rung_state.txt",` to the BOOKKEEPING tuple in
-`~/.claude/tools/guard_git_push.py`, then `git push origin main` — every future loop run
-touches rung_state.txt, so until then no autonomous run can push.
-[RESOLVED 07-12 late evening: `rung_state.txt` is now in the guard's BOOKKEEPING
-tuple (repo + installed copies identical) and the commit was pushed — `origin/main`
-is current. Autonomous bookkeeping pushes work again.]**
+**LIVE ROUND (2026-07-13, loop run 5) — n=32 blitz, round 8 at 2/3: Rorqual `15989201`
+(plain, 114M) + Nibi `17557893` (plain, 117M) submitted + echoed THIS run. Fir NOT
+filled: its `duo_run.sh` sbatch failed 3× ("no approval within 180s") while the
+Rorqual/Nibi pushes sent BETWEEN those attempts were approved ⇒ a Fir-side push-flow
+problem, not an away user; stopped at 3 attempts to avoid Duo lockout. Base 111M is
+reserved for Fir in the paste block below (retires unused if unpasted by the next loop
+run — ledger annotated). Round 7 CLOSED, no FOUND: Fir `48409027` (105M) floors 8/12/12,
+Rorqual `15953579` (108M) floors 8/12/14, Rorqual `15933496` (102M) completed (queue
+empty; last seen 12/12/16 at ~6h). Trillium SA round-1 `1884181` finished — floors
+12/12/16 — and its CD probe `1904644` ran its full 12h. Rung ledger: 16/27 arrays,
+floor 8, ACTIVE (`rung_status.sh check` passed before the refill). THE GATE `1921290`
+(P22_GATE, 20 tasks) + THE CANARY `1921309` (JOIN22 v2, 24h) both still PD on Trillium
+behind a maintenance reservation — untouched (they outrank everything); Trillium
+deliberately left clear of SA so nothing competes with them post-maintenance. Nibi's
+superseded gate array `17518826` is GONE from its queue with no output files (it was
+"harmless; cancel whenever" — evidently cancelled/purged); nothing to collect there.
+Checker unchanged (no new banks; the `ls -t` globs pick up the new arrays
+automatically). Fir refill for Daniel to paste when convenient:**
+```
+./cluster/deploy/duo_run.sh fir 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32,WZ_SEED_BASE=111000000 ./cluster_sa_ladder.sh'
+```
 
-**PREVIOUS ROUND (2026-07-11, loop run 2) — round 6: Fir `48213931` (bias@8, 93M) /
-Rorqual `15754557` (plain, 96M) / Nibi `17500261` (plain, 99M). Round 5 full 12h, no
-FOUND: Fir `48072964` floor 12 / Rorqual `15719455` floor 8 / Nibi `17483618` floor 16.
-Seed ledger: 75M-90M retired unused (ledger audit note).**
+**PREVIOUS ROUND (2026-07-12, loop runs 3-4) — round 7: Fir `48409027` (plain, 105M) /
+Rorqual `15933496` (plain, 102M) / Rorqual `15953579` (plain, 108M, late-evening
+top-up); Nibi skipped (its then-gate `17518826` PD). Round 6 closed no-FOUND: Fir
+`48213931` (bias@8) 8/12/12, Nibi `17500261` 8/8/12, Rorqual `15754557` 8/8/12. The
+guard-vs-`rung_state.txt` push block was RESOLVED the same evening (file added to the
+guard's BOOKKEEPING tuple; `origin/main` current since).**
 
 **FABLE EXTENDED TO 2026-07-14 (learned 07-08):** the handover artifacts below stand, but the
 week's agenda is now: (1) daily blitz refills; (2) **re-derive Wang-Zhu's ACTUAL step-3
@@ -183,6 +181,8 @@ result and write up the measured-floor frontier (n=30 solved, n≥31 floor=8 acr
 **Retired rounds:** 06-29/30: Fir `46274622` n=30 bias → FOUND; Rorqual `14923090` n=29 → FOUND ×2.
 07-01: n=31@8/n=32@8/n=33@8 (Fir `46372036`/Rorqual `14972152`/Trillium `1846489`) — floors 8/8/8.
 07-03: bias-strength sweep (Fir `46651703` shift 6, Rorqual `15049861` shift 4) — floors 8/8.
+07-10/11 (n=32): round 5 = Fir `48072964` floor 12 / Rorqual `15719455` floor 8 / Nibi `17483618`
+floor 16, full 12h, no FOUND. Rounds 6-7: see PREVIOUS ROUND above.
 
 **Measured SA plateau floors (full 12h × ~1,536 chains):** plain: n=30→4, n=32→8, n=33→12–16;
 bias@8: n=30→**0 (SOLVED)**, n=31→8, n=32→8, n=33→8; bias@6/@4: n=31→8 (reported; true pen ≥6).

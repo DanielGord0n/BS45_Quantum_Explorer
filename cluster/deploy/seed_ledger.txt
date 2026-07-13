@@ -12,9 +12,16 @@
 # do not resurrect them; round 6 actually flew on 93M/96M/99M
 # (Fir 48213931 / Rorqual 15754557 / Nibi 17500261).
 #
+# Base-audit 2026-07-13 (run 5): 114M = Rorqual 15989201, 117M = Nibi 17557893
+# (both echoed job IDs). 111M was allocated for Fir but the submit FAILED 3x
+# (Fir Duo pushes went unanswered while rorqual/nibi pushes in between were
+# approved — Fir-side push-flow problem, not an away user). 111M lives in the
+# 07-13 paste block in HANDOFF; if still unpasted at the next loop run it is
+# RETIRED UNUSED per the run-1/run-2 precedent — do not resurrect, take fresh.
+#
 # SEED = NEXT_BASE + ARRAY_TASK_ID*100000 inside cluster_sa_ladder.sh.
 # Bases are handed out STRIDE apart, one per cluster, never reused.
 
 N=32
-NEXT_BASE=111000000
+NEXT_BASE=120000000
 STRIDE=3000000
