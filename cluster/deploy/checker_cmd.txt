@@ -11,6 +11,12 @@
 #
 # NOTE: do NOT use `exit` in here. The driver wraps this in BEGIN/END markers and
 # an early exit would drop the END marker, making a good run look like a failure.
+#
+# NOTE: do NOT rename the "--- NEW FOUND? ---" header or drop the "--- … ---"
+# header style. daily_auto.sh greps "NEW FOUND" to detect that at least one
+# cluster answered (no match = it aborts before the agent), and
+# check_all_retry.sh slices sections on lines starting with "--- ". Rung labels
+# INSIDE headers (n=32 -> n=33) are fine to change.
 
 squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R" 2>/dev/null
 cd $SCRATCH/bs45 2>/dev/null || echo "(cannot cd to \$SCRATCH/bs45)"

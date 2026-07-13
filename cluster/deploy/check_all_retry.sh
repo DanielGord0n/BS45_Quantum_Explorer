@@ -73,7 +73,10 @@ for c in $CLUSTERS; do
 done
 
 # --- phone summary ----------------------------------------------------------
-hits="$(awk '/--- NEW FOUND\? ---/{f=1;next} /--- n=32 progress ---/{f=0} f' "$OUT" \
+# End the section at ANY next "--- … ---" header: checker_cmd.txt's rung label is
+# EXPECTED to change (n=32 -> n=33 …); hardcoding it here would turn every
+# post-climb run into a false "possible NEW hit" alert (validated 2026-07-12).
+hits="$(awk '/--- NEW FOUND\? ---/{f=1;next} /^--- /{f=0} f' "$OUT" \
         | grep -vE '^\(none yet\)$' | grep -E '\S' | sort -u)"
 msg="reached:${reached:- none};"
 [ -n "$missed" ] && msg="$msg missed:${missed};"

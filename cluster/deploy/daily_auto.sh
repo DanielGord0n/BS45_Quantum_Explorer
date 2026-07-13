@@ -78,13 +78,20 @@ fi
 
 # --- 2. agent, with session-limit deferral ----------------------------------
 HEAD_BEFORE="$(git rev-parse HEAD 2>/dev/null || echo none)"
+TREE_BEFORE="$(git status --porcelain 2>/dev/null)"
 : > "$SUMMARY"
 
 limit_hit() {   # did the LAST attempt die on a usage/session/rate limit?
   tail -25 "$LOG" | grep -qiE "session limit|usage limit|rate limit|out of (credit|quota)|quota exceeded"
 }
-did_nothing() { # provably safe to retry: no summary, no commit
-  [ ! -s "$SUMMARY" ] && [ "$(git rev-parse HEAD 2>/dev/null || echo none)" = "$HEAD_BEFORE" ]
+did_nothing() { # provably safe to retry: no summary, no commit, no working-tree change.
+  # The tree check matters: taking seeds (next_seeds.sh) or advancing the rung
+  # ledger dirties tracked files WITHOUT moving HEAD — an agent that died mid-run
+  # after a duo_run.sh submit would otherwise look like "did nothing" and get
+  # retried into a double-submit.
+  [ ! -s "$SUMMARY" ] \
+    && [ "$(git rev-parse HEAD 2>/dev/null || echo none)" = "$HEAD_BEFORE" ] \
+    && [ "$(git status --porcelain 2>/dev/null)" = "$TREE_BEFORE" ]
 }
 
 MODEL="$MODEL_PRIMARY"

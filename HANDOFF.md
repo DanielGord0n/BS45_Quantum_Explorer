@@ -97,7 +97,10 @@ bookkeeping-in-spirit but is NOT in the guard's BOOKKEEPING allowlist (the guard
 rung ledger were both added 07-11; the list predates the file). This commit sits LOCAL.
 Daniel: add `"cluster/deploy/rung_state.txt",` to the BOOKKEEPING tuple in
 `~/.claude/tools/guard_git_push.py`, then `git push origin main` — every future loop run
-touches rung_state.txt, so until then no autonomous run can push.**
+touches rung_state.txt, so until then no autonomous run can push.
+[RESOLVED 07-12 late evening: `rung_state.txt` is now in the guard's BOOKKEEPING
+tuple (repo + installed copies identical) and the commit was pushed — `origin/main`
+is current. Autonomous bookkeeping pushes work again.]**
 
 **PREVIOUS ROUND (2026-07-11, loop run 2) — round 6: Fir `48213931` (bias@8, 93M) /
 Rorqual `15754557` (plain, 96M) / Nibi `17500261` (plain, 99M). Round 5 full 12h, no

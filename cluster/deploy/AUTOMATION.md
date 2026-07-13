@@ -8,15 +8,21 @@ robot follow your process.
 ## The chain
 
 `launchd` (1pm) → `daily_auto.sh`:
-1. runs `check_all_retry.sh` (you approve the Duo pushes; retries every 10 min up to 90),
+1. runs `check_all_retry.sh` — ONE Duo push per cluster, one at a time; a cluster you
+   don't approve within `PUSH_WAIT` (180 s) is skipped, not re-pushed (re-run to pick
+   it up). If NO cluster answered, the run aborts before invoking the agent.
 2. saves combined output to `results/latest_check.txt`,
-3. runs **headless Claude** with `auto_prompt.md` — it interprets, decides, refills
+3. runs **headless Claude** (`claude-fable-5`; falls back to `claude-opus-4-8` only on
+   a model-unavailable error) with `auto_prompt.md` — it interprets, decides, refills
    idle clusters with deterministic seeds from `next_seeds.sh`, may edit code,
-   updates HANDOFF, commits, and pushes,
+   updates HANDOFF, commits, and pushes. A Claude usage/session limit defers the run
+   (30 min × up to 8 retries), retrying ONLY if the agent provably did nothing (no
+   summary + HEAD unchanged + clean working tree) — a partial run is never retried.
 4. texts you `results/last_summary.txt` via ntfy.
 
-Because the checker leaves SSH connections open ~10 min, the requeue usually needs
-**no second Duo tap** (only if the agent runs past the window).
+There is deliberately **no SSH connection sharing** (ControlMaster leaked Duo prompts —
+see `duo_ssh.py`): every remote command, including each agent submit via `duo_run.sh`,
+is its own SSH login and its own Duo tap.
 
 ## The two rails (in `auto_prompt.md`)
 
@@ -34,8 +40,10 @@ Because the checker leaves SSH connections open ~10 min, the requeue usually nee
    If it lives somewhere launchd won't see, set `CLAUDE_BIN` to the full path at
    the top of `daily_auto.sh`, or add its dir to PATH in the plist.
    - It must be able to run tools without interactive prompts. Default is
-     `--permission-mode acceptEdits`; if your setup still prompts for Bash/git,
-     adjust `CLAUDE_ARGS` in `daily_auto.sh` accordingly.
+     `--dangerously-skip-permissions` (via `CLAUDE_ARGS` in `daily_auto.sh`): the agent
+     can run ANY command in this repo context. Containment = the push-guard hook
+     (`~/.claude/tools/guard_git_push.py`), the R1–R3 rails in `auto_prompt.md`, the
+     per-submit Duo taps, the kill switch, and reading the logs.
 2. **git push auth non-interactive.** The agent runs `git push origin main`. Make
    sure pushing needs no password prompt (SSH key in agent, or cached credential
    helper). Test: `git push` by hand once.
