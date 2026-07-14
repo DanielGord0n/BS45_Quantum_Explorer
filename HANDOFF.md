@@ -76,7 +76,21 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-13, loop run 5) — n=32 blitz, round 8 at 2/3: Rorqual `15989201`
+**LIVE ROUND (2026-07-14, loop run 6) — n=32 blitz, round 9 opened on Fir: `48786968`
+(plain, 120M) submitted + echoed THIS run (Fir's Duo push flow recovered — yesterday's
+3× failures did not recur). Fir's round-8 slot `48551063` (111M, pasted by Daniel 07-13
+evening) CLOSED at full walltime, no FOUND, floors 8/8/16. Nibi `17557893` RUNNING
+(tasks 0-4 R at ~2h, 5-7 PD behind maintenance reservation). Rorqual: SA `15989201`
+still PD (Priority) — plus a P22_GATE array `16007398` (20 tasks, PD) that appears in
+no local record; presumed Daniel-submitted as a second gate copy while Trillium's is
+maintenance-stuck. It is PD → untouched, it outranks refills once it runs. Trillium:
+THE GATE `1921290` + THE CANARY `1921309` both still PD behind the maintenance
+reservation — untouched. Rung ledger: 18/27 arrays, floor 8, ACTIVE (`rung_status.sh
+check` passed before the refill). No new banks; checker unchanged. Push state clean
+(yesterday's guard block resolved — origin/main current). Reminder: `docs/
+kotsireas_brief.md` is READY TO SEND.**
+
+**PREVIOUS ROUND (2026-07-13, loop run 5) — n=32 blitz, round 8 at 2/3: Rorqual `15989201`
 (plain, 114M) + Nibi `17557893` (plain, 117M) submitted + echoed THIS run. Fir NOT
 filled: its `duo_run.sh` sbatch failed 3× ("no approval within 180s") while the
 Rorqual/Nibi pushes sent BETWEEN those attempts were approved ⇒ a Fir-side push-flow
@@ -103,6 +117,7 @@ Daniel to paste when convenient:**
 ```
 ./cluster/deploy/duo_run.sh fir 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=32,WZ_SEED_BASE=111000000 ./cluster_sa_ladder.sh'
 ```
+*(Both resolved that evening: Daniel pasted the Fir refill → job `48551063`, and pushed main.)*
 
 **PREVIOUS ROUND (2026-07-12, loop runs 3-4) — round 7: Fir `48409027` (plain, 105M) /
 Rorqual `15933496` (plain, 102M) / Rorqual `15953579` (plain, 108M, late-evening
