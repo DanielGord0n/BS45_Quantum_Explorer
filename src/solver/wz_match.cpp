@@ -206,6 +206,73 @@ struct PairNormSet {
   bool feasible(int need) const { return achievable.count(need) != 0; }
 };
 
+// ===== Thm 2.3 eq 2.11b — the RESIDUE-LEVEL AUTOCORRELATION condition =======
+// Added 2026-07-15 after reading arXiv:2506.20296 (docs/wz_paper_reconstruction.md).
+// eq 2.11 has TWO parts; we only ever implemented the first:
+//   2.11a  sum of ALL class-sum squares = 4n+2                      <- PairNormSet
+//   2.11b  N_K(s)+N_R(s)+N_P(s)+N_Q(s)
+//        + N_K(m-s)+N_R(m-s)+N_P(m-s)+N_Q(m-s) = 0 , s=1..[m/2]     <- THIS
+// It is exactly the statement that the NPAF sum vanishes on each nonzero residue
+// class mod m, so a true solution ALWAYS satisfies it (canary-verified on all six
+// valid banked champions, tools/canary_thm211b.py).
+//
+// NOTE (proven, and it is why Wang-Zhu lift to m=6): at m=3 this is VACUOUS.
+// For length-3 v, N(v,1)+N(v,2) = ((sum v)^2 - norm(v))/2, so the s=1 condition
+// collapses to Thm 2.1 minus 2.11a — implied, never false (measured: 1.0x at m=3).
+// m=6 is the first modulus carrying new information; only the mod-6 tighten uses it.
+static bool G_THM211B = false;   // WZ_THM211B=1 to enable (A/B-able on purpose)
+
+// eq 2.9: NON-circular autocorrelation of a residue vector, N_v(s)=sum v_i*v_{i+s}.
+static int autocorr_vec(const vector<int> &v, int s) {
+  int m = (int)v.size(), t = 0;
+  if (s >= m) return 0;
+  for (int i = 0; i + s < m; i++) t += v[i] * v[i + s];
+  return t;
+}
+// One SIDE's eq-2.11b aggregate at shift s. The condition is AB_s + CD_s = 0.
+// (At s=m/2 with m even, m-s==s and the term is counted twice on BOTH sides —
+//  2X+2Y=0 <=> X+Y=0, so the literal formula stays consistent.)
+static int pair_auto(const vector<int> &x, const vector<int> &y, int s) {
+  int m = (int)x.size();
+  return autocorr_vec(x, s) + autocorr_vec(y, s)
+       + autocorr_vec(x, m - s) + autocorr_vec(y, m - s);
+}
+// Pack (T_1..T_[m/2], norm) into one 64-bit key. |T| <= 4*(4n+2) fits int16 with
+// the +8192 bias for every n we can reach; norm <= 4n+2 fits unbiased.
+static uint64_t auto_key(const vector<int> &T, int norm) {
+  uint64_t k = (uint64_t)(uint16_t)norm;
+  for (size_t i = 0; i < T.size() && i < 3; i++)
+    k |= ((uint64_t)(uint16_t)(T[i] + 8192)) << (16 * (i + 1));
+  return k;
+}
+
+// The complement side's achievable (eq-2.11b tuple, norm) pairs. Same double loop
+// and same norm pruning as PairNormSet — just a richer key — so a lookup stays O(1).
+struct PairAutoSet {
+  unordered_set<uint64_t> achievable;
+  void build(int L, int a, int b, int m) {
+    auto K = enum_class_sums(L, a, m);
+    auto R = enum_class_sums(L, b, m);
+    int tgt = 4 * G_N + 2, half = m / 2;
+    vector<int> T(half);
+    for (auto &kv : K) {
+      int kn = norm_vec(kv);
+      if (kn > tgt) continue;
+      for (auto &rv : R) {
+        int rn = norm_vec(rv);
+        if (kn + rn > tgt) continue;
+        for (int s = 1; s <= half; s++) T[s - 1] = pair_auto(kv, rv, s);
+        achievable.insert(auto_key(T, kn + rn));
+      }
+    }
+  }
+  // Wang-Zhu Step 3's existential test: does SOME (k,r) supply exactly `needNorm`
+  // AND cancel this side's autocorrelation tuple?
+  bool feasible(const vector<int> &needT, int needNorm) const {
+    return achievable.count(auto_key(needT, needNorm)) != 0;
+  }
+};
+
 // ============================ sequence generation ============================
 //
 // Generate all +/-1 sequences of length L whose mod-3 class sums equal target3,
@@ -295,7 +362,8 @@ struct Profile { vector<int> px, py; };
 
 static vector<Profile> survive_profiles(int L, int sigX, int sigY,
                                         const PairNormSet &comp3,
-                                        const PairNormSet &comp6) {
+                                        const PairNormSet &comp6,
+                                        const PairAutoSet *comp6auto = nullptr) {
   int tgt = 4 * G_N + 2;
   auto PX3 = enum_class_sums(L, sigX, 3);
   auto PY3 = enum_class_sums(L, sigY, 3);
@@ -322,7 +390,14 @@ static vector<Profile> survive_profiles(int L, int sigX, int sigY,
           if (reduce63(py6) != py) continue;
           int need6 = tgt - npx6 - norm_vec(py6);
           if (need6 < 0) continue;
-          if (comp6.feasible(need6)) { ok6 = true; break; }
+          if (G_THM211B && comp6auto) {
+            // Wang-Zhu Step 3, in full: the complement must not only supply the
+            // remaining NORM (2.11a) but also CANCEL this pair's residue
+            // autocorrelations (2.11b). Previously we only asked for the norm.
+            vector<int> needT(3);
+            for (int s = 1; s <= 3; s++) needT[s - 1] = -pair_auto(px6, py6, s);
+            if (comp6auto->feasible(needT, need6)) { ok6 = true; break; }
+          } else if (comp6.feasible(need6)) { ok6 = true; break; }
         }
         if (ok6) break;
       }
@@ -470,7 +545,8 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
 static vector<Profile> survive_profiles6(int L, int sigX, int sigY,
                                          const PairNormSet &comp3,
                                          const PairNormSet &comp6,
-                                         size_t cap = 20000000) {
+                                         size_t cap = 20000000,
+                                         const PairAutoSet *comp6auto = nullptr) {
   int tgt = 4 * G_N + 2;
   auto PX = enum_class_sums(L, sigX, 6);
   auto PY = enum_class_sums(L, sigY, 6);
@@ -494,6 +570,13 @@ static vector<Profile> survive_profiles6(int L, int sigX, int sigY,
       // mod-6 pairwork exceeded mod-3, impossible for a true refinement).
       int need3 = tgt - npx3 - norm_vec(reduce63(py));
       if (need3 < 0 || !comp3.feasible(need3)) continue;
+      // Thm 2.3 eq 2.11b (WZ Step 3, in full): the complement must ALSO cancel this
+      // pair's residue autocorrelations, not merely supply the leftover norm.
+      if (G_THM211B && comp6auto) {
+        vector<int> needT(3);
+        for (int s = 1; s <= 3; s++) needT[s - 1] = -pair_auto(px, py, s);
+        if (!comp6auto->feasible(needT, need)) continue;
+      }
       out.push_back({px, py});
       if (out.size() >= cap) {
         cout << "[mod6] WARNING: profile-pair space hit cap " << cap
@@ -564,6 +647,7 @@ int main(int argc, char **argv) {
     return 1;
   }
   if (const char *hk = getenv("WZ_HASH_KEEP")) G_HASH_KEEP = atoi(hk);
+  if (getenv("WZ_THM211B")) G_THM211B = true;   // Thm 2.3 eq 2.11b profile filter
   bool measure = getenv("WZ_MEASURE") != nullptr;
 
   init_hall_tables();
@@ -635,8 +719,17 @@ int main(int argc, char **argv) {
   }
 
   // --- surviving profiles for each side (complement = the OTHER side) ---
-  auto abProfs = survive_profiles(G_N1, G_SIG_A, G_SIG_B, cd3, cd6);
-  auto cdProfs = survive_profiles(n,    G_SIG_C, G_SIG_D, ab3, ab6);
+  // Thm 2.3 eq 2.11b (WZ_THM211B=1): build the complement sides' (autocorr,norm)
+  // sets at m=6 — the modulus where 2.11b is not vacuous. See PairAutoSet.
+  PairAutoSet ab6a, cd6a;
+  if (G_THM211B) {
+    ab6a.build(G_N1, G_SIG_A, G_SIG_B, 6);
+    cd6a.build(n,    G_SIG_C, G_SIG_D, 6);
+    cout << "[thm2.11b] ENABLED — complement (autocorr,norm) tuples: A,B side "
+         << ab6a.achievable.size() << "  C,D side " << cd6a.achievable.size() << "\n" << flush;
+  }
+  auto abProfs = survive_profiles(G_N1, G_SIG_A, G_SIG_B, cd3, cd6, G_THM211B ? &cd6a : nullptr);
+  auto cdProfs = survive_profiles(n,    G_SIG_C, G_SIG_D, ab3, ab6, G_THM211B ? &ab6a : nullptr);
   cout << "[profiles] A,B side surviving: " << abProfs.size()
        << "   C,D side surviving: " << cdProfs.size() << "\n" << flush;
 
@@ -914,8 +1007,10 @@ int main(int argc, char **argv) {
   //      the reduction ratio is the gate metric. Progress lines leave partial
   //      data on TIMEOUT. Takes precedence over WZ_COUNT_ONLY if both are set.
   if (getenv("WZ_COUNT_MOD6")) {
-    auto ab6Profs = survive_profiles6(G_N1, G_SIG_A, G_SIG_B, cd3, cd6);
-    auto cd6Profs = survive_profiles6(n,    G_SIG_C, G_SIG_D, ab3, ab6);
+    auto ab6Profs = survive_profiles6(G_N1, G_SIG_A, G_SIG_B, cd3, cd6,
+                                      20000000, G_THM211B ? &cd6a : nullptr);
+    auto cd6Profs = survive_profiles6(n,    G_SIG_C, G_SIG_D, ab3, ab6,
+                                      20000000, G_THM211B ? &ab6a : nullptr);
     cout << "[mod6 profiles] A,B side: " << ab6Profs.size()
          << "   C,D side: " << cd6Profs.size() << "\n" << flush;
     auto count6 = [&](vector<Profile> &profs, int L, bool pin0, bool pin1,

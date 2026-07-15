@@ -109,6 +109,48 @@ C,D stream at n=29/31 against the banked baselines (1.74e9 / ~1.4e10); (b) the f
 with different signatures; (c) even a PASS only licenses Phase 1 → reproducing WZ's *published* 41-43.
 n=44 remains open and needs new mathematics.
 
+## 🔧 IMPLEMENTED 2026-07-15 (Opus) — `WZ_THM211B=1`, and the SECOND gap it exposed
+
+**Shipped, compiling, off by default (A/B-able):** `autocorr_vec` / `pair_auto` / `PairAutoSet`
+in `src/solver/wz_match.cpp`; 2.11b wired into BOTH `survive_profiles`' mod-6 tighten and
+`survive_profiles6`. Env gate `WZ_THM211B=1`. Only m=6 uses it (m=3 is vacuous — proven above).
+
+**Measured, n=11, banked sig (2,4,-5,1):**
+
+| profile space | norm-only | +2.11b | cut |
+|---|---|---|---|
+| mod-6 A,B | 8,478 | **2,484** | 3.4× |
+| mod-6 C,D | 916 | **234** | 3.9× |
+| mod-3 A,B / C,D (what pair22 uses) | 108 / 38 | **108 / 38** | **1.0× — NO CHANGE** |
+
+C,D = 234 matches `tools/measure_thm211b_prune.py`'s independent Python prediction **exactly**,
+which is strong evidence the C++ is correct and not merely plausible.
+
+### ⚠️ THE SECOND GAP — 2.11b is INERT in the pair22 path, and here is why
+
+`survive_profiles()` returns **mod-3** profiles; its mod-6 test is only an **existential tighten**
+("does SOME mod-6 lift of this mod-3 profile admit a complement?"). Tightening that existential
+does not delete a mod-3 profile as long as **one** lift survives — hence 108/38 unchanged.
+`count_pairs22` then generates sequences from those **mod-3** targets, so the 3.9× never lands.
+
+**Wang-Zhu's Step 4 is explicit: they generate C,D from the mod-6 profiles recorded in Step 3.**
+We generate from mod-3. **That architectural difference — not the filter — is what is left.**
+
+**Next change (for a fresh session, do NOT bolt it on blind):** make the pair22 path consume
+mod-6 profiles — i.e. drive `count_pairs22` from `survive_profiles6(...)` output with a mod-6
+class-sum target (the modulus-m DFS already exists: `count_seqs_for_profile_m`, used by the
+WZ_COUNT_MOD6 probe). This changes `count_pairs22`'s contract (mod-3 target -> mod-6 target),
+so it needs the exact small-n ground-truth re-run (n=7: 66/66, 91/91) before it is trusted.
+
+**Regression tests already in place:** `tools/canary_thm211b.py` (2.11b must hold on every valid
+banked champion — currently 6/6, and it correctly REJECTS the invalid champion_v3_n27) and
+`tools/measure_thm211b_prune.py` (independent Python model of the profile cut; C++ must match it).
+
+**Do NOT queue cluster jobs for this yet.** With generation still driven by mod-3 profiles, a
+`WZ_THM211B=1` run on a cluster computes exactly what today's binary computes. The first cluster
+job worth submitting is the re-measured pair22 C,D stream at n=29/31 **after** Step 4 lands,
+compared against the banked baselines (1.74e9 / ~1.4e10).
+
 ## Validation plan (campaign doctrine: measure before building)
 
 1. **Soundness canary FIRST.** Extend `WZ_PROFILE_CHECK` to assert 2.11b on all four banked
