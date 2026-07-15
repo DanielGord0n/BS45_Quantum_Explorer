@@ -371,7 +371,37 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-15: **STOP TRYING TO MEASURE GATE A′ AT n=36. A PASS IS ARITHMETICALLY IMPOSSIBLE — the answer was already in our own data.**
+## ⚡ TOP OF MIND — 2026-07-15 (later): **WE FOUND THE MISSING WANG-ZHU CONSTRAINT. It is Thm 2.3 eq 2.11b — the residue-level autocorrelation condition — and it is NOT IN OUR CODE.** Full analysis: **`docs/wz_paper_reconstruction.md`**. Read that before touching the solver.
+
+**We finally read the actual paper** (arXiv:2506.20296 — it was never in the repo; two prior
+reconstructions were guesses). Thm 2.3's eq 2.11 has **two** parts:
+- **2.11a** `Σk²+Σr²+Σp²+Σq² = 4n+2` — the norm identity. **We implement this.**
+- **2.11b** `N_K(s)+N_R(s)+N_P(s)+N_Q(s) + N_K(m−s)+N_R(m−s)+N_P(m−s)+N_Q(m−s) = 0`, s=1..[m/2],
+  where `N_K(s)=Σ_i k_{i,m}k_{i+s,m}` — the **residue-level autocorrelation**. **We implement NOTHING
+  of this.** `grep N_K|N_R|N_P|N_Q src/solver/wz_match.cpp` → no hits. `survive_profiles6` keeps every
+  profile pair whose *norms* add up; WZ additionally require the residue autocorrelations to CANCEL,
+  checked **jointly** via an existential search over the A,B residue vectors (their Step 3).
+
+**This retro-explains every measurement:** Gate A's 0.15% (it only re-tested 2.11a at a finer
+modulus — nearly parity-generic, prunes ~nothing); Gate A′'s big-but-wrong-level ratio (Thm 2.2 is
+*sequence*-level, it never touches the *profile* space); and n=29 C,D = 1.74e9 (the profile space
+feeding it was never cut by 2.11b).
+
+**Next action is a PROFILE-LEVEL patch, not a solver rewrite** — add the 2.11b existential check to
+`survive_profiles6` (precompute achievable A,B `(autocorr-tuple, norm)` pairs once → O(1) lookup per
+C,D profile; same shape as `PairNormSet::feasible`). **Validate in this order (doctrine):**
+(1) extend `WZ_PROFILE_CHECK` to assert 2.11b on all four BANKED solutions — if a banked solution
+fails, our implementation is wrong, not the math; (2) exact n=7/n=11 ground truth; (3) only then
+re-measure the C,D stream at n=29/n=31 against the banked baselines (1.74e9 / ~1.4e10). The ratio IS
+the answer to "what does the real work?".
+
+**Also free from the paper: Table 1 has their actual BS(42,41)/BS(43,42)/BS(44,43) sequences** —
+ground truth for `tools/verify_npaf.py`. And the paper states plainly that **BS(n+1,n) for n>43 is
+still open** — so n=41-43 is the achievable target; n=44 is the frontier.
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-15: **STOP TRYING TO MEASURE GATE A′ AT n=36. A PASS IS ARITHMETICALLY IMPOSSIBLE — the answer was already in our own data.** *(Still true — but see above: the stream was never cut by 2.11b, so this KILL judges an under-filtered pipeline, not Wang-Zhu's.)*
 
 **The finding.** The pre-registered PASS line is **C,D stream ≤ ~1e9 at n=36**. But the
 **completed** n=29 measurement (job `47665509`, banked in the GATE A′ SUMMARY) is
