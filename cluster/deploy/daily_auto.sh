@@ -119,19 +119,27 @@ while : ; do
   # Success: it wrote a summary. Done.
   [ "$rc" -eq 0 ] && [ -s "$SUMMARY" ] && break
 
-  # Model unavailable (NOT a limit) -> swap to the fallback once, retry immediately.
-  if [ "$MODEL" = "$MODEL_PRIMARY" ] && ! limit_hit \
-     && tail -25 "$LOG" | grep -qiE "model.*(not found|unavailable|invalid|unknown)"; then
-    log "Primary model '$MODEL_PRIMARY' unavailable — switching to '$MODEL_FALLBACK'."
+  # ---- FALL BACK TO THE OTHER MODEL ----------------------------------------
+  # 07-15 lesson: credits are PER-MODEL, not account-wide. Fable was out of credits
+  # while Opus still worked fine — but the old code only fell back on "model not
+  # found/unavailable", so a credit-exhausted primary just killed the day instead of
+  # running on the fallback. Any primary-model blocker (unavailable OR out of
+  # credits/limit) now falls back, as long as the agent provably did nothing yet.
+  if [ "$MODEL" = "$MODEL_PRIMARY" ] && did_nothing \
+     && { limit_hit || tail -25 "$LOG" | grep -qiE "model.*(not found|unavailable|invalid|unknown)"; }; then
+    log "Primary '$MODEL_PRIMARY' blocked ($(limit_reset_note 2>/dev/null || echo 'unavailable')) — falling back to '$MODEL_FALLBACK'."
+    ntfy_push "BS45 — falling back to $MODEL_FALLBACK" \
+      "$MODEL_PRIMARY blocked ($(limit_reset_note)). Running on $MODEL_FALLBACK instead." "low" "arrows_counterclockwise"
     MODEL="$MODEL_FALLBACK"
     continue
   fi
 
-  # Credits exhausted (resets in DAYS) -> retrying for 4h is pointless. Stop cleanly.
+  # Credits exhausted on the FALLBACK too (i.e. everything is out) -> stop cleanly;
+  # a 30-min backoff cannot fix a multi-day reset.
   if credits_gone; then
-    log "OUT OF CREDITS ($(limit_reset_note)) — not retrying; a 4h backoff cannot fix a multi-day reset."
+    log "OUT OF CREDITS on both '$MODEL_PRIMARY' and '$MODEL_FALLBACK' ($(limit_reset_note)) — not retrying."
     ntfy_push "BS45 blocked — out of credits" \
-      "Agent could not run: out of usage credits ($(limit_reset_note)). Nothing was submitted; clusters keep computing. Re-run ./cluster/deploy/daily_auto.sh once credits reset." \
+      "Both models are out of usage credits ($(limit_reset_note)). Nothing was submitted; clusters keep computing. Re-run ./cluster/deploy/daily_auto.sh once credits reset." \
       "default" "no_entry"
     break
   fi
