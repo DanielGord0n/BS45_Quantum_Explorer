@@ -76,7 +76,23 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-14, loop run 6) — n=32 blitz, round 9 opened on Fir: `48786968`
+**LIVE ROUND (2026-07-15, loop run 7) — n=32 blitz, round 10 opened on Fir:
+`49139667` (plain, 123M) submitted + echoed THIS run (Duo push approved).
+Fir's round-9 `48786968` (120M) CLOSED at full walltime, no FOUND, floors
+8/12/16 → Fir idle → refilled. Nibi `17557893` tasks 0-4 done (floors
+8/12/16), tasks 5-7 still PD behind the maintenance reservation → NOT idle,
+no refill. Rorqual: SA `15989201` finished (floors 8/12/16); now running the
+P22_GATE array `16007398` (task 19 R ~8 min; SHARD count 0/20 → PARTIAL, do
+NOT act on the 0 sum — all-shards-or-nothing). A running gate outranks
+refills → untouched, not resubmitted. Trillium: THE GATE `1921290` + THE
+CANARY `1921309` both still PD behind the maintenance reservation →
+untouched (they outrank everything post-maintenance). Rung ledger: 19/27
+arrays at n=32, floor 8, ACTIVE (`rung_status.sh check` passed before AND
+after the refill). No new banks; no unverified FOUND banners; checker
+unchanged. Reminder: `docs/kotsireas_brief.md` is READY TO SEND (the methods
+ask is the door to 42+; compute is not).**
+
+**PREVIOUS ROUND (2026-07-14, loop run 6) — n=32 blitz, round 9 opened on Fir: `48786968`
 (plain, 120M) submitted + echoed THIS run (Fir's Duo push flow recovered — yesterday's
 3× failures did not recur). Fir's round-8 slot `48551063` (111M, pasted by Daniel 07-13
 evening) CLOSED at full walltime, no FOUND, floors 8/8/16. Nibi `17557893` RUNNING

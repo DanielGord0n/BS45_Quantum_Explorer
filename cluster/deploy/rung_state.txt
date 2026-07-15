@@ -23,7 +23,7 @@
 # exists to make the loop admit that on schedule instead of burning rounds.
 
 N=32
-ARRAYS_AT_RUNG=18
+ARRAYS_AT_RUNG=19
 BEST_FLOOR=8
 PREV_RUNG_ARRAYS=9
 BUDGET=27
