@@ -82,7 +82,19 @@ TREE_BEFORE="$(git status --porcelain 2>/dev/null)"
 : > "$SUMMARY"
 
 limit_hit() {   # did the LAST attempt die on a usage/session/rate limit?
-  tail -25 "$LOG" | grep -qiE "session limit|usage limit|rate limit|out of (credit|quota)|quota exceeded"
+  # 07-15: the real wording is "You're out of usage credits · resets Jul 17 at 11pm".
+  # The old pattern said "out of (credit|quota)" and MISSED it (plural + "usage" in the
+  # middle), so the retry never engaged and the phone got a useless "no summary" text.
+  # Keep this loose: match the shapes, not one exact sentence.
+  tail -25 "$LOG" | grep -qiE "session limit|usage limit|rate limit|quota exceeded|out of .*(credit|quota)|hit your (usage|session) limit|insufficient (credit|quota)"
+}
+# A hard CREDIT exhaustion (days, not hours) is different from a rolling session limit:
+# retrying every 30 min for 4h cannot help. Detect it and stop cleanly.
+credits_gone() {
+  tail -25 "$LOG" | grep -qiE "out of .*credit|insufficient credit"
+}
+limit_reset_note() {   # pull the "resets ..." text so the phone says something useful
+  tail -25 "$LOG" | grep -oiE "resets [^·]*" | head -1
 }
 did_nothing() { # provably safe to retry: no summary, no commit, no working-tree change.
   # The tree check matters: taking seeds (next_seeds.sh) or advancing the rung
@@ -115,7 +127,16 @@ while : ; do
     continue
   fi
 
-  # Session/usage limit AND the agent provably did nothing -> defer and retry.
+  # Credits exhausted (resets in DAYS) -> retrying for 4h is pointless. Stop cleanly.
+  if credits_gone; then
+    log "OUT OF CREDITS ($(limit_reset_note)) — not retrying; a 4h backoff cannot fix a multi-day reset."
+    ntfy_push "BS45 blocked — out of credits" \
+      "Agent could not run: out of usage credits ($(limit_reset_note)). Nothing was submitted; clusters keep computing. Re-run ./cluster/deploy/daily_auto.sh once credits reset." \
+      "default" "no_entry"
+    break
+  fi
+
+  # Rolling session/usage limit AND the agent provably did nothing -> defer and retry.
   if limit_hit && did_nothing && [ "$attempt" -le "$MAX_RETRY" ]; then
     log "USAGE LIMIT hit and the agent did nothing (no summary, HEAD unchanged) — safe to retry."
     log "Waiting ${RETRY_WAIT}s, then attempt $((attempt+1))."
@@ -141,8 +162,10 @@ done
 # --- 3. phone summary -------------------------------------------------------
 if [ -s "$SUMMARY" ]; then
   msg="$(head -c 900 "$SUMMARY")"
+elif credits_gone; then
+  msg="BLOCKED — out of Claude usage credits ($(limit_reset_note)). Nothing was submitted, nothing changed; the clusters keep computing regardless. Re-run ./cluster/deploy/daily_auto.sh once credits reset."
 elif limit_hit; then
-  msg="BLOCKED all day by the Claude usage limit after $attempt attempt(s). Nothing was submitted, nothing changed. Re-run ./cluster/deploy/daily_auto.sh once your limit resets."
+  msg="BLOCKED by the Claude usage limit after $attempt attempt(s). Nothing was submitted, nothing changed. Re-run ./cluster/deploy/daily_auto.sh once your limit resets."
 else
   msg="Run finished (rc=$rc) but no summary was written — see results/auto_${STAMP}.log."
 fi
