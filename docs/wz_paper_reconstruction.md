@@ -99,10 +99,24 @@ but kept testing only the norm identity, which is the part that is already nearl
 
 Noisy and signature-dependent, but trending up: ~**1.145× per +1 in n** → **projected ~120× at n=36**.
 
-**5. Consequence — the 07-15 KILL is NOT safe.** Projected n=36 C,D stream *before* 2.11b = 2.7e12
-(KILL). *After* a ~120× profile cut ≈ **2.3e10 → lands IN BETWEEN the 1e9 PASS and 1e12 KILL lines**,
-i.e. the rule says **run Gate B (per-candidate A,B completion cost)**, not "abandon". The earlier KILL
-judged an under-filtered pipeline, not Wang-Zhu's.
+**5. ⛔ RETRACTED — the profile cut does NOT carry to the stream (measured same evening).**
+An earlier draft of this doc argued a ~120× *profile* cut would drag the n=36 stream to ~2.3e10 and
+un-kill the gate. **That was wrong and is retracted.** Once Step 4 was implemented and the STREAM
+(not the profile count) was measured end-to-end:
+
+| n | C,D stream norm-only | +2.11b | **STREAM cut** | profile cut (for contrast) |
+|---|---|---|---|---|
+| 7 | 91 | 53 | **1.7×** | 2.4× |
+| 11 | 809 | 797 | **1.02×** | 9.2× |
+| 15 | 55,794 | 23,918 | **2.3×** | 8.5× |
+
+**The profiles 2.11b removes are nearly EMPTY** — they carry almost no sequences. The fat profiles
+satisfy 2.11b and survive. Profile count and stream size are different currencies; conflating them
+was the error. Projecting the measured ~2× onto n=36: **2.7e12 / 2 ≈ 1.35e12 — still at/above the
+1e12 KILL line. The KILL most likely STANDS.**
+
+**Lesson (same shape as the 07-10 "10⁵× reduction" mistake): a ratio on the wrong quantity is not
+evidence. Measure the quantity the gate is written against.**
 
 **Honest caveats:** (a) profile-count cut ≠ stream cut 1:1 — the real test is re-measuring the pair22
 C,D stream at n=29/31 against the banked baselines (1.74e9 / ~1.4e10); (b) the fit is 5 noisy points
@@ -136,7 +150,25 @@ does not delete a mod-3 profile as long as **one** lift survives — hence 108/3
 **Wang-Zhu's Step 4 is explicit: they generate C,D from the mod-6 profiles recorded in Step 3.**
 We generate from mod-3. **That architectural difference — not the filter — is what is left.**
 
-**Next change (for a fresh session, do NOT bolt it on blind):** make the pair22 path consume
+**✅ STEP 4 IS NOW DONE (2026-07-15, same session).** `count_pairs22` was already a generic
+class-sum DFS with the modulus hardcoded to 3; it now takes `m` (modulus = profile width), and
+`WZ_PAIR22_M6=1` drives generation from `survive_profiles6` output. **Validated:**
+- **n=7 ground truth: 66/91 — matches the banked exact figures.**
+- **INVARIANT: mod-6 generation with norm-only == mod-3 generation, exactly** (66/91 at n=7,
+  1564/809 at n=11). Finer profiles only regroup sequences; nothing is lost. If this ever breaks,
+  the mod-6 profile set is incomplete and every number built on it is worthless.
+- Switches are independent on purpose: `WZ_PAIR22_M6=1` (Step 4) and `WZ_THM211B=1` (Step 3 filter)
+  can be A/B'd separately. That separation is what exposed the retraction in §5.
+
+**What is left is NOT more filtering — it is Gate B.** The stream-size gate (≤1e9 at n=36) asks
+"can we enumerate the whole stream". WZ's Step 5 never does: it backtracks A,B per C,D candidate and
+**stops at the first solution**. So the deciding quantities are **per-candidate A,B completion cost**
+(Gate B) and **solution density × stream ordering** — not stream size. The JOIN22 n=29 canary
+(`resolve 64/342 FOUND`, `128/342 FOUND`) is the only density evidence we have and has never been
+allowed to finish. **Finish the canary; then measure Gate B.** Do not spend more effort shrinking a
+stream that the real architecture never enumerates.
+
+*(historical — superseded by the line above)* Next change: make the pair22 path consume
 mod-6 profiles — i.e. drive `count_pairs22` from `survive_profiles6(...)` output with a mod-6
 class-sum target (the modulus-m DFS already exists: `count_seqs_for_profile_m`, used by the
 WZ_COUNT_MOD6 probe). This changes `count_pairs22`'s contract (mod-3 target -> mod-6 target),

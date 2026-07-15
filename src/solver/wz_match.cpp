@@ -474,17 +474,24 @@ static void init_p22() {
 // validated Gate-A' instrument, unchanged). Non-null turns this DFS into the
 // GENERATOR for the 2.2-joint join (WZ_JOIN22) — same filters, zero
 // materialization outside what the sink itself stores.
+// `m` = the modulus of the class-sum targets tx,ty (WZ Step 4 generates C,D from
+// mod-6 profiles; we historically only ever generated from mod-3). Generalized
+// 2026-07-15 — the DFS was already a generic class-sum walk with the modulus
+// hardcoded to 3. INVARIANT: for the SAME underlying profile set, the resulting
+// stream (`ok`) must be identical at m=3 and m=6 — finer profiles only regroup the
+// same sequences, they never add or drop any. That invariant is the regression test.
 static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
                           bool abSide, bool pinX, bool pinY,
                           long long &leaves, long long &ok,
-                          const function<void(const vector<int>&, const vector<int>&)> *sink = nullptr) {
-  int total_in_class[3];
-  for (int c = 0; c < 3; c++) total_in_class[c] = class_count(L, c, 3);
+                          const function<void(const vector<int>&, const vector<int>&)> *sink = nullptr,
+                          int m = 3) {
+  int total_in_class[8];
+  for (int c = 0; c < m; c++) total_in_class[c] = class_count(L, c, m);
   int half = L / 2;
   vector<int> X(L, 0), Y(L, 0);
-  int px[3] = {0,0,0}, py[3] = {0,0,0}, placed[3] = {0,0,0};
+  int px[8] = {0}, py[8] = {0}, placed[8] = {0};
   function<void(int)> rec = [&](int d) {
-    for (int c = 0; c < 3; c++) {
+    for (int c = 0; c < m; c++) {
       int rem = total_in_class[c] - placed[c];
       int dx = tx[c] - px[c], dy = ty[c] - py[c];
       if (dx < -rem || dx > rem || dy < -rem || dy > rem) return;
@@ -500,12 +507,12 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
         }
       };
       auto exact = [&]() {
-        for (int cc = 0; cc < 3; cc++)
+        for (int cc = 0; cc < m; cc++)
           if (px[cc] != tx[cc] || py[cc] != ty[cc]) return false;
         return true;
       };
       if (L % 2 == 1) {
-        int mid = half, c = mid % 3;
+        int mid = half, c = mid % m;
         for (int k = 0; k < 4; k++) {
           X[mid] = P22_4[k][0]; Y[mid] = P22_4[k][1];
           px[c] += X[mid]; py[c] += Y[mid]; placed[c]++;
@@ -517,7 +524,7 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
       return;
     }
     int i1 = d, i2 = L - 1 - d;
-    int c1 = i1 % 3, c2 = i2 % 3;
+    int c1 = i1 % m, c2 = i2 % m;
     bool d0free = (d == 0 && !abSide);
     const int (*S)[4] = (d == 0) ? (abSide ? P22_NEG : P22_16) : P22_POS;
     int ns = d0free ? 16 : 8;
@@ -962,7 +969,8 @@ int main(int argc, char **argv) {
       #pragma omp parallel for schedule(dynamic)
       for (int pi = lo; pi < hi; pi++) {
         long long lv = 0, okc = 0;
-        count_pairs22(L, profs[pi].px, profs[pi].py, abSide, pin0, pin1, lv, okc);
+        count_pairs22(L, profs[pi].px, profs[pi].py, abSide, pin0, pin1, lv, okc,
+                      nullptr, (int)profs[pi].px.size());   // modulus = profile width
         #pragma omp critical
         {
           leaves_t += (double)lv; ok_t += (double)okc; done++;
@@ -987,10 +995,30 @@ int main(int argc, char **argv) {
     // the A,B side runs first — CD-only gets the decision number in one job.
     const char *sideSel = getenv("WZ_PAIR22_SIDE");
     double abS = -1, cdS = -1;
-    if (!sideSel || strcmp(sideSel, "CD") != 0)
-      abS = countP(abProfs, G_N1, true,  pinA, pinB, "A,B");
-    if (!sideSel || strcmp(sideSel, "AB") != 0)
-      cdS = countP(cdProfs, n,   false, pinC, pinD, "C,D");
+    // WZ Step 4: generate from mod-6 profiles (WZ_PAIR22_M6=1), not mod-3. The
+    // modulus is taken from the profile width, so the SAME DFS serves both. With
+    // WZ_THM211B=1 those mod-6 profiles are additionally cut by eq 2.11b.
+    // INVARIANT (regression test): M6=1 + THM211B=0 must give the SAME stream as
+    // mod-3 — finer profiles only regroup sequences. If it differs, the mod-6
+    // profile set is incomplete and any 2.11b number built on it is worthless.
+    if (getenv("WZ_PAIR22_M6")) {
+      auto ab6P = survive_profiles6(G_N1, G_SIG_A, G_SIG_B, cd3, cd6,
+                                    20000000, G_THM211B ? &cd6a : nullptr);
+      auto cd6P = survive_profiles6(n,    G_SIG_C, G_SIG_D, ab3, ab6,
+                                    20000000, G_THM211B ? &ab6a : nullptr);
+      cout << "[pair22] GENERATING FROM MOD-6 PROFILES (WZ Step 4) — A,B "
+           << ab6P.size() << "  C,D " << cd6P.size()
+           << (G_THM211B ? "  [+2.11b]" : "  [norm-only]") << "\n" << flush;
+      if (!sideSel || strcmp(sideSel, "CD") != 0)
+        abS = countP(ab6P, G_N1, true,  pinA, pinB, "A,B");
+      if (!sideSel || strcmp(sideSel, "AB") != 0)
+        cdS = countP(cd6P, n,   false, pinC, pinD, "C,D");
+    } else {
+      if (!sideSel || strcmp(sideSel, "CD") != 0)
+        abS = countP(abProfs, G_N1, true,  pinA, pinB, "A,B");
+      if (!sideSel || strcmp(sideSel, "AB") != 0)
+        cdS = countP(cdProfs, n,   false, pinC, pinD, "C,D");
+    }
     double t = chrono::duration<double>(Clock::now() - G_T0).count();
     cout << "\n=== GATE A' SUMMARY (n=" << n << ", Thm-2.2-constrained) ===\n"
          << "TRUE streams: A,B " << abS << "   C,D " << cdS << "  (-1 = side skipped)\n"
