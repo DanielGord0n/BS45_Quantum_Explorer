@@ -63,6 +63,52 @@ Precompute the achievable `(N_K(s)+N_R(s)+N_K(6-s)+N_R(6-s), Σk²+Σr²)` tuple
 into a hash set, then step 3 is an O(1) lookup per C,D profile — same shape as the existing
 `PairNormSet::feasible()` machinery, just keyed on a richer tuple than a single norm.
 
+## ✅ MEASURED 2026-07-15 (Opus session) — canary PASSED, pruning power measured
+
+Instruments (both in `tools/`, pure python, seconds to run, no cluster needed):
+`canary_thm211b.py` (soundness) · `measure_thm211b_prune.py` (pruning power).
+
+**1. Soundness canary: PASS.** 2.11b holds EXACTLY (all autocorrelation sums = 0) on **all six
+valid banked champions**, at both m=3 and m=6 (n=7, 11, 29, 29b, 30, 31). The math is real and our
+reading of it is correct.
+
+**2. The canary has discriminating power — it caught a bad bank.**
+`results/champions/champion_v3_n27.txt` FAILS 2.11b *and* 2.11a. Independent NPAF check confirms
+it is **NOT a valid BS(28,27)** — nonzero at shifts 6,7,12,14,16,18,20,23,25. Signature and lengths
+are fine, so it looks plausible; it is not. **It has been banked since April in violation of
+verify-before-claiming. It should be quarantined** (it also means any "re-find the banked class"
+canary keyed on n=27 was chasing a non-solution).
+
+**3. Why WZ lift to m=6 — proven, not guessed.** At **m=3, 2.11b is VACUOUS**: for a length-3
+residue vector, `N(v,1)+N(v,2) = ((Σv)² − norm(v))/2`, so the s=1 condition collapses to
+`(a²+b²+c²+d²) − (Σ all norms) = 0`, which is exactly **Thm 2.1 minus 2.11a** — implied, never
+false. Measured: **1.0× reduction at m=3** for every n tested. **m=6 is the first modulus where
+2.11b carries new information.** This retro-explains WZ's Step 2→Step 3 design (m=3 all four sides,
+then lift ONE side to m=6) — and explains why our mod-6 work found nothing: we lifted the modulus
+but kept testing only the norm identity, which is the part that is already nearly generic.
+
+**4. Pruning power at m=6 (C,D profile pairs surviving, norm-only vs +2.11b):**
+
+| n | norm-only (current code) | +2.11b (Wang-Zhu) | cut |
+|---|---|---|---|
+| 7 | 400 | 169 | 2.4× |
+| 11 | 2,155 | 234 | 9.2× |
+| 15 | 49,005 | 5,798 | 8.5× |
+| 19 | 204,826 | 27,046 | 7.6× |
+| 23 | 295,995 | 14,385 | 20.6× |
+
+Noisy and signature-dependent, but trending up: ~**1.145× per +1 in n** → **projected ~120× at n=36**.
+
+**5. Consequence — the 07-15 KILL is NOT safe.** Projected n=36 C,D stream *before* 2.11b = 2.7e12
+(KILL). *After* a ~120× profile cut ≈ **2.3e10 → lands IN BETWEEN the 1e9 PASS and 1e12 KILL lines**,
+i.e. the rule says **run Gate B (per-candidate A,B completion cost)**, not "abandon". The earlier KILL
+judged an under-filtered pipeline, not Wang-Zhu's.
+
+**Honest caveats:** (a) profile-count cut ≠ stream cut 1:1 — the real test is re-measuring the pair22
+C,D stream at n=29/31 against the banked baselines (1.74e9 / ~1.4e10); (b) the fit is 5 noisy points
+with different signatures; (c) even a PASS only licenses Phase 1 → reproducing WZ's *published* 41-43.
+n=44 remains open and needs new mathematics.
+
 ## Validation plan (campaign doctrine: measure before building)
 
 1. **Soundness canary FIRST.** Extend `WZ_PROFILE_CHECK` to assert 2.11b on all four banked
