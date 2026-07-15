@@ -72,6 +72,24 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+   - **🚨 THE JOIN22 n=29 CANARY OUTRANKS EVERYTHING (job `16243606`, Rorqual, `WZ_MATCH`).**
+     Context (HANDOFF 07-15 + `docs/wz_paper_reconstruction.md`): the complete join FINDS and
+     self-verifies solutions — measured on a 4-core laptop, BS(20,19) in **26 s**, cost ~2.67×/rung
+     ⇒ n=29 ≈ **3 h** on a 192-core node. The old "join dead above n≈29" verdict used
+     **pre-Thm-2.2** counts inflated ~10⁵× and is STALE.
+     - **Still running** → do not touch, do not resubmit, and SAY SO in the summary. It is the
+       decision the campaign is waiting on.
+     - **Finished** → look for `*** BS(30,29) FOUND ***` (the checker's new `wz_match_output_*.txt`
+       "NEW FOUND?" glob catches it; a `resolve …/342 FOUND` progress line is NOT a pass).
+       **PASS** ⇒ the join re-found the banked n=29 class ⇒ the frontier is re-opened. Set
+       NEEDS_HUMAN and recommend walking the join UP the ladder (n=31 → 32 → 33), one signature per
+       job, `WZ_JOIN22=1`, `WZ_JOIN22_SLOTS_LOG2` sized from **distinct keys ≈ stream/6** (NOT the
+       raw stream — the 34 GB figure in old notes was over-sized), sharded by A,B slice.
+       **Deciding to open that campaign is Daniel's call, not yours.**
+       **FAIL / walltime again** ⇒ report the phase it died in; do not silently resubmit.
+     - **A join FOUND banner is still only a claim** — R2 applies: `verify_npaf.py` must PASS and a
+       champion file must be written before it is called a result.
+
    - **⛔ DO NOT resubmit the n=36 Gate A′ array (`P22_GATE` / `cluster_pair22_gate.sh`).**
      Superseded 2026-07-15: a PASS at n=36 is arithmetically impossible (completed n=29
      C,D = 1.74e9 already exceeds the ≤1e9 n=36 PASS line, and streams grow ~2.86×/rung),
