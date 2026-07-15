@@ -371,7 +371,55 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-11 (evening): **GATE A′ IS FINALLY RUNNABLE AND IS RUNNING — Nibi `17518826`, 20-task array.** This is THE decision number for the whole n=42-43 route. Collect it before anything else.
+## ⚡ TOP OF MIND — 2026-07-15: **STOP TRYING TO MEASURE GATE A′ AT n=36. A PASS IS ARITHMETICALLY IMPOSSIBLE — the answer was already in our own data.**
+
+**The finding.** The pre-registered PASS line is **C,D stream ≤ ~1e9 at n=36**. But the
+**completed** n=29 measurement (job `47665509`, banked in the GATE A′ SUMMARY) is
+**C,D = 1.73676e9** — already 1.7× over the n=36 PASS line, SEVEN rungs below the gate.
+Streams grow with n (measured: n=29 → 1.74e9, n=31 → ~1.4e10 partial-scaled = **2.86×/rung**).
+The n=36 stream cannot be *smaller* than the n=29 stream. **PASS is impossible by
+monotonicity — not by extrapolation.** Projecting the measured growth: **n=36 ≈ 2.7e12**,
+which is past the **1e12 KILL** line.
+
+**How this was missed for a week:** the 07-10 entry celebrated *"Thm 2.2 shrinks the true
+stream ~10⁵×"* — a real ratio — and nobody compared the **absolute** number to the
+pre-registered gate. The ratio was excellent; the absolute value was already over the line.
+Four days were then spent fighting to measure a number our own data had answered.
+**Lesson: a pre-registered threshold is absolute. Check the level, not just the ratio.**
+
+**Caveat (why CONFIRM, don't declare):** the points use different signatures (n=29 = (0,6,9,1),
+n=31 = (6,4,7,5), n=36 = (5,11,0,0)), so it is not a strict same-sig monotone chain. The
+confirming datum is **Trillium n=32 probe `1904644`** (already queued): if it lands near the
+projected **~4e10**, the scaling is real and Gate A′ is a **KILL** by our own rule.
+
+**Why the n=36 array could never have finished (do not retry it).** `WZ_COUNT_PAIR22`
+parallelizes ACROSS profiles — one profile = one thread's work. At n=36 a *single* C,D profile
+exceeds a 12h walltime (evidence: Rorqual `16007398` task 0 got shard [0,50) and printed NO
+progress line — that line fires every 32 completions, so <32 of 50 profiles finished in 12h;
+all 20 shards timed out, 0 SHARD_STREAM). **Profile-range sharding (`WZ_PROF_LO/HI`) cannot
+fix this — the atom is bigger than the walltime.** Fixing it would need parallelism INSIDE
+`count_pairs22` or checkpointing. Given the KILL projection, **that work is not worth doing.**
+
+**⚠️ THE GATE MAY ALSO BE THE WRONG QUESTION.** The rule "stream ≤1e9" measures *can we
+enumerate the whole stream* — but the plan's own stated bet is different: *"solutions are dense
+enough in a WELL-ORDERED filtered C,D stream to hit one early."* First-hit never enumerates the
+stream; it needs **density × ordering**, not size. Supporting evidence: the JOIN22 n=29 canary
+(`15719454`) printed `resolve 64/342 FOUND` and `128/342 FOUND` — solutions appearing EARLY in
+resolve. **Before accepting the KILL, decide whether stream-size was ever the right metric for a
+first-hit architecture.** If ordering front-loads solutions, a 2.7e12 stream may be irrelevant.
+
+**🔴 THE REAL BLOCKER, named plainly: WE DO NOT HAVE THE WANG-ZHU PAPER.** `sarukhanian/papers/`
+holds only the Sarukhanian PDFs. arXiv:2506.20296 is **not in this repo**. We have falsified TWO
+reconstructions of their method (mod-6 class sums; now Thm 2.2 by projection) while working from
+a remembered/second-hand reading. The plan itself says their real step-3 constraint is unknown
+("per-sequence PSD during construction? something in their 'compatible (P,Q) sets' richer than
+sums?"). **Next action is not a cluster job — it is: fetch arXiv:2506.20296, read it against our
+enumerator line by line, and reconstruct their ACTUAL pipeline.** That is a model task with web
+access (Claude Code), costs zero core-hours, and is the only thing that can unblock n=41-43.
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-11 (evening): **GATE A′ IS FINALLY RUNNABLE AND IS RUNNING — Nibi `17518826`, 20-task array.** *(SUPERSEDED 07-15 — see above: a PASS at n=36 is impossible; do not resubmit this array.)*
 
 **What was actually broken (and it was not the mathematics).** `WZ_COUNT_PAIR22` was
 OpenMP-parallel WITHIN a node but could not span nodes. At n=36 it finished only 96 of 985

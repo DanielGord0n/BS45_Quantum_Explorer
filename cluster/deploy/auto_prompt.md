@@ -72,8 +72,15 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
-   - **A GATE ARRAY is running or finished** (e.g. `cluster_pair22_gate.sh`, job name
-     `P22_GATE`) → this outranks any refill; it is the decision the campaign is waiting on.
+   - **⛔ DO NOT resubmit the n=36 Gate A′ array (`P22_GATE` / `cluster_pair22_gate.sh`).**
+     Superseded 2026-07-15: a PASS at n=36 is arithmetically impossible (completed n=29
+     C,D = 1.74e9 already exceeds the ≤1e9 n=36 PASS line, and streams grow ~2.86×/rung),
+     and the array physically cannot finish (one C,D profile > 12h walltime, so every shard
+     times out with 0 SHARD_STREAM). If one is still queued, leave it or cancel it — do not
+     wait on it, do not resubmit, do not "fix" the sharding. See HANDOFF 07-15.
+
+   - **A GATE ARRAY is running or finished** (any OTHER gate/probe) → this outranks any
+     refill; it is the decision the campaign is waiting on.
      - Still running (any task R/PD) → do NOT touch it, do NOT resubmit, and say so in
        the summary. It is not "idle capacity".
      - All tasks finished → collect it:
