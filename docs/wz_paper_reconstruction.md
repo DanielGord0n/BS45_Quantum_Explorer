@@ -183,6 +183,51 @@ banked champion — currently 6/6, and it correctly REJECTS the invalid champion
 job worth submitting is the re-measured pair22 C,D stream at n=29/31 **after** Step 4 lands,
 compared against the banked baselines (1.74e9 / ~1.4e10).
 
+## 🚨 THE ACTUAL LEAD (2026-07-15, measured locally) — THE JOIN IS NOT DEAD
+
+While measuring density I ran the **complete JOIN22 join on a 4-core laptop sandbox**. It does not
+merely count — it **finds and self-verifies solutions**:
+
+| n | C,D stream | distinct keys | dedup | raw hits | result | wall (4 cores) |
+|---|---|---|---|---|---|---|
+| 7 | 91 | 16 | 5.7× | 60 | **BS(8,7) FOUND**, NPAF==0 | 0.01 s |
+| 11 | 809 | 115 | 7.0× | 404 | **BS(12,11) FOUND**, NPAF==0 | 0.01 s |
+| 15 | 55,794 | 9,542 | 5.8× | 1,674 | **FOUND** | ~1 s |
+| 19 | 1,291,990 | 236,424 | 5.5× | 10,692 | **BS(20,19) FOUND**, NPAF==0 | **25.9 s** |
+| 23 | — | — | — | — | still running at >150 s | — |
+
+**Measured cost growth: ~2.67× per +1 in n** (fit on n=11→19). Single-node 4-core projections:
+n=27 ≈ 18.6 h · n=29 ≈ 5.5 d · n=31 ≈ 39.5 d. **On a 192-core Alliance node (~48× more cores):
+n=29 ≈ ~3 h, n=31 ≈ ~20 h, n=33 ≈ days (and it shards across an array trivially — each task takes a
+slice of the A,B stream).**
+
+**Why this matters — the "join is dead" verdict is STALE.** HANDOFF says the join is dead by TIME
+above n≈29 (pair-work 1.58e15 @ n=29, 4.0e16 @ n=31). But those were the **independent-side** counts,
+measured BEFORE Thm 2.2. HANDOFF already flags this itself: *"the 2^(L/2) factor shrinks the hash-side
+stream too, and the 'join dead by time' verdict was measured on the INFLATED independent-side counts."*
+The Thm-2.2-constrained C,D stream at n=29 is **1.74e9**, not 1.58e15 — **six orders of magnitude
+smaller.** Nobody re-derived the frontier after that. **The join's real ceiling is UNKNOWN and the
+measured curve says it is well above n=29.**
+
+**Memory is not the wall either.** The stream dedups **~5.5-7× into distinct keys** and the v2 table
+stores bare 8-byte keys: n=29 ≈ 1.74e9/6 ≈ 2.9e8 keys ≈ **2.4 GB** (HANDOFF's 34 GB figure assumed
+`SLOTS_LOG2=32` sized for the un-deduped stream). Size the table from *distinct keys*, not stream.
+
+**Why this beats SA if it holds:** the join is **deterministic and exhaustive per signature** — it
+either finds a solution or PROVES none exists for that signature. SA is a lottery capped ~n≈33-35.
+
+**THE EXPERIMENT (this is a real cluster job, unlike everything else tonight):**
+1. **n=29 canary `16243606` (Rorqual, 24 h) is already running** — this is exactly this test.
+   A PASS = the join re-finds the banked n=29 solution ⇒ the frontier is re-opened.
+2. Then walk the join UP the ladder on real nodes: **n=31, 33, 35** — one signature per job,
+   `WZ_JOIN22=1`, `WZ_JOIN22_SLOTS_LOG2` sized from distinct-keys (~stream/6), sharded by A,B slice.
+3. Every rung it clears above **n=31** beats the banked best, deterministically.
+
+**Caveats (honest):** the 2.67× fit is 3 points with different signatures; per-signature cost varies a
+lot (n=23 is already running long vs its 22-min projection); phase-2 hit resolution and the dedup
+factor may scale differently at n≥29; and reaching n=41-43 would still need many more rungs than this
+curve comfortably projects. **But n=31-33 looks reachable, and that is a real, deterministic result.**
+
 ## Validation plan (campaign doctrine: measure before building)
 
 1. **Soundness canary FIRST.** Extend `WZ_PROFILE_CHECK` to assert 2.11b on all four banked

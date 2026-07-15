@@ -371,6 +371,36 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
+## ⚡ TOP OF MIND — 2026-07-15 (latest): **THE JOIN IS NOT DEAD — "dead above n≈29" was measured on PRE-Thm-2.2 counts inflated ~10⁵×. Measured tonight on a 4-core laptop: the complete join FINDS + self-verifies BS(20,19) in 26 SECONDS.** Details + curve: `docs/wz_paper_reconstruction.md`.
+
+| n | C,D stream | result | wall (4 cores) |
+|---|---|---|---|
+| 11 | 809 | **BS(12,11) FOUND**, NPAF==0 | 0.01 s |
+| 15 | 55,794 | **FOUND** | ~1 s |
+| 19 | 1,291,990 | **BS(20,19) FOUND**, NPAF==0 | **25.9 s** |
+
+Cost growth **~2.67×/rung** (n=11→19). On a **192-core node (~48×)**: **n=29 ≈ 3 h, n=31 ≈ 20 h**,
+n=33 ≈ days (shards trivially by A,B slice). Memory is not the wall either — the stream dedups
+**5.5-7×** into bare 8-byte keys, so n=29 ≈ **2.4 GB**, not the 34 GB in the old note (that assumed
+`SLOTS_LOG2=32`, sized for the *un-deduped* stream). **Size the table from DISTINCT KEYS, not stream.**
+
+**Why the old verdict is stale:** it used **independent-side** pair-work (1.58e15 @ n=29) from before
+Thm 2.2. The Thm-2.2-constrained C,D stream at n=29 is **1.74e9** — six orders smaller. HANDOFF
+already warned about exactly this ("the 'join dead by time' verdict was measured on the inflated
+independent-side counts") and nobody re-derived the frontier.
+
+**Why it beats SA:** the join is **deterministic and exhaustive per signature** — it FINDS a solution
+or PROVES none exists for that signature. SA is a lottery capped ~n≈33-35.
+
+**NEXT (a real cluster job at last):** the **n=29 canary `16243606` (Rorqual, 24 h) is already
+running** and is exactly this test. If it re-finds the banked n=29 solution → walk the join UP the
+ladder on real nodes: **n=31, 33, 35**, one signature per job, `WZ_JOIN22=1`, `WZ_JOIN22_SLOTS_LOG2`
+sized from distinct-keys (~stream/6), sharded by A,B slice. **Every rung above n=31 beats the banked
+best, deterministically.** Caveat: 3-point fit, signatures vary (n=23 is running long vs projection);
+n=41-43 is still many rungs beyond this curve.
+
+---
+
 ## ⚡ TOP OF MIND — 2026-07-15 (later): **WE FOUND THE MISSING WANG-ZHU CONSTRAINT. It is Thm 2.3 eq 2.11b — the residue-level autocorrelation condition — and it is NOT IN OUR CODE.** Full analysis: **`docs/wz_paper_reconstruction.md`**. Read that before touching the solver.
 
 **We finally read the actual paper** (arXiv:2506.20296 — it was never in the repo; two prior
