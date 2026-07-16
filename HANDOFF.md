@@ -76,7 +76,33 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-15, loop run 7) — n=32 blitz, round 10 opened on Fir:
+**LIVE ROUND (2026-07-16, loop run 8) — n=32 blitz, round 11 opened on Fir:
+`49302380` (plain, 126M) submitted + echoed THIS run (Duo push approved). Fir's
+round-10 `49139667` (123M) CLOSED at full walltime, no FOUND, visible floors
+12/16/16 → Fir idle → refilled. Nibi `17557893` tasks 5-7 still PD (Priority)
+→ NOT idle, no refill. Rorqual: 🚨 **THE JOIN22 n=29 CANARY `16243606` IS
+RUNNING** (R 18:13:19 elapsed; join22v2 stream 512/541, hits=17456) —
+untouched, it outranks everything; it is the decision the campaign is waiting
+on. Rorqual's superseded P22_GATE `16007398` is gone from queue with shards
+0/20 and zero SHARD_STREAM — exactly the predicted all-shards-timeout death
+(HANDOFF 07-15); NOT resubmitted per the supersession. Trillium: gate
+`1921290` + canary `1921309` both still PD behind the maintenance reservation
+→ untouched. Checker maintenance: the new canary glob surfaced old Fir file
+`wz_match_output_45549585` — cross-checked as a PRE-06-24 small-n wz_match
+validation run (job id predates the 06-24 `45797874` wall-test; only live
+canary is `16243606`), i.e. an old known-solution FOUND, NOT news → added
+`45549585` to the exclusion list in `checker_cmd.txt`. Rung ledger: 20/27
+arrays at n=32, floor 8 (round-10 floor 12 recorded, no improvement), ACTIVE
+(`rung_status.sh check` passed before AND after the refill). No new banks; no
+unverified FOUND banners. Reminder: `docs/kotsireas_brief.md` is READY TO SEND
+(the methods ask is the door to 42+; compute is not). ⚠️ PUSH STRANDED (not the
+guard): `git push origin main` hung twice (2-3 min, zero output) in this
+headless run while `git ls-remote` answered in 0.25s and every outgoing file is
+in the guard's BOOKKEEPING tuple — diagnosis: the osxkeychain credential
+helper can't pop its authorization dialog in a cron context. This round's
+bookkeeping commit is local-only; Daniel: run `git push origin main`.**
+
+**PREVIOUS ROUND (2026-07-15, loop run 7) — n=32 blitz, round 10 opened on Fir:
 `49139667` (plain, 123M) submitted + echoed THIS run (Duo push approved).
 Fir's round-9 `48786968` (120M) CLOSED at full walltime, no FOUND, floors
 8/12/16 → Fir idle → refilled. Nibi `17557893` tasks 0-4 done (floors
