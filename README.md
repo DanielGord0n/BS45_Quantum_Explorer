@@ -19,7 +19,7 @@ BS(43,42) is a known but extremely difficult benchmark. **BS(45,44) has never be
 | Target | Status | Time |
 |---|---|---|
 | BS(7,6) | Reproduced | 23ms |
-| BS(28,27) | Reproduced | Confirmed |
+| BS(28,27) | RETRACTED 2026-07-16 — banked file fails independent NPAF (9 nonzero shifts); see `results/quarantine/` | — |
 | BS(43,42) | Actively searching | Signature (7,11,0,0) |
 | BS(45,44) | Target | World record |
 

@@ -44,10 +44,25 @@ def check(path, m):
     return a_ok, b_ok
 
 files = sorted(glob.glob('results/champions/*.txt'))
+bad_files = sorted(glob.glob('results/quarantine/*.txt'))  # known-invalid fixtures: must FAIL
+violations = 0
 for m in (3, 6):
     print(f"=== modulus m={m} ===")
     allb = []
     for f in files:
         try: allb.append(check(f, m)[1])
         except Exception as e: print(f"  {f}: parse skip ({e})")
+    if not all(allb):
+        violations += 1
+        print("  !! a BANKED champion fails 2.11b — implementation or bank is wrong")
     print(f"  --> 2.11b holds on {sum(allb)}/{len(allb)} banked solutions\n")
+    for f in bad_files:  # discriminating-power check: quarantined junk must NOT pass
+        try:
+            a_ok, b_ok = check(f, m)
+            if a_ok and b_ok:
+                violations += 1
+                print(f"  !! quarantined file PASSES at m={m} — canary lost its teeth: {f}")
+        except Exception as e:
+            print(f"  {f}: parse skip ({e})")
+    if bad_files: print()
+sys.exit(1 if violations else 0)

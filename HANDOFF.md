@@ -13,7 +13,9 @@ infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path =
 
 ### Active solver (2026-06-27 — STRATEGY CORRECTION: metaheuristic ladder is the active path to the BEST result)
 **The goal is to FIND one solution at the highest n — that does NOT need completeness.** The active
-campaign is therefore the **metaheuristic** that already FOUND + Kotsireas-verified **BS(28,27)**:
+campaign is therefore the **metaheuristic** that already FOUND + Kotsireas-verified **BS(28,27)**
+(⚠️ 07-16: the banked BS(28,27) artifact FAILS independent NPAF and is quarantined — see
+`results/quarantine/README.md`; the verified ladder record now starts at n=29):
 **`src/solver/wz_sa_v8.cpp`** (simulated annealing, OpenMP), deployed at scale
 via **`cluster/deploy/cluster_sa_ladder.sh`** (SLURM array of full 192-thread nodes ≈ 1,536 chains/cluster, climbing
 the n-ladder). It is **O(n) memory — it never OOMs.**
@@ -39,7 +41,8 @@ cluster/deploy/          ACTIVE deploy + helpers: cluster_sa_ladder.sh, cluster_
 cluster/jobs/            30 per-cluster SLURM scripts (mostly the RETIRED exhaustive campaign)
 tools/                   verify_npaf.py, find_combo_index.py   (independent NPAF checker)
 docs/                    RESULTS.md, deploy_v8.md, hpc_interview_prep.md, solver_README.md
-results/champions/       champion_v3_n7/n11/n27.txt  (banked solver outputs)
+results/champions/       champion_v3_n7/n11.txt + champion_sa_bs30_29_a/b, bs31_30, bs32_31
+                         (banked, all verify_npaf-PASS; v3_n27 QUARANTINED 07-16 → results/quarantine/)
 sarukhanian/             SEPARATE length-110 δ-code CONSTRUCTION sub-project (papers/, submission/,
                          report/) — NOT the BS solver; excluded from the graph via .graphifyignore
 ```
@@ -397,7 +400,62 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-15 (latest): **THE JOIN IS NOT DEAD — "dead above n≈29" was measured on PRE-Thm-2.2 counts inflated ~10⁵×. Measured tonight on a 4-core laptop: the complete join FINDS + self-verifies BS(20,19) in 26 SECONDS.** Details + curve: `docs/wz_paper_reconstruction.md`.
+## ⚡ TOP OF MIND — 2026-07-16 (latest): **JOIN22 CANARY `16243606` — DECISION RULES PRE-REGISTERED (written BEFORE the result) + live read: the job has printed NOTHING for ~12.6 h; it is grinding the last 29/541 fat A,B stream profiles. Walltime kill ~18:47 EDT today.**
+
+**Live read (13:00 checker, Fable workorder step 1):** squeue elapsed 18:13:19 (= 65,600 s) but the
+newest output line is stamped [20,011.6 s] (`stream 512/541`). Stream progress prints only at
+s%32==0 or s==541 ([wz_match.cpp:854]) — so the silence means the LAST 29 A,B profiles have eaten
+>12.6 h while build + the first 512 took ≤5.6 h. The stream fat-tail is far worse than the
+workorder's "4.4×/32 decay" note. **Real n=29 walltime on 192 cores is ≥24 h, not ~10 h** —
+recalibrated, n=31 unsharded is >>100 h. Sharding (if the method PASSes) is not an optimization;
+it is the only path.
+
+**Pre-registered outcomes (doctrine: rule before result):**
+1. **PASS** = `*** BS(30,29) FOUND ***` banner + `VERIFY … = 0 (NPAF==0 confirmed)` → run
+   `tools/verify_npaf.py` locally on the printed A/B/C/D → frontier re-opened → build the phase-2
+   shard (workorder step 2, LOCAL only). Re-find of the banked class ⇒ NO new bank; record the
+   real walltime as the n=29 calibration point.
+2. **`JOIN22 EXHAUSTED`** = completeness BUG — the banked n=29 champion satisfies Thm 2.2 and lives
+   in this sig class, so a complete join MUST find it → report, STOP, debug at small n. No sharding.
+3. **TIMEOUT, no banner, no resolve-FOUND line** = walltime wall; method neither confirmed nor
+   falsified. STOP per workorder; decision to Daniel. (Recommendation on file: this outcome does
+   NOT kill sharding — walltime is the disease sharding cures — but the gate says no build without
+   an explicit go.)
+4. **TIMEOUT with a `resolve k/342 FOUND` line** = a solution WAS found and passed the exact
+   all-shifts NPAF recheck in memory ([wz_match.cpp:885-896]) but was never printed: the banner
+   waits for the resolve loop to drain and `count_pairs22` has NO abort hook (:483 — the sink
+   cannot stop the DFS), so in-flight fat C,D profiles block it. Exactly how predecessor `15719454`
+   died (07-11). Strongest method-alive signal short of PASS; still NOT bankable (banner-only rule).
+5. **Crash/OOM** = report the phase + evidence, STOP.
+
+**Sharding design notes banked from this read (for step 2, if greenlit):** (a) print banner +
+sequences IMMEDIATELY at find time inside the critical section — current code can lose a found
+solution to walltime; (b) give `count_pairs22` an abort flag; (c) do NOT shard the A,B stream by
+contiguous index — the tail 29/541 profiles cost >2× everything before them; interleave (stride)
+or cost-balance the shards.
+
+**⚡ SAME DAY, DONE (a)+(b) (2026-07-16 afternoon, Daniel-approved as canary-independent):**
+`wz_match.cpp` JOIN22 resolve now prints the FULL banner (sequences + VERIFY) inside the
+critical section AT FIND TIME, and `count_pairs22` takes an optional atomic stop flag
+(passed only in resolve — build/stream/count paths unchanged, abort only fires when a
+solution is already stored). Validated locally: JOIN22 re-finds n=7 (2,4,3,-1) and n=11
+(2,4,-5,1) with NPAF==0 + exit 0, banner appears at find time AND at end; pair22 ground
+truth n=7 = 66/91 exact; mod-6 norm-only == mod-3 invariant holds (n=7 66/91, n=11
+1564/809); `canary_thm211b.py` 6/6 PASS. Ship this source with the NEXT join submit
+(script compiles from source per job — tar-pipe `src/solver/wz_match.cpp`). The running
+canary `16243606` still has the OLD binary — read it under the old rules (rule 4 above).
+
+**⚡ SAME DAY: `champion_v3_n27.txt` QUARANTINED** (Fable, re-verified independently:
+NPAF nonzero at 9 shifts, 2.11a norm 106≠110). Moved to `results/quarantine/` with full
+README; BS(28,27) rows RETRACTED from README.md + kotsireas_brief.md; ladder record now
+starts at n=29. `canary_thm211b.py` upgraded: quarantine files are expected-FAIL fixtures,
+meaningful exit code (0 only if all champions pass AND quarantined junk fails). If the
+"Kotsireas-verified" BS(28,27) sequences exist outside the repo (e-mail?), re-bank only
+after a verify_npaf PASS.
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-15: **THE JOIN IS NOT DEAD — "dead above n≈29" was measured on PRE-Thm-2.2 counts inflated ~10⁵×. Measured tonight on a 4-core laptop: the complete join FINDS + self-verifies BS(20,19) in 26 SECONDS.** Details + curve: `docs/wz_paper_reconstruction.md`.
 
 | n | C,D stream | result | wall (4 cores) |
 |---|---|---|---|

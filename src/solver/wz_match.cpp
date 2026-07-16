@@ -484,13 +484,21 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
                           bool abSide, bool pinX, bool pinY,
                           long long &leaves, long long &ok,
                           const function<void(const vector<int>&, const vector<int>&)> *sink = nullptr,
-                          int m = 3) {
+                          int m = 3,
+                          const atomic<bool> *stop = nullptr) {
+  // `stop`: cooperative abort. When set and it flips true mid-DFS, the
+  // enumeration winds down and leaves/ok are PARTIAL. Only pass it where a
+  // partial enumeration is sound (JOIN22 resolve: a solution is already found
+  // and stored, so completeness no longer matters). Without it an in-flight
+  // fat profile keeps a 192-thread node pinned for hours after a FOUND —
+  // job 15719454 died at walltime that way with its solution unprinted.
   int total_in_class[8];
   for (int c = 0; c < m; c++) total_in_class[c] = class_count(L, c, m);
   int half = L / 2;
   vector<int> X(L, 0), Y(L, 0);
   int px[8] = {0}, py[8] = {0}, placed[8] = {0};
   function<void(int)> rec = [&](int d) {
+    if (stop && stop->load(memory_order_relaxed)) return;
     for (int c = 0; c < m; c++) {
       int rem = total_in_class[c] - placed[c];
       int dx = tx[c] - px[c], dy = ty[c] - py[c];
@@ -861,6 +869,35 @@ int main(int argc, char **argv) {
       cout << "[join22v2] phase 2 done: " << hits.size() << " raw key hits\n" << flush;
     }
 
+    // Full solution banner. Called TWICE on success: once at find time (inside
+    // the resolve critical section, so walltime can never eat a found solution
+    // again — 15719454 lost its BS(30,29) exactly there) and once at end-of-run.
+    // Both blocks are identical and both carry the exact-NPAF VERIFY line.
+    auto print_banner = [&](bool at_find_time) {
+      int n1 = G_N1;
+      int sa = 0, sb = 0, sc = 0, sd = 0;
+      for (int i = 0; i < n1; i++) { sa += g_solA[i]; sb += g_solB[i]; }
+      for (int i = 0; i < n; i++)  { sc += g_solC[i]; sd += g_solD[i]; }
+      cout << "\n*** BS(" << n1 << "," << n << ") FOUND ***\n";
+      cout << "sig = (" << sa << "," << sb << "," << sc << "," << sd << ")\n";
+      cout << "A = {"; for (int i=0;i<n1;i++) cout << g_solA[i] << (i<n1-1?",":""); cout << "};\n";
+      cout << "B = {"; for (int i=0;i<n1;i++) cout << g_solB[i] << (i<n1-1?",":""); cout << "};\n";
+      cout << "C = {"; for (int i=0;i<n;i++)  cout << g_solC[i] << (i<n-1?",":"");  cout << "};\n";
+      cout << "D = {"; for (int i=0;i<n;i++)  cout << g_solD[i] << (i<n-1?",":"");  cout << "};\n";
+      int maxv = 0;
+      for (int s = 1; s <= n; s++) {
+        int v = npaf_at(g_solA, g_solB, n1, g_solC, g_solD, n, s);
+        if (abs(v) > maxv) maxv = abs(v);
+      }
+      cout << "VERIFY: max |NPAF[s]| over s=1.." << n << " = " << maxv
+           << (maxv == 0 ? "  (NPAF==0 confirmed)\n" : "  (NONZERO!)\n");
+      if (at_find_time)
+        cout << "[join22v2] banner flushed AT FIND TIME ["
+             << chrono::duration<double>(Clock::now()-G_T0).count()
+             << "s] — resolve loop draining, final banner + Time follow\n";
+      cout << flush;
+    };
+
     if (!hits.empty()) {  // ---- phase 3: RESOLVE — re-enumerate C,D, exact recheck ----
       unordered_multimap<Key, size_t> hitmap;
       hitmap.reserve(hits.size() * 2);
@@ -893,6 +930,7 @@ int main(int argc, char **argv) {
                 memcpy(g_solC, Ci, n * sizeof(int));
                 memcpy(g_solD, Di, n * sizeof(int));
                 g_found.store(true);
+                print_banner(true);  // flush NOW — never lose a find to walltime
               }
             }
             return;
@@ -900,7 +938,7 @@ int main(int argc, char **argv) {
         };
         long long lv = 0, okc = 0;
         count_pairs22(n, cdProfs[pi].px, cdProfs[pi].py, false, pinC, pinD,
-                      lv, okc, &res);
+                      lv, okc, &res, 3, &g_found);
         long long r = ++resolved;
         if ((r % 64) == 0 || r == nprof) {
           #pragma omp critical
@@ -913,23 +951,7 @@ int main(int argc, char **argv) {
 
     double t = chrono::duration<double>(Clock::now() - G_T0).count();
     if (g_found.load()) {
-      int n1 = G_N1;
-      int sa = 0, sb = 0, sc = 0, sd = 0;
-      for (int i = 0; i < n1; i++) { sa += g_solA[i]; sb += g_solB[i]; }
-      for (int i = 0; i < n; i++)  { sc += g_solC[i]; sd += g_solD[i]; }
-      cout << "\n*** BS(" << n1 << "," << n << ") FOUND ***\n";
-      cout << "sig = (" << sa << "," << sb << "," << sc << "," << sd << ")\n";
-      cout << "A = {"; for (int i=0;i<n1;i++) cout << g_solA[i] << (i<n1-1?",":""); cout << "};\n";
-      cout << "B = {"; for (int i=0;i<n1;i++) cout << g_solB[i] << (i<n1-1?",":""); cout << "};\n";
-      cout << "C = {"; for (int i=0;i<n;i++)  cout << g_solC[i] << (i<n-1?",":"");  cout << "};\n";
-      cout << "D = {"; for (int i=0;i<n;i++)  cout << g_solD[i] << (i<n-1?",":"");  cout << "};\n";
-      int maxv = 0;
-      for (int s = 1; s <= n; s++) {
-        int v = npaf_at(g_solA, g_solB, n1, g_solC, g_solD, n, s);
-        if (abs(v) > maxv) maxv = abs(v);
-      }
-      cout << "VERIFY: max |NPAF[s]| over s=1.." << n << " = " << maxv
-           << (maxv == 0 ? "  (NPAF==0 confirmed)\n" : "  (NONZERO!)\n");
+      print_banner(false);
       cout << "Time: " << t << "s\n" << flush;
     } else {
       cout << "\n=== JOIN22 EXHAUSTED (n=" << n << ") — no solution in the "

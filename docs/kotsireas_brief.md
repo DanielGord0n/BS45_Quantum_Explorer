@@ -10,7 +10,6 @@ clusters, found — **blind, no prefix, signature discovered by search**:
 
 | Sequence | sig (a,b,c,d) | Found | Verification |
 |---|---|---|---|
-| BS(28,27) | — | earlier campaign | verified (Kotsireas) |
 | BS(30,29) | (4,−10,1,1) | 2026-06-29 | NPAF[s]=0 ∀s, independent checker |
 | BS(30,29) | (0,6,9,1) | 2026-06-30 | ″ |
 | BS(31,30) | (1,−7,6,6) | 2026-06-30 | ″ |

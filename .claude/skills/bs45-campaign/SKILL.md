@@ -67,8 +67,9 @@ repo root (scp does NOT expand $SCRATCH): `tar -cf - <files> | ssh ... 'cd $SCRA
 ## Proven-to-work: ticket volume
 
 `wz_sa_v8` via `cluster_sa_ladder.sh`, 8-task arrays × 192 threads ≈ 1,536 chains/cluster,
-fresh seeds every round. Ladder record: n=28 → 29 (×2) → 30 → 31, every rung blind and
-independently verified. Cost curve: n=30 ≈ 4 arrays, n=31 ≈ 9 arrays; expect each rung to
+fresh seeds every round. Ladder record: n=29 (×2) → 30 → 31, every rung blind and
+independently verified. (The old "n=28 first rung" cited BS(28,27) — RETRACTED 07-16: the
+banked artifact fails NPAF; see `results/quarantine/README.md`.) Cost curve: n=30 ≈ 4 arrays, n=31 ≈ 9 arrays; expect each rung to
 cost several× the last. The winning arm is unpredictable (n=31 fell to the PLAIN arm on
 Nibi — the "unreliable" cluster — 41 minutes into a run). Buy tickets everywhere.
 
