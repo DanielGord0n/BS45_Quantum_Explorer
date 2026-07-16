@@ -137,7 +137,11 @@ Do not re-run the checker.
    sbatch echoes.
 
 4. **Commit + push.** `git add -A && git commit -m "auto: <one-line verdict>"`
-   then `git push origin main`. Exception: if NEEDS_HUMAN was set for a code
+   then **`timeout 60 git push origin main`** — ALWAYS use the timeout. 2026-07-16: a bare
+   `git push` HUNG the run because the `osxkeychain` credential helper cannot pop its
+   authorization dialog in a headless cron. If the push times out, do NOT retry it and do NOT
+   fight the credential helper: the commit is safe locally, so just note in the summary
+   "push blocked (credential helper) — run `git push origin main` at the Mac" and continue. Exception: if NEEDS_HUMAN was set for a code
    change, push the `auto/YYYY-MM-DD` branch instead of main and do not merge.
 
 5. **Write the phone summary** to `results/last_summary.txt` — ONE short
