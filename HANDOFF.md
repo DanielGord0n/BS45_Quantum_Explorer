@@ -475,6 +475,24 @@ the NEXT round via tar-pipe. Remaining Task-3 levers in priority order: flatness
 default (measured 35× density enrichment), eq 2.12 stream cut, budget cascade (canon@50k ≈ old
 power at ¼ cost), k,r-profile-targeted completion.
 
+**⚡ LEVERS 2+3 LANDED (~15:30): hit-score instrumentation + FH_SCORE_TIERS in the job script
+(flatness thresholds now come from data), and eq 2.12 (Thm 2.3 eq 18, the LAST unimplemented WZ
+constraint) implemented as `WZ_THM212=1`** — mod-4 reflected-class conditions in PairAutoSet +
+survive_profiles(6). Reading decoded from the PDF by a subagent and validated in python FIRST:
+initial literal reading FAILED 8/10 solutions incl. WZ's own n=41 — the fixtures caught that the
+paper's "j=2..m" implicitly excludes the class-pair the special j=1 rule governs; corrected
+reading passes 10/10 at m=3+m=6. C++ validated: retention 10/10 KEPT (PROFILE_CHECK now forces
+211B+212), probe re-finds n=7/10/11/19 NPAF==0, **profile spaces HALVED** (n=19: 288/268 →
+150/144). ⚠️ Honest scope: hit idx barely moved at small n ⇒ pruned profiles carry few
+candidates — a real setup cut, but claim NO stream-level speedup until measured at n≥29
+(profile-cut ≠ stream-cut, the 07-15 lesson). Research fleet: 4 subagents launched (methods
+survey DONE — ranked list in the session; construction deep-dive, n=44/45 sig enumeration,
+mod-m>6 hypothesis still running). Headline from the survey: GPU precedent (Kotsireas group,
+Legendre pairs, 1900-6500× on H100 — paywalled, secondhand numbers), SAT+CAS proven on sibling
+problems (Williamson n≈30→70) but never tried on BS, composition route to 44 confirmed dead
+(44 = 2²·11 is NOT a Golay number — add to measured-dead), and our flatness-ordering density
+result appears AHEAD of the published literature (write-up-worthy).
+
 ---
 
 ## ⚡ TOP OF MIND — 2026-07-16 23:50: **FIRST-HIT WORK ORDER: Task 0 = BEST CASE (WZ's published n=41/42/43 verified + KEPT by all our filters); Gate B+C instrument BUILT + validated; n=19 first hit at depth 6.2×10⁻⁴ (inside the PASS window) in 1.9 s. n=29/30/31 gate runs MOVED TO CLUSTERS (laptop overheated — probes killed, correct call by Daniel). Paste blocks below.**

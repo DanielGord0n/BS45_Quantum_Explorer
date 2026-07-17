@@ -39,9 +39,22 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_SCORE_MAX" ]    && export WZ_FH_SCORE_MAX
 [ -n "$WZ_FH_STREAM_TOTAL" ] && export WZ_FH_STREAM_TOTAL
 
+# FH_SCORE_TIERS="t1,t2" (optional): first quarter of arms complete only
+# candidates with flatness score <= t1, second quarter <= t2, rest ungated.
+# Flat candidates measured ~35x denser in solutions at n=19; hit scores are
+# now printed per FIRSTHIT line, so tier values should come from prior rounds'
+# data. Every arm still streams its full shard — tiers only skip completions.
+T1=""; T2=""
+if [ -n "$FH_SCORE_TIERS" ]; then
+  T1=${FH_SCORE_TIERS%%,*}; T2=${FH_SCORE_TIERS##*,}
+  echo "[driver] score tiers: arms 0-$((NARMS/4-1)) <=$T1, $((NARMS/4))-$((NARMS/2-1)) <=$T2, rest ungated"
+fi
 pids=()
 for ((i=0; i<NARMS; i++)); do
-  WZ_FH_SHARD=$i WZ_FH_NSHARD=$NARMS ./"$BIN" "$N" "$A" "$B" "$C" "$D" \
+  tier=""
+  if [ -n "$T1" ] && [ "$i" -lt $((NARMS/4)) ]; then tier=$T1
+  elif [ -n "$T2" ] && [ "$i" -lt $((NARMS/2)) ]; then tier=$T2; fi
+  WZ_FH_SHARD=$i WZ_FH_NSHARD=$NARMS WZ_FH_SCORE_MAX=$tier ./"$BIN" "$N" "$A" "$B" "$C" "$D" \
     > "$DIR/arm_$i.log" 2>&1 &
   pids+=($!)
 done

@@ -248,6 +248,37 @@ static uint64_t auto_key(const vector<int> &T, int norm) {
 
 // The complement side's achievable (eq-2.11b tuple, norm) pairs. Same double loop
 // and same norm pruning as PairNormSet — just a richer key — so a lookup stays O(1).
+static bool G_THM212 = false;   // WZ_THM212=1: Thm 2.3's mod-4 conditions (paper eq 18)
+
+// Thm 2.3 eq (18) — "eq 2.12": mod-4 conditions coupling each class sum with
+// its REFLECTED class, separable per side. Reading validated 2026-07-17
+// against ALL 10 banked+reference solutions at m=3 AND m=6 (python first).
+// Subtlety the fixtures caught: the paper's "j = 2..m" implicitly EXCLUDES
+// the class-pair already governed by the special j=1 rule (pair {1, class of
+// position n+1}), which carries ≡2 (mod 4) when n ≢ 0 (mod m). Vectors here
+// are 0-indexed: class c holds 0-indexed positions ≡ c (mod m) = paper j=c+1.
+static bool thm212_ok(const vector<int> &x, const vector<int> &y, int m,
+                      bool abSide) {
+  auto m4 = [](int v) { return ((v % 4) + 4) % 4; };
+  int n = G_N;
+  if (abSide) {
+    int c1 = n % m;                        // 0-indexed class of position n+1
+    int want = (n % m) ? 2 : 0;
+    if (m4(x[0] + y[0] + x[c1] + y[c1]) != want) return false;
+    for (int j = 2; j <= m; j++) {
+      if (j == c1 + 1) continue;           // pair {1, c1+1}: handled above
+      int c = ((n + 1 - j) % m + m) % m;   // paper class n+2-j, 0-indexed
+      if (m4(x[j-1] + y[j-1] + x[c] + y[c]) != 0) return false;
+    }
+  } else {
+    for (int j = 1; j <= m; j++) {
+      int c = ((n - j) % m + m) % m;       // paper class n+1-j, 0-indexed
+      if (m4(x[j-1] + y[j-1] + x[c] + y[c]) != 0) return false;
+    }
+  }
+  return true;
+}
+
 struct PairAutoSet {
   unordered_set<uint64_t> achievable;
   void build(int L, int a, int b, int m) {
@@ -261,6 +292,9 @@ struct PairAutoSet {
       for (auto &rv : R) {
         int rn = norm_vec(rv);
         if (kn + rn > tgt) continue;
+        // eq 2.12 on the complement side: a witness (k,r) that violates the
+        // mod-4 conditions cannot belong to any real solution.
+        if (G_THM212 && !thm212_ok(kv, rv, m, L == G_N1)) continue;
         for (int s = 1; s <= half; s++) T[s - 1] = pair_auto(kv, rv, s);
         achievable.insert(auto_key(T, kn + rn));
       }
@@ -380,6 +414,7 @@ static vector<Profile> survive_profiles(int L, int sigX, int sigY,
       int need = tgt - npx - norm_vec(py);
       if (need < 0) continue;
       if (!comp3.feasible(need)) continue;
+      if (G_THM212 && !thm212_ok(px, py, 3, L == G_N1)) continue;  // eq 2.12 @ m=3
       // mod-6 tighten: some (px6,py6) reducing to (px,py) must admit a comp6 completion.
       bool ok6 = false;
       for (auto &px6 : PX6) {
@@ -390,6 +425,7 @@ static vector<Profile> survive_profiles(int L, int sigX, int sigY,
           if (reduce63(py6) != py) continue;
           int need6 = tgt - npx6 - norm_vec(py6);
           if (need6 < 0) continue;
+          if (G_THM212 && !thm212_ok(px6, py6, 6, L == G_N1)) continue;  // witness lift must pass 2.12 @ m=6
           if (G_THM211B && comp6auto) {
             // Wang-Zhu Step 3, in full: the complement must not only supply the
             // remaining NORM (2.11a) but also CANCEL this pair's residue
@@ -579,6 +615,7 @@ static vector<Profile> survive_profiles6(int L, int sigX, int sigY,
       int need = tgt - npx - norm_vec(py);
       if (need < 0) continue;
       if (!comp6.feasible(need)) continue;
+      if (G_THM212 && !thm212_ok(px, py, 6, L == G_N1)) continue;  // eq 2.12 @ m=6
       // A real solution satisfies the norm identity at EVERY modulus: the
       // pair's mod-3 reduction must ALSO complete (without this, mod-6
       // "survivors" include pairs mod-3 already kills — measured at n=11:
@@ -803,6 +840,7 @@ int main(int argc, char **argv) {
   }
   if (const char *hk = getenv("WZ_HASH_KEEP")) G_HASH_KEEP = atoi(hk);
   if (getenv("WZ_THM211B")) G_THM211B = true;   // Thm 2.3 eq 2.11b profile filter
+  if (getenv("WZ_THM212"))  G_THM212  = true;   // Thm 2.3 eq (18) mod-4 filter
   bool measure = getenv("WZ_MEASURE") != nullptr;
 
   init_hall_tables();
@@ -875,6 +913,7 @@ int main(int argc, char **argv) {
     // here on purpose — this mode always asserts the strictest filter.
     {
       G_THM211B = true;
+      G_THM212  = true;  // retention always tests the strictest filter stack
       PairAutoSet ab6a_t, cd6a_t;
       ab6a_t.build(G_N1, G_SIG_A, G_SIG_B, 6);
       cd6a_t.build(n,    G_SIG_C, G_SIG_D, 6);
@@ -1051,8 +1090,15 @@ int main(int argc, char **argv) {
           }
           cout << "VERIFY: max |NPAF[s]| over s=1.." << n << " = " << maxv
                << (maxv==0 ? "  (NPAF==0 confirmed)\n" : "  (NONZERO!)\n");
+          long long hit_score = 0;  // Σ|cd[s]| — flatness of the winning C,D;
+          for (int s = 1; s <= n; s++) {  // future score-tier thresholds come
+            int cd = 0;                   // from these, not from guesses
+            for (int i = 0; i + s < n; i++) cd += Ci[i]*Ci[i+s] + Di[i]*Di[i+s];
+            hit_score += abs(cd);
+          }
           cout << "FIRSTHIT: idx=" << hit_idx << " profile_rank=" << pi
                << " nodes_this_cand=" << (fh_nodes_total - nodes_before)
+               << " score=" << hit_score
                << " elapsed=" << t << "s";
           if (stream_total > 0)
             cout << "  frac_depth=" << (double)hit_idx / stream_total;
