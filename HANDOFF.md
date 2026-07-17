@@ -416,7 +416,41 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-16 19:00 (latest): **✅ CANARY `16243606` = PASS. The complete join FOUND + verified BS(30,29) sig (0,6,9,1) in 11:42:20 and EXITED CLEAN. The join frontier is RE-OPENED. Outcome 1 of the pre-registered rules below.**
+## ⚡ TOP OF MIND — 2026-07-16 23:50 (latest): **FIRST-HIT WORK ORDER: Task 0 = BEST CASE (WZ's published n=41/42/43 verified + KEPT by all our filters); Gate B+C instrument BUILT + validated; n=19 first hit at depth 6.2×10⁻⁴ (inside the PASS window) in 1.9 s. n=29/30/31 gate runs MOVED TO CLUSTERS (laptop overheated — probes killed, correct call by Daniel). Paste blocks below.**
+
+**Task 0 (`docs/gate_bc_firsthit_results.md` has everything):** Wang-Zhu Table 1 transcribed from
+the PDF programmatically (zero hand-typing), all three verify_npaf PASS (NPAF=0 ∀s), 2.11a+b PASS
+at m=3 AND m=6, and **every filter level KEEPS all three** (retention harness). Banked in
+`results/reference/` with WZ provenance; `canary_thm211b.py` now 10/10 with them as permanent
+fixtures. **The theorem stack is validated AT the target rungs.** Bonus: mod-3 profile spaces at
+n=41–43 are TINY (604–1441/side); n=42's published sig is (7,11,0,0).
+
+**The instrument (`WZ_FIRSTHIT=1` in wz_match.cpp):** deterministic C,D pair-stream (per-profile
+DFS) + per-candidate A,B backtrack under **Def 1.1 + Thm 2.2 mirror-pair placement** + node budget,
+first-hit stop, banner at find time. **Critical lesson:** the unpaired backtracker (wz_generate's)
+burned 200k nodes on 100% of 200k candidates at n=19 — zero completions; with Thm-2.2 pairing the
+same candidates exhaust in ~43k nodes avg. **Pairing is load-bearing inside Step 5.** Cluster
+sharding = `WZ_FH_SHARD/NSHARD` (interleaved by profile — fat-tail-safe; union invariant proven
+exactly at n=11: 298+185+326=809; shard 2 re-found the known n=19 hit bit-identically).
+
+**Gate data so far (n=19, sig (6,4,5,1), 1 core):** DFS first hit idx **807**/1.29e6 = depth
+**6.2e-4** in 1.9 s (pre-registered PASS line is ~1e-3); flattest-profile-first → idx 335 (2.4×
+better); reverse-order control → idx 1022 (degrades, as it should); **PSD-flatness score gate ≤30 →
+hit after only 22 completions** (~35× density concentration — the WZ_PSD_BIAS intuition confirmed
+where the plan bet it). Gate B at n=19: **~2.3 ms/candidate**, 7% budget-abort rate, hit itself
+cost 13k nodes. Depth fraction IMPROVING with n so far (0.033 → 0.005 → 0.0006).
+
+**Cluster fan-out (new `cluster/deploy/cluster_firsthit_probe.sh`):** 190 single-core arms/node
+over interleaved profile shards, driver polls for first FOUND + grace window + aggregation
+(`arms_with_hits`, `GATEB:`, `GLOBAL FIRST:` lines). Checker has a FIRSTHIT section (n≥41 FOUND =
+WZ replication = huge news; n=29–31 hits = expected re-finds). SUBMITS PENDING Daniel's paste:
+Rorqual n=29/30/31 (the pre-registered gates) + Trillium n=41/42 exploratory (AB_BUDGET=5e7) after
+scancel of its two SUPERSEDED jobs (`1921290` P22_GATE — PASS arithmetically impossible;
+`1921309` JOIN22 canary — already passed on Rorqual). Fir/Nibi untouched (SA round 11 / PD).
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-16 19:00: **✅ CANARY `16243606` = PASS. The complete join FOUND + verified BS(30,29) sig (0,6,9,1) in 11:42:20 and EXITED CLEAN. The join frontier is RE-OPENED. Outcome 1 of the pre-registered rules below.**
 
 **The result.** `sacct`: COMPLETED, ExitCode 0:0, Elapsed **11:42:20**. Banner `*** BS(30,29) FOUND ***`
 + `VERIFY: max |NPAF[s]| over s=1..29 = 0`. **Independently re-verified locally** with

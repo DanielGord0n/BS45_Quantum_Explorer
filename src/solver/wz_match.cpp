@@ -961,6 +961,20 @@ int main(int argc, char **argv) {
     if (const char *e = getenv("WZ_FH_PROF_ORDER")) prof_order = atoi(e);
     double stream_total = 0;  // banked baseline for fractional-depth print
     if (const char *e = getenv("WZ_FH_STREAM_TOTAL")) stream_total = atof(e);
+    // Cluster sharding: arm i of N streams profiles pi ≡ i (mod N), in order.
+    // INTERLEAVED on purpose — the JOIN22 canary measured the profile fat-tail
+    // (last 29/541 profiles cost more than the first 512); contiguous slices
+    // would concentrate the tail in one arm. Depth semantics per arm are
+    // preserved (profiles still processed in ascending rank within the arm);
+    // the global first hit ≈ min over arms by (profile_rank, idx).
+    int fh_shard = 0, fh_nshard = 1;
+    if (const char *e = getenv("WZ_FH_SHARD"))  fh_shard  = atoi(e);
+    if (const char *e = getenv("WZ_FH_NSHARD")) fh_nshard = atoi(e);
+    if (fh_nshard < 1) fh_nshard = 1;
+    if (fh_shard < 0 || fh_shard >= fh_nshard) {
+      cout << "[firsthit] BAD SHARD " << fh_shard << "/" << fh_nshard << "\n";
+      return 2;
+    }
 
     auto profScore = [](const Profile &p) {
       long long s = 0;
@@ -976,14 +990,15 @@ int main(int argc, char **argv) {
            { return profScore(a) > profScore(b); });
     cout << "[firsthit] profiles=" << cdProfs.size() << " order=" << prof_order
          << " ab_budget=" << FH_BUDGET << " max_cand=" << max_cand
-         << " score_max=" << score_max << "\n" << flush;
+         << " score_max=" << score_max
+         << " shard=" << fh_shard << "/" << fh_nshard << "\n" << flush;
 
     long long cand = 0, pre_rej = 0, score_rej = 0, clean_no = 0, aborted = 0;
     long long bt_entered = 0, hit_idx = -1;
     int hit_prof = -1;
     atomic<bool> fh_stop{false};
     auto T0 = Clock::now();
-    for (int pi = 0; pi < (int)cdProfs.size() && !fh_stop.load(); pi++) {
+    for (int pi = fh_shard; pi < (int)cdProfs.size() && !fh_stop.load(); pi += fh_nshard) {
       long long lv = 0, okc = 0;
       function<void(const vector<int>&, const vector<int>&)> probe =
           [&](const vector<int> &C, const vector<int> &D) {
@@ -1050,7 +1065,8 @@ int main(int argc, char **argv) {
     double t = chrono::duration<double>(Clock::now() - T0).count();
     long long completed_tested = clean_no + aborted + (hit_idx >= 0 ? 1 : 0);
     cout << "\n=== FIRSTHIT SUMMARY (n=" << n << ", sig " << G_SIG_A << ","
-         << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D << ") ===\n"
+         << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D
+         << ", shard " << fh_shard << "/" << fh_nshard << ") ===\n"
          << "candidates_streamed=" << cand << "  pre_filter_rejected=" << pre_rej
          << "  score_rejected=" << score_rej << "\n"
          << "backtracks_entered=" << completed_tested << "  clean_no_AB=" << clean_no
