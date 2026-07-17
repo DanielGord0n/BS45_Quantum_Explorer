@@ -712,6 +712,14 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
   const int (*S)[4] = (d == 0) ? P22_NEG : P22_POS;  // A,B side encoding
   for (int k = 0; k < 8; k++) {
     int a1 = S[k][0], b1 = S[k][1], a2 = S[k][2], b2 = S[k][3];
+    // Isomorphic-transformation truncation (WZ Step 5: "the isomorphic
+    // transformation of A,B sequences to truncate branches"). Negating all of
+    // A (or all of B) preserves every A_i*A_{i+s} product and only flips
+    // sumA (absorbed by the |a| check), so every completion class has a
+    // representative with A[0]=+1 AND B[0]=+1 — fix both at the root: 2 of
+    // the 8 d=0 combos survive, a sound 4x cut. WZ_FH_NO_CANON=1 disables
+    // (A/B lever for validation).
+    if (d == 0 && !getenv("WZ_FH_NO_CANON") && (a1 != 1 || b1 != 1)) continue;
     fh_place(i1, a1, b1, A, B, Dab, Kab, L);
     fh_place(i2, a2, b2, A, B, Dab, Kab, L);
     fh_nodes_total++;

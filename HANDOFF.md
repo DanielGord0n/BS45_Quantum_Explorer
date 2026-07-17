@@ -448,7 +448,36 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-16 23:50 (latest): **FIRST-HIT WORK ORDER: Task 0 = BEST CASE (WZ's published n=41/42/43 verified + KEPT by all our filters); Gate B+C instrument BUILT + validated; n=19 first hit at depth 6.2×10⁻⁴ (inside the PASS window) in 1.9 s. n=29/30/31 gate runs MOVED TO CLUSTERS (laptop overheated — probes killed, correct call by Daniel). Paste blocks below.**
+## ⚡ TOP OF MIND — 2026-07-17 13:45 (latest): **DANIEL GREENLIT TASK 3 ("do whatever is needed"). Campaign is now: (a) probe n=32/33 as a SOLVER — every hit beats banked n=31; (b) build the Gate-B pruning levers (isomorphic transformations per WZ Step 5 verbatim, eq 2.12, flatness ordering, Thm 2.4 cascade) and re-measure ms/cand at n=31; (c) Trillium n=41/42 tickets run when maintenance lifts.**
+
+Gate verdicts (07-17 loop + independent re-read, rules unmoved): **Gate C PASS** (hits at
+~1e-5–1e-6 of stream, trend NOT degrading; one node re-found n=29/30/31 in 30 s/331 s/421 s,
+84 solutions total). **Gate B FAIL-as-measured** (~1.0 s/cand at n=31 vs 10 ms line) but NOT
+the KILL case — cost is 200k-budget-pinned with 97-99% aborts and the named levers untried.
+Full data: `docs/gate_bc_firsthit_results.md`. Probe fan-out SUBMITTED ~13:50, Duo-approved:
+**Rorqual `16632433` n=32 (7,9,0,0) / `16632434` n=32 (3,11,0,0) / `16632435` n=33 (6,4,9,1);
+Nibi `17871088` n=32 (1,7,4,8) / `17871090` n=32 (3,9,2,6) / `17871091` n=33 (0,6,7,7) /
+`17871092` n=33 (8,6,5,3)** — all PD at submit, queued behind the SA arrays. All 7 sig classes parity-derived (n even ⇒ a,b odd/c,d even; n odd ⇒ a,b
+even/c,d odd) and locally validated non-empty (380-837 profiles/side). Probes use NO seeds —
+the ledger governs SA only. A FOUND at n≥32 = NEW BANKED BEST: full R2, bank, exclusion,
+NEEDS_HUMAN (auto_prompt + checker already briefed). Known loop bug, low-priority: NEEDS_HUMAN
+reached Daniel's phone but `results/last_summary.txt` wrote 0 bytes — fix the write path in
+`daily_auto.sh` when convenient.
+
+**⚡ TASK 3 LEVER 1 LANDED (same day, ~14:15): WZ Step-5 isomorphic-transformation truncation
+in the fh completer** — A/B whole-sequence negation invariance ⇒ canonical A[0]=B[0]=+1 at the
+root, 2 of 8 d=0 combos survive (sound ×4 cut; `WZ_FH_NO_CANON=1` disables). **Validated:** hit
+C,D indices BIT-IDENTICAL canon vs no-canon at n=7/10/11/19 (the cut never touches the C,D
+stream or completability), NPAF==0, wall 3.2× faster at n=19. **n=29 bounded sample (1,000
+cands, same budget 200k): clean exhausts 203 vs 10 — the budget resolves 20× more candidates.**
+The current 7 probe jobs run the OLD binary (they are tickets, fine); the new binary ships with
+the NEXT round via tar-pipe. Remaining Task-3 levers in priority order: flatness ordering as
+default (measured 35× density enrichment), eq 2.12 stream cut, budget cascade (canon@50k ≈ old
+power at ¼ cost), k,r-profile-targeted completion.
+
+---
+
+## ⚡ TOP OF MIND — 2026-07-16 23:50: **FIRST-HIT WORK ORDER: Task 0 = BEST CASE (WZ's published n=41/42/43 verified + KEPT by all our filters); Gate B+C instrument BUILT + validated; n=19 first hit at depth 6.2×10⁻⁴ (inside the PASS window) in 1.9 s. n=29/30/31 gate runs MOVED TO CLUSTERS (laptop overheated — probes killed, correct call by Daniel). Paste blocks below.**
 
 **Task 0 (`docs/gate_bc_firsthit_results.md` has everything):** Wang-Zhu Table 1 transcribed from
 the PDF programmatically (zero hand-typing), all three verify_npaf PASS (NPAF=0 ∀s), 2.11a+b PASS

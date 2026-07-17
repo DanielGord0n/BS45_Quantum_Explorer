@@ -90,6 +90,12 @@ Do not re-run the checker.
        ≤~10 ms/candidate at n=31 (compute ms/cand = wall × arms ÷ candidates). Verdicts →
        `docs/gate_bc_firsthit_results.md` + HANDOFF. **Whether to build Task 3 (the full
        first-hit architecture) on a PASS is Daniel's call — set NEEDS_HUMAN with the numbers.**
+     - **FIRSTHIT probes at n=32/33 (if queued): a FOUND banner BEATS the banked best (n=31).**
+       Full R2: `verify_npaf.py` PASS → bank to `results/champions/` with provenance (job id,
+       sig, "found by WZ_FIRSTHIT probe") → HANDOFF → checker exclusion → NEEDS_HUMAN, loud.
+       A no-hit probe at n=32/33 is a bounded negative for THAT sig only (budget aborts are
+       unknowns, and other sig classes exist — parity rule: n even ⇒ a,b odd + c,d even;
+       n odd ⇒ a,b even + c,d odd).
      - **Trillium n=41/42: ANY `*** BS(42,41) FOUND ***` / `*** BS(43,42) FOUND ***` banner =
        our solver REPLICATING Wang-Zhu's published result — the campaign's target.** R2 with
        extra care: run `tools/verify_npaf.py` on the printed A/B/C/D; confirm the sequences are
