@@ -443,10 +443,17 @@ cost 13k nodes. Depth fraction IMPROVING with n so far (0.033 → 0.005 → 0.00
 **Cluster fan-out (new `cluster/deploy/cluster_firsthit_probe.sh`):** 190 single-core arms/node
 over interleaved profile shards, driver polls for first FOUND + grace window + aggregation
 (`arms_with_hits`, `GATEB:`, `GLOBAL FIRST:` lines). Checker has a FIRSTHIT section (n≥41 FOUND =
-WZ replication = huge news; n=29–31 hits = expected re-finds). SUBMITS PENDING Daniel's paste:
-Rorqual n=29/30/31 (the pre-registered gates) + Trillium n=41/42 exploratory (AB_BUDGET=5e7) after
-scancel of its two SUPERSEDED jobs (`1921290` P22_GATE — PASS arithmetically impossible;
-`1921309` JOIN22 canary — already passed on Rorqual). Fir/Nibi untouched (SA round 11 / PD).
+WZ replication = huge news; n=29–31 hits = expected re-finds). **SUBMITTED ~23:55, Duo-approved:
+Rorqual `16498722` (n=29, THE calibration gate) / `16498723` (n=30) / `16498724` (n=31) — all PD
+at submit. Trillium `1926730` (n=41, WZ sig (-2,0,9,9)) / `1926731` (n=42, WZ sig (7,11,0,0)),
+AB_BUDGET=5e7 — PD behind the maintenance reservation, will start when it lifts. Trillium's two
+SUPERSEDED jobs scancel'd clean (`1921290` P22_GATE — PASS arithmetically impossible; `1921309`
+JOIN22 canary — already passed on Rorqual).** Fir/Nibi untouched (SA round 11 / PD). Next reader:
+the FIRSTHIT checker section reads these; verdicts go against the PRE-REGISTERED rules in
+`docs/gate_bc_firsthit_results.md` — Gate C PASS = depth ≤~1e-3 under some ordering with no
+degradation n=29→31; Gate B PASS = ≤~10 ms/candidate at n=31. Task 3 (the real first-hit build)
+ONLY if both pass. An n=41/42 FOUND banner = WZ replication: verify_npaf locally, bank to
+results/champions/ with provenance, tell Daniel immediately.
 
 ---
 
