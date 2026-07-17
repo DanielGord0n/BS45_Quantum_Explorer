@@ -95,7 +95,39 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-16, loop run 8) — n=32 blitz, round 11 opened on Fir:
+**LIVE ROUND (2026-07-17, loop run 9) — 🚨 THE FIRSTHIT GATES LANDED: Gate C
+PASS, Gate B FAIL-as-measured → Daniel decides Task 3. Plus n=32 round 12
+opened on Fir + Rorqual.** Rorqual probes `16498722`/`16498723`/`16498724`
+(n=29/30/31, 190 arms each) all COMPLETED in 31-37 min. **Gate C PASS** (rule
+unmoved): first hit at ~1.2e-5 / 1.1e-5 / 2.4e-6 of the stream (hit density
+1/21,101 / 1/52,967 / 1/33,666 candidates; 56/16/12 of 190 arms hit), two
+orders inside the ~1e-3 line, trend NOT degrading — n=31 is the shallowest;
+one node re-found each rung in 30 s / 331 s / 421 s wall. **Gate B FAIL as
+measured**: 294 / 478 / 1,045 ms/cand (wall×arms÷candidates) vs the ≤~10 ms
+PASS line — but NOT a clean KILL: nodes/cand is pinned at the 200k budget on
+every rung (97.9/97.2/99.1% aborted), and eq 2.12 / Thm 2.4 cascade / budget
+tuning / score-gate ordering (35× at n=19) are all unexploited. Full numbers +
+idx-semantics caveat (hit_idx is within-arm; density is the operative Gate C
+read) in `docs/gate_bc_firsthit_results.md`. GATEB totals: cands
+1,181,629/847,478/403,990, AB_nodes 2.34e11/1.67e11/8.05e10; GLOBAL FIRST
+idx=17551@rank4 / 77760@rank8 / 15027@rank2. All probe FOUNDs are expected
+re-finds of banked rungs — NOT banked, not news. **Task 3 (build the full
+first-hit architecture) is Daniel's call — NEEDS_HUMAN**; the Trillium n=41/42
+probes `1926730`/`1926731` (WZ's own Table-1 sigs) remain PD behind the
+maintenance reservation → untouched, they will answer the target rungs
+directly. Refills THIS run (both echoed, Duo approved): Fir `49340270` (129M)
++ Rorqual `16631117` (132M); ledger 22/27 at n=32, floor 8 (round floors: Fir
+49302380 → 8/8/16, Nibi tasks 2-4 → 8/12/16; no improvement), ACTIVE checked
+before refill. Nibi `17557893_[5-7]` PD (Priority) → not idle, no refill.
+Trillium's old gate `1921290` + canary `1921309` are gone from its queue
+(superseded/cancelled; canary purpose already served by Rorqual `16243606`) —
+nothing to collect. Rorqual's dead P22_GATE `16007398` (0/20 shards) left per
+the 07-15 supersession. No banks; no unverified FOUND claims; checker
+unchanged (new sa_ladder jobs auto-covered by globs). Reminder:
+`docs/kotsireas_brief.md` is READY TO SEND — and Gate C's PASS + the Table-1
+validation make the methods conversation sharper, not weaker.**
+
+**PREVIOUS ROUND (2026-07-16, loop run 8) — n=32 blitz, round 11 opened on Fir:
 `49302380` (plain, 126M) submitted + echoed THIS run (Duo push approved). Fir's
 round-10 `49139667` (123M) CLOSED at full walltime, no FOUND, visible floors
 12/16/16 → Fir idle → refilled. Nibi `17557893` tasks 5-7 still PD (Priority)
