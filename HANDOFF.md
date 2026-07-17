@@ -493,6 +493,45 @@ problems (Williamson n≈30→70) but never tried on BS, composition route to 44
 (44 = 2²·11 is NOT a Golay number — add to measured-dead), and our flatness-ordering density
 result appears AHEAD of the published literature (write-up-worthy).
 
+**⚡ CONSTRUCTION DEEP-DIVE LANDED (~15:50): the composition door to 44 is CLOSED with
+citations** (now in the skill's measured-dead list — Yang multiplication provably cannot make
+the (n+1,n) shape; TT(44) maps to BS(87,44); every historical BS(n+1,n) came from direct
+search). Honest reframe for the writeup + Kotsireas brief: **TS(89) already exists (Đoković
+2010), so BS(45,44) unlocks no new Hadamard matrix — it is a pure classification prize**, the
+base-sequence conjecture at its open frontier. THE strategic convergence: BOTH independent lit
+dives flag the same unexploited opening — **Thm 2.3 holds for GENERAL modulus m (KKS 1990) and
+nobody has ever published which m prunes best; 44 = 4×11 and 45 = 9×5 invite tuned moduli
+(m=4, 5, 9, 11, 12 or chains 3→6→12)** — and our mod-m measurement agent is computing exactly
+that answer right now. Two agents still out (mod-m, n=44/45 sig enumeration).
+
+**⚡ MOD-m ANSWER LANDED (~16:20): the "WZ picked the wrong modulus" hypothesis does NOT
+survive at the profile level — measured, not guessed.** Soundness 50/50 (every real solution
+passes at every m∈{4,5,6,8,12}). By CUT RATIO m=8/m=12 beat m=6 (up to 28×/62× vs 8-9×), but
+by ABSOLUTE survivor count m=4 wins everywhere and m=8/12's baselines balloon combinatorially
+(m=12 n=19 couldn't even enumerate in 90s) — and profile count is the WRONG CURRENCY anyway
+(the §5 retraction lesson; the agent flagged this itself). **m=6 reads as a genuine engineering
+sweet spot, matching WZ's own stated rationale. Verdict: inconclusive-to-negative; no filter
+change licensed. Defined follow-up if ever needed: STREAM-level A/B at m=4 vs m=6 (needs
+survive_profiles generalized past 6 — do not build without a reason).** Bonus observation
+recorded: the 2.11 identity empirically holds even beyond the paper's stated m ≤ (n+1)/2
+window (structural DFT fact) — noted, not built on. Numbers: agent table in the session;
+script at scratchpad/measure_modm.py (session-local).
+
+**⚡ RESEARCH FLEET COMPLETE (~16:40).** Last agent (n=44/45 sig enumeration) returned PARTIAL:
+**21 admissible sig classes exist (11 at n=44, 10 at n=45; norm+parity rule)**, and the two
+measured n=44 classes have profile spaces of the SAME order as n=41-43 — (3,3,4,12): 1441+768,
+(5,5,8,8): 1539+709 — **the profile layer is not a wall at n=44 either**. Remaining 19
+measurements were KILLED locally (the agent left both a sequential AND a parallel runner
+churning 3 cores — heat rule violation; lesson: agent prompts must forbid runner daemons).
+Full table = one trivial cluster arm whenever wanted. CONSOLIDATED RESEARCH VERDICT after all
+4 agents: (1) engineering levers now (canon ×4 ✓, 2.12 ✓, score tiers ✓, reversal-canon next);
+(2) GPU port = the big evidence-backed lever (1900-6500× precedent, Kotsireas group — start
+with a 1-day feasibility spike on an Alliance GPU node); (3) SAT+CAS = gated research gamble
+(proven on Williamson n≈30→70, never tried on BS — propose-first); (4) CLOSED: construction
+routes, mod-m-at-profile-level, everything in the measured-dead list; (5) the Kotsireas brief
+is now stronger still (TS(89)/pure-classification framing + our flatness-density result being
+ahead of the literature).
+
 ---
 
 ## ⚡ TOP OF MIND — 2026-07-16 23:50: **FIRST-HIT WORK ORDER: Task 0 = BEST CASE (WZ's published n=41/42/43 verified + KEPT by all our filters); Gate B+C instrument BUILT + validated; n=19 first hit at depth 6.2×10⁻⁴ (inside the PASS window) in 1.9 s. n=29/30/31 gate runs MOVED TO CLUSTERS (laptop overheated — probes killed, correct call by Daniel). Paste blocks below.**

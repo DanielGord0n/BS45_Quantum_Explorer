@@ -63,6 +63,13 @@ repo root (scp does NOT expand $SCRATCH): `tar -cf - <files> | ssh ... 'cd $SCRA
   three ways). Not the lever anymore.
 - **Long walltimes**: 24h × 1,536 chains at n=31 → same floor 8, no hit. Hits arrive at random
   restart times (41 min, 3.9 h, 11 h). 12h arrays maximize schedulability. Never request more.
+- **Composition/construction routes to BS(45,44)** (closed 2026-07-17, two independent lit
+  dives): Yang multiplication outputs the WRONG SHAPE (equal-length BS(m',m'), m' odd — can
+  never be (45,44)); Turyn-type TT(44) exists (London-Kotsireas 2025) but maps to BS(87,44);
+  44 = 2²·11 is NOT a Golay number; every historical BS(n+1,n) came from DIRECT SEARCH, none
+  from composition. Also: TS(89) already exists (Đoković 2010), so n=44 unlocks no new
+  Hadamard object — it is a pure classification prize. NS(44)=∅ and NNS(44)=∅ (Wang-Zhu);
+  the GENERAL object is open. Do not hunt ingredients; sharpen the search.
 
 ## Proven-to-work: ticket volume
 
