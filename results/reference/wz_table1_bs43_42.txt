@@ -1,0 +1,12 @@
+42 43 0
+7 11 0 0
+1 1 -1 -1 1 1 -1 -1 1 -1 1 1 1 -1 1 -1 -1 1 -1 1 1 -1 -1 1 -1 -1 -1 -1 1 1 1 -1 1 -1 1 -1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 -1 -1 -1 1 -1 1 -1 1 1 1 -1 -1 1 1 -1 1 -1 1 -1 1 1 1 1 -1 -1 1 1 -1 1 1 -1 -1 1 -1
+1 1 1 1 1 -1 -1 -1 -1 1 1 1 -1 -1 1 1 1 -1 1 1 -1 1 -1 -1 1 -1 -1 -1 -1 1 -1 -1 1 -1 -1 1 1 1 -1 -1 1 -1
+1 1 -1 -1 -1 -1 -1 -1 1 -1 -1 -1 1 1 1 1 -1 -1 -1 1 -1 1 -1 1 1 1 -1 -1 1 -1 1 1 -1 1 -1 1 1 -1 1 1 1 -1
+# BS(43,42), n=42 — WANG-ZHU'S PUBLISHED SOLUTION, NOT OURS.
+# Source: arXiv:2506.20296 Table 1 (Xu Wang & Jiayi Zhu), transcribed from the
+# PDF 2026-07-16 (pdftotext + programmatic parse, zero hand-typing).
+# Independently verified: tools/verify_npaf.py PASS (NPAF[s]=0 all s), norm
+# identity 170, Thm 2.2 pair-encoding PASS. Serves as ground-truth canary
+# at the target rungs: every filter we ship must KEEP these solutions.

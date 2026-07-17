@@ -20,12 +20,28 @@ campaign is therefore the **metaheuristic** that already FOUND + Kotsireas-verif
 via **`cluster/deploy/cluster_sa_ladder.sh`** (SLURM array of full 192-thread nodes ≈ 1,536 chains/cluster, climbing
 the n-ladder). It is **O(n) memory — it never OOMs.**
 
+**⚠️ 2026-07-16 — THE "WHY NOT THE HASH-JOIN" PARAGRAPH BELOW IS RETRACTED. READ THIS FIRST.**
+The join is **ALIVE and it now has a banked solution of its own.** Canary `16243606` (Rorqual, 192
+cores) **COMPLETED** — exit 0:0, elapsed **11:42:20** — and found **BS(30,29) sig (0,6,9,1)**,
+independently NPAF-verified, banked at `results/champions/champion_join22_bs30_29.txt`. It did NOT
+OOM: JOIN22 v2 streams instead of materializing, and the C,D key table dedups 5.5-7× into bare 8-byte
+keys (n=29 table ≈ 2.4 GB, not 34 GB). The old verdict below was measured on the PRE-Thm-2.2,
+PRE-JOIN22-v2 code and is stale in every particular: it caps neither at n=18-20 nor at n=34, and the
+"~10^3× looser filter" gap is closed (Thm 2.2 comb8 + Thm 2.3 eq 2.11a/2.11b are implemented; see
+`docs/wz_paper_reconstruction.md`). **The join is the active path above n=31**, because it is the only
+method here that can also PROVE ABSENCE for a signature. SA cannot, ever.
+The binding constraint is **walltime, not memory and not feasibility** → shard phase 2
+(`docs/fable_workorder_join_sharding.md`).
+
+<details><summary>RETRACTED (2026-06-27 verdict, kept for the audit trail — do not act on it)</summary>
+
 **Why NOT the hash-join `wz_match.cpp`:** it is provably COMPLETE and blindly found BS(19,18) in 51 s,
 BUT it materializes the whole residue/spectral-filtered candidate set, which grows exponentially —
 **confirmed OOM-killed at n=36 (Fir) AND n=42 (Rorqual) on 2026-06-25**, even after the compact-key +
 dedup memory fix. So it caps ~n=18-20 in RAM. Retained for **small-n verification only**; our filter is
 ~10^3× looser than Wang-Zhu's (that gap = the research route to n=42; under investigation). Deploy
 via `cluster/deploy/cluster_wz_match.sh`.
+</details>
 
 Lineage (all in `src/solver/`): `wz_sa_v8.cpp` (SA — **ACTIVE**, found BS(28,27)) ·
 `wz_exact_t23.cpp` (exhaustive backtracking — correct, blind-walls ~n=18, TIME wall) →
@@ -400,7 +416,58 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-16 (latest): **JOIN22 CANARY `16243606` — DECISION RULES PRE-REGISTERED (written BEFORE the result) + live read: the job has printed NOTHING for ~12.6 h; it is grinding the last 29/541 fat A,B stream profiles. Walltime kill ~18:47 EDT today.**
+## ⚡ TOP OF MIND — 2026-07-16 19:00 (latest): **✅ CANARY `16243606` = PASS. The complete join FOUND + verified BS(30,29) sig (0,6,9,1) in 11:42:20 and EXITED CLEAN. The join frontier is RE-OPENED. Outcome 1 of the pre-registered rules below.**
+
+**The result.** `sacct`: COMPLETED, ExitCode 0:0, Elapsed **11:42:20**. Banner `*** BS(30,29) FOUND ***`
++ `VERIFY: max |NPAF[s]| over s=1..29 = 0`. **Independently re-verified locally** with
+`tools/verify_npaf.py`: PASS, NPAF[s]=0 ∀ s=1..30, norm 118 = expected, fits the Wang-Zhu comb8
+encoding. `tools/canary_thm211b.py` now 7/7. Banked: `results/champions/champion_join22_bs30_29.txt`.
+**R2 satisfied.**
+
+**⚠️ Rule 1 said "re-find of the banked class ⇒ NO new bank". This is NOT a re-find** — sig
+**(0,6,9,1)**, whereas the banked SA n=29 champions are sig (4,-10,1,1). The join exhaustively searched
+a *different* signature and produced a *new* solution. The rule didn't anticipate that case, so state
+it plainly: **n=29 is not a record** (banked best n=31) — this file is bookkeeping + a regression
+fixture, **not a claim**. What it proves is the method, and that is the whole point of a canary.
+
+**🔻 RETRACTION — the 13:00 "real n=29 walltime is ≥24 h" recalibration below is WRONG. It was 11.7 h.**
+Cause: the 13:00 read compared `squeue` Elapsed (18:13:19) against the binary's own internal clock
+(stamped 20,011.6 s) and read the 45,000 s gap as a stall in the fat tail. But `cluster_sa_ladder.sh`
+/ the submit path uses **`--requeue`** — the job had been requeued, so SLURM's Elapsed spanned a prior
+incarnation while the binary's clock restarted at 0. The successful run took 42,134 s ≈ Elapsed
+42,140 s: consistent, no stall, no fat-tail catastrophe. **Lesson (add to the output-reading traps):
+`squeue` Elapsed and the binary's internal timestamps are DIFFERENT CLOCKS under `--requeue`; never
+infer a stall by subtracting one from the other.** This is the same error shape as the 07-10 "10⁵×"
+and the 07-15 "120× profile cut": a difference taken between two quantities that are not the same
+quantity.
+
+**Real cost calibration at n=29, 192 cores (this is what sharding gets sized against):**
+| phase | measurement | cost | share |
+|---|---|---|---|
+| 2 STREAM | 541/541 profiles, 18,660 raw key hits | 35,092 s (~9.7 h) | **83%** |
+| 3 RESOLVE | hit at profile 192/342 | ~7,042 s (~2.0 h) | 17% |
+
+Stream is the cost ⇒ **`docs/fable_workorder_join_sharding.md` targets the right phase.** The late
+tail is still real and still argues for cost-balanced (not contiguous) shards: profiles 512→541 (29 of
+them) cost ~15,081 s, vs ~15,744 s for the first 480 combined.
+
+**n=31 unsharded is still out of reach** — at the 2.67-2.86×/rung stream fit, 11.7 h × ~7-8 ≈ **80-100 h**
+vs a 24 h max walltime. Sharding is not an optimization; it is the only path. But the premise is now
+measured rather than assumed.
+
+**Honest note on today's banner-at-find-time fix:** this run printed its banner fine, so the fix did
+NOT save it, and the earlier framing ("the bug is why the canaries came back inconclusive") is too
+strong — predecessor `15719454` did lose a find that way (07-11), but the failure is intermittent, not
+universal. The fix is insurance and it is still correct to have.
+
+**NEXT (Daniel's call — opening the join campaign is not the agent's decision):** workorder step 2 —
+build + validate the phase-2 A,B shard LOCALLY (union invariant exact at n=11/15/19; n=7 pair22 still
+66/91; every FOUND still self-verifies). Then step 3: **n=31 FIRST** as a second canary on a rung whose
+answer is known and banked, before n=32/33.
+
+<details><summary>Superseded 13:00 entry (pre-result; rules 1-5 are the pre-registered decision table — kept intact as the audit trail)</summary>
+
+## ⚡ TOP OF MIND — 2026-07-16 13:00: **JOIN22 CANARY `16243606` — DECISION RULES PRE-REGISTERED (written BEFORE the result) + live read: the job has printed NOTHING for ~12.6 h; it is grinding the last 29/541 fat A,B stream profiles. Walltime kill ~18:47 EDT today.**
 
 **Live read (13:00 checker, Fable workorder step 1):** squeue elapsed 18:13:19 (= 65,600 s) but the
 newest output line is stamped [20,011.6 s] (`stream 512/541`). Stream progress prints only at
@@ -445,6 +512,24 @@ truth n=7 = 66/91 exact; mod-6 norm-only == mod-3 invariant holds (n=7 66/91, n=
 (script compiles from source per job — tar-pipe `src/solver/wz_match.cpp`). The running
 canary `16243606` still has the OLD binary — read it under the old rules (rule 4 above).
 
+**⚡ SAME DAY: THM-2.11B CODE ADVERSARIALLY REVIEWED — the math is CORRECT (independent
+re-derivation + bit-exact reproduction of every documented number, incl. two NON-banked
+sigs), no real solution excluded. Full verdict + 7 verified findings:
+`docs/wz_paper_reconstruction.md` §"ADVERSARIALLY REVIEWED 2026-07-16".** Highlights:
+(1) `WZ_PROFILE_CHECK` had never asserted 2.11b (validation-plan step 1 was NOT done) —
+CLOSED same day: it now asserts the raw predicate + survive_profiles6/mod-3-tighten
+membership; validated 6/6 champions PASS exit 0, quarantined n27 FAIL exit 1. (2) The doc's
+"9.2× cut / ~120× projected" table was python-baseline-relative, NOT the shipped code
+(real code-relative cut: 3.9× at n=11) — doc corrected; moot for decisions (retraction
+stands, KILL-stands inputs all reproduced). (3) Eq 2.12 (mod-4) implemented nowhere — safe
+direction, but all +2.11b counts are upper bounds on WZ's. (4) Traps before any big-n M6
+cluster run: the 20M profile cap truncates SILENTLY into normal-looking gate numbers, and
+WZ_PAIR22_M6 is INERT on the JOIN22 path (join generates mod-3 regardless). (5)
+canary_thm211b.py hardened: wrong-cwd 0/0 silent pass now exits 1. Review artifacts +
+verifier notes: session workflow `thm211b-adversarial-review` (46 agents; some verifiers
+lost to the session usage cap — the three load-bearing contested findings were re-verified
+inline by inspection/run before acting).**
+
 **⚡ SAME DAY: `champion_v3_n27.txt` QUARANTINED** (Fable, re-verified independently:
 NPAF nonzero at 9 shifts, 2.11a norm 106≠110). Moved to `results/quarantine/` with full
 README; BS(28,27) rows RETRACTED from README.md + kotsireas_brief.md; ladder record now
@@ -452,6 +537,8 @@ starts at n=29. `canary_thm211b.py` upgraded: quarantine files are expected-FAIL
 meaningful exit code (0 only if all champions pass AND quarantined junk fails). If the
 "Kotsireas-verified" BS(28,27) sequences exist outside the repo (e-mail?), re-bank only
 after a verify_npaf PASS.
+
+</details>
 
 ---
 

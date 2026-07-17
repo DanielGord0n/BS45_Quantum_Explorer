@@ -1,0 +1,27 @@
+29 30 0
+0 6 9 1
+1 1 -1 -1 -1 -1 1 -1 1 1 1 -1 -1 1 -1 1 -1 -1 1 -1 -1 1 -1 1 1 1 1 -1 -1 1
+1 1 1 1 -1 -1 1 1 1 -1 -1 1 -1 1 -1 1 -1 -1 -1 1 1 1 1 1 1 1 -1 1 -1 -1
+-1 -1 -1 1 1 1 -1 1 1 1 -1 1 1 1 1 1 1 1 1 1 -1 -1 1 1 -1 1 1 -1 -1
+-1 -1 -1 1 1 1 -1 1 -1 1 1 -1 1 -1 1 -1 1 -1 -1 1 1 -1 1 1 -1 1 1 -1 -1
+# BS(30,29), n=29, sig (0,6,9,1) — found by the COMPLETE JOIN22 SEARCH, not SA.
+# NOT a record (banked best is n=31). This is the CANARY that re-opened the join frontier.
+#
+# Provenance: Rorqual job 16243606, WZ_MATCH / wz_match.cpp WZ_JOIN22=1, 192 cores,
+#   2026-07-16. State COMPLETED, ExitCode 0:0, Elapsed 11:42:20 (42134.4s) — it
+#   FINISHED, it was not walltime-killed.
+# Verified: tools/verify_npaf.py 2026-07-16 — PASS, NPAF[s]=0 for all s=1..30,
+#   a²+b²+c²+d²=118 (expect 118), fits Wang-Zhu comb8_pos pair encoding.
+#
+# Why it matters: this is a DIFFERENT signature from the banked SA n=29 champions
+#   (champion_sa_bs30_29_a/b are sig (4,-10,1,1)). The join produced it deterministically
+#   by exhaustive search of sig (0,6,9,1) — the first solution this campaign has obtained
+#   from a method that can also PROVE ABSENCE. SA can never do the second thing.
+#
+# Cost calibration (the number the sharding build is sized against):
+#   phase 2 STREAM  541/541 profiles, 18660 raw key hits, 35092.5s  (~9.7h, 83% of total)
+#   phase 3 RESOLVE found at profile 192/342, total 42134.4s        (~2.0h, 17% of total)
+#   Stream is the cost. Sharding phase 2 (docs/fable_workorder_join_sharding.md) is
+#   confirmed as the correct target. Stream decays hard late: 512->541 (29 profiles)
+#   cost 15081s, vs 15743s for the first 480 — cost-balance the shards, do NOT use
+#   contiguous ranges.

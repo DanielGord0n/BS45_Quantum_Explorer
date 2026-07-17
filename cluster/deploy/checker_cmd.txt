@@ -23,7 +23,7 @@ cd $SCRATCH/bs45 2>/dev/null || echo "(cannot cd to \$SCRATCH/bs45)"
 echo "--- NEW FOUND? ---"
 grep -l "FOUND" sa_ladder_*.txt 2>/dev/null | grep -vE "46274622_4|14923090_[26]|16945067_3" || echo "(none yet)"
 echo "--- NEW FOUND? (wz_match / JOIN22 canary — 2026-07-15: this glob was MISSING, so a canary PASS would have gone unreported) ---"
-grep -l "FOUND\|REPRODUCTION CONFIRMED" wz_match_output_*.txt 2>/dev/null | grep -vE "15719454|47665509|17291892|45549585" || echo "(none yet)"
+grep -l "FOUND\|REPRODUCTION CONFIRMED" wz_match_output_*.txt 2>/dev/null | grep -vE "15719454|47665509|17291892|45549585|16243606" || echo "(none yet)"
 echo "--- n=32 progress ---"
 for f in $(ls -t sa_ladder_*.txt 2>/dev/null | head -3); do hdr=$(grep -oE "BS\([0-9]+,[0-9]+\)" "$f" | head -1); best=$(grep -oE "bestAB=[0-9]+" "$f" | sort -t= -k2 -n | head -1 | grep -oE "[0-9]+$"); echo "$(basename $f) [$hdr] bestAB_min=$best | $(tail -1 "$f" | cut -c1-55)"; done
 echo "--- GATE PROBES ---"

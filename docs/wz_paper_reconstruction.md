@@ -89,7 +89,7 @@ but kept testing only the norm identity, which is the part that is already nearl
 
 **4. Pruning power at m=6 (C,D profile pairs surviving, norm-only vs +2.11b):**
 
-| n | norm-only (current code) | +2.11b (Wang-Zhu) | cut |
+| n | norm-only (python model — see ⚠️ below) | +2.11b (Wang-Zhu) | cut |
 |---|---|---|---|
 | 7 | 400 | 169 | 2.4× |
 | 11 | 2,155 | 234 | 9.2× |
@@ -98,6 +98,17 @@ but kept testing only the norm identity, which is the part that is already nearl
 | 23 | 295,995 | 14,385 | 20.6× |
 
 Noisy and signature-dependent, but trending up: ~**1.145× per +1 in n** → **projected ~120× at n=36**.
+
+**⚠️ CORRECTED BY REVIEW (2026-07-16, adversarially verified 2/2):** the baseline column was
+mislabeled "current code". It is `measure_thm211b_prune.py`'s looser baseline — the shipped
+C++ (`survive_profiles6`) ADDITIONALLY applies a mod-3-reduction feasibility gate
+(wz_match.cpp, the 07-03 audit fix) that the python model omits. Real C++ norm-only counts:
+**376 (n=7), 916 (n=11)** — so the CODE-relative 2.11b cut is **2.2× / 3.9×**, not 2.4×/9.2×,
+and the ~120× projection is python-baseline-relative. This also fully resolves the
+"2,155 vs 916" discrepancy between this table and the §IMPLEMENTED table below: same
+quantity, two filter stacks; both stacks converge to identical +2.11b survivors (169/234).
+Moot for decisions (the profile-cut→stream claim was already retracted in §5) but do not
+quote 9.2×/120× as a property of the shipped code.
 
 **5. ⛔ RETRACTED — the profile cut does NOT carry to the stream (measured same evening).**
 An earlier draft of this doc argued a ~120× *profile* cut would drag the n=36 stream to ~2.3e10 and
@@ -140,6 +151,16 @@ in `src/solver/wz_match.cpp`; 2.11b wired into BOTH `survive_profiles`' mod-6 ti
 C,D = 234 matches `tools/measure_thm211b_prune.py`'s independent Python prediction **exactly**,
 which is strong evidence the C++ is correct and not merely plausible.
 
+**⚠️ REVIEW CAVEAT (2026-07-16): "independent" overstates.** The python model is a
+transliteration of the C++ (same enum recursion, same pair_auto shape, same author, same
+evening), and on the +2.11b column the agreement is partly FORCED: norm(reduce63(v)) =
+norm(v) + 2·N(v,3), so 2.11b's s=3 component plus mod-6 2.11a implies the mod-3 norm
+identity — the one filter the python omits is provably immaterial for that column. The
+match genuinely validates the `auto_key` 64-bit packing (exact tuples vs packed keys),
+NOT the paper reading; a shared misreading would agree with itself. The external anchors
+are: the champion canary (6/6 PASS, quarantined n27 FAIL) and, since 2026-07-16,
+`WZ_PROFILE_CHECK`'s in-binary 2.11b retention assertions (see below).
+
 ### ⚠️ THE SECOND GAP — 2.11b is INERT in the pair22 path, and here is why
 
 `survive_profiles()` returns **mod-3** profiles; its mod-6 test is only an **existential tighten**
@@ -177,6 +198,46 @@ so it needs the exact small-n ground-truth re-run (n=7: 66/66, 91/91) before it 
 **Regression tests already in place:** `tools/canary_thm211b.py` (2.11b must hold on every valid
 banked champion — currently 6/6, and it correctly REJECTS the invalid champion_v3_n27) and
 `tools/measure_thm211b_prune.py` (independent Python model of the profile cut; C++ must match it).
+
+## ✅ ADVERSARIALLY REVIEWED 2026-07-16 (multi-agent, findings refuter-verified)
+
+**The 2.11b core is CORRECT — confirmed by independent re-derivation** (from the DFT
+coefficient identity at 6th roots of unity): `autocorr_vec` is the paper's non-circular
+N_v(s) with correct index translation; the s=3 (=m−s) doubling is consistent across
+`pair_auto`, `PairAutoSet::build`, both python tools; `needT = -pair_auto` is the required
+negation; the `PairAutoSet` lookup is genuinely JOINT over (T1,T2,T3,norm) — the 64-bit
+packing is injective in-domain. The mod-6==mod-3 invariant was re-verified on TWO
+non-banked sigs (n=7 (2,0,5,1): 46/47; n=11 (0,6,-3,1): 440/1050) in addition to the
+banked ones. No real solution is excluded: all six champions' profiles are KEPT by every
+filter level (now a permanent regression — see below), quarantined n27 EXCLUDED.
+
+**Gaps and traps found (all verified, none affects current decisions):**
+1. **`WZ_PROFILE_CHECK` never asserted 2.11b** — validation-plan step 1 had NOT been done
+   (the python canary checks the solution satisfies the identity, not that the filter
+   KEEPS its profiles — a needT sign flip would pass the canary while silently losing
+   champions from a THM211B join). **CLOSED 2026-07-16:** PROFILE_CHECK now asserts the
+   raw 2.11b predicate + `survive_profiles6` membership + mod-3+tighten membership;
+   validated 6/6 champions ALL PASS exit 0, n27 FAIL exit 1.
+2. **Eq 2.12 (mod-4) is implemented NOWHERE** (C++ or python) despite the fix-spec above
+   naming it. Safe direction (filter looser than WZ ⇒ nothing excluded) but every +2.11b
+   count is an UPPER bound on WZ's Step-3 stream, and the C++/python cross-check is blind
+   to the omission (shared). Candidate next tightening if stream sizes matter again.
+3. **The 20M profile cap in `survive_profiles6` is consumable as complete:** on cap-hit it
+   returns a truncated set with only a mid-log WARNING; `WZ_PAIR22_M6` then prints normal
+   SHARD_STREAM/GATE-summary numbers (a capped n≈36 run could print a false gate PASS).
+   Fix before any cluster M6 run at large n: propagate a truncated flag into the banner.
+4. **`WZ_PAIR22_M6` is inert on the JOIN22 path** — the join always generates from mod-3
+   profiles; the flag is honored only in WZ_COUNT_PAIR22. Setting it on a join job wastes
+   nothing but does nothing. Wire it (or reject it loudly) before any "2.11b join" A/B.
+5. Latent, guarded by nothing: `auto_key` truncates the tuple at 3 entries (m≥8 would
+   silently degrade; m=8's T[3] term — refuter analysis says the loosening claim is
+   debatable, but add asserts anyway) and `count_pairs22`'s int[8] class arrays cap m≤8.
+6. The mod-6==mod-3 equality is EMPIRICAL, not structural (mod-6 ≤ mod-3 is provable; a
+   future divergence at big n could be a sound tightening, not corruption — the comment
+   at the invariant claims otherwise; re-diagnose before declaring numbers worthless).
+7. `canary_thm211b.py` fixed same day: wrong-cwd silent 0/0 pass now fails loudly; the
+   quarantine expected-FAIL contract documented (fixtures must fail 2.11 ITSELF — 2.11 is
+   necessary-not-sufficient, a class-sum-preserving invalid bank would pass it).
 
 **Do NOT queue cluster jobs for this yet.** With generation still driven by mod-3 profiles, a
 `WZ_THM211B=1` run on a cluster computes exactly what today's binary computes. The first cluster

@@ -641,6 +641,138 @@ static inline uint64_t autocorr_key(const int *X, const int *Y, int L,
 static int g_solA[256], g_solB[256], g_solC[256], g_solD[256];
 static atomic<bool> g_found{false};
 
+// ==================== WZ_FIRSTHIT: A,B completion (Gate B/C) =================
+// Ported from wz_generate.cpp (ab_search/complete_ab, 06-24, proven machinery)
+// for the 2026-07-16 first-hit work order. Given fixed C,D, backtrack A,B with
+// target ab[s] = -cd[s]; sound bound |t[s]-Dab[s]| <= Kab[s]. Node budget per
+// candidate (FH_BUDGET): 0 = exact; >0 aborts monster dead trees (probe mode —
+// NOT exhaustive per candidate; track aborts to bound what might be missed).
+static long long FH_BUDGET = 0, fh_cur = 0, fh_nodes_total = 0;
+static bool fh_aborted = false;
+static int FH_CD_target[256];
+static int FH_ABS_A = 0, FH_ABS_B = 0;
+
+// Pair-position DFS under the Thm 2.2 encoding — this is WZ Step 5 as written:
+// "Definition 1.1 and Theorem 2.2 ... to truncate branches". Mirror positions
+// (d, L-1-d) are placed JOINTLY from the 8 legal combos (product -1 at d=0 on
+// the A,B side, +1 otherwise), which alone shrinks the raw space by ~2^(L/2)
+// versus the naive 4-combos-per-position search (measured 10^5x on the stream).
+// The v1 unpaired search burned its entire node budget on 100% of candidates
+// at n=19 (200k/200k aborted, zero completions) — the encoding is not optional.
+
+// Place single position p with (av,bv); update Dab/Kab against placed q's.
+static inline void fh_place(int p, int av, int bv, int *A, int *B,
+                            int *Dab, int *Kab, int L) {
+  for (int q = 0; q < L; q++) {
+    if (A[q] == 0 || q == p) continue;
+    int s = q > p ? q - p : p - q;
+    Dab[s] += A[q] * av + B[q] * bv;
+    Kab[s] -= 2;
+  }
+  A[p] = av; B[p] = bv;
+}
+static inline void fh_unplace(int p, int *A, int *B, int *Dab, int *Kab, int L) {
+  int av = A[p], bv = B[p];
+  A[p] = 0; B[p] = 0;
+  for (int q = 0; q < L; q++) {
+    if (A[q] == 0 || q == p) continue;
+    int s = q > p ? q - p : p - q;
+    Dab[s] -= A[q] * av + B[q] * bv;
+    Kab[s] += 2;
+  }
+}
+
+static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
+                         int sumA, int sumB) {
+  if (fh_aborted) return false;
+  int n = G_N, L = G_N1;
+  int half = L / 2;
+  if (d == half) {
+    auto final_ok = [&](int sA, int sB) {
+      if (abs(sA) != FH_ABS_A || abs(sB) != FH_ABS_B) return false;
+      for (int s = 1; s <= n; s++)
+        if (Dab[s] != FH_CD_target[s]) return false;
+      return true;
+    };
+    if (L % 2 == 1) {  // odd L: free middle element
+      int mid = half;
+      for (int k = 0; k < 4; k++) {
+        int av = P22_4[k][0], bv = P22_4[k][1];
+        fh_place(mid, av, bv, A, B, Dab, Kab, L);
+        fh_nodes_total++;
+        bool ok = final_ok(sumA + av, sumB + bv);
+        if (!ok) fh_unplace(mid, A, B, Dab, Kab, L);
+        if (ok) return true;
+      }
+      return false;
+    }
+    return final_ok(sumA, sumB);
+  }
+  int i1 = d, i2 = L - 1 - d;
+  const int (*S)[4] = (d == 0) ? P22_NEG : P22_POS;  // A,B side encoding
+  for (int k = 0; k < 8; k++) {
+    int a1 = S[k][0], b1 = S[k][1], a2 = S[k][2], b2 = S[k][3];
+    fh_place(i1, a1, b1, A, B, Dab, Kab, L);
+    fh_place(i2, a2, b2, A, B, Dab, Kab, L);
+    fh_nodes_total++;
+    if (FH_BUDGET > 0 && ++fh_cur > FH_BUDGET) {
+      fh_aborted = true;
+      fh_unplace(i2, A, B, Dab, Kab, L);
+      fh_unplace(i1, A, B, Dab, Kab, L);
+      return false;
+    }
+    int nsA = sumA + a1 + a2, nsB = sumB + b1 + b2;
+    int rem = L - 2 * (d + 1);
+    bool sum_ok = ((abs(FH_ABS_A - nsA) <= rem) || (abs(-FH_ABS_A - nsA) <= rem))
+               && ((abs(FH_ABS_B - nsB) <= rem) || (abs(-FH_ABS_B - nsB) <= rem));
+    bool prune = !sum_ok;
+    if (!prune)
+      for (int s = 1; s <= n; s++)
+        if (abs(FH_CD_target[s] - Dab[s]) > Kab[s]) { prune = true; break; }
+    if (!prune) {
+      if (fh_ab_search(d + 1, A, B, Dab, Kab, nsA, nsB))
+        return true;
+    }
+    fh_unplace(i2, A, B, Dab, Kab, L);
+    fh_unplace(i1, A, B, Dab, Kab, L);
+  }
+  return false;
+}
+
+// Returns: 0 = completed (g_sol* filled), 1 = rejected by cheap pre-filter
+// (tail cd!=0 or |target| out of range — no backtrack entered), 2 = backtrack
+// exhausted clean (no A,B), 3 = backtrack ABORTED on budget (unknown).
+static int fh_complete_ab(const int *C, const int *D) {
+  int n = G_N, n1 = G_N1;
+  for (int s = 1; s <= n; s++) {
+    int cd = 0;
+    for (int i = 0; i + s < n; i++) cd += C[i] * C[i + s] + D[i] * D[i + s];
+    FH_CD_target[s] = -cd;
+  }
+  for (int s = n1; s <= n; s++)
+    if (FH_CD_target[s] != 0) return 1;
+  for (int s = 1; s < n1; s++)
+    if (abs(FH_CD_target[s]) > 2 * (n1 - s)) return 1;
+  int A[256], B[256], Dab[256], Kab[256];
+  memset(A, 0, sizeof(A)); memset(B, 0, sizeof(B));
+  memset(Dab, 0, sizeof(Dab));
+  for (int s = 0; s <= n; s++)
+    Kab[s] = (s >= 1 && s < n1) ? 2 * (n1 - s) : 0;
+  FH_ABS_A = abs(G_SIG_A);
+  FH_ABS_B = abs(G_SIG_B);
+  fh_cur = 0;
+  fh_aborted = false;
+  if (!fh_ab_search(0, A, B, Dab, Kab, 0, 0))
+    return fh_aborted ? 3 : 2;
+  for (int s = 1; s <= n; s++)
+    if (npaf_at(A, B, n1, C, D, n, s) != 0) return 2;
+  memcpy(g_solA, A, n1 * sizeof(int));
+  memcpy(g_solB, B, n1 * sizeof(int));
+  memcpy(g_solC, C, n * sizeof(int));
+  memcpy(g_solD, D, n * sizeof(int));
+  return 0;
+}
+
 int main(int argc, char **argv) {
   if (argc < 6) {
     cerr << "Usage: " << argv[0] << " <n> <a> <b> <c> <d>\n"
@@ -728,6 +860,57 @@ int main(int argc, char **argv) {
     };
     check("A,B", A, B, 3, cd3); check("A,B", A, B, 6, cd6);
     check("C,D", C, D, 3, ab3); check("C,D", C, D, 6, ab6);
+    // ==== 2.11b retention checks (added 2026-07-16 after the adversarial review
+    // found the validation-plan step missing): assert the eq-2.11b filter KEEPS
+    // this solution, through the REAL C++ predicates AND the survive_profiles*
+    // membership the join/pair22 paths actually consume. G_THM211B is forced on
+    // here on purpose — this mode always asserts the strictest filter.
+    {
+      G_THM211B = true;
+      PairAutoSet ab6a_t, cd6a_t;
+      ab6a_t.build(G_N1, G_SIG_A, G_SIG_B, 6);
+      cd6a_t.build(n,    G_SIG_C, G_SIG_D, 6);
+      auto check211b = [&](const char *side, const vector<int> &X, const vector<int> &Y,
+                           const PairAutoSet &comp) {
+        auto px = csums(X, 6), py = csums(Y, 6);
+        int need = tgt - norm_vec(px) - norm_vec(py);
+        vector<int> needT(3);
+        for (int s = 1; s <= 3; s++) needT[s - 1] = -pair_auto(px, py, s);
+        bool ok = need >= 0 && comp.feasible(needT, need);
+        cout << "PC+211b " << side << " mod-6: needT=(" << needT[0] << "," << needT[1]
+             << "," << needT[2] << ") need=" << need << " -> "
+             << (ok ? "PASS" : "FAIL") << "\n" << flush;
+        allok &= ok;
+      };
+      check211b("A,B", A, B, cd6a_t);
+      check211b("C,D", C, D, ab6a_t);
+      auto member6 = [&](const char *side, const vector<int> &X, const vector<int> &Y,
+                         int L, int sX, int sY, const PairNormSet &c3,
+                         const PairNormSet &c6, const PairAutoSet &c6a) {
+        auto profs = survive_profiles6(L, sX, sY, c3, c6, 20000000, &c6a);
+        auto px = csums(X, 6), py = csums(Y, 6);
+        bool found = false;
+        for (auto &pr : profs) if (pr.px == px && pr.py == py) { found = true; break; }
+        cout << "PC survive_profiles6+211b " << side << ": champion mod-6 profile "
+             << (found ? "KEPT" : "EXCLUDED") << " (survivors " << profs.size() << ")\n" << flush;
+        allok &= found;
+      };
+      member6("A,B", A, B, G_N1, G_SIG_A, G_SIG_B, cd3, cd6, cd6a_t);
+      member6("C,D", C, D, n,    G_SIG_C, G_SIG_D, ab3, ab6, ab6a_t);
+      auto member3 = [&](const char *side, const vector<int> &X, const vector<int> &Y,
+                         int L, int sX, int sY, const PairNormSet &c3,
+                         const PairNormSet &c6, const PairAutoSet &c6a) {
+        auto profs = survive_profiles(L, sX, sY, c3, c6, &c6a);
+        auto px = csums(X, 3), py = csums(Y, 3);
+        bool found = false;
+        for (auto &pr : profs) if (pr.px == px && pr.py == py) { found = true; break; }
+        cout << "PC survive_profiles(mod3, 211b-tighten) " << side << ": champion mod-3 profile "
+             << (found ? "KEPT" : "EXCLUDED") << " (survivors " << profs.size() << ")\n" << flush;
+        allok &= found;
+      };
+      member3("A,B", A, B, G_N1, G_SIG_A, G_SIG_B, cd3, cd6, cd6a_t);
+      member3("C,D", C, D, n,    G_SIG_C, G_SIG_D, ab3, ab6, ab6a_t);
+    }
     cout << (allok ? "PROFILE_CHECK: ALL PASS — residue lift keeps this solution\n"
                    : "PROFILE_CHECK: FAIL — residue lift would EXCLUDE this solution\n") << flush;
     return allok ? 0 : 1;
@@ -750,6 +933,134 @@ int main(int argc, char **argv) {
 
   bool pinA = (G_SIG_A == 0), pinB = (G_SIG_B == 0);
   bool pinC = (G_SIG_C == 0), pinD = (G_SIG_D == 0);
+
+  // ---- WZ_FIRSTHIT: Gate B + Gate C probe (work order 2026-07-16). Stream the
+  //      Thm-2.2-constrained C,D PAIR stream in DETERMINISTIC order (profiles
+  //      sequential, single thread => exact candidate index), run the bounded
+  //      A,B completion per candidate, STOP at the first NPAF==0 hit.
+  //      Gate C = hit index / stream size, per ordering. Gate B = per-candidate
+  //      completion cost distribution. Orderings:
+  //        WZ_FH_PROF_ORDER: 0 = natural DFS · 1 = flattest profile first
+  //          (ascending sum |class sums|) · 2 = reverse (control)
+  //        WZ_FH_SCORE_MAX: only complete candidates with sum_s|cd[s]| <= this
+  //          (PSD-flatness gate — the WZ_PSD_BIAS intuition; threshold passes
+  //          approximate a global flatness ordering with O(1) memory)
+  //      WZ_FH_AB_BUDGET: nodes/candidate (default 200k; 0 = exact).
+  //      WZ_FH_MAX_CAND: stop after this many candidates (bounded probe).
+  //      Exit 0 = FOUND (banner at find time). Exit 3 = budget/stream ended,
+  //      NO hit — NOT a proof of absence (aborted candidates are unknowns).
+  if (getenv("WZ_FIRSTHIT")) {
+    init_p22();
+    FH_BUDGET = 200000;
+    if (const char *e = getenv("WZ_FH_AB_BUDGET")) FH_BUDGET = atoll(e);
+    long long max_cand = 0;
+    if (const char *e = getenv("WZ_FH_MAX_CAND")) max_cand = atoll(e);
+    long long score_max = 0;
+    if (const char *e = getenv("WZ_FH_SCORE_MAX")) score_max = atoll(e);
+    int prof_order = 0;
+    if (const char *e = getenv("WZ_FH_PROF_ORDER")) prof_order = atoi(e);
+    double stream_total = 0;  // banked baseline for fractional-depth print
+    if (const char *e = getenv("WZ_FH_STREAM_TOTAL")) stream_total = atof(e);
+
+    auto profScore = [](const Profile &p) {
+      long long s = 0;
+      for (int v : p.px) s += abs(v);
+      for (int v : p.py) s += abs(v);
+      return s;
+    };
+    if (prof_order == 1)
+      sort(cdProfs.begin(), cdProfs.end(), [&](const Profile &a, const Profile &b)
+           { return profScore(a) < profScore(b); });
+    else if (prof_order == 2)
+      sort(cdProfs.begin(), cdProfs.end(), [&](const Profile &a, const Profile &b)
+           { return profScore(a) > profScore(b); });
+    cout << "[firsthit] profiles=" << cdProfs.size() << " order=" << prof_order
+         << " ab_budget=" << FH_BUDGET << " max_cand=" << max_cand
+         << " score_max=" << score_max << "\n" << flush;
+
+    long long cand = 0, pre_rej = 0, score_rej = 0, clean_no = 0, aborted = 0;
+    long long bt_entered = 0, hit_idx = -1;
+    int hit_prof = -1;
+    atomic<bool> fh_stop{false};
+    auto T0 = Clock::now();
+    for (int pi = 0; pi < (int)cdProfs.size() && !fh_stop.load(); pi++) {
+      long long lv = 0, okc = 0;
+      function<void(const vector<int>&, const vector<int>&)> probe =
+          [&](const vector<int> &C, const vector<int> &D) {
+        if (fh_stop.load()) return;
+        cand++;
+        int Ci[64], Di[64];
+        for (int i = 0; i < n; i++) { Ci[i] = C[i]; Di[i] = D[i]; }
+        if (score_max > 0) {
+          long long sc = 0;
+          for (int s = 1; s <= n; s++) {
+            int cd = 0;
+            for (int i = 0; i + s < n; i++) cd += Ci[i]*Ci[i+s] + Di[i]*Di[i+s];
+            sc += abs(cd);
+          }
+          if (sc > score_max) { score_rej++; return; }
+        }
+        long long nodes_before = fh_nodes_total;
+        int r = fh_complete_ab(Ci, Di);
+        if (r >= 2) bt_entered++;
+        if (r == 1) pre_rej++;
+        else if (r == 2) clean_no++;
+        else if (r == 3) aborted++;
+        else {  // r == 0: HIT
+          hit_idx = cand; hit_prof = pi;
+          g_found.store(true);
+          fh_stop.store(true);
+          double t = chrono::duration<double>(Clock::now() - T0).count();
+          int n1 = G_N1;
+          int sa=0,sb=0,sc2=0,sd=0;
+          for (int i=0;i<n1;i++){sa+=g_solA[i];sb+=g_solB[i];}
+          for (int i=0;i<n;i++){sc2+=g_solC[i];sd+=g_solD[i];}
+          cout << "\n*** BS(" << n1 << "," << n << ") FOUND ***  (firsthit probe)\n";
+          cout << "sig = (" << sa << "," << sb << "," << sc2 << "," << sd << ")\n";
+          cout << "A = {"; for(int i=0;i<n1;i++) cout<<g_solA[i]<<(i<n1-1?",":""); cout<<"};\n";
+          cout << "B = {"; for(int i=0;i<n1;i++) cout<<g_solB[i]<<(i<n1-1?",":""); cout<<"};\n";
+          cout << "C = {"; for(int i=0;i<n;i++)  cout<<g_solC[i]<<(i<n-1?",":"");  cout<<"};\n";
+          cout << "D = {"; for(int i=0;i<n;i++)  cout<<g_solD[i]<<(i<n-1?",":"");  cout<<"};\n";
+          int maxv = 0;
+          for (int s = 1; s <= n; s++) {
+            int v = npaf_at(g_solA, g_solB, n1, g_solC, g_solD, n, s);
+            if (abs(v) > maxv) maxv = abs(v);
+          }
+          cout << "VERIFY: max |NPAF[s]| over s=1.." << n << " = " << maxv
+               << (maxv==0 ? "  (NPAF==0 confirmed)\n" : "  (NONZERO!)\n");
+          cout << "FIRSTHIT: idx=" << hit_idx << " profile_rank=" << pi
+               << " nodes_this_cand=" << (fh_nodes_total - nodes_before)
+               << " elapsed=" << t << "s";
+          if (stream_total > 0)
+            cout << "  frac_depth=" << (double)hit_idx / stream_total;
+          cout << "\n" << flush;
+        }
+        if ((cand % 200000) == 0) {
+          double t = chrono::duration<double>(Clock::now() - T0).count();
+          cout << "[firsthit " << cand << " cands] pre_rej=" << pre_rej
+               << " score_rej=" << score_rej << " clean_no=" << clean_no
+               << " aborted=" << aborted << " nodes=" << fh_nodes_total
+               << " [" << t << "s]\n" << flush;
+        }
+        if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
+      };
+      count_pairs22(n, cdProfs[pi].px, cdProfs[pi].py, false, pinC, pinD,
+                    lv, okc, &probe, 3, &fh_stop);
+    }
+    double t = chrono::duration<double>(Clock::now() - T0).count();
+    long long completed_tested = clean_no + aborted + (hit_idx >= 0 ? 1 : 0);
+    cout << "\n=== FIRSTHIT SUMMARY (n=" << n << ", sig " << G_SIG_A << ","
+         << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D << ") ===\n"
+         << "candidates_streamed=" << cand << "  pre_filter_rejected=" << pre_rej
+         << "  score_rejected=" << score_rej << "\n"
+         << "backtracks_entered=" << completed_tested << "  clean_no_AB=" << clean_no
+         << "  budget_aborted=" << aborted << "  total_AB_nodes=" << fh_nodes_total << "\n"
+         << (hit_idx >= 0
+             ? "RESULT: FOUND at idx=" + to_string(hit_idx)
+             : "RESULT: NO HIT within probe budget — NOT a proof of absence")
+         << "\nTime: " << t << "s\n" << flush;
+    return hit_idx >= 0 ? 0 : 3;
+  }
 
   // ---- WZ_JOIN22: the COMPLETE hash-join over the Thm-2.2-constrained space.
   //      Rebuilt 2026-07-09 after Gate A' measured the true streams ~10^5x

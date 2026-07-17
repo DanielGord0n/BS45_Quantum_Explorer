@@ -44,8 +44,16 @@ def check(path, m):
     return a_ok, b_ok
 
 files = sorted(glob.glob('results/champions/*.txt'))
-bad_files = sorted(glob.glob('results/quarantine/*.txt'))  # known-invalid fixtures: must FAIL
+files += sorted(glob.glob('results/reference/*.txt'))      # WZ Table-1 ground truth: must PASS
+bad_files = sorted(glob.glob('results/quarantine/*.txt'))  # known-invalid fixtures: must FAIL(*)
+# (*) fixture contract: quarantine fixtures must fail 2.11 ITSELF (like n27's corrupted
+# class sums). 2.11 is necessary-not-sufficient — an invalid bank that PRESERVES class
+# sums would pass here while failing NPAF; such files belong in quarantine but not in
+# this canary's expectations. verify_npaf.py is the NPAF authority, not this script.
 violations = 0
+if not files:
+    print("!! no champion files found — run from the repo root (cwd guard)")
+    violations += 1
 for m in (3, 6):
     print(f"=== modulus m={m} ===")
     allb = []
