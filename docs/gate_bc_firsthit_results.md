@@ -126,3 +126,47 @@ cluster-probe details above.)
   Gate B redirects effort at the pruning levers first. The Trillium n=41/42
   exploratory probes (`1926730`/`1926731`, PD behind maintenance) will measure
   the target rungs directly on Wang-Zhu's published sigs.
+
+## Second wave — the probe as a SOLVER at n=32/33 (2026-07-18, Rorqual, pre-canon binary)
+
+Task 3 greenlit 07-17 ("do whatever is needed"); 7 probes submitted at n=32/33.
+The three Rorqual jobs completed on the first morning (queued ~17h behind SA,
+then 42–85 min wall each) and **cleared BOTH rungs**:
+
+| job | n | sig class | arms hit | candidates | aborted | AB_nodes | global first (idx@rank, nodes, s) |
+|---|---|---|---|---|---|---|---|
+| 16632433 | 32 | (7,9,0,0)  | 6/190 | 248,615 | 246,814 (99.3%) | 4.96e10 | 31,809@20, 5,716, 907.6 |
+| 16632434 | 32 | (3,11,0,0) | 5/190 | 684,246 | 676,792 (98.9%) | 1.36e11 | 114,492@30, 85,787, 3,322.3 |
+| 16632435 | 33 | (6,4,9,1)  | 1/190 | 85,397  | 83,632 (97.9%)  | 1.69e10 | 85,397@73, 195,591, 2,724.8 |
+
+All 12 hit banners (6+5+1) NPAF-verified independently 07-18
+(`tools/verify_npaf.py` PASS on every one; full banners archived in
+`results/firsthit_hits_2026-07-18.txt`). Banked: `champion_firsthit_bs33_32_a`
+(global first of 16632433), `champion_firsthit_bs33_32_b` (of 16632434),
+`champion_firsthit_bs34_33` (**new banked best, n=33**). Context: SA burned 22
+twelve-hour 8-node arrays at n=32 with the floor pinned at 8 and never hit;
+the probe cleared n=32 twice and n=33 once in under 90 min of wall each on ONE
+node, with the OLD binary (no canon cut, no eq 2.12, no score tiers).
+
+**Gate C trend extends and holds:** hit density 1/41k (n=32, sig a) / 1/137k
+(n=32, sig b) / 1/85k (n=33, single-hit statistics) candidates — same order as
+the n=29–31 reads; still no collapse with rising n.
+
+**Gate B trend also extends (cost keeps growing, still budget-dominated):**
+~1.9 / ~1.4 / ~10.1 s/cand at n=32/32/33 by the pre-registered formula
+(arm-window wall × 190 ÷ candidates; window = first-hit elapsed + 1800 s
+grace, so these are the same slight overestimates as the first wave). Aborts
+97.9–99.3% — the 200k budget still dominates, and none of the levers landed
+07-17 (canon ×4/20×, eq 2.12, tiers) were in this binary. The n=33 number is
+dominated by the single hitting sig's small candidate count, not a cliff.
+
+Structural observation for the levers work: in 16632433 three different arms
+(20/116/181) hit the SAME (A,B) with different C,D (nodes_this_cand=5,716
+each), and arm_50's hit has C≡D exactly — solution multiplicity across
+profiles is real and exploitable by ordering.
+
+**State after this wave:** banked best n=33; next un-cleared rung n=34.
+Remaining first-wave probes: Nibi 17871088/90 (n=32) + 17871091/92 (n=33) still
+PD — now redundant-as-solvers for their rungs but still useful as Gate B/C
+replication data. Trillium 1926730/31 (n=41/42, WZ Table-1 sigs) still PD
+behind maintenance — those measure the target rungs directly.

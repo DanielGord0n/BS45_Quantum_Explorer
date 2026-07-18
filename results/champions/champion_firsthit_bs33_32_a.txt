@@ -1,0 +1,22 @@
+32 33 0
+-7 -9 0 0
+-1 -1 -1 1 1 -1 -1 1 -1 1 1 1 1 1 -1 1 -1 1 -1 -1 -1 -1 -1 1 -1 -1 -1 -1 1 -1 1 -1 -1
+-1 -1 -1 -1 -1 1 -1 1 -1 -1 -1 -1 1 -1 1 -1 -1 -1 1 1 -1 1 1 -1 -1 -1 -1 1 -1 1 1 -1 1
+1 -1 -1 -1 1 1 -1 1 1 1 -1 1 -1 -1 1 -1 1 1 1 1 -1 -1 1 1 -1 -1 1 -1 1 -1 -1 -1
+1 -1 -1 1 1 1 1 -1 -1 1 1 -1 1 1 -1 -1 1 -1 -1 -1 1 1 1 -1 1 1 1 -1 -1 -1 -1 -1
+# BS(33,32), n=32, sig (-7,-9,0,0) — found by the WZ_FIRSTHIT probe (first-hit
+# architecture, Task 3 greenlit 07-17). Beats the former banked best n=31; itself
+# superseded same-day by BS(34,33) (champion_firsthit_bs34_33.txt).
+#
+# Provenance: Rorqual job 16632433, cluster_firsthit_probe.sh, wz_match.cpp
+#   WZ_FIRSTHIT=1 (pre-canon binary), 190 arms x 1 core, budget 200k nodes/cand,
+#   sig class (7,9,0,0), 2026-07-18, done 07:01:16 EDT. This is the GLOBAL FIRST
+#   arm (arm_20): idx=31809 profile_rank=20 nodes_this_cand=5716 elapsed=907.582s
+#   6 of 190 arms hit; all 6 solutions NPAF-verified, full set in
+#   results/firsthit_hits_2026-07-18.txt.
+# Verified: tools/verify_npaf.py 2026-07-18 — PASS, NPAF[s]=0 for all s=1..33,
+#   a^2+b^2+c^2+d^2=130 (expect 130), fits Wang-Zhu comb8 pair encoding.
+#
+# Why it matters: SA burned 22 twelve-hour arrays at n=32 with the floor stuck at 8
+#   and never found this. The probe's arm found it in ~16 min of wall on one core-arm.
+#   First rung the campaign has cleared with the Wang-Zhu-style first-hit method.

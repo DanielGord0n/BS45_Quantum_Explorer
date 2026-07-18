@@ -1,0 +1,17 @@
+32 33 0
+-3 11 0 0
+-1 -1 -1 1 -1 -1 1 1 1 1 -1 -1 -1 1 -1 -1 1 -1 -1 -1 1 1 -1 1 1 1 -1 1 -1 1 1 -1 -1
+-1 -1 -1 1 1 1 1 1 -1 1 1 -1 1 1 1 1 1 1 1 -1 -1 1 1 1 -1 1 -1 -1 1 1 1 -1 1
+1 -1 -1 1 1 1 -1 -1 1 -1 1 1 -1 1 1 -1 1 -1 -1 1 -1 -1 -1 1 1 1 1 -1 1 -1 -1 -1
+1 -1 -1 1 -1 1 -1 -1 -1 1 -1 -1 -1 1 -1 1 -1 1 -1 1 1 1 1 -1 1 1 1 1 1 -1 -1 -1
+# BS(33,32), n=32, sig (-3,11,0,0) — found by the WZ_FIRSTHIT probe, SECOND
+# independent sig class cleared at n=32 the same run (see _a for the first).
+#
+# Provenance: Rorqual job 16632434, cluster_firsthit_probe.sh, wz_match.cpp
+#   WZ_FIRSTHIT=1 (pre-canon binary), 190 arms x 1 core, budget 200k nodes/cand,
+#   sig class (3,11,0,0), 2026-07-18, done 07:44:48 EDT. GLOBAL FIRST arm
+#   (arm_30): idx=114492 profile_rank=30 nodes_this_cand=85787 elapsed=3322.27s
+#   5 of 190 arms hit; all 5 solutions NPAF-verified, full set in
+#   results/firsthit_hits_2026-07-18.txt.
+# Verified: tools/verify_npaf.py 2026-07-18 — PASS, NPAF[s]=0 for all s=1..33,
+#   a^2+b^2+c^2+d^2=130 (expect 130), fits Wang-Zhu comb8 pair encoding.

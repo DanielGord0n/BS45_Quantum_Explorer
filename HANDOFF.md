@@ -3,7 +3,7 @@
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
-**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(32,31) (n=31) banked 2026-07-06** (blind SA find on Nibi's PLAIN arm, NPAF-verified — new best; ladder history: 28 → 29 ×2 → 30 → 31). Ladder now blitzing n=32.
+**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(34,33) (n=33) banked 2026-07-18 — the WZ_FIRSTHIT probe cleared n=32 (two sig classes) AND n=33 in its first wave as a solver, all NPAF-verified** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=34 / BUDGET=0 — next move is Daniel's Task-3 call.
 BS(45,44) (n=44) is the dream/world-record but is OPEN for the whole field — blind n≥36 is rigorously
 infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path = the metaheuristic ladder.
 
@@ -95,7 +95,38 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-17, loop run 9) — 🚨 THE FIRSTHIT GATES LANDED: Gate C
+**LIVE ROUND (2026-07-18, loop run 10) — 🚨🚨 NEEDS_HUMAN: THE PROBE IS A
+SOLVER. n=32 AND n=33 CLEARED IN ONE WAVE — NEW BANKED BEST BS(34,33).** The
+three Rorqual firsthit probes (submitted 07-17 ~13:50 after Daniel's Task-3
+greenlight) all hit on their first morning: `16632433` n=32 sig (7,9,0,0) →
+6/190 arms, `16632434` n=32 sig (3,11,0,0) → 5/190 arms, `16632435` n=33 sig
+(6,4,9,1) → 1/190 arms; 42-85 min wall each on ONE node, OLD binary (no
+canon/eq2.12/tiers). All 12 hit banners fetched (one duo_run) and **all 12
+PASS tools/verify_npaf.py independently** — banked
+`champion_firsthit_bs33_32_a`/`_b` + `champion_firsthit_bs34_33` (new best);
+full banners archived in `results/firsthit_hits_2026-07-18.txt`; Gate B/C
+trend continuation in `docs/gate_bc_firsthit_results.md` (density holds
+~1/40k-1/140k cands; cost still 200k-budget-pinned, ~1.4-10 s/cand). Rung
+ledger: floor 12 recorded (no improvement), then promoted ×2 → **n=34 with
+BUDGET=0 DELIBERATE** (SA spent 22 arrays at n=32 with floor stuck at 8 and
+never hit — no pre-registered SA budget exists at n=34; `check` reads
+EXHAUSTED so the loop cannot buy SA tickets until Daniel re-arms);
+`next_seeds.sh set-n 34`. Checker FIRSTHIT section now excludes processed
+16498722-4 + banked 16632433-5, and the SA label says "let the n=32 arrays
+lapse". Cluster state: **Fir IDLE and deliberately NOT refilled** (49340270
+closed at full 12h, floors 12/12/12 — refilling a superseded rung is waste;
+Fir is the natural slot for the n≥34 probe wave, which needs Daniel anyway:
+sig enumeration+validation for n=34/35 and the tar-pipe of the new
+canon+2.12+tiers binary). Rorqual SA `16631117` tasks 3-7 R ~5h → let lapse.
+Nibi: SA `17557893_[5-7]` + firsthit `17871088/90/91/92` (n=32/33 — now
+redundant as solvers, still useful Gate-replication data) all PD → untouched.
+Trillium `1926730`/`1926731` (n=41/42, WZ Table-1 sigs) still PD behind
+maintenance → THE target-rung measurement, untouched. **Daniel's calls: (1)
+n≥34 probe fan-out (sigs + new-binary tar-pipe), (2) any SA budget at n=34 or
+retire the ladder, (3) send `docs/kotsireas_brief.md` — now with
+two-rungs-in-one-morning attached.**
+
+**PREVIOUS ROUND (2026-07-17, loop run 9) — 🚨 THE FIRSTHIT GATES LANDED: Gate C
 PASS, Gate B FAIL-as-measured → Daniel decides Task 3. Plus n=32 round 12
 opened on Fir + Rorqual.** Rorqual probes `16498722`/`16498723`/`16498724`
 (n=29/30/31, 190 arms each) all COMPLETED in 31-37 min. **Gate C PASS** (rule
@@ -448,7 +479,31 @@ cd /Users/danielgordon/Projects/BS45_Quantum_Explorer && \
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-17 13:45 (latest): **DANIEL GREENLIT TASK 3 ("do whatever is needed"). Campaign is now: (a) probe n=32/33 as a SOLVER — every hit beats banked n=31; (b) build the Gate-B pruning levers (isomorphic transformations per WZ Step 5 verbatim, eq 2.12, flatness ordering, Thm 2.4 cascade) and re-measure ms/cand at n=31; (c) Trillium n=41/42 tickets run when maintenance lifts.**
+## ⚡ TOP OF MIND — 2026-07-18 (latest): **NEW BANKED BEST n=33. The first-hit probe cleared BOTH open rungs on its first morning as a solver — n=32 twice (sig classes (7,9,0,0) 6/190 arms and (3,11,0,0) 5/190) and n=33 once ((6,4,9,1), 1/190) — with the OLD pre-lever binary. All 12 solutions independently NPAF-verified and banked. NEEDS_HUMAN on three calls.**
+
+The numbers that matter: SA spent **22 × 12h × 8-node arrays at n=32, floor pinned at 8,
+zero hits**; the probe cleared that rung twice in **42-85 min on one 190-arm node**, and
+n=33 fell the same morning. Champions: `champion_firsthit_bs33_32_a`/`_b` +
+`champion_firsthit_bs34_33` (all three re-verified from the banked files, NPAF=0); all 12
+raw banners in `results/firsthit_hits_2026-07-18.txt`; Gate B/C trend continuation written
+into `docs/gate_bc_firsthit_results.md` (hit density holds at ~1e-5 order; cost still
+budget-pinned at 97.9-99.3% aborts — the landed levers, canon ×4 + eq 2.12 + score tiers,
+were NOT in this binary, so the ceiling is untested). Bookkeeping done: rung ledger
+promoted ×2 and PARKED at n=34/BUDGET=0 (deliberate — SA didn't clear these rungs, so no
+pre-registered SA budget exists above them; re-arm by setting BUDGET if wanted),
+`next_seeds.sh set-n 34`, checker excludes the processed/banked firsthit files. Structural
+freebie for the levers work: three arms of 16632433 hit the same (A,B) under different
+C,D, and one hit has C≡D — solution multiplicity across profiles is real, ordering can
+exploit it. **Daniel's three calls (NEEDS_HUMAN): (1) the n≥34 probe wave — needs sig-class
+enumeration + local non-emptiness validation at n=34/35 and the tar-pipe ship of the new
+fh binary (human step by design; Fir left idle as its slot); (2) SA at n≥34: fund it or
+retire the ladder (probe just outclassed it at the frontier); (3) send
+`docs/kotsireas_brief.md` — "our first-hit implementation of your framework cleared two
+rungs in one morning" is a sharper opener than any compute ask.** Still pending upstream:
+Nibi's 4 probes (n=32/33, now Gate-replication data), Trillium's n=41/42 probes behind
+maintenance — those measure the TARGET rungs on WZ's own sigs.
+
+## ⚡ TOP OF MIND — 2026-07-17 13:45: **DANIEL GREENLIT TASK 3 ("do whatever is needed"). Campaign is now: (a) probe n=32/33 as a SOLVER — every hit beats banked n=31; (b) build the Gate-B pruning levers (isomorphic transformations per WZ Step 5 verbatim, eq 2.12, flatness ordering, Thm 2.4 cascade) and re-measure ms/cand at n=31; (c) Trillium n=41/42 tickets run when maintenance lifts.**
 
 Gate verdicts (07-17 loop + independent re-read, rules unmoved): **Gate C PASS** (hits at
 ~1e-5–1e-6 of stream, trend NOT degrading; one node re-found n=29/30/31 in 30 s/331 s/421 s,

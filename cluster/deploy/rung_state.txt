@@ -21,10 +21,17 @@
 # HONEST FRAMING (do not drift from this): the SA ladder is measured to cap around
 # n≈33-35. Reaching n=42-45 is a METHODS problem, not a compute problem. This file
 # exists to make the loop admit that on schedule instead of burning rounds.
+#
+# 2026-07-18: rungs n=32 AND n=33 were cleared in one day by the WZ_FIRSTHIT probe
+# (Rorqual 16632433/34/35, verified + banked), NOT by SA — SA spent 22 arrays at
+# n=32 with the floor stuck at 8. BUDGET=0 below is DELIBERATE: no pre-registered
+# SA budget exists at n=34, so `check` reads EXHAUSTED and the loop must not buy
+# SA tickets here. Whether SA continues at all (vs. probe fan-out at n>=34) is
+# Daniel's Task-3 call — re-arm by setting BUDGET explicitly if he wants SA back.
 
-N=32
-ARRAYS_AT_RUNG=22
-BEST_FLOOR=8
-PREV_RUNG_ARRAYS=9
-BUDGET=27
+N=34
+ARRAYS_AT_RUNG=0
+BEST_FLOOR=9999
+PREV_RUNG_ARRAYS=0
+BUDGET=0
 STATUS=ACTIVE

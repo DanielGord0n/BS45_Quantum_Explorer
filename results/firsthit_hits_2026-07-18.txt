@@ -1,0 +1,162 @@
+##FILE firsthit_output_16632433.txt
+=== FIRSTHIT AGGREGATE (n=32, sig 7,9,0,0, 190 arms) ===
+--- arm_116.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-7,-9,0,0)
+A = {-1,-1,-1,1,1,-1,-1,1,-1,1,1,1,1,1,-1,1,-1,1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1};
+B = {-1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,-1,1,1,-1,1};
+C = {1,-1,-1,1,1,1,-1,-1,1,1,-1,-1,1,1,1,-1,1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,-1,-1,-1};
+D = {1,-1,-1,-1,1,1,1,1,-1,1,1,1,-1,-1,-1,-1,1,-1,1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=34074 profile_rank=116 nodes_this_cand=5716 elapsed=971.554s
+
+=== FIRSTHIT SUMMARY (n=32, sig 7,9,0,0, shard 116/190) ===
+candidates_streamed=34074  pre_filter_rejected=0  score_rejected=0
+--- arm_123.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-7,9,0,0)
+A = {-1,-1,-1,1,1,-1,-1,1,-1,1,-1,-1,-1,-1,1,-1,-1,1,1,-1,-1,1,1,-1,1,-1,1,-1,1,-1,1,-1,-1};
+B = {-1,-1,-1,-1,1,1,1,1,-1,-1,1,-1,1,1,1,-1,1,1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,1};
+C = {1,-1,-1,-1,1,1,1,-1,1,-1,-1,1,-1,-1,-1,-1,1,1,1,-1,1,1,-1,1,1,1,1,-1,1,-1,-1,-1};
+D = {1,-1,-1,1,-1,-1,1,1,-1,1,-1,1,1,-1,-1,-1,1,1,1,1,1,1,1,-1,-1,1,-1,1,-1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=61648 profile_rank=123 nodes_this_cand=61727 elapsed=1753.88s
+
+=== FIRSTHIT SUMMARY (n=32, sig 7,9,0,0, shard 123/190) ===
+candidates_streamed=61648  pre_filter_rejected=0  score_rejected=0
+--- arm_170.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (7,-9,0,0)
+A = {-1,-1,-1,1,1,1,1,-1,1,-1,1,1,1,1,1,1,1,-1,-1,-1,1,-1,1,-1,1,1,-1,1,1,1,1,-1,-1};
+B = {-1,-1,-1,-1,1,-1,-1,1,-1,-1,1,1,-1,-1,1,-1,-1,1,-1,1,-1,-1,1,-1,-1,-1,1,-1,1,-1,1,-1,1};
+C = {1,-1,-1,-1,-1,-1,-1,1,1,1,1,-1,1,1,1,-1,1,1,-1,-1,1,1,1,-1,-1,1,-1,1,1,-1,-1,-1};
+D = {1,-1,-1,1,-1,1,1,1,-1,1,-1,1,1,1,1,-1,1,1,-1,-1,-1,-1,1,1,-1,-1,1,1,-1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=58684 profile_rank=170 nodes_this_cand=72136 elapsed=1758s
+
+=== FIRSTHIT SUMMARY (n=32, sig 7,9,0,0, shard 170/190) ===
+candidates_streamed=58684  pre_filter_rejected=0  score_rejected=0
+--- arm_181.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-7,-9,0,0)
+A = {-1,-1,-1,1,1,-1,-1,1,-1,1,1,1,1,1,-1,1,-1,1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1};
+B = {-1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,-1,1,1,-1,1};
+C = {1,-1,-1,-1,1,1,1,1,-1,1,1,1,-1,-1,-1,-1,1,-1,1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,-1};
+D = {1,-1,-1,1,1,1,-1,-1,1,1,-1,-1,1,1,1,-1,1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=23448 profile_rank=181 nodes_this_cand=5716 elapsed=687.082s
+
+=== FIRSTHIT SUMMARY (n=32, sig 7,9,0,0, shard 181/190) ===
+candidates_streamed=23448  pre_filter_rejected=0  score_rejected=0
+--- arm_20.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-7,-9,0,0)
+A = {-1,-1,-1,1,1,-1,-1,1,-1,1,1,1,1,1,-1,1,-1,1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1};
+B = {-1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,-1,1,1,-1,1};
+C = {1,-1,-1,-1,1,1,-1,1,1,1,-1,1,-1,-1,1,-1,1,1,1,1,-1,-1,1,1,-1,-1,1,-1,1,-1,-1,-1};
+D = {1,-1,-1,1,1,1,1,-1,-1,1,1,-1,1,1,-1,-1,1,-1,-1,-1,1,1,1,-1,1,1,1,-1,-1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=31809 profile_rank=20 nodes_this_cand=5716 elapsed=907.582s
+
+=== FIRSTHIT SUMMARY (n=32, sig 7,9,0,0, shard 20/190) ===
+candidates_streamed=31809  pre_filter_rejected=0  score_rejected=0
+--- arm_50.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (7,9,0,0)
+A = {-1,-1,1,-1,1,1,-1,1,1,1,-1,1,1,1,-1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,1,1,1,-1,-1};
+B = {-1,-1,1,-1,1,1,-1,1,1,1,-1,1,1,1,-1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,1,1,1,-1,1};
+C = {1,-1,-1,-1,-1,1,1,1,-1,1,1,1,-1,1,1,1,-1,1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,-1,-1};
+D = {1,-1,-1,-1,-1,1,1,1,-1,1,1,1,-1,1,1,1,-1,1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=38952 profile_rank=50 nodes_this_cand=1202 elapsed=1135.04s
+
+=== FIRSTHIT SUMMARY (n=32, sig 7,9,0,0, shard 50/190) ===
+candidates_streamed=38952  pre_filter_rejected=0  score_rejected=0
+arms_with_hits=6 / 190
+GATEB: candidates=248615 aborted=246814 AB_nodes=49589313416
+GLOBAL FIRST: FIRSTHIT: idx=31809 profile_rank=20 nodes_this_cand=5716 elapsed=907.582s
+=== done Sat Jul 18 07:01:16 EDT 2026 ===
+##FILE firsthit_output_16632434.txt
+=== FIRSTHIT AGGREGATE (n=32, sig 3,11,0,0, 190 arms) ===
+--- arm_142.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-3,-11,0,0)
+A = {-1,-1,-1,1,-1,1,1,1,1,1,1,-1,-1,1,1,-1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,1,1,1,-1,-1};
+B = {-1,-1,-1,-1,1,-1,-1,1,1,-1,-1,-1,-1,-1,1,1,-1,1,-1,1,-1,-1,-1,-1,-1,-1,1,1,-1,-1,1,-1,1};
+C = {1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1,-1,1,1,-1,-1,1,1,1,-1,1,1,1,-1,-1,-1,-1,-1};
+D = {1,-1,-1,1,1,-1,1,1,1,-1,1,1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=150135 profile_rank=142 nodes_this_cand=33325 elapsed=4338.82s
+
+=== FIRSTHIT SUMMARY (n=32, sig 3,11,0,0, shard 142/190) ===
+candidates_streamed=150135  pre_filter_rejected=0  score_rejected=0
+--- arm_146.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-3,-11,0,0)
+A = {-1,-1,1,-1,-1,-1,1,1,1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1,-1,1,-1,1,1,1,1,-1,-1,1,-1,1,-1};
+B = {-1,1,1,-1,-1,1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,1,-1,-1,1};
+C = {1,-1,-1,1,1,-1,-1,-1,1,-1,1,-1,-1,-1,-1,1,1,1,1,1,1,-1,1,1,1,1,-1,-1,-1,1,-1,-1};
+D = {1,-1,1,-1,1,1,-1,1,-1,-1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=163840 profile_rank=146 nodes_this_cand=128582 elapsed=4877.64s
+
+=== FIRSTHIT SUMMARY (n=32, sig 3,11,0,0, shard 146/190) ===
+candidates_streamed=163840  pre_filter_rejected=0  score_rejected=0
+--- arm_154.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-3,-11,0,0)
+A = {-1,-1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,1,-1,1,1,1,1,1,-1,-1,-1,1,-1,-1,1,1,1,-1,-1};
+B = {-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,1,-1,-1,1,-1,1,-1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,1,-1,1};
+C = {1,-1,-1,-1,-1,1,1,1,1,-1,-1,1,-1,1,1,1,-1,-1,1,1,1,-1,1,-1,1,1,-1,-1,1,-1,-1,-1};
+D = {1,-1,-1,1,1,1,-1,1,-1,-1,1,1,-1,-1,-1,1,-1,1,-1,1,1,1,1,1,1,-1,-1,1,-1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=144507 profile_rank=154 nodes_this_cand=5290 elapsed=4571.65s
+
+=== FIRSTHIT SUMMARY (n=32, sig 3,11,0,0, shard 154/190) ===
+candidates_streamed=144507  pre_filter_rejected=0  score_rejected=0
+--- arm_30.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-3,11,0,0)
+A = {-1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,-1,1,-1,-1,1,-1,-1,-1,1,1,-1,1,1,1,-1,1,-1,1,1,-1,-1};
+B = {-1,-1,-1,1,1,1,1,1,-1,1,1,-1,1,1,1,1,1,1,1,-1,-1,1,1,1,-1,1,-1,-1,1,1,1,-1,1};
+C = {1,-1,-1,1,1,1,-1,-1,1,-1,1,1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,1,1,1,1,-1,1,-1,-1,-1};
+D = {1,-1,-1,1,-1,1,-1,-1,-1,1,-1,-1,-1,1,-1,1,-1,1,-1,1,1,1,1,-1,1,1,1,1,1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=114492 profile_rank=30 nodes_this_cand=85787 elapsed=3322.27s
+
+=== FIRSTHIT SUMMARY (n=32, sig 3,11,0,0, shard 30/190) ===
+candidates_streamed=114492  pre_filter_rejected=0  score_rejected=0
+--- arm_97.log ---
+*** BS(33,32) FOUND ***  (firsthit probe)
+sig = (-3,11,0,0)
+A = {-1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,-1,1,-1,-1,1,-1,-1,-1,1,1,-1,1,1,1,-1,1,-1,1,1,-1,-1};
+B = {-1,-1,-1,1,1,1,1,1,-1,1,1,-1,1,1,1,1,1,1,1,-1,-1,1,1,1,-1,1,-1,-1,1,1,1,-1,1};
+C = {1,-1,-1,1,1,1,-1,-1,-1,1,1,1,-1,1,1,-1,1,-1,-1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,-1};
+D = {1,-1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1,1,-1,1,-1,1,-1,1,1,1,-1,1,1,1,1,1,1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..32 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=111272 profile_rank=97 nodes_this_cand=85787 elapsed=3300.82s
+
+=== FIRSTHIT SUMMARY (n=32, sig 3,11,0,0, shard 97/190) ===
+candidates_streamed=111272  pre_filter_rejected=0  score_rejected=0
+arms_with_hits=5 / 190
+GATEB: candidates=684246 aborted=676792 AB_nodes=136259941486
+GLOBAL FIRST: FIRSTHIT: idx=114492 profile_rank=30 nodes_this_cand=85787 elapsed=3322.27s
+=== done Sat Jul 18 07:44:48 EDT 2026 ===
+##FILE firsthit_output_16632435.txt
+=== FIRSTHIT AGGREGATE (n=33, sig 6,4,9,1, 190 arms) ===
+--- arm_73.log ---
+*** BS(34,33) FOUND ***  (firsthit probe)
+sig = (-6,4,9,1)
+A = {-1,-1,-1,-1,1,-1,-1,1,1,1,-1,1,1,1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,-1,1,-1,-1,-1,-1,1,-1};
+B = {-1,-1,-1,1,1,-1,1,-1,1,1,1,-1,-1,-1,1,-1,1,1,1,-1,1,1,1,1,-1,1,1,-1,-1,-1,1,-1,1,1};
+C = {-1,-1,-1,-1,1,1,1,1,1,1,-1,1,-1,1,1,-1,1,1,-1,1,1,-1,1,1,1,-1,1,1,-1,1,1,1,-1};
+D = {-1,-1,-1,-1,1,1,1,-1,-1,1,1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,1,-1,1,1,1,-1,1,1,1,-1};
+VERIFY: max |NPAF[s]| over s=1..33 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=85397 profile_rank=73 nodes_this_cand=195591 elapsed=2724.8s
+
+=== FIRSTHIT SUMMARY (n=33, sig 6,4,9,1, shard 73/190) ===
+candidates_streamed=85397  pre_filter_rejected=0  score_rejected=0
+arms_with_hits=1 / 190
+GATEB: candidates=85397 aborted=83632 AB_nodes=16915109764
+GLOBAL FIRST: FIRSTHIT: idx=85397 profile_rank=73 nodes_this_cand=195591 elapsed=2724.8s
+=== done Sat Jul 18 07:44:47 EDT 2026 ===
