@@ -1,6 +1,29 @@
 # CP493 — BS(45) Solver Project Handoff
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
+
+**⚡ 2026-07-19 — THE FULL-RUNG WAVE (answers the 07-19 loop's standing call #1):** the ENTIRE
+admissible frontier at n=34/35 is only **15 signature classes** (10 at n=34, 5 at n=35; parity
+rule; enumerated + stream-validated locally with the NEW binary, WZ_THM212=1, all non-empty:
+400-500 profiles/side). Paste blocks prepared for Daniel: **Fir = all 10 n=34 classes** (Fir
+was left idle for exactly this; needs tar-pipe — it never received the probe script),
+**Rorqual = all 5 n=35 classes** (tar-pipe ships the canon+2.12+score-instrumented binary).
+All exports carry WZ_THM212=1 (validated: retention 10/10, profile spaces halved). Every FOUND
+= new banked best (n=34 or 35, one or two rungs above the 07-18 n=33 bank).
+**ALL SUBMITTED ~15:45, Duo-approved: Fir `49628809-49628818` (10× n=34) · Rorqual
+`16737512-16737516` (5× n=35) · Nibi `18017139` n=41 / `18017140` n=42 / `18017141` n=43
+(WZ's published sigs, THM212=1, AB_BUDGET=5e7 — the replication attempts are NO LONGER hostage
+to Trillium's maintenance) · Trillium tar-piped source-only: queued `1926730`/`1926731` upgrade
+to the canon+2.12 binary at compile-on-run.** Nibi's older n=32/33 probes (`17871088-092`)
+left queued as bonus new-sig-class/density data. The board is fully funded: every known
+discovery path has live jobs. Next reader: FIRSTHIT checker section reads all of it; n≥34
+FOUND = new best (full R2 + bank + exclusion + NEEDS_HUMAN); n≥41 FOUND = WZ replication
+(check whether the sequences EQUAL the results/reference/ ones — either way it is the
+campaign's target result, escalate loud). Standing call #2
+recommendation ON RECORD: **retire the SA ladder** (22 arrays × 8 nodes × 12h at n=32 = zero
+hits; the probe cleared n=32 in 42 min on one node — SA's measured ceiling ~33-35 is now BELOW
+the probe frontier); ledger stays parked at budget 0 unless Daniel overrules. Call #3
+(send `docs/kotsireas_brief.md`) remains Daniel-only.
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
 **Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(34,33) (n=33) banked 2026-07-18 — the WZ_FIRSTHIT probe cleared n=32 (two sig classes) AND n=33 in its first wave as a solver, all NPAF-verified** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=34 / BUDGET=0 — next move is Daniel's Task-3 call.
