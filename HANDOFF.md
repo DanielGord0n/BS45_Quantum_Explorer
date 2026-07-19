@@ -95,7 +95,28 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-18, loop run 10) — 🚨🚨 NEEDS_HUMAN: THE PROBE IS A
+**LIVE ROUND (2026-07-19, loop run 11) — HOLDING PATTERN: everything live is
+Daniel-gated; bookkeeping only, no action.** Checker (13:01): no new FOUND, no
+new firsthit outputs on any cluster. Fir + Rorqual SA n=32 tails have fully
+lapsed as instructed (Fir `49340270` visible floors 12/12/12; Rorqual
+`16631117` tails 8/8/8 — superseded rung, no ledger action). Fir + Rorqual now
+IDLE → `rung_status.sh check` run per the rail before any refill thought:
+**EXHAUSTED (exit 3; n=34 BUDGET=0 DELIBERATE)** → SA refill forbidden, and
+both escalations the check prints are already complete (JOIN22 canary
+PASSED+banked 07-16; Phase-0 Gate B/C measured 07-17), so what remains is a
+NEW research direction = Daniel's call, not the loop's. Nibi: SA
+`17557893_[5-7]` + firsthit `17871088/90/91/92` (n=32/33 Gate-replication
+data) all still PD (Priority) → untouched, not idle capacity. Trillium
+`1926730`/`1926731` (n=41/42, WZ Table-1 sigs — the target-rung measurement)
+still PD behind the maintenance reservation → untouched. No banks, no
+unverified banners, no code changes, checker unchanged (globs still current).
+**NEEDS_HUMAN (standing, unchanged from 07-18): (1) n≥34 probe fan-out — sig
+enumeration/validation for n=34/35 + tar-pipe of the canon+eq2.12+tiers binary
+(Fir is idle and waiting for exactly this); (2) re-arm an SA budget at n=34 or
+retire the ladder; (3) send `docs/kotsireas_brief.md` — READY TO SEND, now
+with two-rungs-in-one-morning attached.**
+
+**PREVIOUS ROUND (2026-07-18, loop run 10) — 🚨🚨 NEEDS_HUMAN: THE PROBE IS A
 SOLVER. n=32 AND n=33 CLEARED IN ONE WAVE — NEW BANKED BEST BS(34,33).** The
 three Rorqual firsthit probes (submitted 07-17 ~13:50 after Daniel's Task-3
 greenlight) all hit on their first morning: `16632433` n=32 sig (7,9,0,0) →
