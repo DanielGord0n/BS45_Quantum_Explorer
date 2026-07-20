@@ -2,6 +2,31 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-20 — n=36/37 WAVE (answers the 07-20 loop's call #1; banked best is n=35 as of
+this morning, 15/15 wave):** frontier enumerated: **9 classes at n=36, 11 at n=37** (parity
+rule, same recipe as 07-19). First 4 n=36 classes stream-validated locally (~470-520
+profiles/side, uniform — same pattern as 07-19's 15/15); remaining 16 NOT locally validated
+(each ~2.5 min laptop core = heat; an empty class costs its cluster job ~minutes, acceptable).
+**NEW: data-driven score tiers go live** — 62 banked hit banners carry scores (min 74 / median
+106 / max 118 at n=34/35) ⇒ wave runs `FH_SCORE_TIERS=110,130` (¼ arms ultra-flat ≤110, ¼
+≤130, ½ ungated safety lane; gated arms only SKIP completions — sound). No tar-pipe needed
+(all clusters got current source 07-19). **WAVE WIDENED per Daniel's "why not the 40s" (correct instinct): the wave now queues BOTH
+the ladder rungs AND the full 40s frontiers.** Fir = 9 × n=36 (tiers 110,130) THEN 9 × n=41
+(ALL classes, budget 5e7, tiers 150,180, FH_NARMS=178 so shard interleave never duplicates
+Nibi's NARMS=190 run of the published class). Rorqual = 11 × n=37 THEN 11 × n=42 (same
+scheme). Ladder first in queue = density curve through the predicted-wall region (36-39)
+still gets measured; the 40s attempts widen from 1 published class per rung to the FULL
+admissible frontier. **Key new datum: WZ's own solutions score FLAT on our metric — C,D
+flatness 140/142/134 at n=41/42/43** (barely above our n=34/35 hit range 74-118) ⇒ the 40s
+tiers (150,180) are calibrated to provably-solution-bearing territory. n≥36 FOUND = new best;
+ANY n=41/42 class FOUND = replication-grade.
+**ALL 40 SUBMITTED ~14:30, Duo-approved: Fir `49706278-49706297` (9× n=36 then 9× n=41,
+two ID gaps are SLURM-normal) · Rorqual `16809929-16809950` (11× n=37 then 11× n=42).**
+Board now: 40 fresh jobs + Nibi n=41/42/43 running + Nibi n=33 tail + Trillium n=41/42
+awaiting maintenance-end. Checker auto-surfaces all of it (processed-ID exclusion list is
+current as of the 07-20 loop). Bench next: reversal canonicalization (ships
+with the n≥38 wave), GPU feasibility spike, Kotsireas send (Daniel-only, STILL pending).
+
 **⚡ 2026-07-20 — 15 FOR 15: THE ENTIRE n=34/35 FRONTIER FELL IN ONE WAVE — NEW BANKED BEST
 n=35.** All 10 Fir n=34 probes (`49628809-18`) AND all 5 Rorqual n=35 probes (`16737512-6`)
 hit — 47 banners fetched 07-20, **all 47 independently verify_npaf PASS**; banked
