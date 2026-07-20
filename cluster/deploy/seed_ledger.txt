@@ -24,6 +24,6 @@
 # SEED = NEXT_BASE + ARRAY_TASK_ID*100000 inside cluster_sa_ladder.sh.
 # Bases are handed out STRIDE apart, one per cluster, never reused.
 
-N=34
+N=36
 NEXT_BASE=135000000
 STRIDE=3000000

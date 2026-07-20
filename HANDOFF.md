@@ -2,6 +2,23 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-20 — 15 FOR 15: THE ENTIRE n=34/35 FRONTIER FELL IN ONE WAVE — NEW BANKED BEST
+n=35.** All 10 Fir n=34 probes (`49628809-18`) AND all 5 Rorqual n=35 probes (`16737512-6`)
+hit — 47 banners fetched 07-20, **all 47 independently verify_npaf PASS**; banked
+`champion_firsthit_bs35_34_a..j` + `champion_firsthit_bs36_35_a..e` (one per sig class, the
+GLOBAL FIRST arm each); full archive `results/firsthit_hits_2026-07-20.txt`; Gate B/C table
+appended to `docs/gate_bc_firsthit_results.md` (densities n=34 1/36k–1/599k, n=35
+1/201k–1/750k — thinning ~2–4×/rung but NO collapse; cost 0.9–11.4 s/cand, aborts down to
+93–97% with canon+2.12+tiers vs 98–99% pre-canon). ⚠️ Checker trap fixed: the FIRSTHIT
+section's `head -5` HID 5 of the 10 Fir outputs — raised to `head -12`. Ledger promoted ×2
+→ n=36 BUDGET=0 (SA stays retired); `next_seeds.sh set-n 36`. Bonus: Nibi `17871088/90`
+(n=32, new binary) hit 9/190 + 12/190 — density data only, not banked. NEXT: (1) rung n=36
+(6 classes by parity? needs enumeration + stream validation + Daniel's greenlight — same
+recipe as 07-19); (2) Task 3 proper is still Daniel's call, now with three waves of PASS
+data; (3) the WZ replication attempts are the live experiment: Nibi `18017139/40/41`
+(n=41/42/43) R since 07-20 ~12:20 EDT, Trillium `1926730/31` still PD behind maintenance;
+(4) `docs/kotsireas_brief.md` READY TO SEND — now with two-full-rungs-in-one-wave attached.
+
 **⚡ 2026-07-19 — THE FULL-RUNG WAVE (answers the 07-19 loop's standing call #1):** the ENTIRE
 admissible frontier at n=34/35 is only **15 signature classes** (10 at n=34, 5 at n=35; parity
 rule; enumerated + stream-validated locally with the NEW binary, WZ_THM212=1, all non-empty:
@@ -26,7 +43,7 @@ the probe frontier); ledger stays parked at budget 0 unless Daniel overrules. Ca
 (send `docs/kotsireas_brief.md`) remains Daniel-only.
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
-**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(34,33) (n=33) banked 2026-07-18 — the WZ_FIRSTHIT probe cleared n=32 (two sig classes) AND n=33 in its first wave as a solver, all NPAF-verified** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=34 / BUDGET=0 — next move is Daniel's Task-3 call.
+**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(36,35) (n=35) banked 2026-07-20 — the full-rung firsthit wave cleared ALL 10 n=34 sig classes AND ALL 5 n=35 sig classes in one submission, 47/47 banners NPAF-verified** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33 → 34 ×10 → 35 ×5; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=36 / BUDGET=0 — SA retired de facto; next rung needs the n=36 enumeration + Daniel's greenlight.
 BS(45,44) (n=44) is the dream/world-record but is OPEN for the whole field — blind n≥36 is rigorously
 infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path = the metaheuristic ladder.
 
@@ -118,7 +135,27 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-19, loop run 11) — HOLDING PATTERN: everything live is
+**LIVE ROUND (2026-07-20, loop run 12) — 🚨🚨 NEEDS_HUMAN: 15/15 PROBES HIT — n=34 AND n=35
+BOTH CLEARED IN FULL — NEW BANKED BEST BS(36,35).** Checker showed hits on every visible
+firsthit output; fetched ALL banners via two duo_runs (Fir `49628809-18` = all 10 n=34
+classes, 2–9 arms hit each; Rorqual `16737512-6` = all 5 n=35 classes, 1–4 arms each; the
+checker's `head -5` had hidden half the Fir wave — fixed to `head -12`). **All 47 banners
+PASS tools/verify_npaf.py independently** (sig sums 138/142 ✓, WZ pair encoding ✓ on every
+one). Banked 15 champions (`bs35_34_a..j`, `bs36_35_a..e`), archived
+`results/firsthit_hits_2026-07-20.txt`, appended the full Gate B/C table to
+`docs/gate_bc_firsthit_results.md`. Ledger: promote ×2 → n=36 BUDGET=0; `next_seeds.sh
+set-n 36`; checker exclusions + labels updated. Nibi: `17871088/90` (n=32, 9+12 arms)
+recorded as density data, not banked; `17871091/92` (n=33) + `18017139/40/41` (n=41/42/43
+WZ replication) still R — untouched. Trillium `1926730/31` still PD (maintenance) —
+untouched. Fir + Rorqual now idle; `rung_status check` at n=36 reads EXHAUSTED (budget 0,
+deliberate) and the escalations are complete, so NO submissions this round — the n=36 wave
+needs sig enumeration + validation (the 07-19 recipe) and is **Daniel's call**.
+**NEEDS_HUMAN: (1) greenlight + prep the n=36 full-rung probe wave (Fir is idle for it);
+(2) Task 3 architecture decision, now with three straight waves of PASS data; (3) send
+`docs/kotsireas_brief.md` — the attachment is now "the entire n=34+35 frontier in one
+day".**
+
+**PREVIOUS ROUND (2026-07-19, loop run 11) — HOLDING PATTERN: everything live is
 Daniel-gated; bookkeeping only, no action.** Checker (13:01): no new FOUND, no
 new firsthit outputs on any cluster. Fir + Rorqual SA n=32 tails have fully
 lapsed as instructed (Fir `49340270` visible floors 12/12/12; Rorqual

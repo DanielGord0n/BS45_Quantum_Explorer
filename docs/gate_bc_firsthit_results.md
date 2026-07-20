@@ -170,3 +170,58 @@ Remaining first-wave probes: Nibi 17871088/90 (n=32) + 17871091/92 (n=33) still
 PD — now redundant-as-solvers for their rungs but still useful as Gate B/C
 replication data. Trillium 1926730/31 (n=41/42, WZ Table-1 sigs) still PD
 behind maintenance — those measure the target rungs directly.
+
+## Third wave — the ENTIRE n=34/35 frontier cleared in one wave (2026-07-19→20, canon+2.12+tiers binary, WZ_THM212=1)
+
+The 07-19 full-rung wave (all 10 admissible sig classes at n=34 on Fir, all 5
+at n=35 on Rorqual, 190 arms × 1 core each, budget 200k nodes/cand, first wave
+on the NEW binary: canon cut + eq 2.12 + score tiers, WZ_THM212=1) went
+**15 for 15 — every sig class at both rungs hit**, 47 banners total, all 47
+independently NPAF-verified 2026-07-20 (`tools/verify_npaf.py` PASS on every
+one; archive `results/firsthit_hits_2026-07-20.txt`). **New banked best n=35**
+(`champion_firsthit_bs35_34_a..j`, `champion_firsthit_bs36_35_a..e`).
+
+| job | n | sig class | arms hit | candidates | aborted% | AB_nodes | density | s/cand | first-hit wall |
+|---|---|---|---|---|---|---|---|---|---|
+| fir 49628809 | 34 | (1,1,6,10)  | 2/190 | 341,230   | 96.5 | 6.7e10 | 1/171k | 3.2  | 1.1 h |
+| fir 49628810 | 34 | (1,3,8,8)   | 1/190 | 167,784   | 94.7 | 3.3e10 | 1/168k | 7.0  | 1.2 h |
+| fir 49628811 | 34 | (1,11,0,4)  | 1/190 | 75,408    | 94.9 | 1.5e10 | 1/75k  | 11.4 | 46 min |
+| fir 49628812 | 34 | (3,5,2,10)  | 4/190 | 1,412,432 | 97.2 | 2.8e11 | 1/353k | 1.3  | 2.2 h |
+| fir 49628813 | 34 | (3,7,4,8)   | 5/190 | 2,995,188 | 96.8 | 5.9e11 | 1/599k | 1.0  | 3.8 h |
+| fir 49628814 | 34 | (3,11,2,2)  | 3/190 | 314,725   | 94.2 | 6.2e10 | 1/105k | 2.1  | 29 min |
+| fir 49628815 | 34 | (5,7,0,8)   | 1/190 | 86,981    | 97.2 | 1.7e10 | 1/87k  | 11.3 | 56 min |
+| fir 49628816 | 34 | (5,9,4,4)   | 8/190 | 290,033   | 93.5 | 5.6e10 | 1/36k  | 1.4  | 5.6 min |
+| fir 49628817 | 34 | (7,7,2,6)   | 9/190 | 561,424   | 94.4 | 1.1e11 | 1/62k  | 0.9  | 12.6 min |
+| fir 49628818 | 34 | (7,9,2,2)   | 3/190 | 561,185   | 93.9 | 1.1e11 | 1/187k | 2.1  | 1.2 h |
+| rorq 16737512 | 35 | (0,6,5,9)  | 2/190 | 401,869   | 96.3 | 7.9e10 | 1/201k | 3.5  | 1.5 h |
+| rorq 16737513 | 35 | (2,4,1,11) | 2/190 | 896,528   | 96.3 | 1.8e11 | 1/448k | 3.4  | 3.9 h |
+| rorq 16737514 | 35 | (2,8,5,7)  | 4/190 | 1,517,463 | 93.5 | 2.9e11 | 1/379k | 1.7  | 3.3 h |
+| rorq 16737515 | 35 | (4,6,3,9)  | 1/190 | 271,509   | 95.2 | 5.3e10 | 1/272k | 7.4  | 2.4 h |
+| rorq 16737516 | 35 | (4,10,1,5) | 1/190 | 750,088   | 94.8 | 1.4e11 | 1/750k | 6.5  | 6.6 h |
+
+(density = aggregate candidates ÷ arms-with-hits; s/cand = per-arm wall
+(driver first-FOUND delta + 1800 s grace) × 190 ÷ aggregate candidates — same
+overestimating formula as the earlier waves. Cross-wave density comparison is
+approximate: THM212=1 + the canon cut changed the stream definition vs the
+pre-canon waves.)
+
+**Gate C trend: still no collapse.** n=34 densities 1/36k–1/599k, n=35
+1/201k–1/750k — the softest classes (median ~1/170k at n=34, ~1/379k at n=35)
+have thinned roughly 2–4× per rung since n=32, but every class remains
+hittable inside a 200k-node budget on one node in under 7 h.
+
+**Gate B trend: cost per candidate roughly flat (0.9–11.4 s/cand) and still
+budget-dominated** — but abort fraction dropped from 98–99% (old binary) to
+93.5–97.2% with the new levers in play.
+
+**Bonus replication data (Nibi, n=32, new binary):** 17871088 sig (1,7,4,8) —
+9/190 arms, 375,622 cands (1/42k), first hit 1,397 s; 17871090 sig (3,9,2,6)
+— 12/190 arms, 347,631 cands (1/29k), first hit 1,616 s. Two MORE n=32 sig
+classes hit (four of four tried overall) — not banked (below banked best);
+consistent with the n=32 density reads above.
+
+**State after this wave:** banked best **n=35**; next un-cleared rung n=36
+(needs sig-class enumeration + validation — Daniel's call, as is Task 3
+proper). Still pending: Nibi 17871091/92 (n=33 replication, R), Nibi
+18017139/40/41 (n=41/42/43, WZ Table-1 sigs, R), Trillium 1926730/31
+(n=41/42, PD behind maintenance) — the target-rung measurements.
