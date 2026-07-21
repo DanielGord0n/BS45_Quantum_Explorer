@@ -2,6 +2,36 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-21 — ZERO-CANDIDATE WALL DIAGNOSED + FIXED (the 07-20 anomaly: all n≥41 jobs +
+2 n=36 classes streamed nothing for 11.5-25 h).** Root cause chain, each step MEASURED today:
+(1) the probe streamed from MOD-3 profiles, which are walltime ATOMS at n≥36 (the known 07-15
+P22-gate fact — one profile's DFS > 12 h; my design error to point it at 41 anyway); (2) the
+obvious fix (stream from mod-6 cells, WZ Step 4 proper, via survive_profiles6 +
+count_pairs22(m=6)) is NECESSARY but not sufficient — norm-only mod-6 cells at n=41 number
+2.36M, are ~90% EMPTY, and cost more to disprove than walltime (15 min → 0 candidates);
+(3) **with 2.11b+2.12 the cell count drops 8.7× to 269,932 and the stream FLOWS: 200
+candidates in 40 s.** The filters are STREAM ENABLERS at the target rungs — this is
+presumably exactly why WZ's Step 3 records only full-Thm-2.3 (p,q) sets. Implemented:
+`WZ_FH_M6` auto-on at n≥36 (invariant re-proven: mod-6 union == mod-3 stream, 809==809 at
+n=11; hits verified n=11/19), **2.11b+2.12 FORCED on in FIRSTHIT at n≥36** (so stale job
+exports can't recompile into the wall — Trillium's queued tickets), tier vars fixed
+(FH_SCORE_T1/T2 — sbatch mangles commas; the 07-20 wave ran both tiers ≤110). n=19
+regression: bit-identical hit, defaults untouched below 36. RESUBMIT WAVE pending Daniel:
+Fir 9× n=41 (all classes) · Nibi scancel 18017139-141 (25 h zero-stream waste) + 3× n=41/42/43
+published sigs · Rorqual 11× n=42 (its first batch lapses zero for the same reason) ·
+Trillium source-only tar-pipe (its queued pair compiles at run). All with budget 5e7,
+NARMS=178, T1/T2=150/180 (WZ's own solutions score 140/142/134 — tiers calibrated to
+provably-solution-bearing flatness).
+**SUBMITTED ~16:40, Duo-approved: Fir `49925355-49925363` (9× n=41) · Nibi `18168030/31/33`
+(n=41/42/43 published sigs; stuck `18017139-141` scancel'd clean) · Rorqual
+`16939407-16939417` (11× n=42, queued behind its lapsing first batch). ⚠️ TRILLIUM UNREACHED:
+login node CONNECTION REFUSED (maintenance) — the source-only tar-pipe did NOT land, so its
+queued `1926730`/`1926731` would compile the PRE-M6 source if they start before the upgrade.
+STANDING ACTION when Trillium answers again: paste the source-only block (tar-pipe
+wz_match.cpp + cluster_firsthit_probe.sh, no sbatch) BEFORE those jobs start; if they start
+on old source first, expect zero-candidate lapses and resubmit after upgrading. Total 40s
+coverage now live: 23 fresh tickets on the FIXED stream across Fir/Nibi/Rorqual.**
+
 **⚡ 2026-07-21 — n=36 AND n=37 FELL — NEW BANKED BEST n=37 (loop run 13).** The 07-20 wide
 wave landed overnight: **7 of 9 n=36 classes hit on Fir** (`49706278/79/80/83/84/85/88`) and
 **4 of 4 completed n=37 classes hit on Rorqual** (`16809931/33/35/39`; the other 7 n=37 + all

@@ -44,9 +44,15 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 # Flat candidates measured ~35x denser in solutions at n=19; hit scores are
 # now printed per FIRSTHIT line, so tier values should come from prior rounds'
 # data. Every arm still streams its full shard — tiers only skip completions.
-T1=""; T2=""
-if [ -n "$FH_SCORE_TIERS" ]; then
+# Prefer FH_SCORE_T1/FH_SCORE_T2 (sbatch --export MANGLES commas — the 07-20
+# wave's FH_SCORE_TIERS=110\,130 arrived as both-tiers-110). FH_SCORE_TIERS
+# kept for backward compat only.
+T1=${FH_SCORE_T1:-}; T2=${FH_SCORE_T2:-}
+if [ -z "$T1" ] && [ -n "$FH_SCORE_TIERS" ]; then
   T1=${FH_SCORE_TIERS%%,*}; T2=${FH_SCORE_TIERS##*,}
+fi
+[ -n "$T1" ] && [ -z "$T2" ] && T2=$T1
+if [ -n "$T1" ]; then
   echo "[driver] score tiers: arms 0-$((NARMS/4-1)) <=$T1, $((NARMS/4))-$((NARMS/2-1)) <=$T2, rest ungated"
 fi
 pids=()

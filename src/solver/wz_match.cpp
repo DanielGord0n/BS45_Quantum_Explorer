@@ -841,6 +841,12 @@ int main(int argc, char **argv) {
   if (const char *hk = getenv("WZ_HASH_KEEP")) G_HASH_KEEP = atoi(hk);
   if (getenv("WZ_THM211B")) G_THM211B = true;   // Thm 2.3 eq 2.11b profile filter
   if (getenv("WZ_THM212"))  G_THM212  = true;   // Thm 2.3 eq (18) mod-4 filter
+  // FIRSTHIT at n>=36: 2.11b + 2.12 are STREAM ENABLERS, not options. Measured
+  // 2026-07-21 at n=41: unfiltered mod-6 cells = 2.36M, ~90% empty, ZERO
+  // candidates streamed in 15 min (and 11.5-25 h on clusters); filtered =
+  // 270k cells, 200 candidates in 40 s. Force both on so stale job exports
+  // (e.g. Trillium's queued tickets) cannot recompile into the wall.
+  if (getenv("WZ_FIRSTHIT") && G_N >= 36) { G_THM211B = true; G_THM212 = true; }
   bool measure = getenv("WZ_MEASURE") != nullptr;
 
   init_hall_tables();
@@ -998,6 +1004,15 @@ int main(int argc, char **argv) {
   //      NO hit — NOT a proof of absence (aborted candidates are unknowns).
   if (getenv("WZ_FIRSTHIT")) {
     init_p22();
+    // Stream source modulus. Mod-3 profiles are WALLTIME ATOMS at n>=36 — one
+    // profile's DFS exceeds 12h (measured twice: the 07-15 P22 gate death, and
+    // the 07-21 zero-candidate wave: 2/9 n=36 classes + ALL n>=41 jobs streamed
+    // ZERO candidates in 11.5-25h). WZ's Step 4 generates C,D from MOD-6
+    // profiles for exactly this reason (cells ~100-1000x smaller; the mod-6
+    // union == mod-3 stream EXACTLY, invariant validated 07-15: 66/91, 1564/809).
+    // Default: mod-6 at n>=36, mod-3 below. WZ_FH_M6=1/0 forces on/off (A/B).
+    bool fh_m6 = (n >= 36);
+    if (const char *e = getenv("WZ_FH_M6")) fh_m6 = atoi(e) != 0;
     FH_BUDGET = 200000;
     if (const char *e = getenv("WZ_FH_AB_BUDGET")) FH_BUDGET = atoll(e);
     long long max_cand = 0;
@@ -1023,6 +1038,16 @@ int main(int argc, char **argv) {
       return 2;
     }
 
+    vector<Profile> fhProfs;
+    if (fh_m6) {
+      fhProfs = survive_profiles6(n, G_SIG_C, G_SIG_D, ab3, ab6, 20000000,
+                                  G_THM211B ? &ab6a : nullptr);
+      cout << "[firsthit] mod-6 stream source: " << fhProfs.size()
+           << " C,D profile cells (mod-3 atoms exceed walltime at this n)\n" << flush;
+    } else {
+      fhProfs = cdProfs;
+    }
+    int fh_m = fh_m6 ? 6 : 3;
     auto profScore = [](const Profile &p) {
       long long s = 0;
       for (int v : p.px) s += abs(v);
@@ -1030,12 +1055,13 @@ int main(int argc, char **argv) {
       return s;
     };
     if (prof_order == 1)
-      sort(cdProfs.begin(), cdProfs.end(), [&](const Profile &a, const Profile &b)
+      sort(fhProfs.begin(), fhProfs.end(), [&](const Profile &a, const Profile &b)
            { return profScore(a) < profScore(b); });
     else if (prof_order == 2)
-      sort(cdProfs.begin(), cdProfs.end(), [&](const Profile &a, const Profile &b)
+      sort(fhProfs.begin(), fhProfs.end(), [&](const Profile &a, const Profile &b)
            { return profScore(a) > profScore(b); });
-    cout << "[firsthit] profiles=" << cdProfs.size() << " order=" << prof_order
+    cout << "[firsthit] profiles=" << fhProfs.size() << " m=" << fh_m
+         << " order=" << prof_order
          << " ab_budget=" << FH_BUDGET << " max_cand=" << max_cand
          << " score_max=" << score_max
          << " shard=" << fh_shard << "/" << fh_nshard << "\n" << flush;
@@ -1045,7 +1071,7 @@ int main(int argc, char **argv) {
     int hit_prof = -1;
     atomic<bool> fh_stop{false};
     auto T0 = Clock::now();
-    for (int pi = fh_shard; pi < (int)cdProfs.size() && !fh_stop.load(); pi += fh_nshard) {
+    for (int pi = fh_shard; pi < (int)fhProfs.size() && !fh_stop.load(); pi += fh_nshard) {
       long long lv = 0, okc = 0;
       function<void(const vector<int>&, const vector<int>&)> probe =
           [&](const vector<int> &C, const vector<int> &D) {
@@ -1113,8 +1139,8 @@ int main(int argc, char **argv) {
         }
         if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
       };
-      count_pairs22(n, cdProfs[pi].px, cdProfs[pi].py, false, pinC, pinD,
-                    lv, okc, &probe, 3, &fh_stop);
+      count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
+                    lv, okc, &probe, fh_m, &fh_stop);
     }
     double t = chrono::duration<double>(Clock::now() - T0).count();
     long long completed_tested = clean_no + aborted + (hit_idx >= 0 ? 1 : 0);

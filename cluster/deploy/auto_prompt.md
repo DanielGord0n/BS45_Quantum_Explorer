@@ -96,6 +96,14 @@ Do not re-run the checker.
        A no-hit probe at n=32/33 is a bounded negative for THAT sig only (budget aborts are
        unknowns, and other sig classes exist — parity rule: n even ⇒ a,b odd + c,d even;
        n odd ⇒ a,b even + c,d odd).
+     - **⚠️ TRILLIUM SOURCE UPGRADE PENDING (07-21):** its queued `1926730`/`1926731` compile
+       at job start, and the fixed (mod-6 + forced 2.11b/2.12) source did NOT land — login
+       node refused connections during maintenance. WHEN the checker reaches Trillium again:
+       (a) if those jobs are still PD → NEEDS_HUMAN: Daniel must paste the source-only
+       tar-pipe (block in HANDOFF 07-21 entry) BEFORE they start; (b) if they already ran on
+       old source → they lapsed with zero candidates (known wall, NOT a real negative) →
+       NEEDS_HUMAN to upgrade-then-resubmit. Do not interpret their zero-candidate output as
+       evidence about n=41/42.
      - **Trillium n=41/42: ANY `*** BS(42,41) FOUND ***` / `*** BS(43,42) FOUND ***` banner =
        our solver REPLICATING Wang-Zhu's published result — the campaign's target.** R2 with
        extra care: run `tools/verify_npaf.py` on the printed A/B/C/D; confirm the sequences are
