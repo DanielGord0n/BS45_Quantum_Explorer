@@ -2,6 +2,24 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-21 — n=36 AND n=37 FELL — NEW BANKED BEST n=37 (loop run 13).** The 07-20 wide
+wave landed overnight: **7 of 9 n=36 classes hit on Fir** (`49706278/79/80/83/84/85/88`) and
+**4 of 4 completed n=37 classes hit on Rorqual** (`16809931/33/35/39`; the other 7 n=37 + all
+11 n=42 still R at fetch, ~3 h left — the 07-22 loop reads them). All 14 banner instances
+fetched (two duo_runs) and **all 14 independently verify_npaf PASS**; banked 11 champions
+(`bs37_36_a-g`, `bs38_37_a-d`), archive `results/firsthit_hits_2026-07-21.txt`, full table in
+`docs/gate_bc_firsthit_results.md`. Densities n=36 1/360k-1/1.52M, n=37 1/443k-1/2.95M —
+thinning ~2-3×/rung, NO collapse, but the deepest n=36 hit took 10.3 h of the 12 h walltime:
+the wall region (36-39) is now eating the clock. Ledger promoted ×2 → n=38/budget-0;
+`next_seeds.sh set-n 38`; checker exclusions updated (`head -12`→`head -30` — 12 was
+truncating again, it HID 8 of Fir's 20 outputs including 6 of the 7 n=36 hits). **⚠️ TWO NEW
+ANOMALIES for the n=38 prep: (1) zero-candidate runs — n=36 classes (3,3,8,8) + (5,11,0,0)
+and ALL 9 Fir n=41 classes ran ~11.5 h with candidates=0 ((3,3,8,8) was locally validated
+non-empty, so this is a stream/enumeration wall or bug, NOT a searched negative — Nibi
+n=41/42/43 shows the same zeros at ~25 h); (2) the driver logged both score tiers as <=110
+(FH_SCORE_TIERS=110,130 didn't reach tier 2).** NEEDS_HUMAN: n=38/39 wave greenlight (needs
+the anomaly diagnosed first), Task 3 call, kotsireas send (brief now carries n<=37).
+
 **⚡ 2026-07-20 — n=36/37 WAVE (answers the 07-20 loop's call #1; banked best is n=35 as of
 this morning, 15/15 wave):** frontier enumerated: **9 classes at n=36, 11 at n=37** (parity
 rule, same recipe as 07-19). First 4 n=36 classes stream-validated locally (~470-520
@@ -68,7 +86,7 @@ the probe frontier); ledger stays parked at budget 0 unless Daniel overrules. Ca
 (send `docs/kotsireas_brief.md`) remains Daniel-only.
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
-**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(36,35) (n=35) banked 2026-07-20 — the full-rung firsthit wave cleared ALL 10 n=34 sig classes AND ALL 5 n=35 sig classes in one submission, 47/47 banners NPAF-verified** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33 → 34 ×10 → 35 ×5; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=36 / BUDGET=0 — SA retired de facto; next rung needs the n=36 enumeration + Daniel's greenlight.
+**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(38,37) (n=37) banked 2026-07-21 — the wide wave cleared 7/9 n=36 classes AND 4/4 completed n=37 classes overnight, 14/14 banners NPAF-verified; 7 more n=37 + 11 n=42 classes still running** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33 → 34 ×10 → 35 ×5 → 36 ×7 → 37 ×4; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=38 / BUDGET=0 — SA retired de facto; next rung needs the n=38/39 enumeration + the zero-candidate anomaly diagnosed + Daniel's greenlight.
 BS(45,44) (n=44) is the dream/world-record but is OPEN for the whole field — blind n≥36 is rigorously
 infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path = the metaheuristic ladder.
 
@@ -160,7 +178,29 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-20, loop run 12) — 🚨🚨 NEEDS_HUMAN: 15/15 PROBES HIT — n=34 AND n=35
+**LIVE ROUND (2026-07-21, loop run 13) — 🚨🚨 NEEDS_HUMAN: NEW BANKED BEST n=37 — the 07-20
+wide wave cleared n=36 (7/9 classes, Fir) and n=37 (4/4 completed classes, Rorqual)
+overnight.** Checker showed hits on 49706283 (n=36) + 4 Rorqual n=37 files; two duo_run
+fetches pulled ALL outputs (checker `head -12` had hidden 8 of Fir's 20 files — 6 of the 7
+n=36 hits were invisible; raised to `head -30`). **All 14 banner instances PASS
+tools/verify_npaf.py independently** (sig sums 146/150 ✓); banked 11 champions
+(`champion_firsthit_bs37_36_a-g` + `champion_firsthit_bs38_37_a-d`, GLOBAL FIRST arm per
+class), archived `results/firsthit_hits_2026-07-21.txt`, Gate B/C table + anomaly notes
+appended to `docs/gate_bc_firsthit_results.md`. Ledger promoted ×2 → n=38 BUDGET=0;
+`next_seeds.sh set-n 38`; checker exclusions now cover 49706278-97, 16809931/33/35/39,
+17871088-92. Cluster state: **Fir idle** (all 20 wave jobs done); **Rorqual NOT idle** — 7
+n=37 classes + 11 n=42 classes still R (~3 h left at fetch) → untouched, the 07-22 loop
+collects them; Nibi 18017139/40/41 (n=41/42/43 replication) R with candidates=0 at ~25 h;
+Trillium 1926730/31 still PD → untouched. Nibi 17871091/92 (n=33, 1+2 arms) = density data,
+recorded, not banked. **Anomalies for the n=38 prep: zero-candidate runs (2 n=36 classes +
+all 9 Fir n=41 classes, ~11.5 h each, candidates=0 — stream wall or bug, NOT searched
+negatives) and the score-tier driver logging both tiers as <=110.** No SA refills (rung
+n=38 budget 0, deliberate). **NEEDS_HUMAN: (1) diagnose the zero-candidate stream wall +
+tier-2 bug before greenlighting the n=38/39 wave; (2) Task 3 architecture call — four
+straight waves of PASS data; (3) send `docs/kotsireas_brief.md` — attachment now reads
+"n=32 through n=37 in five days".**
+
+**PREVIOUS ROUND (2026-07-20, loop run 12) — 🚨🚨 NEEDS_HUMAN: 15/15 PROBES HIT — n=34 AND n=35
 BOTH CLEARED IN FULL — NEW BANKED BEST BS(36,35).** Checker showed hits on every visible
 firsthit output; fetched ALL banners via two duo_runs (Fir `49628809-18` = all 10 n=34
 classes, 2–9 arms hit each; Rorqual `16737512-6` = all 5 n=35 classes, 1–4 arms each; the

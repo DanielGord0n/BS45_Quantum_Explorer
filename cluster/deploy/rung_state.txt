@@ -29,7 +29,7 @@
 # SA tickets here. Whether SA continues at all (vs. probe fan-out at n>=34) is
 # Daniel's Task-3 call — re-arm by setting BUDGET explicitly if he wants SA back.
 
-N=36
+N=38
 ARRAYS_AT_RUNG=0
 BEST_FLOOR=9999
 PREV_RUNG_ARRAYS=0

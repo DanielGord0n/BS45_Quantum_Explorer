@@ -225,3 +225,60 @@ consistent with the n=32 density reads above.
 proper). Still pending: Nibi 17871091/92 (n=33 replication, R), Nibi
 18017139/40/41 (n=41/42/43, WZ Table-1 sigs, R), Trillium 1926730/31
 (n=41/42, PD behind maintenance) — the target-rung measurements.
+
+## 2026-07-21 — the n=36/37 wide wave lands: n=36 AND n=37 both cleared (7/9 + 4/4-so-far classes) — new banked best n=37
+
+Same probe architecture (canon+eq2.12+score-tier binary, WZ_THM212=1, 190 arms,
+200k-node budget), first wave with FH_SCORE_TIERS live. ⚠️ Driver logged both
+gated tiers as `<=110` ("arms 0-46 <=110, 47-94 <=110, rest ungated") — the
+submitted FH_SCORE_TIERS=110,130 did not reach the second tier; cosmetic-vs-real
+to be checked before the n=38 wave. Abort% below is raw GATEB aborted/candidates;
+on score-gated waves the gated arms skip candidates without searching them
+(score_rejected), which deflates the raw ratio — rows with heavy score_rejected
+are marked *.
+
+| job | n | sig class | arms hit | agg cands | abort% | AB_nodes | density | s/cand | first hit |
+|---|---|---|---|---|---|---|---|---|---|
+| fir 49706278 | 36 | (1,1,0,12)  | 1/190 | 379,582   | 99.0  | 7.6e10 | 1/380k  | 6.6 | 3.1 h |
+| fir 49706279 | 36 | (1,3,6,10)  | 1/190 | 582,296   | 22.1* | 2.6e10 | 1/582k  | 1.9 | 1.1 h |
+| fir 49706280 | 36 | (1,9,0,8)   | 1/190 | 820,687   | 98.0  | 1.6e11 | 1/821k  | 6.4 | 7.2 h |
+| fir 49706283 | 36 | (3,11,0,4)  | 1/190 | 1,153,500 | 97.0  | 2.3e11 | 1/1.15M | 6.4 | 10.3 h |
+| fir 49706284 | 36 | (5,7,6,6)   | 1/190 | 1,019,315 | 94.8  | 2.0e11 | 1/1.02M | 6.3 | 8.8 h |
+| fir 49706285 | 36 | (5,9,2,6)   | 1/190 | 359,651   | 42.9* | 3.1e10 | 1/360k  | 3.4 | 1.3 h |
+| fir 49706288 | 36 | (7,9,0,4)   | 1/190 | 1,519,797 | 35.7* | 1.1e11 | 1/1.52M | 2.4 | 4.8 h |
+| rorq 16809931 | 37 | (0,10,5,5) | 3/190 | 1,327,554 | 18.0* | 4.9e10 | 1/443k  | 0.7 | 0.8 h |
+| rorq 16809933 | 37 | (2,4,7,9)  | 1/190 | 1,011,238 | 8.4*  | 1.7e10 | 1/1.01M | 2.1 | 2.7 h |
+| rorq 16809935 | 37 | (2,12,1,1) | 2/190 | 5,902,894 | 19.2* | 2.3e11 | 1/2.95M | 0.9 | 7.0 h |
+| rorq 16809939 | 37 | (6,8,5,5)  | 1/190 | 509,143   | 95.3  | 9.9e10 | 1/509k  | 7.1 | 4.8 h |
+
+(Same formulas as prior waves: density = agg candidates ÷ arms-with-hits;
+s/cand = (first-FOUND delta + 1800 s grace) × 190 ÷ agg candidates. All 14
+banner instances — 7 fir + 7 rorqual arms — independently verify_npaf PASS
+2026-07-21; 11 champions banked, one per sig class, GLOBAL FIRST arm.)
+
+**Gate C trend: still no collapse through n=37.** Densities n=36
+1/360k–1/1.52M, n=37 1/443k–1/2.95M — continuing the ~2–3×/rung thinning from
+n=34/35 (1/36k–1/750k). Every completed class still hits inside the 200k-node
+budget on one node; but the deepest n=36 class needed 10.3 h of a 12 h
+walltime — the predicted wall region (36–39) is now visibly eating the clock.
+Score tiers cut s/cand on the gated-arm classes (0.7–3.4 vs 6.3–7.1 ungated).
+
+**⚠️ NEW ANOMALY — zero-candidate runs.** Two n=36 classes — fir 49706281
+(3,3,8,8) and 49706286 (5,11,0,0) — ran ~11.5 h and streamed **candidates=0**
+(0/190 arms, GATEB all zeros). (3,3,8,8) was among the four classes
+stream-validated locally at ~470–520 profiles/side, so the class is NOT empty
+— the cluster stream produced nothing in a full walltime. Same signature on
+**all 9 fir n=41 classes** (49706289–97, ~11.5 h each, candidates=0), and Nibi
+18017139/40/41 (n=41/42/43, published sigs) also showed candidates=0 at ~25 h
+elapsed. This looks like a stream/enumeration wall (or a tier/order bug) that
+switches on somewhere in the C,D pipeline — NOT a searched-and-missed
+negative. No coverage claim for these classes. Diagnose before the n=38 wave
+and before any more 40s submissions.
+
+**State after this wave:** banked best **n=37** (`champion_firsthit_bs37_36_a–g`,
+`champion_firsthit_bs38_37_a–d`). Rung ledger promoted ×2 → n=38, budget 0.
+Still live at fetch time: rorqual 16809929/30/32/34/36/37/38 (n=37, 7 classes,
+~3 h left) + 16809940–50 (n=42, 11 classes) — next loop reads them; Nibi
+18017139/40/41 R; Trillium 1926730/31 still PD. Nibi 17871091/92 (n=33
+replication, 1+2 arms, densities 1/76k and 1/77k agg) recorded as density
+data, not banked.

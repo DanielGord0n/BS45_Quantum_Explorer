@@ -1,0 +1,301 @@
+=== firsthit n=36/n=37 wave banners, fetched+verified 2026-07-21 (fir 49706278-88 n=36: 7/9 classes hit, 2 zero-candidate; rorqual 16809931/33/35/39 n=37: 4/4 completed classes hit; rorqual 7x n=37 + 11x n=42 still R at fetch time) ===
+##FILE firsthit_output_49706278.txt
+=== FIRSTHIT probe BS(37,36) sig (1,1,0,12) — 190 arms — node fc20462 — Mon Jul 20 12:15:19 PDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Mon Jul 20 12:15:21 PDT 2026
+[driver] first FOUND at Mon Jul 20 15:23:51 PDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=36, sig 1,1,0,12, 190 arms) ===
+--- arm_134.log ---
+*** BS(37,36) FOUND ***  (firsthit probe)
+sig = (-1,-1,0,12)
+A = {1,-1,-1,-1,1,-1,1,-1,1,1,-1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,1,-1,1,1,-1,1,-1,1,-1,1,-1,-1,1,1,-1};
+B = {1,-1,-1,1,-1,1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,1,1,-1,-1,1,-1,-1,-1,-1,-1,-1,1,-1,-1,1,1,1,1,1};
+C = {1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,1,-1,1,1,-1,1,1,-1,-1,-1,1,1,-1,-1,-1,1,1,-1,-1};
+D = {-1,-1,-1,1,1,1,-1,1,1,1,-1,1,-1,1,1,1,1,1,-1,1,1,-1,1,1,1,-1,1,1,1,1,-1,1,-1,1,-1,1};
+VERIFY: max |NPAF[s]| over s=1..36 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=379582 profile_rank=134 nodes_this_cand=12472 score=112 elapsed=11300.5s
+
+=== FIRSTHIT SUMMARY (n=36, sig 1,1,0,12, shard 134/190) ===
+candidates_streamed=379582  pre_filter_rejected=0  score_rejected=0
+arms_with_hits=1 / 190
+GATEB: candidates=379582 aborted=375926 AB_nodes=75657723645
+GLOBAL FIRST: FIRSTHIT: idx=379582 profile_rank=134 nodes_this_cand=12472 score=112 elapsed=11300.5s
+=== done Mon Jul 20 15:53:53 PDT 2026 ===
+##FILE firsthit_output_49706279.txt
+=== FIRSTHIT probe BS(37,36) sig (1,3,6,10) — 190 arms — node fc20439 — Mon Jul 20 12:57:17 PDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Mon Jul 20 12:57:20 PDT 2026
+[driver] first FOUND at Mon Jul 20 14:06:30 PDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=36, sig 1,3,6,10, 190 arms) ===
+--- arm_83.log ---
+*** BS(37,36) FOUND ***  (firsthit probe)
+sig = (1,3,6,10)
+A = {1,-1,1,-1,1,-1,-1,-1,1,-1,1,-1,-1,1,-1,1,1,1,1,1,1,-1,-1,-1,1,1,1,1,-1,1,-1,-1,1,1,-1,-1,-1};
+B = {1,-1,-1,-1,1,1,-1,1,1,-1,1,1,1,-1,1,-1,-1,-1,1,-1,-1,1,1,1,-1,-1,1,1,-1,-1,-1,1,1,1,1,-1,1};
+C = {-1,-1,-1,-1,1,-1,1,1,1,-1,1,1,1,1,1,1,1,1,-1,1,-1,-1,1,-1,1,1,-1,1,1,1,-1,-1,1,-1,1,-1};
+D = {-1,-1,1,1,-1,-1,1,1,1,1,1,-1,-1,1,1,1,1,1,-1,1,-1,-1,1,1,-1,1,1,1,1,1,-1,1,-1,1,1,-1};
+VERIFY: max |NPAF[s]| over s=1..36 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=582296 profile_rank=83 nodes_this_cand=15164 score=108 elapsed=4133.05s
+
+=== FIRSTHIT SUMMARY (n=36, sig 1,3,6,10, shard 83/190) ===
+candidates_streamed=582296  pre_filter_rejected=0  score_rejected=451285
+arms_with_hits=1 / 190
+GATEB: candidates=582296 aborted=128744 AB_nodes=25992111835
+GLOBAL FIRST: FIRSTHIT: idx=582296 profile_rank=83 nodes_this_cand=15164 score=108 elapsed=4133.05s
+=== done Mon Jul 20 14:36:32 PDT 2026 ===
+##FILE firsthit_output_49706280.txt
+=== FIRSTHIT probe BS(37,36) sig (1,9,0,8) — 190 arms — node fc20456 — Mon Jul 20 13:01:07 PDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Mon Jul 20 13:01:10 PDT 2026
+[driver] first FOUND at Mon Jul 20 20:11:42 PDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=36, sig 1,9,0,8, 190 arms) ===
+--- arm_179.log ---
+*** BS(37,36) FOUND ***  (firsthit probe)
+sig = (1,9,0,8)
+A = {1,-1,-1,-1,1,1,1,1,1,-1,-1,1,1,-1,-1,-1,1,-1,-1,1,-1,-1,1,-1,1,-1,1,-1,1,-1,1,1,1,1,-1,1,-1};
+B = {1,-1,1,-1,1,1,-1,-1,1,1,1,-1,-1,-1,1,1,-1,-1,1,1,1,1,-1,-1,-1,1,-1,1,1,1,-1,1,1,1,1,1,1};
+C = {1,-1,-1,-1,1,1,1,1,1,1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,-1};
+D = {-1,-1,-1,-1,-1,1,1,1,1,1,1,-1,1,1,-1,1,1,-1,1,-1,1,1,1,1,-1,1,-1,1,1,-1,1,1,-1,-1,1,1};
+VERIFY: max |NPAF[s]| over s=1..36 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=820687 profile_rank=179 nodes_this_cand=101263 score=108 elapsed=25820.6s
+
+=== FIRSTHIT SUMMARY (n=36, sig 1,9,0,8, shard 179/190) ===
+candidates_streamed=820687  pre_filter_rejected=0  score_rejected=0
+arms_with_hits=1 / 190
+GATEB: candidates=820687 aborted=804376 AB_nodes=162663935795
+GLOBAL FIRST: FIRSTHIT: idx=820687 profile_rank=179 nodes_this_cand=101263 score=108 elapsed=25820.6s
+=== done Mon Jul 20 21:37:38 PDT 2026 ===
+##FILE firsthit_output_49706283.txt
+=== FIRSTHIT probe BS(37,36) sig (3,11,0,4) — 190 arms — node fc20440 — Mon Jul 20 13:05:19 PDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Mon Jul 20 13:05:21 PDT 2026
+[driver] first FOUND at Mon Jul 20 23:23:36 PDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=36, sig 3,11,0,4, 190 arms) ===
+--- arm_136.log ---
+*** BS(37,36) FOUND ***  (firsthit probe)
+sig = (3,11,0,4)
+A = {1,-1,-1,-1,1,1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,1,-1,1,1,-1,-1,1,-1,1,1,1,1,1,1,-1,1,1,-1};
+B = {1,-1,-1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,-1,-1,1,1,-1,1,-1,1,-1,1,1,-1,1,-1,1,1,1,1,1,1,1};
+C = {1,-1,-1,1,-1,1,-1,1,1,-1,-1,1,1,-1,-1,-1,1,1,-1,1,-1,-1,1,1,-1,1,-1,1,-1,1,-1,1,1,1,-1,-1};
+D = {-1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,1,1,1,1,1,1,1,1,-1,-1,1,1,-1,1,-1,1};
+VERIFY: max |NPAF[s]| over s=1..36 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=1153500 profile_rank=136 nodes_this_cand=69543 score=108 elapsed=37091.4s
+
+=== FIRSTHIT SUMMARY (n=36, sig 3,11,0,4, shard 136/190) ===
+candidates_streamed=1153500  pre_filter_rejected=0  score_rejected=0
+arms_with_hits=1 / 190
+GATEB: candidates=1153500 aborted=1119353 AB_nodes=227713259501
+GLOBAL FIRST: FIRSTHIT: idx=1153500 profile_rank=136 nodes_this_cand=69543 score=108 elapsed=37091.4s
+=== done Mon Jul 20 23:53:38 PDT 2026 ===
+##FILE firsthit_output_49706284.txt
+=== FIRSTHIT probe BS(37,36) sig (5,7,6,6) — 190 arms — node fc20449 — Mon Jul 20 13:05:19 PDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Mon Jul 20 13:05:22 PDT 2026
+[driver] first FOUND at Mon Jul 20 21:55:42 PDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=36, sig 5,7,6,6, 190 arms) ===
+--- arm_171.log ---
+*** BS(37,36) FOUND ***  (firsthit probe)
+sig = (-5,7,6,6)
+A = {1,1,-1,1,-1,-1,1,1,-1,1,-1,-1,-1,1,1,1,-1,-1,-1,-1,1,-1,1,-1,1,1,-1,-1,1,1,-1,-1,-1,1,-1,-1,-1};
+B = {1,-1,-1,1,1,1,1,1,1,1,-1,-1,-1,1,-1,1,1,1,1,1,-1,-1,-1,-1,1,1,-1,-1,-1,1,-1,1,1,1,-1,1,1};
+C = {-1,-1,1,-1,1,-1,1,1,-1,1,1,1,-1,-1,-1,-1,1,-1,1,1,-1,1,1,1,-1,1,1,1,1,1,-1,1,1,1,-1,-1};
+D = {-1,-1,1,-1,-1,1,-1,1,1,1,1,1,1,-1,1,1,1,1,-1,1,1,-1,1,-1,-1,1,1,-1,1,-1,1,-1,1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..36 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=1019315 profile_rank=171 nodes_this_cand=198282 score=120 elapsed=31814.8s
+
+=== FIRSTHIT SUMMARY (n=36, sig 5,7,6,6, shard 171/190) ===
+candidates_streamed=1019315  pre_filter_rejected=0  score_rejected=0
+arms_with_hits=1 / 190
+GATEB: candidates=1019315 aborted=965864 AB_nodes=198834941964
+GLOBAL FIRST: FIRSTHIT: idx=1019315 profile_rank=171 nodes_this_cand=198282 score=120 elapsed=31814.8s
+=== done Mon Jul 20 22:25:58 PDT 2026 ===
+##FILE firsthit_output_49706285.txt
+=== FIRSTHIT probe BS(37,36) sig (5,9,2,6) — 190 arms — node fc20451 — Mon Jul 20 13:05:20 PDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Mon Jul 20 13:05:22 PDT 2026
+[driver] first FOUND at Mon Jul 20 14:22:05 PDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=36, sig 5,9,2,6, 190 arms) ===
+--- arm_61.log ---
+*** BS(37,36) FOUND ***  (firsthit probe)
+sig = (-5,-9,2,6)
+A = {1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,1,-1,-1,1,-1,1,1,1,-1,-1,-1,1,1,1,1,1,-1,1,-1,-1,1,-1,-1,-1,-1};
+B = {1,-1,-1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,-1,-1,-1,1,-1,1,-1,1,-1,1,-1,-1,-1,1,-1,-1,-1,1,1,-1,-1,1,1};
+C = {-1,-1,-1,1,-1,1,-1,1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,1,1,-1,1,1,-1,1,1,1,-1,-1};
+D = {-1,-1,-1,1,1,1,1,1,1,1,1,1,1,-1,1,-1,1,1,-1,1,-1,1,-1,-1,1,1,1,-1,1,-1,-1,-1,1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..36 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=359651 profile_rank=61 nodes_this_cand=24726 score=108 elapsed=4583.01s
+
+=== FIRSTHIT SUMMARY (n=36, sig 5,9,2,6, shard 61/190) ===
+candidates_streamed=359651  pre_filter_rejected=0  score_rejected=200765
+arms_with_hits=1 / 190
+GATEB: candidates=359651 aborted=154282 AB_nodes=31378056453
+GLOBAL FIRST: FIRSTHIT: idx=359651 profile_rank=61 nodes_this_cand=24726 score=108 elapsed=4583.01s
+=== done Mon Jul 20 14:52:07 PDT 2026 ===
+##FILE firsthit_output_49706288.txt
+=== FIRSTHIT probe BS(37,36) sig (7,9,0,4) — 190 arms — node fc20461 — Mon Jul 20 13:05:20 PDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Mon Jul 20 13:05:23 PDT 2026
+[driver] first FOUND at Mon Jul 20 17:53:41 PDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=36, sig 7,9,0,4, 190 arms) ===
+--- arm_84.log ---
+*** BS(37,36) FOUND ***  (firsthit probe)
+sig = (7,9,0,4)
+A = {1,-1,-1,-1,1,1,1,1,-1,-1,1,-1,1,-1,-1,-1,1,1,1,1,1,1,-1,-1,1,-1,1,1,1,1,-1,1,1,-1,1,1,-1};
+B = {1,-1,-1,1,1,-1,-1,-1,-1,1,1,-1,-1,1,1,-1,1,1,1,1,1,1,1,1,-1,-1,1,-1,1,-1,1,-1,1,1,1,1,1};
+C = {1,-1,-1,-1,1,1,-1,1,-1,-1,1,1,1,-1,1,-1,1,-1,1,1,1,-1,1,1,-1,1,-1,1,1,-1,-1,1,-1,-1,-1,-1};
+D = {-1,-1,1,1,1,1,1,1,-1,-1,-1,-1,1,-1,1,-1,-1,1,-1,-1,1,-1,1,1,1,-1,-1,1,1,1,-1,1,1,1,-1,1};
+VERIFY: max |NPAF[s]| over s=1..36 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=1519797 profile_rank=84 nodes_this_cand=179679 score=108 elapsed=17283.6s
+
+=== FIRSTHIT SUMMARY (n=36, sig 7,9,0,4, shard 84/190) ===
+candidates_streamed=1519797  pre_filter_rejected=0  score_rejected=973000
+arms_with_hits=1 / 190
+GATEB: candidates=1519797 aborted=542114 AB_nodes=108921486080
+GLOBAL FIRST: FIRSTHIT: idx=1519797 profile_rank=84 nodes_this_cand=179679 score=108 elapsed=17283.6s
+=== done Mon Jul 20 18:23:43 PDT 2026 ===
+##FILE firsthit_output_16809931.txt
+=== FIRSTHIT probe BS(38,37) sig (0,10,5,5) — 190 arms — node rc31712 — Tue Jul 21 03:46:11 EDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Tue Jul 21 03:46:14 EDT 2026
+[driver] first FOUND at Tue Jul 21 04:34:17 EDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 187 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=37, sig 0,10,5,5, 190 arms) ===
+--- arm_33.log ---
+*** BS(38,37) FOUND ***  (firsthit probe)
+sig = (0,-10,5,5)
+A = {1,1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,1,-1,1,1,1,-1,1,-1,1,1,1,1,-1,1,-1,1,-1,-1,-1,-1,-1,-1};
+B = {1,-1,-1,-1,-1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,-1,-1,1,1};
+C = {-1,-1,-1,-1,1,1,1,-1,1,1,1,1,-1,1,1,-1,1,1,-1,1,1,1,-1,1,1,-1,1,-1,1,-1,-1,1,1,1,-1,-1,-1};
+D = {-1,-1,1,1,1,-1,-1,1,1,1,1,1,-1,1,1,-1,1,-1,-1,-1,1,1,-1,1,1,-1,1,-1,1,1,1,-1,1,-1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..37 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=318790 profile_rank=33 nodes_this_cand=177100 score=96 elapsed=2860.67s
+
+=== FIRSTHIT SUMMARY (n=37, sig 0,10,5,5, shard 33/190) ===
+candidates_streamed=318790  pre_filter_rejected=0  score_rejected=261338
+--- arm_35.log ---
+*** BS(38,37) FOUND ***  (firsthit probe)
+sig = (0,-10,5,5)
+A = {1,1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,1,-1,1,1,1,-1,1,-1,1,1,1,1,-1,1,-1,1,-1,-1,-1,-1,-1,-1};
+B = {1,-1,-1,-1,-1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,-1,-1,1,1};
+C = {-1,-1,-1,-1,1,1,1,-1,1,1,1,1,-1,1,1,-1,1,1,-1,1,1,1,-1,1,1,-1,1,-1,1,-1,-1,1,1,1,-1,-1,-1};
+D = {-1,-1,1,-1,1,-1,1,1,1,-1,1,-1,1,1,-1,1,1,-1,-1,-1,1,-1,1,1,-1,1,1,1,1,1,-1,-1,1,1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..37 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=504411 profile_rank=35 nodes_this_cand=177100 score=96 elapsed=4546.13s
+
+=== FIRSTHIT SUMMARY (n=37, sig 0,10,5,5, shard 35/190) ===
+candidates_streamed=504411  pre_filter_rejected=0  score_rejected=409032
+--- arm_61.log ---
+*** BS(38,37) FOUND ***  (firsthit probe)
+sig = (0,-10,5,5)
+A = {1,1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,1,-1,1,1,1,-1,1,-1,1,1,1,1,-1,1,-1,1,-1,-1,-1,-1,-1,-1};
+B = {1,-1,-1,-1,-1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,-1,-1,1,1};
+C = {-1,-1,-1,-1,1,1,1,-1,1,-1,1,-1,1,1,-1,1,1,1,-1,1,1,-1,1,1,-1,1,1,1,1,-1,-1,1,1,1,-1,-1,-1};
+D = {-1,-1,1,-1,1,-1,1,1,1,1,1,1,-1,1,1,-1,1,-1,-1,-1,1,1,-1,1,1,-1,1,-1,1,1,-1,-1,1,1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..37 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=504353 profile_rank=61 nodes_this_cand=177100 score=96 elapsed=4598.8s
+
+=== FIRSTHIT SUMMARY (n=37, sig 0,10,5,5, shard 61/190) ===
+candidates_streamed=504353  pre_filter_rejected=0  score_rejected=408990
+arms_with_hits=3 / 190
+GATEB: candidates=1327554 aborted=238622 AB_nodes=48661619871
+GLOBAL FIRST: FIRSTHIT: idx=318790 profile_rank=33 nodes_this_cand=177100 score=96 elapsed=2860.67s
+=== done Tue Jul 21 05:04:20 EDT 2026 ===
+##FILE firsthit_output_16809933.txt
+=== FIRSTHIT probe BS(38,37) sig (2,4,7,9) — 190 arms — node rc31720 — Tue Jul 21 03:46:11 EDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Tue Jul 21 03:46:15 EDT 2026
+[driver] first FOUND at Tue Jul 21 06:25:52 EDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=37, sig 2,4,7,9, 190 arms) ===
+--- arm_93.log ---
+*** BS(38,37) FOUND ***  (firsthit probe)
+sig = (-2,4,7,9)
+A = {1,1,-1,1,-1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,1,-1,1,-1,-1,1,-1,1,1,1,1,1,-1,-1,1,1,-1,1,1,-1,-1,-1};
+B = {1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,-1,-1,-1,-1,1,-1,1,1,-1,-1,1,1,1,-1,1,1,1,1,-1,-1,-1,1,-1,1,1};
+C = {-1,-1,1,-1,-1,1,1,1,1,-1,1,1,-1,-1,-1,1,1,1,-1,1,-1,1,1,1,1,1,1,1,-1,1,-1,1,-1,1,1,-1,-1};
+D = {-1,-1,1,-1,1,1,-1,1,-1,1,-1,1,1,-1,-1,1,1,1,1,1,-1,1,1,1,-1,1,-1,-1,1,1,1,1,1,1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..37 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=1011238 profile_rank=93 nodes_this_cand=199065 score=108 elapsed=9558.99s
+
+=== FIRSTHIT SUMMARY (n=37, sig 2,4,7,9, shard 93/190) ===
+candidates_streamed=1011238  pre_filter_rejected=0  score_rejected=923929
+arms_with_hits=1 / 190
+GATEB: candidates=1011238 aborted=85066 AB_nodes=17222060369
+GLOBAL FIRST: FIRSTHIT: idx=1011238 profile_rank=93 nodes_this_cand=199065 score=108 elapsed=9558.99s
+=== done Tue Jul 21 06:55:54 EDT 2026 ===
+##FILE firsthit_output_16809935.txt
+=== FIRSTHIT probe BS(38,37) sig (2,12,1,1) — 190 arms — node rc21801 — Tue Jul 21 03:46:11 EDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Tue Jul 21 03:46:15 EDT 2026
+[driver] first FOUND at Tue Jul 21 10:46:02 EDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 188 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=37, sig 2,12,1,1, 190 arms) ===
+--- arm_26.log ---
+*** BS(38,37) FOUND ***  (firsthit probe)
+sig = (2,-12,1,1)
+A = {1,1,-1,-1,1,-1,1,1,1,-1,-1,1,1,1,-1,-1,1,1,-1,1,-1,-1,1,1,1,1,1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1};
+B = {1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,-1,-1,1,-1,1,1,1,1,-1,1,-1,-1,1,-1,-1,1,-1,-1,-1,-1,1,1};
+C = {-1,-1,-1,-1,1,1,1,1,1,1,-1,-1,-1,1,1,-1,-1,1,-1,1,1,1,-1,1,-1,1,-1,1,1,1,-1,-1,1,-1,1,-1,-1};
+D = {-1,-1,-1,1,-1,1,-1,1,-1,-1,1,-1,1,1,-1,1,1,1,-1,1,-1,-1,1,1,1,1,1,-1,-1,1,1,-1,-1,1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..37 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=2959674 profile_rank=26 nodes_this_cand=95138 score=108 elapsed=25231.4s
+
+=== FIRSTHIT SUMMARY (n=37, sig 2,12,1,1, shard 26/190) ===
+candidates_streamed=2959674  pre_filter_rejected=0  score_rejected=2383792
+--- arm_45.log ---
+*** BS(38,37) FOUND ***  (firsthit probe)
+sig = (2,-12,1,1)
+A = {1,1,-1,-1,1,-1,1,1,1,-1,-1,1,1,1,-1,-1,1,1,-1,1,-1,-1,1,1,1,1,1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1};
+B = {1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,-1,-1,1,-1,1,1,1,1,-1,1,-1,-1,1,-1,-1,1,-1,-1,-1,-1,1,1};
+C = {-1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,1,1,-1,1,-1,1,1,1,1,-1,1,-1,1,-1,-1};
+D = {-1,-1,-1,1,-1,1,1,1,-1,-1,1,-1,1,1,1,-1,-1,1,-1,1,1,1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..37 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=2943220 profile_rank=45 nodes_this_cand=95138 score=108 elapsed=25176.5s
+
+=== FIRSTHIT SUMMARY (n=37, sig 2,12,1,1, shard 45/190) ===
+candidates_streamed=2943220  pre_filter_rejected=0  score_rejected=2372941
+arms_with_hits=2 / 190
+GATEB: candidates=5902894 aborted=1133496 AB_nodes=228323154132
+GLOBAL FIRST: FIRSTHIT: idx=2959674 profile_rank=26 nodes_this_cand=95138 score=108 elapsed=25231.4s
+=== done Tue Jul 21 11:16:05 EDT 2026 ===
+##FILE firsthit_output_16809939.txt
+=== FIRSTHIT probe BS(38,37) sig (6,8,5,5) — 190 arms — node rc13607 — Tue Jul 21 04:27:13 EDT 2026 ===
+[driver] score tiers: arms 0-46 <=110, 47-94 <=110, rest ungated
+[driver] 190 arms launched Tue Jul 21 04:27:16 EDT 2026
+[driver] first FOUND at Tue Jul 21 09:15:28 EDT 2026 — grace 1800s for remaining arms
+[driver] grace over — stopping 189 remaining arms
+
+=== FIRSTHIT AGGREGATE (n=37, sig 6,8,5,5, 190 arms) ===
+--- arm_173.log ---
+*** BS(38,37) FOUND ***  (firsthit probe)
+sig = (6,-8,5,5)
+A = {1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,1,1,1,-1,1,1,1,-1,1,-1,1,-1,-1,1,-1,-1,1,-1,1,-1,-1,1,1,1,1,1};
+B = {1,1,1,-1,-1,-1,1,-1,-1,-1,1,-1,-1,1,-1,1,1,1,1,-1,1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,-1,1,1,-1,-1,-1,-1};
+C = {-1,-1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,1,1,1,1,1,1,-1,1,1,1,-1,-1,1,1,-1,-1,1,-1,1,1,-1,-1};
+D = {-1,-1,-1,1,-1,1,1,-1,-1,1,1,1,1,1,-1,-1,-1,1,1,1,-1,1,1,1,-1,1,-1,1,-1,1,1,1,1,-1,1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..37 = 0  (NPAF==0 confirmed)
+FIRSTHIT: idx=509143 profile_rank=173 nodes_this_cand=190379 score=116 elapsed=17266.4s
+
+=== FIRSTHIT SUMMARY (n=37, sig 6,8,5,5, shard 173/190) ===
+candidates_streamed=509143  pre_filter_rejected=0  score_rejected=0
+arms_with_hits=1 / 190
+GATEB: candidates=509143 aborted=485167 AB_nodes=99146772642
+GLOBAL FIRST: FIRSTHIT: idx=509143 profile_rank=173 nodes_this_cand=190379 score=116 elapsed=17266.4s
+=== done Tue Jul 21 09:45:31 EDT 2026 ===

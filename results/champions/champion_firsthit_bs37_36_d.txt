@@ -1,0 +1,18 @@
+36 37 0
+3 11 0 4
+1 -1 -1 -1 1 1 -1 -1 1 1 1 1 1 -1 -1 -1 -1 -1 -1 1 -1 1 1 -1 -1 1 -1 1 1 1 1 1 1 -1 1 1 -1
+1 -1 -1 1 1 1 -1 1 1 -1 -1 1 1 1 1 -1 -1 -1 1 1 -1 1 -1 1 -1 1 1 -1 1 -1 1 1 1 1 1 1 1
+1 -1 -1 1 -1 1 -1 1 1 -1 -1 1 1 -1 -1 -1 1 1 -1 1 -1 -1 1 1 -1 1 -1 1 -1 1 -1 1 1 1 -1 -1
+-1 -1 -1 -1 -1 -1 1 1 1 1 -1 -1 1 -1 1 1 -1 -1 1 -1 1 1 1 1 1 1 1 1 -1 -1 1 1 -1 1 -1 1
+# BS(37,36), n=36 — banked 2026-07-21 (n=36/37 wide wave submitted 2026-07-20 ~14:30 ET).
+# Found by the WZ_FIRSTHIT probe (first-hit architecture), canon+eq2.12+score-tier
+#   binary, WZ_THM212=1, 190 arms x 1 core, budget 200k nodes/cand, FH_SCORE_TIERS=110,130
+#   (driver logged both gated tiers as <=110 — see HANDOFF 07-21 note).
+# Provenance: fir job 49706283, cluster_firsthit_probe.sh, wz_match.cpp,
+#   sig class (3,11,0,4).
+#   Banked instance = the GLOBAL FIRST arm (arm_136): FIRSTHIT: idx=1153500 profile_rank=136 nodes_this_cand=69543 score=108 elapsed=37091.4s
+#   arms_with_hits=1 / 190; GATEB: candidates=1153500 aborted=1119353 AB_nodes=227713259501
+# Verified: tools/verify_npaf.py 2026-07-21 — PASS, NPAF[s]=0 for all s=1..37,
+#   signature sum-of-squares = 146 (expect 146), fits Wang-Zhu comb8 pair encoding.
+# Honest framing: solver-capability result, not a record — n<=40 is known to the
+#   literature (Wang-Zhu constructed 41-43; n=44 is the open record).
