@@ -2,6 +2,27 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-22 — OLD-SOURCE BATCH LAPSED ZERO (as predicted); FIXED-SOURCE WAVE LIVE;
+🚨 TRILLIUM ANSWERING AGAIN → TAR-PIPE WINDOW OPEN (loop run 14).** Checker ~13:00: Rorqual's
+entire old-source first batch completed with candidates=0 — the 7 remaining n=37 classes
+(`16809929/30/32/34/36/37/38`) AND all 11 n=42 classes (`16809940-50`), every file
+`arms_with_hits=0, GATEB: candidates=0` — exactly the 07-21-diagnosed mod-3 stream wall, NOT
+searched negatives; Nibi's scancel'd `18017139-41` outputs confirm the same zeros. NO new
+FOUND anywhere. The FIXED (m6 + forced 2.11b/2.12) wave is live and untouched: Fir
+`49925355-63` (9× n=41) R ~5.6 h · Rorqual `16939407-13` (n=42) R 3-7 h + `16939414-17` PD ·
+Nibi `18168030/31/33` PD. **TRILLIUM'S LOGIN NODE ANSWERED this run** — `1926730/31` still PD
+(maintenance reservation) → the 07-21 STANDING ACTION is NOW: paste the source-only tar-pipe
+BEFORE the reservation lifts, or both jobs compile the PRE-M6 source and lapse zero:
+```
+cd ~/Projects/BS45_Quantum_Explorer && tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_firsthit_probe.sh | ssh dangord@trillium.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf -'
+```
+(no sbatch — the queued jobs compile `src/solver/wz_match.cpp` at start). `rung_status check`
+= EXHAUSTED (n=38 budget-0, deliberate) → no SA refill. Checker exclusions updated
+(16809929-50, 18017139-41); no submits, no code changes. NEEDS_HUMAN: (1) the Trillium
+tar-pipe above (time-boxed); (2) n=38/39 wave greenlight — can bundle a fixed-stream resubmit
+of the 9 zero-cand ladder classes (2× n=36 + 7× n=37: never actually searched); (3) Task 3
+call; (4) kotsireas send (brief carries n≤37).**
+
 **⚡ 2026-07-21 — ZERO-CANDIDATE WALL DIAGNOSED + FIXED (the 07-20 anomaly: all n≥41 jobs +
 2 n=36 classes streamed nothing for 11.5-25 h).** Root cause chain, each step MEASURED today:
 (1) the probe streamed from MOD-3 profiles, which are walltime ATOMS at n≥36 (the known 07-15
@@ -116,7 +137,7 @@ the probe frontier); ledger stays parked at budget 0 unless Daniel overrules. Ca
 (send `docs/kotsireas_brief.md`) remains Daniel-only.
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
-**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(38,37) (n=37) banked 2026-07-21 — the wide wave cleared 7/9 n=36 classes AND 4/4 completed n=37 classes overnight, 14/14 banners NPAF-verified; 7 more n=37 + 11 n=42 classes still running** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33 → 34 ×10 → 35 ×5 → 36 ×7 → 37 ×4; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=38 / BUDGET=0 — SA retired de facto; next rung needs the n=38/39 enumeration + the zero-candidate anomaly diagnosed + Daniel's greenlight.
+**Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(38,37) (n=37) banked 2026-07-21 — the wide wave cleared 7/9 n=36 classes AND 4/4 completed n=37 classes overnight, 14/14 banners NPAF-verified; the remaining 7 n=37 + 11 n=42 old-source jobs lapsed candidates=0 on 07-22 (zero-candidate stream wall, NOT negatives — fixed-source wave live)** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33 → 34 ×10 → 35 ×5 → 36 ×7 → 37 ×4; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=38 / BUDGET=0 — SA retired de facto; next rung needs the n=38/39 enumeration + the zero-candidate anomaly diagnosed + Daniel's greenlight.
 BS(45,44) (n=44) is the dream/world-record but is OPEN for the whole field — blind n≥36 is rigorously
 infeasible by exhaustion here (see 2026-06-27 TOP OF MIND). Active result path = the metaheuristic ladder.
 
@@ -208,7 +229,20 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-21, loop run 13) — 🚨🚨 NEEDS_HUMAN: NEW BANKED BEST n=37 — the 07-20
+**LIVE ROUND (2026-07-22, loop run 14) — BOOKKEEPING + ⏰ TRILLIUM TAR-PIPE WINDOW OPEN.**
+Checker: no new FOUND. Rorqual's old-source batch fully lapsed zero (7× n=37
+`16809929/30/32/34/36/37/38` + 11× n=42 `16809940-50`, all `candidates=0` — the diagnosed
+mod-3 stream wall, NOT searched negatives; recorded + excluded in checker). Nibi's old trio
+`18017139-41` shows the same zeros (already scancel'd 07-21). The fixed-source wave is
+running untouched: Fir `49925355-63` (9× n=41) R ~5.6 h · Rorqual `16939407-13` (n=42) R +
+`16939414-17` PD · Nibi `18168030/31/33` PD. **Trillium REACHABLE again, `1926730/31` still
+PD → NEEDS_HUMAN #1: paste the source-only tar-pipe (block in the 07-22 TOP OF MIND) before
+maintenance lifts.** `rung_status check` = EXHAUSTED (n=38 budget-0, deliberate) → no SA
+refill; SA tails lapsing as instructed. No banks, no unverified banners, no code changes.
+Standing NEEDS_HUMAN: n=38/39 wave greenlight (+ optional fixed-stream resubmit of the 9
+zero-cand n=36/37 classes), Task 3 call, kotsireas send.
+
+**PREVIOUS ROUND (2026-07-21, loop run 13) — 🚨🚨 NEEDS_HUMAN: NEW BANKED BEST n=37 — the 07-20
 wide wave cleared n=36 (7/9 classes, Fir) and n=37 (4/4 completed classes, Rorqual)
 overnight.** Checker showed hits on 49706283 (n=36) + 4 Rorqual n=37 files; two duo_run
 fetches pulled ALL outputs (checker `head -12` had hidden 8 of Fir's 20 files — 6 of the 7
