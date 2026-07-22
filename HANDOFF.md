@@ -23,6 +23,18 @@ tar-pipe above (time-boxed); (2) n=38/39 wave greenlight — can bundle a fixed-
 of the 9 zero-cand ladder classes (2× n=36 + 7× n=37: never actually searched); (3) Task 3
 call; (4) kotsireas send (brief carries n≤37).**
 
+**⚡ 2026-07-22 — REVERSAL CANONICALIZATION LANDED (WZ isomorphism list part 2; env
+`WZ_FH_NO_CANON` disables both canon levers together).** Reversing A alone (or B alone)
+preserves every autocorrelation sum ⇒ each completion class had 4 mirror copies; the completer
+now keeps only the lex-canonical rep (incremental tie-tracking in the pair DFS, composes with
+the A[0]=B[0]=+1 root canon). **Validated: hit indices BIT-IDENTICAL at n=7/10/11/19, all
+NPAF==0; n=19 wall 1.94s→0.18s (10.6× from the two canon levers); n=29 1000-cand sample:
+clean-resolutions 10 → 203 → 722 per 1000 (72× the resolving power of a week ago; aborts
+99%→28%).** Ships with the NEXT tar-pipe — the live 40s wave runs yesterday's (canon-×4-only)
+binary; if tonight's wave comes back streaming-but-hitless with high aborts, the resubmit
+carries this. Trillium source upgrade LANDED (Daniel pasted ~13:45; jobs still safely PD
+behind the reservation). Bench: GPU feasibility spike; Kotsireas send still Daniel-only.
+
 **⚡ 2026-07-21 — ZERO-CANDIDATE WALL DIAGNOSED + FIXED (the 07-20 anomaly: all n≥41 jobs +
 2 n=36 classes streamed nothing for 11.5-25 h).** Root cause chain, each step MEASURED today:
 (1) the probe streamed from MOD-3 profiles, which are walltime ATOMS at n≥36 (the known 07-15

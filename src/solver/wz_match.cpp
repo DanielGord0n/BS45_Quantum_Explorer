@@ -719,8 +719,16 @@ static inline void fh_unplace(int p, int *A, int *B, int *Dab, int *Kab, int L) 
   }
 }
 
+// Reversal canonicalization (WZ isomorphism list, part 2 — added 2026-07-22).
+// Reversing A alone (or B alone) preserves every A_i*A_{i+s} sum and the |sum|
+// checks, so each completion class carries 4 mirror copies. Canonical rep:
+// A >=lex cmpA*rev(A), where cmpA = A[L-1] (the sign that makes rev(A)'s
+// negation-canonical form start with +1 — composes with the A[0]=B[0]=+1 root
+// canon, which this REQUIRES). Tracked incrementally: while the prefix ties,
+// the first strict difference must take A[d]=+1. WZ_FH_NO_CANON disables both.
 static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
-                         int sumA, int sumB) {
+                         int sumA, int sumB,
+                         int a_tied, int a_cmp, int b_tied, int b_cmp) {
   if (fh_aborted) return false;
   int n = G_N, L = G_N1;
   int half = L / 2;
@@ -756,7 +764,24 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
     // representative with A[0]=+1 AND B[0]=+1 — fix both at the root: 2 of
     // the 8 d=0 combos survive, a sound 4x cut. WZ_FH_NO_CANON=1 disables
     // (A/B lever for validation).
-    if (d == 0 && !getenv("WZ_FH_NO_CANON") && (a1 != 1 || b1 != 1)) continue;
+    static const bool fh_canon = !getenv("WZ_FH_NO_CANON");
+    if (d == 0 && fh_canon && (a1 != 1 || b1 != 1)) continue;
+    // Reversal canon (requires the root canon): while the A-prefix ties its
+    // reversed image, the first difference must take A[d]=+1; ditto B.
+    int na_tied = a_tied, na_cmp = a_cmp, nb_tied = b_tied, nb_cmp = b_cmp;
+    if (fh_canon) {
+      if (d == 0) { na_cmp = a2; nb_cmp = b2; }  // ties always hold at d=0
+      else {
+        if (a_tied) {
+          int cv = a_cmp * a2;
+          if (a1 != cv) { if (a1 != 1) continue; na_tied = 0; }
+        }
+        if (b_tied) {
+          int cv = b_cmp * b2;
+          if (b1 != cv) { if (b1 != 1) continue; nb_tied = 0; }
+        }
+      }
+    }
     fh_place(i1, a1, b1, A, B, Dab, Kab, L);
     fh_place(i2, a2, b2, A, B, Dab, Kab, L);
     fh_nodes_total++;
@@ -775,7 +800,8 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
       for (int s = 1; s <= n; s++)
         if (abs(FH_CD_target[s] - Dab[s]) > Kab[s]) { prune = true; break; }
     if (!prune) {
-      if (fh_ab_search(d + 1, A, B, Dab, Kab, nsA, nsB))
+      if (fh_ab_search(d + 1, A, B, Dab, Kab, nsA, nsB,
+                       na_tied, na_cmp, nb_tied, nb_cmp))
         return true;
     }
     fh_unplace(i2, A, B, Dab, Kab, L);
@@ -807,7 +833,7 @@ static int fh_complete_ab(const int *C, const int *D) {
   FH_ABS_B = abs(G_SIG_B);
   fh_cur = 0;
   fh_aborted = false;
-  if (!fh_ab_search(0, A, B, Dab, Kab, 0, 0))
+  if (!fh_ab_search(0, A, B, Dab, Kab, 0, 0, 1, 0, 1, 0))
     return fh_aborted ? 3 : 2;
   for (int s = 1; s <= n; s++)
     if (npaf_at(A, B, n1, C, D, n, s) != 0) return 2;
