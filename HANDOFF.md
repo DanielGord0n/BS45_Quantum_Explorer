@@ -2,6 +2,41 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-23 — "ZERO-CANDIDATE" WAS AN OBSERVABILITY ARTIFACT, NOT A STREAM WALL —
+FIXED-SOURCE WAVE STREAMS FINE BUT RAN BLIND; FIX VALIDATED ON `auto/2026-07-23`
+(loop run 15).** Checker 13:00: no FOUND anywhere. Fir's 9× n=41 (`49925355-63`) and
+Rorqual's 7 completed n=42 (`16939407-13`) all read `arms_with_hits=0, GATEB:
+candidates=0` — but arm-log diagnosis (two read-only duo_runs) proves the m6 stream
+ENGAGED and FLOWED on both: fixed source confirmed on disk ($SCRATCH mtimes Jul 21),
+arm_0 logs show `mod-6 stream source: 289738 cells` (n=41) / `639312 cells` (n=42),
+sacct shows all jobs ran the full 11h30m, all 178 arms deadline-killed, **0/178 arms
+printed a summary — and `candidates_streamed=` existed ONLY in the summary, so the
+driver's GATEB grep summed zero.** Compounding: the old periodic line printed every
+200k candidates, but n≥41 arms move ~5-20 cand/s (<200k per 11.5h shard) → no line
+ever printed; arms sat below the only observability threshold the solver had.
+**VERDICT: the 16 fixed-source completions are "no hit in 11.5h × 178 arms" bounded
+negatives with UNKNOWN depth — NOT empty streams, NOT searched-out classes.**
+(Corollary: the 07-22 old-source batch zeros carry the same reporting artifact; the
+mod-3-wall diagnosis itself rests on the 07-21 LOCAL measurement, which stands.)
+FIX on branch `auto/2026-07-23` (commit 04964e6; R1-validated: n=19 firsthit
+bit-identical idx=807/rank=2/nodes=8087; SIGTERM test at n=29 dumps an INTERRUPTED
+summary, exit 3; tokens recovered by the driver's exact grep pipeline): (1) SIGTERM
+folds into fh_stop — killed arms print the true summary flagged INTERRUPTED (counts
+= lower bounds); (2) time-based progress every 60s (`WZ_FH_PROG_SEC`) carrying
+`candidates_streamed=`/`budget_aborted=`/`total_AB_nodes=`, placed ABOVE the score
+gate (score-rejection returns early and would starve gated arms — caught in
+validation); (3) driver GATEB line adds `arms_summarized`/`arms_interrupted`.
+NEEDS_HUMAN #1 — paste the tar-pipe (Trillium BEFORE its PD `1926730/31` start, or
+they run blind too; queued jobs compile `src/solver/wz_match.cpp` at start, so
+source-only is enough for them):
+```
+cd ~/Projects/BS45_Quantum_Explorer && git checkout auto/2026-07-23 && for c in fir rorqual nibi trillium; do tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_firsthit_probe.sh | ssh dangord@$c.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && cp -f cluster/deploy/cluster_firsthit_probe.sh ./cluster_firsthit_probe.sh'; done; git checkout main
+```
+NEEDS_HUMAN #2 — resubmit call for the 16 hitless-blind n=41/42 classes
+(exploratory = Daniel's): a resubmit also picks up reversal canonicalization (72×
+resolving power, in repo since 07-22, never yet in a wave binary) + full depth
+telemetry. Still standing: n=38/39 wave greenlight, Task 3, kotsireas send.**
+
 **⚡ 2026-07-22 — OLD-SOURCE BATCH LAPSED ZERO (as predicted); FIXED-SOURCE WAVE LIVE;
 🚨 TRILLIUM ANSWERING AGAIN → TAR-PIPE WINDOW OPEN (loop run 14).** Checker ~13:00: Rorqual's
 entire old-source first batch completed with candidates=0 — the 7 remaining n=37 classes
@@ -241,18 +276,23 @@ pen+bias). Reported 8 under strong bias ⇒ true pen ∈ {6, 8}; strong-bias flo
 BELOW plain's, masked by the bias term. Cross-arm floor comparisons are therefore approximate;
 `bestAB=0`/FOUND is unaffected (bias is gated on pen>4, can never touch the success predicate).
 
-**LIVE ROUND (2026-07-22, loop run 14) — BOOKKEEPING + ⏰ TRILLIUM TAR-PIPE WINDOW OPEN.**
-Checker: no new FOUND. Rorqual's old-source batch fully lapsed zero (7× n=37
-`16809929/30/32/34/36/37/38` + 11× n=42 `16809940-50`, all `candidates=0` — the diagnosed
-mod-3 stream wall, NOT searched negatives; recorded + excluded in checker). Nibi's old trio
-`18017139-41` shows the same zeros (already scancel'd 07-21). The fixed-source wave is
-running untouched: Fir `49925355-63` (9× n=41) R ~5.6 h · Rorqual `16939407-13` (n=42) R +
-`16939414-17` PD · Nibi `18168030/31/33` PD. **Trillium REACHABLE again, `1926730/31` still
-PD → NEEDS_HUMAN #1: paste the source-only tar-pipe (block in the 07-22 TOP OF MIND) before
-maintenance lifts.** `rung_status check` = EXHAUSTED (n=38 budget-0, deliberate) → no SA
-refill; SA tails lapsing as instructed. No banks, no unverified banners, no code changes.
-Standing NEEDS_HUMAN: n=38/39 wave greenlight (+ optional fixed-stream resubmit of the 9
-zero-cand n=36/37 classes), Task 3 call, kotsireas send.
+**LIVE ROUND (2026-07-23, loop run 15) — DIAGNOSIS ROUND: fixed-source "zeros" exposed as
+an observability artifact; fix validated + committed on `auto/2026-07-23` (see the 07-23
+TOP OF MIND for the full chain).** Checker 13:00: no new FOUND. Fir `49925355-63` (9× n=41)
+and Rorqual `16939407-13` (7× n=42) completed hitless-BLIND (GATEB zeros = aggregation
+artifact; m6 stream confirmed flowing via arm logs; depth unknown — excluded in checker as
+processed). Still live on the pre-observability binary: Rorqual `16939415` R +
+`16939414/16/17` PD · Nibi `18168030/31/33` R (banner-start 02:27 EDT vs squeue 1h27 —
+likely preempt/requeue; --requeue is set, normal) · Trillium `1926730/31` PD behind
+maintenance (07-22 source landed, safe to start but would run BLIND — tar-pipe of the
+obs-fix branch preferred first). `rung_status check` = EXHAUSTED (n=38 budget-0,
+deliberate) → no SA refill; SA tails lapsing. No banks, no unverified banners. Code change
+validated per R1 and pushed to `auto/2026-07-23` — NOT deployed (tar-pipe is Daniel's step,
+block in the 07-23 entry). NEEDS_HUMAN: (1) tar-pipe the obs-fix branch to all four
+clusters (Trillium time-boxed by maintenance-end); (2) resubmit call for the 16
+hitless-blind n=41/42 classes (picks up reversal canon + telemetry); (3) n=38/39 wave
+greenlight; (4) Task 3 call; (5) kotsireas send (`docs/kotsireas_brief.md` READY — a
+methods ask, the door to 42+).
 
 **PREVIOUS ROUND (2026-07-21, loop run 13) — 🚨🚨 NEEDS_HUMAN: NEW BANKED BEST n=37 — the 07-20
 wide wave cleared n=36 (7/9 classes, Fir) and n=37 (4/4 completed classes, Rorqual)
