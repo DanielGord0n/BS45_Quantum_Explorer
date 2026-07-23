@@ -82,6 +82,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <csignal>
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
@@ -678,6 +679,23 @@ static inline uint64_t autocorr_key(const int *X, const int *Y, int L,
 static int g_solA[256], g_solB[256], g_solC[256], g_solD[256];
 static atomic<bool> g_found{false};
 
+// The probe driver kills arms with SIGTERM at its 11.5h deadline (and in the
+// post-FOUND grace window). Without a handler the arm dies before its FIRSTHIT
+// SUMMARY prints, and the driver's GATEB aggregation — which greps
+// candidates_streamed=/budget_aborted=/total_AB_nodes= from the arm logs —
+// reads 0 for every killed arm. A deep hitless run is then indistinguishable
+// from an empty stream (the 07-22/23 "zero-candidate" n=41/42 waves were
+// exactly this artifact: m6 stream flowing, all 178 arms deadline-killed
+// pre-summary). SIGTERM now folds into the normal fh_stop path: the DFS
+// unwinds at its next stop-flag check and the true summary prints, flagged
+// INTERRUPTED (its counts are lower bounds, the stream was NOT exhausted).
+static atomic<bool> *g_fh_stop_ptr = nullptr;
+static volatile sig_atomic_t g_fh_sigterm = 0;
+static void fh_on_sigterm(int) {
+  g_fh_sigterm = 1;
+  if (g_fh_stop_ptr) g_fh_stop_ptr->store(true);
+}
+
 // ==================== WZ_FIRSTHIT: A,B completion (Gate B/C) =================
 // Ported from wz_generate.cpp (ab_search/complete_ab, 06-24, proven machinery)
 // for the 2026-07-16 first-hit work order. Given fixed C,D, backtrack A,B with
@@ -1096,13 +1114,38 @@ int main(int argc, char **argv) {
     long long bt_entered = 0, hit_idx = -1;
     int hit_prof = -1;
     atomic<bool> fh_stop{false};
+    g_fh_stop_ptr = &fh_stop;
+    signal(SIGTERM, fh_on_sigterm);
+    double prog_sec = 60;  // periodic progress cadence, seconds (WZ_FH_PROG_SEC)
+    if (const char *e = getenv("WZ_FH_PROG_SEC")) prog_sec = atof(e);
     auto T0 = Clock::now();
+    auto last_prog = T0;
     for (int pi = fh_shard; pi < (int)fhProfs.size() && !fh_stop.load(); pi += fh_nshard) {
       long long lv = 0, okc = 0;
       function<void(const vector<int>&, const vector<int>&)> probe =
           [&](const vector<int> &C, const vector<int> &D) {
         if (fh_stop.load()) return;
         cand++;
+        // Progress is TIME-based and carries the exact tokens the driver
+        // aggregates: the old every-200k-cands line never printed at n>=41
+        // rates (~5-20 cand/s => <200k per 11.5h shard), so killed arms left
+        // logs with no counters at all. Clock checked every 256 cands. Sits
+        // ABOVE the score gate — the score-rejection path returns early and
+        // would starve progress on gated arms. WZ_FH_PROG_SEC overrides.
+        if ((cand & 255) == 0) {
+          auto nowp = Clock::now();
+          if (chrono::duration<double>(nowp - last_prog).count() >= prog_sec) {
+            last_prog = nowp;
+            double t = chrono::duration<double>(nowp - T0).count();
+            cout << "[firsthit progress] candidates_streamed=" << cand
+                 << "  pre_filter_rejected=" << pre_rej
+                 << "  score_rejected=" << score_rej
+                 << "  clean_no_AB=" << clean_no
+                 << "  budget_aborted=" << aborted
+                 << "  total_AB_nodes=" << fh_nodes_total
+                 << "  [" << t << "s]\n" << flush;
+          }
+        }
         int Ci[64], Di[64];
         for (int i = 0; i < n; i++) { Ci[i] = C[i]; Di[i] = D[i]; }
         if (score_max > 0) {
@@ -1156,13 +1199,6 @@ int main(int argc, char **argv) {
             cout << "  frac_depth=" << (double)hit_idx / stream_total;
           cout << "\n" << flush;
         }
-        if ((cand % 200000) == 0) {
-          double t = chrono::duration<double>(Clock::now() - T0).count();
-          cout << "[firsthit " << cand << " cands] pre_rej=" << pre_rej
-               << " score_rej=" << score_rej << " clean_no=" << clean_no
-               << " aborted=" << aborted << " nodes=" << fh_nodes_total
-               << " [" << t << "s]\n" << flush;
-        }
         if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
       };
       count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
@@ -1179,7 +1215,11 @@ int main(int argc, char **argv) {
          << "  budget_aborted=" << aborted << "  total_AB_nodes=" << fh_nodes_total << "\n"
          << (hit_idx >= 0
              ? "RESULT: FOUND at idx=" + to_string(hit_idx)
-             : "RESULT: NO HIT within probe budget — NOT a proof of absence")
+             : (g_fh_sigterm
+                ? string("RESULT: INTERRUPTED (SIGTERM) — counts are LOWER "
+                         "BOUNDS, stream NOT exhausted")
+                : string("RESULT: NO HIT within probe budget — NOT a proof "
+                         "of absence")))
          << "\nTime: " << t << "s\n" << flush;
     return hit_idx >= 0 ? 0 : 3;
   }
