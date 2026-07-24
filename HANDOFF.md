@@ -2,6 +2,24 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-24 — FIRST FULLY-OBSERVED n=41 DATA (Daniel's manual fir+nibi re-check): the
+obs fix WORKS (178/178 arms summarized on all 9 Fir jobs) and the depth picture is finally
+MEASURED.** Fir `50267781-91` (9× n=41, canon+obs binary): hitless, but **10.6-19.4M
+candidates CLEANLY RESOLVED per class-job** (abort rate collapsed to 0.006-0.27% at budget
+5e7 — the canon levers made per-candidate search essentially exact), ~123M n=41 candidates
+exhausted total, AB_nodes ~4.8e13/job (saturated node). **Depth math: density trend
+(1/21k @29 thinning 2-3×/rung) ⇒ expected first hit at n=41 ≈ 20M-500M cand/class; one
+node-day reaches 10-19M ⇒ wave 1 hit 0.03×-0.5× of expected depth. NOT a wall — a progress
+bar.** Nibi `18168030/31/33` = blind (started 02:27, pre-tar-pipe) — bounded negatives, depth
+unknown. Rorqual 10 jobs still PD; Trillium still reservation-held. **Provenance resolved:
+`17194603-09` = Daniel's 07-23 resubmit of the 7 hitless n=42 classes, submitted AFTER the
+obs tar-pipe → will carry real telemetry.** BUILT+VALIDATED today: `auto/2026-07-23` MERGED
+to main + **`WZ_FH_PROF_SKIP` continuation lever + `cells_done` telemetry** (commit 39a24dc;
+skip invariant exact at n=11: cells 916−k, complement streams correctly; n=19 bit-identical)
+— wave 3+ resumes at measured disjoint depth. Wave 2 strategy (no cells data from wave 1):
+**reverse profile order (`WZ_FH_PROF_ORDER=2`)** = disjoint-by-construction coverage from
+the opposite end, no skip estimate needed. BOTH PASTED ~14:20: tar-pipe landed all 4 clusters (Rorqual's 10 PD upgrade at compile-time); Fir wave-2 = `50610008-016` (9× n=41, PROF_ORDER=2 reverse — disjoint from wave 1 by construction).
+
 **⚡ 2026-07-24 — 7 UNATTRIBUTED FIRSTHIT JOBS ON RORQUAL (`17194603-09` PD) — PRESUMED
 DANIEL'S RESUBMIT OF THE 7 HITLESS n=42 CLASSES; NEEDS CONFIRMATION + tar-pipe status
 (loop run 16).** Checker 13:06: Fir and Nibi MISSED (no Duo approval in 180s — no data,
