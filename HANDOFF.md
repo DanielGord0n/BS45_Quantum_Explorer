@@ -2,6 +2,27 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-24 — 7 UNATTRIBUTED FIRSTHIT JOBS ON RORQUAL (`17194603-09` PD) — PRESUMED
+DANIEL'S RESUBMIT OF THE 7 HITLESS n=42 CLASSES; NEEDS CONFIRMATION + tar-pipe status
+(loop run 16).** Checker 13:06: Fir and Nibi MISSED (no Duo approval in 180s — no data,
+not idle evidence). Rorqual reached: `16939415` (n=42 sig (7,9,2,6)) completed
+`arms_with_hits=0, GATEB: candidates=0` on the PRE-OBS binary → one more hitless-BLIND
+bounded negative, depth unknown (same 07-23 artifact class, NOT empty, NOT searched out);
+`16939414/16/17` still PD; **NEW: `17194603-09`, 7× FIRSTHIT PD, absent from HANDOFF/ledger
+— exactly the count of the 7 hitless-blind n=42 classes from 07-23 NEEDS_HUMAN #2, so
+presumed Daniel resubmitted them.** Unknown whether the `auto/2026-07-23` obs-fix tar-pipe
+landed first (branch still unmerged; jobs compile at start, so if it landed their outputs
+carry real `candidates_streamed=` summaries; if not they run blind too). Trillium reached:
+`1926730/31` still PD behind maintenance reservation → NEEDS_HUMAN #1 tar-pipe window STILL
+OPEN. `rung_status check` = EXHAUSTED n=38/budget-0 → no SA refill (deliberate). No FOUND
+anywhere. Actions: checker exclusions +16939415, pending list updated (17194603-09 flagged
+unconfirmed-provenance); no submits, no code changes. NEEDS_HUMAN: (1) confirm 17194603-09
+— did you submit them, and did the obs-fix tar-pipe land first? If not, the 07-23 4-cluster
+tar-pipe block still needs pasting (Trillium time-boxed, before its PD pair starts);
+(2) Fir/Nibi unreached — next checker run needs Duo taps; (3) still standing: n=38/39 wave
+greenlight, Task 3 call, kotsireas send (brief READY, carries n≤37 — the methods ask is the
+door to 42+).**
+
 **⚡ 2026-07-23 — "ZERO-CANDIDATE" WAS AN OBSERVABILITY ARTIFACT, NOT A STREAM WALL —
 FIXED-SOURCE WAVE STREAMS FINE BUT RAN BLIND; FIX VALIDATED ON `auto/2026-07-23`
 (loop run 15).** Checker 13:00: no FOUND anywhere. Fir's 9× n=41 (`49925355-63`) and
