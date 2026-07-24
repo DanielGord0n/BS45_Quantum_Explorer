@@ -111,7 +111,12 @@ for f in "$DIR"/arm_*.log; do
   nn=$(grep -oE "total_AB_nodes=[0-9]+" "$f" | tail -1 | cut -d= -f2)
   [ -n "$nn" ] && tot_nodes=$((tot_nodes+nn))
 done
-echo "GATEB: candidates=$tot_cand aborted=$tot_abort AB_nodes=$tot_nodes"
+# Arms killed before their summary now still report via SIGTERM-dumped
+# summaries / periodic progress lines; count both so a partial aggregate can
+# never read as an empty stream again (the 07-22/23 zero-candidate artifact).
+summarized=$(grep -l "FIRSTHIT SUMMARY" "$DIR"/arm_*.log 2>/dev/null | wc -l)
+interrupted=$(grep -l "RESULT: INTERRUPTED" "$DIR"/arm_*.log 2>/dev/null | wc -l)
+echo "GATEB: candidates=$tot_cand aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted)"
 # Global first hit = min by (profile_rank, idx) across arms
 grep -h "FIRSTHIT:" "$DIR"/arm_*.log 2>/dev/null \
   | sed -E 's/.*idx=([0-9]+) profile_rank=([0-9]+).*/\2 \1 &/' \
