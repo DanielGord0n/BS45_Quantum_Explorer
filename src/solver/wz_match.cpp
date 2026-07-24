@@ -1111,6 +1111,7 @@ int main(int argc, char **argv) {
          << " shard=" << fh_shard << "/" << fh_nshard << "\n" << flush;
 
     long long cand = 0, pre_rej = 0, score_rej = 0, clean_no = 0, aborted = 0;
+    long long cells_done = 0;  // fully-processed profile cells (feeds WZ_FH_PROF_SKIP)
     long long bt_entered = 0, hit_idx = -1;
     int hit_prof = -1;
     atomic<bool> fh_stop{false};
@@ -1119,8 +1120,17 @@ int main(int argc, char **argv) {
     double prog_sec = 60;  // periodic progress cadence, seconds (WZ_FH_PROG_SEC)
     if (const char *e = getenv("WZ_FH_PROG_SEC")) prog_sec = atof(e);
     auto T0 = Clock::now();
+    // WZ_FH_PROF_SKIP=k: skip each arm's first k profile cells — continuation
+    // waves search DISJOINT depth instead of re-treading the previous window
+    // (07-24: one node-day cleanly exhausts ~10-19M candidates/class at n=41;
+    // expected first hit is deeper — restarting at cell 0 wastes the window).
+    // Use the MIN cells-completed across the prior wave's arms: overlap is
+    // idempotent, a gap would be unsound.
+    int fh_skip = 0;
+    if (const char *e = getenv("WZ_FH_PROF_SKIP")) fh_skip = atoi(e);
     auto last_prog = T0;
-    for (int pi = fh_shard; pi < (int)fhProfs.size() && !fh_stop.load(); pi += fh_nshard) {
+    for (int pi = fh_shard + fh_skip * fh_nshard;
+         pi < (int)fhProfs.size() && !fh_stop.load(); pi += fh_nshard) {
       long long lv = 0, okc = 0;
       function<void(const vector<int>&, const vector<int>&)> probe =
           [&](const vector<int> &C, const vector<int> &D) {
@@ -1203,6 +1213,7 @@ int main(int argc, char **argv) {
       };
       count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
                     lv, okc, &probe, fh_m, &fh_stop);
+      if (!fh_stop.load()) cells_done++;  // only cells processed to completion
     }
     double t = chrono::duration<double>(Clock::now() - T0).count();
     long long completed_tested = clean_no + aborted + (hit_idx >= 0 ? 1 : 0);
@@ -1212,7 +1223,8 @@ int main(int argc, char **argv) {
          << "candidates_streamed=" << cand << "  pre_filter_rejected=" << pre_rej
          << "  score_rejected=" << score_rej << "\n"
          << "backtracks_entered=" << completed_tested << "  clean_no_AB=" << clean_no
-         << "  budget_aborted=" << aborted << "  total_AB_nodes=" << fh_nodes_total << "\n"
+         << "  budget_aborted=" << aborted << "  total_AB_nodes=" << fh_nodes_total
+         << "  cells_done=" << cells_done << " (skip=" << fh_skip << ")\n"
          << (hit_idx >= 0
              ? "RESULT: FOUND at idx=" + to_string(hit_idx)
              : (g_fh_sigterm
