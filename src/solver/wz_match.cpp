@@ -1128,45 +1128,31 @@ int main(int argc, char **argv) {
     // idempotent, a gap would be unsound.
     int fh_skip = 0;
     if (const char *e = getenv("WZ_FH_PROF_SKIP")) fh_skip = atoi(e);
+    bool cell_order = fh_m6;   // flat-first within cells (see below); =0 disables
+    if (const char *e = getenv("WZ_FH_CELL_ORDER")) cell_order = atoi(e) != 0;
     auto last_prog = T0;
     for (int pi = fh_shard + fh_skip * fh_nshard;
          pi < (int)fhProfs.size() && !fh_stop.load(); pi += fh_nshard) {
       long long lv = 0, okc = 0;
-      function<void(const vector<int>&, const vector<int>&)> probe =
-          [&](const vector<int> &C, const vector<int> &D) {
-        if (fh_stop.load()) return;
-        cand++;
-        // Progress is TIME-based and carries the exact tokens the driver
-        // aggregates: the old every-200k-cands line never printed at n>=41
-        // rates (~5-20 cand/s => <200k per 11.5h shard), so killed arms left
-        // logs with no counters at all. Clock checked every 256 cands. Sits
-        // ABOVE the score gate — the score-rejection path returns early and
-        // would starve progress on gated arms. WZ_FH_PROG_SEC overrides.
-        if ((cand & 255) == 0) {
-          auto nowp = Clock::now();
-          if (chrono::duration<double>(nowp - last_prog).count() >= prog_sec) {
-            last_prog = nowp;
-            double t = chrono::duration<double>(nowp - T0).count();
-            cout << "[firsthit progress] candidates_streamed=" << cand
-                 << "  pre_filter_rejected=" << pre_rej
-                 << "  score_rejected=" << score_rej
-                 << "  clean_no_AB=" << clean_no
-                 << "  budget_aborted=" << aborted
-                 << "  total_AB_nodes=" << fh_nodes_total
-                 << "  [" << t << "s]\n" << flush;
-          }
+      // Flat-first within-cell ordering (WZ_FH_CELL_ORDER=0 disables; default
+      // ON for mod-6 cells): buffer the cell's candidates, sort by flatness
+      // score ascending, complete in that order. Every arm gets the measured
+      // ~35x flat-density enrichment as an ORDERING — no coverage loss —
+      // instead of only the score-gated quarter. 500k buffer cap guards
+      // monster cells (drain in sorted batches; batch-local order, exact
+      // coverage). WZ's own 41-43 solutions score 140/142/134 — flat.
+      struct CellCand { long long sc; vector<int> C, D; };
+      vector<CellCand> cellbuf;
+      auto flat_score = [&](const int *Ci, const int *Di) {
+        long long sc = 0;
+        for (int s = 1; s <= n; s++) {
+          int cd = 0;
+          for (int i = 0; i + s < n; i++) cd += Ci[i]*Ci[i+s] + Di[i]*Di[i+s];
+          sc += abs(cd);
         }
-        int Ci[64], Di[64];
-        for (int i = 0; i < n; i++) { Ci[i] = C[i]; Di[i] = D[i]; }
-        if (score_max > 0) {
-          long long sc = 0;
-          for (int s = 1; s <= n; s++) {
-            int cd = 0;
-            for (int i = 0; i + s < n; i++) cd += Ci[i]*Ci[i+s] + Di[i]*Di[i+s];
-            sc += abs(cd);
-          }
-          if (sc > score_max) { score_rej++; return; }
-        }
+        return sc;
+      };
+      auto complete_one = [&](const int *Ci, const int *Di) {
         long long nodes_before = fh_nodes_total;
         int r = fh_complete_ab(Ci, Di);
         if (r >= 2) bt_entered++;
@@ -1195,24 +1181,67 @@ int main(int argc, char **argv) {
           }
           cout << "VERIFY: max |NPAF[s]| over s=1.." << n << " = " << maxv
                << (maxv==0 ? "  (NPAF==0 confirmed)\n" : "  (NONZERO!)\n");
-          long long hit_score = 0;  // Σ|cd[s]| — flatness of the winning C,D;
-          for (int s = 1; s <= n; s++) {  // future score-tier thresholds come
-            int cd = 0;                   // from these, not from guesses
-            for (int i = 0; i + s < n; i++) cd += Ci[i]*Ci[i+s] + Di[i]*Di[i+s];
-            hit_score += abs(cd);
-          }
           cout << "FIRSTHIT: idx=" << hit_idx << " profile_rank=" << pi
                << " nodes_this_cand=" << (fh_nodes_total - nodes_before)
-               << " score=" << hit_score
+               << " score=" << flat_score(Ci, Di)
                << " elapsed=" << t << "s";
           if (stream_total > 0)
             cout << "  frac_depth=" << (double)hit_idx / stream_total;
           cout << "\n" << flush;
         }
+      };
+      auto drain = [&]() {
+        stable_sort(cellbuf.begin(), cellbuf.end(),
+                    [](const CellCand &a, const CellCand &b){ return a.sc < b.sc; });
+        for (auto &cc : cellbuf) {
+          if (g_found.load() || g_fh_sigterm) break;  // hits/SIGTERM abort;
+          int Ci[64], Di[64];                         // max_cand still drains
+          for (int i = 0; i < n; i++) { Ci[i] = cc.C[i]; Di[i] = cc.D[i]; }
+          complete_one(Ci, Di);
+        }
+        cellbuf.clear();
+      };
+      function<void(const vector<int>&, const vector<int>&)> probe =
+          [&](const vector<int> &C, const vector<int> &D) {
+        if (fh_stop.load()) return;
+        cand++;
+        // Progress is TIME-based and carries the exact tokens the driver
+        // aggregates: the old every-200k-cands line never printed at n>=41
+        // rates (~5-20 cand/s => <200k per 11.5h shard), so killed arms left
+        // logs with no counters at all. Clock checked every 256 cands. Sits
+        // ABOVE the score gate — the score-rejection path returns early and
+        // would starve progress on gated arms. WZ_FH_PROG_SEC overrides.
+        if ((cand & 255) == 0) {
+          auto nowp = Clock::now();
+          if (chrono::duration<double>(nowp - last_prog).count() >= prog_sec) {
+            last_prog = nowp;
+            double t = chrono::duration<double>(nowp - T0).count();
+            cout << "[firsthit progress] candidates_streamed=" << cand
+                 << "  pre_filter_rejected=" << pre_rej
+                 << "  score_rejected=" << score_rej
+                 << "  clean_no_AB=" << clean_no
+                 << "  budget_aborted=" << aborted
+                 << "  total_AB_nodes=" << fh_nodes_total
+                 << "  [" << t << "s]\n" << flush;
+          }
+        }
+        int Ci[64], Di[64];
+        for (int i = 0; i < n; i++) { Ci[i] = C[i]; Di[i] = D[i]; }
+        long long sc = -1;
+        if (score_max > 0 || cell_order) sc = flat_score(Ci, Di);
+        if (score_max > 0 && sc > score_max) { score_rej++; return; }
+        if (cell_order) {
+          cellbuf.push_back({sc, C, D});
+          if (cellbuf.size() >= 500000) drain();
+          if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
+          return;
+        }
+        complete_one(Ci, Di);
         if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
       };
       count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
                     lv, okc, &probe, fh_m, &fh_stop);
+      if (cell_order && !cellbuf.empty()) drain();  // finish the cell in order
       if (!fh_stop.load()) cells_done++;  // only cells processed to completion
     }
     double t = chrono::duration<double>(Clock::now() - T0).count();
