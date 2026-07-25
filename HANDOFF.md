@@ -2,6 +2,45 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-25 (late) — EFFICIENCY PUSH, two answers to "is there nothing else": (1) BUILT
+TONIGHT: flat-first within-cell ordering (commit HEAD, `WZ_FH_CELL_ORDER`, default ON at m6) —
+every arm now completes each cell's candidates flattest-first (the ~35× enrichment as an
+ordering, zero coverage loss; WZ's own 41-43 solutions score 140/142/134). Validated: coverage
+invariant 809==809, n=19 m3 bit-identical, n=41 streams+completes. (2) NAMED AND SPEC'D, the
+deepest un-built lever: PROFILE-CONSTRAINED A,B COMPLETION — our 2.11b/2.12 filters PROVE a
+compatible (k,r) A,B-profile exists per C,D cell, then the completer ignores that and searches
+the whole A,B space; constraining the pair-DFS to compatible class-sums (count_pairs22-style
+per-class capacity pruning) is the last structural gap vs WZ Step 5, expected ≥10× on
+nodes-per-exhaust. NEXT SESSION's build, full retention validation. Wave-3 doctrine: waves 1+2
+COMPLETED every streamed candidate, so re-ordering the searched window is pointless — wave 3
+must reach NEW territory: PROF_ORDER=1 (flattest cells first) + cell_order = fully
+flat-prioritized search; new binary emits cells_done → wave 4 gets exact PROF_SKIP resume.
+GPU spike remains the strategic reserve if the completer levers don't bend the slope.**
+**WAVE 3 SUBMITTED ~19:30, Duo-approved: Fir `51091778-786` (9× n=41) · Rorqual
+`17448745-755` (11× n=42) — flat-prioritized end to end (PROF_ORDER=1 flattest cells first +
+in-cell flat-first ordering), cells_done telemetry live ⇒ wave 4 gets exact PROF_SKIP resume.**
+
+**⚡ 2026-07-25 (evening, Daniel's manual full re-check) — THE TWO-WAVE 40s MAP IS COMPLETE:
+still hitless, and the depth lower-bound is now MEASURED tight.** The 13:50 "NEW HIT" ntfy
+alert was NOISE (truncated Fir session; full re-check shows none-yet everywhere; the 17:38
+daily rc=1 was an API ECONNRESET, no interpretation ran). The real data: **n=41 = 9 classes
+× ~30-40M candidates cleanly resolved EACH, from BOTH ends** (wave 1 front-DFS 10-19M +
+wave 2 reverse `50610008-16` 13.5-22.4M, disjoint by construction) — ~300M total, hitless.
+**n=42 = all 11 classes telemetried hitless at 6.7-13.4M each** (`17194603-09` +
+`16939414/16/17` + Trillium `1926731` published-sig 12.1M on the upgraded binary — the
+tar-pipe race was WON). Trillium `1926730` (n=41 published sig) still no summary — likely
+running. **Reading vs the pre-registered density extrapolation (20M-500M/class): the
+optimistic ×2/rung band is now EXCLUDED at n=41 (searched past it, both ends); data
+consistent with ×3/rung (~500M/class) or worse ⇒ brute persistence ≈ 25-30 node-days/class.
+Decision fork sharpened: (a) precise-resume grind waves (cells_done data EXISTS in Fir
+wave-2 arm logs — driver aggregation doesn't sum it yet; fetch or extend), (b) tier-lane
+decomposition from the same arm logs (are ≤150-gated arms outperforming?), (c) the GPU
+spike — the only lever sized to close a ×30 gap outright. Recommendation on file: fetch
+arm-log stats next session, decide GPU spike with those numbers.** Checker exclusions
+updated (+50610008-16, 17194603-09, 16939414/16/17, 1926731). No banks, no submits this
+check; all clusters idle except Trillium 1926730.
+
+
 **⚡ 2026-07-24 — FIRST FULLY-OBSERVED n=41 DATA (Daniel's manual fir+nibi re-check): the
 obs fix WORKS (178/178 arms summarized on all 9 Fir jobs) and the depth picture is finally
 MEASURED.** Fir `50267781-91` (9× n=41, canon+obs binary): hitless, but **10.6-19.4M
