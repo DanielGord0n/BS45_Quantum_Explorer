@@ -2,6 +2,62 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-26 (daily loop) — WAVE 3 COMPLETE AND FULLY OBSERVED: still hitless, but the
+flat-prioritized ordering delivered ~7-10× candidate throughput; the PROFILE-CONSTRAINED
+A,B COMPLETION lever (named 07-25 as the deepest un-built lever) is BUILT + VALIDATED on
+`auto/2026-07-26` — aborts collapse 424→2 per 1000 at n=29.** Wave-3 data (all 178-arm
+jobs summarized, all deadline-interrupted = counts are lower bounds): **n=41 Fir
+`51091778-786`: hitless, 95.4-104.5M candidates/class in ONE wave (~898M total; aborts
+≤0.03%) vs 10-19M (wave 1) and 13.5-22.4M (wave 2) — ~7× throughput; each n=41 class now
+≥100M searched (~120-145M cumulative), and because flat-first front-loads the measured
+~35× solution-density enrichment, this negative is STRONGER than raw candidate count
+suggests. n=42 Rorqual `17448745-55`: hitless, 105-116M/class (~1.07B total; ~10× prior
+throughput) — EXCEPT `17448751` sig (5,9,0,8): only 7.1M cands / AB_nodes 1.2e12 (~20×
+below siblings; ran on rc21802 vs siblings' rc13xxx — suspected slow/degraded node, NOT a
+property of the class).** The optimistic ×2/rung density band (hit by ~40M/class) is now
+dead; data says ≥×3/rung (≥500M/class) — but at wave-3 throughput that is ~4-5 more
+node-days/class, no longer 25-30. NEW CODE (branch `auto/2026-07-26`, R1-validated,
+NOT deployed — tar-pipe is Daniel's): (1) **WZ_FH_AB_PROF (default ON at m6)** — per-cell
+allowed (k,r) A,B mod-6 profile lists (2.11a-exact + 2.11b-cancel + 2.12, both signed
+targets ±a/±b for negation/reversal-canon retention), count_pairs22-style capacity pruning
+down the pair-DFS + exact leaf membership; proven-dead cells are skipped entirely.
+Validation: n=19 lever-off BIT-IDENTICAL to HEAD (idx=807/rank=2/nodes=8087); lever-on
+same hits n=10/11/19 both moduli (odd+even L; n=19 m6 total nodes 488k→77k = 6.3×); n=29
+BLIND RE-FIND canary PASS (FOUND idx=26694, NPAF==0, 148s 1-thread); n=29 1000-cand
+sample: budget-aborts 424→2, clean 576→998, nodes 127.8M→47.8M (2.7×), wall 2×; **n=41
+real-class A/B (sig (0,6,3,11), 200 cands, budget 5e7): nodes 1,142.5M→218.9M = 5.2×,
+completion wall ~4.8×, 200/200 clean both ways; n=42 (sig (9,9,2,2), odd-L, 100 cands):
+319.3M→48.3M = 6.6×**; setup sane at both (map build 1.0-1.5s, ~8-11MB/arm, max_list
+≤15.3k under the 20k cap). **DECISIVE: the lever converts budget-aborts into hits — the
+n=29 unconstrained completer, streaming the exact same candidates up to the known hit at
+budget 2e5, aborted 2,326/5,006 INCLUDING the solution candidate and found NOTHING; the
+constrained run resolved that candidate in 81,320 nodes and printed the solution. Deep-n
+waves' abort fractions may have been sitting on hits.** (2) driver
+GATEB line now emits **cells_done_min** (= the sound WZ_FH_PROF_SKIP for wave 4) and
+cells_done_sum. Wave-3 arm logs ALREADY carry cells_done= (07-24 binary) — fetch the
+per-job MIN, then wave 4 = new source + WZ_FH_PROF_SKIP=<min> per class: exact disjoint
+resume, no re-tread. No submits this round (wave 4 without skip re-treads wave 3's
+deterministic order; skip values + source both need Daniel). Trillium `1926730` STILL no
+summary in output — check `sacct -j 1926730` when convenient. Checker exclusions
++51091778-86, +17448745-55. Kotsireas brief still READY TO SEND.
+NEEDS_HUMAN paste blocks — (1) ship the lever to all clusters:
+```
+cd ~/Projects/BS45_Quantum_Explorer && git checkout auto/2026-07-26 && for c in fir rorqual nibi trillium; do tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_firsthit_probe.sh | ssh dangord@$c.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && cp -f cluster/deploy/cluster_firsthit_probe.sh ./cluster_firsthit_probe.sh'; done; git checkout main
+```
+(2) fetch wave-3 per-job MIN cells_done (Fir shown; same on Rorqual with 17448745..55):
+```
+ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && for j in 51091778 51091779 51091780 51091781 51091782 51091783 51091784 51091785 51091786; do n=$(ls fh_arms_$j/arm_*.log 2>/dev/null | wc -l); m=$(grep -h -oE "cells_done=[0-9]+" fh_arms_$j/arm_*.log 2>/dev/null | cut -d= -f2 | sort -n | head -1); s=$(grep -l "cells_done=" fh_arms_$j/arm_*.log 2>/dev/null | wc -l); echo "$j arms=$n with_cells=$s min_cells_done=$m"; done'
+```
+⚠️ a job's min is a SOUND skip only if with_cells == arms == 178 (arms are interleaved
+shards; an arm with no summary has unknown progress, and a global skip past it would
+open a coverage gap that could skip the hit). Fir wave-3 = 178/178 everywhere; Rorqual
+`17448747/48/49/50/52/53/54` summarized 171-177 → skip=0 there, or Daniel's call.
+(3) wave-4 submit template (per class, after (1)+(2); Fir example, sig+skip per job):
+```
+sbatch --requeue --export=ALL,WZ_N=41,WZ_A=0,WZ_B=6,WZ_C=3,WZ_D=11,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,WZ_FH_PROF_SKIP=<min_cells_done> ./cluster_firsthit_probe.sh
+```
+**
+
 **⚡ 2026-07-25 (late) — EFFICIENCY PUSH, two answers to "is there nothing else": (1) BUILT
 TONIGHT: flat-first within-cell ordering (commit HEAD, `WZ_FH_CELL_ORDER`, default ON at m6) —
 every arm now completes each cell's candidates flattest-first (the ~35× enrichment as an
