@@ -106,6 +106,24 @@ did_nothing() { # provably safe to retry: no summary, no commit, no working-tree
     && [ "$(git status --porcelain 2>/dev/null)" = "$TREE_BEFORE" ]
 }
 
+# Early-verdict ping (2026-07-26): the agent writes results/interim_summary.txt
+# with a 2-4 sentence verdict as its FIRST action after reading the checker.
+# This watcher pushes it to the phone within seconds — long build/validate
+# sessions after interpretation (an hour+ is normal and productive) no longer
+# leave Daniel waiting blind between "check done" and the full summary.
+INTERIM="$REPO/results/interim_summary.txt"
+rm -f "$INTERIM"
+(
+  for _ in $(seq 1 180); do   # watch up to 15 min
+    if [ -s "$INTERIM" ]; then
+      ntfy_push "BS45 early read" "$(cat "$INTERIM")" "default" "satellite"
+      exit 0
+    fi
+    sleep 5
+  done
+) &
+INTERIM_PID=$!
+
 MODEL="$MODEL_PRIMARY"
 attempt=1
 rc=1
@@ -166,6 +184,7 @@ while : ; do
   fi
   break
 done
+kill "$INTERIM_PID" 2>/dev/null || true
 
 # --- 3. phone summary -------------------------------------------------------
 if [ -s "$SUMMARY" ]; then

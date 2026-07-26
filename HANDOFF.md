@@ -2,6 +2,26 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-26 (Daniel session, evening) — 5x COMPLETER DEPLOYED to all 4 clusters
+(auto/2026-07-26 tar-piped, verified independently: n=19 off-path bit-identical, n=29 blind
+re-find PASS idx=26694 NPAF==0). Two findings from the resume-point fetch: (1) **cells_done
+MIN = 0 on EVERY n=41/n=42 job** (Fir 178/178 arms, Rorqual 171-178) — with flat-first
+ordering the densest cells are also the LARGEST, so the slowest arm in each job never
+completed even its first cell in 11.5h. **Uniform WZ_FH_PROF_SKIP is therefore unusable here
+(skip>=1 would open a coverage gap); skip=0 is the only sound value.** The real fix = PER-ARM
+skip (each arm resumes its own cells_done) — NEXT lever, needs a per-arm env or a checkpoint
+file. (2) Trillium `1926730` (n=41 published sig, pre-obs binary) = TIMEOUT 12:04:05, exit
+0:0 — ran full walltime, blind negative, depth unknown; Trillium now FREE with the new binary.
+**WAVE 4 DECISION (given skip=0): re-run flat-first (PROF_ORDER=1) with the NEW completer —
+NOT a wasteful re-tread. It is 5x faster, so it re-reaches wave-3's ~100M mark in ~2.3h
+(resolving wave-3's small abort residue on the way — the proven hit-hiding failure mode) then
+newly exhausts to ~500M/class (the pessimistic x3/rung band) in the remaining ~9h. Primary
+value = DEPTH; abort-cleanup = bonus.** Allocation: Fir n=41 flat-first + Trillium n=41 reverse
+(far-end coverage insurance) ; Rorqual n=42 flat-first + Nibi n=42 reverse. Early-verdict ping
+infra added (daily_auto.sh watcher + auto_prompt Step 1 writes results/interim_summary.txt
+first) so long build sessions no longer leave Daniel waiting an hour between "check done" and
+the summary. HANDOFF/checker updated; wave-4 submits pending Daniel's paste.**
+
 **⚡ 2026-07-26 (daily loop) — WAVE 3 COMPLETE AND FULLY OBSERVED: still hitless, but the
 flat-prioritized ordering delivered ~7-10× candidate throughput; the PROFILE-CONSTRAINED
 A,B COMPLETION lever (named 07-25 as the deepest un-built lever) is BUILT + VALIDATED on

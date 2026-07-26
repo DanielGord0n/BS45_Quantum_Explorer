@@ -36,6 +36,11 @@ Do not re-run the checker.
 1. **Interpret** `$CHECK_OUTPUT` using the skill's output-reading traps (trust
    only the banner, not `bestAB`; TIMEOUT at full walltime = completed; old banked
    files match the FOUND grep — cross-check `results/champions/`).
+   **Immediately after interpreting — BEFORE any build/validate/long work — write
+   a 2-4 sentence plain-text verdict to `results/interim_summary.txt`** (hits or
+   not, the one key number, what you're doing next). A watcher pushes it to
+   Daniel's phone within seconds; without it he waits an hour staring at "check
+   done". The full summary still goes to `results/last_summary.txt` at the end.
 
 2. **Decide** the single smartest action (skill doctrine: one option, one
    sentence of why). Branches:
