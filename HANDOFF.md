@@ -20,7 +20,7 @@ value = DEPTH; abort-cleanup = bonus.** Allocation: Fir n=41 flat-first + Trilli
 (far-end coverage insurance) ; Rorqual n=42 flat-first + Nibi n=42 reverse. Early-verdict ping
 infra added (daily_auto.sh watcher + auto_prompt Step 1 writes results/interim_summary.txt
 first) so long build sessions no longer leave Daniel waiting an hour between "check done" and
-the summary. HANDOFF/checker updated; wave-4 submits pending Daniel's paste.**
+the summary. HANDOFF/checker updated. **WAVE 4 SUBMITTED ~evening 07-26, all 4 Duo-approved (40 jobs, 5x completer): Fir `51283846-854` (9x n=41 flat-first) + Trillium `1940127-135` (9x n=41 reverse) bracket n=41 both ends; Rorqual `17481817-827` (11x n=42 flat-first) + Nibi `18545814-824` (11x n=42 reverse) bracket n=42. Expected reach ~500M/class (x3/rung band) in one node-day each. Checker exclusions need +these on next loop run.**
 
 **⚡ 2026-07-26 (daily loop) — WAVE 3 COMPLETE AND FULLY OBSERVED: still hitless, but the
 flat-prioritized ordering delivered ~7-10× candidate throughput; the PROFILE-CONSTRAINED
