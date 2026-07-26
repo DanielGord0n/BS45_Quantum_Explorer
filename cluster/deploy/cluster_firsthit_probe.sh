@@ -38,6 +38,8 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_PROF_ORDER" ]   && export WZ_FH_PROF_ORDER
 [ -n "$WZ_FH_SCORE_MAX" ]    && export WZ_FH_SCORE_MAX
 [ -n "$WZ_FH_STREAM_TOTAL" ] && export WZ_FH_STREAM_TOTAL
+[ -n "$WZ_FH_PROF_SKIP" ]    && export WZ_FH_PROF_SKIP
+[ -n "$WZ_FH_AB_PROF" ]      && export WZ_FH_AB_PROF
 
 # FH_SCORE_TIERS="t1,t2" (optional): first quarter of arms complete only
 # candidates with flatness score <= t1, second quarter <= t2, rest ungated.
@@ -101,7 +103,7 @@ for f in "$DIR"/arm_*.log; do
 done
 echo "arms_with_hits=$hits / $NARMS"
 # Gate B aggregation from every arm's summary/progress lines
-tot_cand=0; tot_nodes=0; tot_abort=0
+tot_cand=0; tot_nodes=0; tot_abort=0; cd_min=-1; cd_sum=0
 for f in "$DIR"/arm_*.log; do
   line=$(grep -E "candidates_streamed=" "$f" | tail -1)
   c=$(echo "$line" | grep -oE "candidates_streamed=[0-9]+" | cut -d= -f2)
@@ -110,13 +112,20 @@ for f in "$DIR"/arm_*.log; do
   [ -n "$a" ] && tot_abort=$((tot_abort+a))
   nn=$(grep -oE "total_AB_nodes=[0-9]+" "$f" | tail -1 | cut -d= -f2)
   [ -n "$nn" ] && tot_nodes=$((tot_nodes+nn))
+  # cells_done aggregation: MIN across arms = the sound WZ_FH_PROF_SKIP for the
+  # next continuation wave (overlap is idempotent, a gap would be unsound).
+  cd=$(grep -oE "cells_done=[0-9]+" "$f" | tail -1 | cut -d= -f2)
+  if [ -n "$cd" ]; then
+    cd_sum=$((cd_sum+cd))
+    if [ "$cd_min" = -1 ] || [ "$cd" -lt "$cd_min" ]; then cd_min=$cd; fi
+  fi
 done
 # Arms killed before their summary now still report via SIGTERM-dumped
 # summaries / periodic progress lines; count both so a partial aggregate can
 # never read as an empty stream again (the 07-22/23 zero-candidate artifact).
 summarized=$(grep -l "FIRSTHIT SUMMARY" "$DIR"/arm_*.log 2>/dev/null | wc -l)
 interrupted=$(grep -l "RESULT: INTERRUPTED" "$DIR"/arm_*.log 2>/dev/null | wc -l)
-echo "GATEB: candidates=$tot_cand aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted)"
+echo "GATEB: candidates=$tot_cand aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum"
 # Global first hit = min by (profile_rank, idx) across arms
 grep -h "FIRSTHIT:" "$DIR"/arm_*.log 2>/dev/null \
   | sed -E 's/.*idx=([0-9]+) profile_rank=([0-9]+).*/\2 \1 &/' \
