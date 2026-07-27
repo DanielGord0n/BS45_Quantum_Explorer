@@ -2,6 +2,47 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-27 (daily loop) — WAVE 4 COMPLETE AND HITLESS, and the DEPTH METRIC ITSELF was
+wrong: `candidates=` counts STREAMED candidates, not tested ones.** 29/40 wave-4 jobs done
+(Fir `51283846-54` 9x n=41 flat-first, Trillium `1940127-35` 9x n=41 reverse, Rorqual
+`17481817-27` 11x n=42 flat-first — all 178-arm, aborted=0; Nibi `18545814/15` n=42 reverse
+done ~100M streamed each, `18545816-24` still PD = live capacity, not idle). **Finding 1 —
+arm-log audit (Fir 51283847 arms 0+100, read-only duo_run): every arm streams C,D candidates
+into the 500k WZ_FH_CELL_ORDER buffer, then spends the rest of walltime DRAINING (completing)
+it flat-first at ~9/s; ALL arms died mid-first-drain (cells_done=0 everywhere, arm summaries
+show streamed 500-568k vs backtracks_entered 151-365k). So GATEB `candidates=` ≈ buffer cap ×
+arms + score-rejects — a STREAMING artifact that reads ~100M/class regardless of completer
+speed. True searched depth = backtracks_entered.** Fetched the real per-job tested sums on Fir
+(n=41): `51283846`=50.3M `847`=87.2M `848`=110.2M `849`=54.8M `850`=75.6M `851`=73.9M
+`852`=60.6M `853`=69.0M `854`=70.2M — **the 5x completer DID deliver: wave-4 TESTED 50-110M/class
+at n=41 vs wave-3's ~5x less (wave 3's "95-105M/class" was streamed; its tested depth was
+never aggregated). Ledger correction: n=41 front-end tested = wave-4's 50-110M/class (same
+deterministic order as wave 3, superset); reverse-end tested (Trillium) not yet fetched.
+Corollary: cell-level resume (WZ_FH_PROF_SKIP) is DEAD — no arm ever finishes cell 0; the
+resume lever must be candidate-level PER ARM (tested_min).** **Finding 2 — the n=42
+(5,9,0,8) anomaly is SOLVED and it is NOT a slow node: wave-4 `17481823` reproduced wave-3's
+~7.1M on a different node, and its arms 0+100 streamed ZERO candidates in 11.5h — the class
+is ENUMERATION-BOUND (stream DFS wall before the first shard leaf for most arms),
+deterministic. Reverse-order coverage (Nibi PD jobs) is the near-term mitigation for that
+class.** Rate math: ~9/s completion × 178 arms × 41.4ks ≈ 60-70M tested/class/wave ⇒ the
+≥500M/class pessimistic band ≈ 5-8 more waves per class-end EVEN WITH exact resume — the
+GPU-spike / methods-ask fork is now priced. CODE: `auto/2026-07-26` MERGED to main
+(production-validated by wave 4); NEW branch `auto/2026-07-27` (85a41b7, R1-validated on
+synthetic logs built from real arm summaries): GATEB line adds `tested=` + `tested_min=`.
+`rung_status check` = EXHAUSTED (no SA refill, deliberate). No submits this round.
+NEEDS_HUMAN — (1) tar-pipe the driver telemetry fix (driver-only, solver unchanged):
+```
+cd ~/Projects/BS45_Quantum_Explorer && git checkout auto/2026-07-27 && for c in fir rorqual nibi trillium; do tar -cf - cluster/deploy/cluster_firsthit_probe.sh | ssh dangord@$c.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && cp -f cluster/deploy/cluster_firsthit_probe.sh ./cluster_firsthit_probe.sh'; done; git checkout main
+```
+(2) fetch the missing tested sums (Trillium shown; same on Rorqual j=17481817..27, Nibi
+j=18545814..15 — Rorqual missed its Duo window this run):
+```
+ssh dangord@trillium.alliancecan.ca 'cd $SCRATCH/bs45 && for j in 1940127 1940128 1940129 1940130 1940131 1940132 1940133 1940134 1940135; do t=$(grep -h -oE "backtracks_entered=[0-9]+" fh_arms_$j/arm_*.log 2>/dev/null | awk -F= "{s+=\$2} END {print s+0}"); echo "$j tested_sum=$t"; done'
+```
+(3) wave-5 design call: candidate-level per-arm resume needs a per-arm checkpoint/skip file
+(env alone cannot carry 178 values) — build it, or redirect to the GPU spike; and the
+kotsireas brief is still READY TO SEND (methods ask = the door to 42+).**
+
 **⚡ 2026-07-26 (Daniel session, evening) — 5x COMPLETER DEPLOYED to all 4 clusters
 (auto/2026-07-26 tar-piped, verified independently: n=19 off-path bit-identical, n=29 blind
 re-find PASS idx=26694 NPAF==0). Two findings from the resume-point fetch: (1) **cells_done
