@@ -2,6 +2,15 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-27 (Daniel session) — driver telemetry tar-piped to all 4; remaining tested
+sums fetched. Trillium n=41 REVERSE: 33.7-61.6M tested/class. Rorqual n=42 flat-first:
+17.1-105.6M tested/class (variance is real; `17481823` (5,9,0,8) = 0.89M, the
+enumeration-bound class again). CUMULATIVE n=41 tested/class ≈ 120-220M of the ~500M
+pessimistic band (~25-45%) across both ends — a measured slog, NOT a wall. Fork status:
+concentration wave (all fleet -> the two PUBLISHED classes, NARMS-varied for disjointness)
+is the zero-cost move; per-arm resume + GPU spike are the builds; Kotsireas email STILL the
+unsent human lever.**
+
 **⚡ 2026-07-27 (daily loop) — WAVE 4 COMPLETE AND HITLESS, and the DEPTH METRIC ITSELF was
 wrong: `candidates=` counts STREAMED candidates, not tested ones.** 29/40 wave-4 jobs done
 (Fir `51283846-54` 9x n=41 flat-first, Trillium `1940127-35` 9x n=41 reverse, Rorqual
