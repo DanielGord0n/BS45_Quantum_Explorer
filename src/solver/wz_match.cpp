@@ -707,6 +707,63 @@ static bool fh_aborted = false;
 static int FH_CD_target[256];
 static int FH_ABS_A = 0, FH_ABS_B = 0;
 
+// ---- Profile-constrained A,B completion (WZ_FH_AB_PROF, 2026-07-26) --------
+// The stream filters PROVE a compatible mod-m A,B class-sum profile (k,r)
+// exists for every surviving C,D cell (2.11a norm identity + 2.11b residue
+// cancellation + 2.12 mod-4) — then the completer ignored that proof and
+// searched the whole A,B space. This constrains the pair-DFS to the cell's
+// compatible profile list with count_pairs22-style per-class capacity pruning
+// — the last structural gap vs WZ Step 5.
+// SOUNDNESS (retention): any completion the DFS could output passes the exact
+// npaf_at==0 recheck, so it IS a real solution; every real solution satisfies
+// 2.11a/2.11b/2.12 at every modulus (canary tools/canary_thm211b.py + the
+// thm212 fixtures, all banked + published solutions). The completer accepts
+// sum(A) = ±a and sum(B) = ±b (negation isomorphism) so the allowed set
+// enumerates BOTH signed targets; the reversal-canonical representative is
+// itself a solution with the same sums, so its profile is enumerated too.
+// Hence no branch leading to any completion is ever cut. WZ_FH_AB_PROF=0
+// disables (A/B lever for validation).
+struct AbpRow { int8_t k[8], r[8]; };
+static const vector<AbpRow> *FH_ABP = nullptr;  // current cell's allowed (k,r)
+static int FH_ABP_M = 6;                        // class modulus (m of the cell)
+static int FH_ABP_TIC[8];                       // class totals of length n1 at m
+static int FH_PA[8], FH_PB[8], FH_PLACED[8];    // partial class sums / counts
+static vector<vector<int>> FH_ABP_STACK;        // surviving rows per DFS depth
+
+// Filter the depth-d survivor list into depth d+1 under the current partials.
+// Parity is automatic (k[c] == class-count == pa[c]+rem (mod 2) for every
+// allowed row), so the test is the pure capacity box |k[c]-pa[c]| <= rem[c] —
+// the same pruning shape as count_pairs22, against a SET of exact targets.
+static inline bool fh_abp_filter(int d) {
+  auto &src = FH_ABP_STACK[d];
+  auto &dst = FH_ABP_STACK[d + 1];
+  dst.clear();
+  int m = FH_ABP_M;
+  for (int idx : src) {
+    const AbpRow &row = (*FH_ABP)[idx];
+    bool ok = true;
+    for (int c = 0; c < m; c++) {
+      int rem = FH_ABP_TIC[c] - FH_PLACED[c];
+      int dk = row.k[c] - FH_PA[c], dr = row.r[c] - FH_PB[c];
+      if (dk < -rem || dk > rem || dr < -rem || dr > rem) { ok = false; break; }
+    }
+    if (ok) dst.push_back(idx);
+  }
+  return !dst.empty();
+}
+// Exact membership at the leaf (all positions placed, incl. an odd-L middle).
+static inline bool fh_abp_leaf_ok() {
+  int m = FH_ABP_M;
+  for (int idx : FH_ABP_STACK[G_N1 / 2]) {
+    const AbpRow &row = (*FH_ABP)[idx];
+    bool eq = true;
+    for (int c = 0; c < m; c++)
+      if (row.k[c] != FH_PA[c] || row.r[c] != FH_PB[c]) { eq = false; break; }
+    if (eq) return true;
+  }
+  return false;
+}
+
 // Pair-position DFS under the Thm 2.2 encoding — this is WZ Step 5 as written:
 // "Definition 1.1 and Theorem 2.2 ... to truncate branches". Mirror positions
 // (d, L-1-d) are placed JOINTLY from the 8 legal combos (product -1 at d=0 on
@@ -725,10 +782,14 @@ static inline void fh_place(int p, int av, int bv, int *A, int *B,
     Kab[s] -= 2;
   }
   A[p] = av; B[p] = bv;
+  int pc = p % FH_ABP_M;
+  FH_PA[pc] += av; FH_PB[pc] += bv; FH_PLACED[pc]++;
 }
 static inline void fh_unplace(int p, int *A, int *B, int *Dab, int *Kab, int L) {
   int av = A[p], bv = B[p];
   A[p] = 0; B[p] = 0;
+  int pc = p % FH_ABP_M;
+  FH_PA[pc] -= av; FH_PB[pc] -= bv; FH_PLACED[pc]--;
   for (int q = 0; q < L; q++) {
     if (A[q] == 0 || q == p) continue;
     int s = q > p ? q - p : p - q;
@@ -755,6 +816,7 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
       if (abs(sA) != FH_ABS_A || abs(sB) != FH_ABS_B) return false;
       for (int s = 1; s <= n; s++)
         if (Dab[s] != FH_CD_target[s]) return false;
+      if (FH_ABP && !fh_abp_leaf_ok()) return false;
       return true;
     };
     if (L % 2 == 1) {  // odd L: free middle element
@@ -817,6 +879,10 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
     if (!prune)
       for (int s = 1; s <= n; s++)
         if (abs(FH_CD_target[s] - Dab[s]) > Kab[s]) { prune = true; break; }
+    // Profile constraint: some allowed (k,r) must remain reachable within the
+    // per-class capacity left. Writes the depth-(d+1) survivor list the
+    // recursion below consumes. Runs LAST — the cheap prunes go first.
+    if (!prune && FH_ABP && !fh_abp_filter(d)) prune = true;
     if (!prune) {
       if (fh_ab_search(d + 1, A, B, Dab, Kab, nsA, nsB,
                        na_tied, na_cmp, nb_tied, nb_cmp))
@@ -849,6 +915,9 @@ static int fh_complete_ab(const int *C, const int *D) {
     Kab[s] = (s >= 1 && s < n1) ? 2 * (n1 - s) : 0;
   FH_ABS_A = abs(G_SIG_A);
   FH_ABS_B = abs(G_SIG_B);
+  memset(FH_PA, 0, sizeof(FH_PA));
+  memset(FH_PB, 0, sizeof(FH_PB));
+  memset(FH_PLACED, 0, sizeof(FH_PLACED));
   fh_cur = 0;
   fh_aborted = false;
   if (!fh_ab_search(0, A, B, Dab, Kab, 0, 0, 1, 0, 1, 0))
@@ -1130,9 +1199,101 @@ int main(int argc, char **argv) {
     if (const char *e = getenv("WZ_FH_PROF_SKIP")) fh_skip = atoi(e);
     bool cell_order = fh_m6;   // flat-first within cells (see below); =0 disables
     if (const char *e = getenv("WZ_FH_CELL_ORDER")) cell_order = atoi(e) != 0;
+    // Profile-constrained A,B completion setup (see AbpRow comment block).
+    // Precompute ONE map keyed by the cell invariant (need, needT): need =
+    // 4n+2 - norm(cd profile) (2.11a leftover), needT = the residue-autocorr
+    // tuple the A,B side must cancel (2.11b). All cells sharing a key share
+    // one allowed list, so the O(|K|x|R|) sweep runs ONCE per arm, not per
+    // cell. 2.12 is applied per (k,r) row. Default ON for mod-6 cells (same
+    // convention as cell_order); WZ_FH_CELL_ORDER-style kill switch.
+    bool ab_prof = fh_m6;
+    if (const char *e = getenv("WZ_FH_AB_PROF")) ab_prof = atoi(e) != 0;
+    size_t abp_cap = 20000;    // cells with bigger lists run unconstrained
+    if (const char *e = getenv("WZ_FH_AB_PROF_CAP")) abp_cap = (size_t)atoll(e);
+    unordered_map<uint64_t, vector<AbpRow>> abpMap;
+    int half_m = fh_m / 2;
+    auto cell_abp_key = [&](const Profile &p) {
+      int need = 4 * n + 2 - norm_vec(p.px) - norm_vec(p.py);
+      vector<int> T(half_m);
+      for (int s = 1; s <= half_m; s++) T[s - 1] = -pair_auto(p.px, p.py, s);
+      return auto_key(T, need);
+    };
+    if (ab_prof) {
+      auto tb0 = Clock::now();
+      for (int pi = fh_shard + fh_skip * fh_nshard; pi < (int)fhProfs.size();
+           pi += fh_nshard)
+        abpMap.try_emplace(cell_abp_key(fhProfs[pi]));
+      // Single-side tuples over BOTH signed targets: the completer accepts
+      // sum(A) = ±a (and ±b) — the A[0]=B[0]=+1 canonical representative of a
+      // completion class can carry either sign, so pruning to one sign would
+      // lose retention.
+      struct AbpTup { vector<int> v; int norm; int ca[3]; };
+      auto build_tups = [&](int sig) {
+        vector<AbpTup> out;
+        for (int sgn = 1; sgn >= (sig ? -1 : 1); sgn -= 2)
+          for (auto &v : enum_class_sums(G_N1, sgn * sig, fh_m)) {
+            AbpTup t; t.v = v; t.norm = norm_vec(v);
+            if (t.norm > 4 * n + 2) continue;
+            for (int s = 1; s <= half_m; s++)
+              t.ca[s - 1] = autocorr_vec(v, s) + autocorr_vec(v, fh_m - s);
+            out.push_back(std::move(t));
+          }
+        return out;
+      };
+      auto Kt = build_tups(G_SIG_A), Rt = build_tups(G_SIG_B);
+      long long abp_rows = 0;
+      size_t abp_maxlist = 0;
+      vector<int> Tsum(half_m);
+      for (auto &kt : Kt)
+        for (auto &rt : Rt) {
+          int nn2 = kt.norm + rt.norm;
+          if (nn2 > 4 * n + 2) continue;
+          for (int s = 0; s < half_m; s++) Tsum[s] = kt.ca[s] + rt.ca[s];
+          auto it = abpMap.find(auto_key(Tsum, nn2));
+          if (it == abpMap.end()) continue;
+          if (!thm212_ok(kt.v, rt.v, fh_m, true)) continue;  // eq 2.12, A,B side
+          AbpRow row{};
+          for (int c = 0; c < fh_m; c++) {
+            row.k[c] = (int8_t)kt.v[c];
+            row.r[c] = (int8_t)rt.v[c];
+          }
+          it->second.push_back(row);
+          abp_rows++;
+          if (it->second.size() > abp_maxlist) abp_maxlist = it->second.size();
+        }
+      cout << "[abprof] K=" << Kt.size() << " R=" << Rt.size()
+           << " cell_keys=" << abpMap.size() << " rows=" << abp_rows
+           << " max_list=" << abp_maxlist << " cap=" << abp_cap << " build="
+           << chrono::duration<double>(Clock::now() - tb0).count() << "s\n"
+           << flush;
+      FH_ABP_STACK.assign(G_N1 / 2 + 2, {});
+    }
+    FH_ABP_M = fh_m;   // partial-class bookkeeping modulus (harmless when off)
+    for (int c = 0; c < fh_m; c++) FH_ABP_TIC[c] = class_count(G_N1, c, fh_m);
+    long long cells_prof_dead = 0, cells_prof_uncap = 0;
     auto last_prog = T0;
     for (int pi = fh_shard + fh_skip * fh_nshard;
          pi < (int)fhProfs.size() && !fh_stop.load(); pi += fh_nshard) {
+      FH_ABP = nullptr;
+      if (ab_prof) {
+        auto it = abpMap.find(cell_abp_key(fhProfs[pi]));
+        if (it == abpMap.end() || it->second.empty()) {
+          // PROVEN dead: no A,B mod-m profile satisfies 2.11a+2.11b+2.12 for
+          // this cell's (need, needT), so no candidate in it can complete.
+          // Counts as a fully-processed cell for PROF_SKIP resume purposes.
+          cells_prof_dead++;
+          cells_done++;
+          continue;
+        }
+        if (it->second.size() <= abp_cap) {
+          FH_ABP = &it->second;
+          auto &root = FH_ABP_STACK[0];
+          root.resize(it->second.size());
+          for (size_t ri = 0; ri < root.size(); ri++) root[ri] = (int)ri;
+        } else {
+          cells_prof_uncap++;  // oversized list: run this cell unconstrained
+        }
+      }
       long long lv = 0, okc = 0;
       // Flat-first within-cell ordering (WZ_FH_CELL_ORDER=0 disables; default
       // ON for mod-6 cells): buffer the cell's candidates, sort by flatness
@@ -1253,7 +1414,10 @@ int main(int argc, char **argv) {
          << "  score_rejected=" << score_rej << "\n"
          << "backtracks_entered=" << completed_tested << "  clean_no_AB=" << clean_no
          << "  budget_aborted=" << aborted << "  total_AB_nodes=" << fh_nodes_total
-         << "  cells_done=" << cells_done << " (skip=" << fh_skip << ")\n"
+         << "  cells_done=" << cells_done << " (skip=" << fh_skip << ")"
+         << "  ab_prof=" << (ab_prof ? 1 : 0)
+         << "  cells_prof_dead=" << cells_prof_dead
+         << "  cells_prof_uncap=" << cells_prof_uncap << "\n"
          << (hit_idx >= 0
              ? "RESULT: FOUND at idx=" + to_string(hit_idx)
              : (g_fh_sigterm
