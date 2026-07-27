@@ -103,11 +103,20 @@ for f in "$DIR"/arm_*.log; do
 done
 echo "arms_with_hits=$hits / $NARMS"
 # Gate B aggregation from every arm's summary/progress lines
-tot_cand=0; tot_nodes=0; tot_abort=0; cd_min=-1; cd_sum=0
+tot_cand=0; tot_nodes=0; tot_abort=0; cd_min=-1; cd_sum=0; tt_sum=0; tt_min=-1
 for f in "$DIR"/arm_*.log; do
   line=$(grep -E "candidates_streamed=" "$f" | tail -1)
   c=$(echo "$line" | grep -oE "candidates_streamed=[0-9]+" | cut -d= -f2)
   [ -n "$c" ] && tot_cand=$((tot_cand+c))
+  # tested aggregation: candidates_streamed counts ENUMERATED candidates (incl.
+  # ones sitting untested in the cell-order buffer at kill time) — wave 4 proved
+  # streamed can read ~100M while tested is a fraction of it. backtracks_entered
+  # is the true searched depth; MIN across arms = sound per-arm resume floor.
+  tt=$(grep -oE "backtracks_entered=[0-9]+" "$f" | tail -1 | cut -d= -f2)
+  if [ -n "$tt" ]; then
+    tt_sum=$((tt_sum+tt))
+    if [ "$tt_min" = -1 ] || [ "$tt" -lt "$tt_min" ]; then tt_min=$tt; fi
+  fi
   a=$(grep -oE "budget_aborted=[0-9]+" "$f" | tail -1 | cut -d= -f2)
   [ -n "$a" ] && tot_abort=$((tot_abort+a))
   nn=$(grep -oE "total_AB_nodes=[0-9]+" "$f" | tail -1 | cut -d= -f2)
@@ -125,7 +134,7 @@ done
 # never read as an empty stream again (the 07-22/23 zero-candidate artifact).
 summarized=$(grep -l "FIRSTHIT SUMMARY" "$DIR"/arm_*.log 2>/dev/null | wc -l)
 interrupted=$(grep -l "RESULT: INTERRUPTED" "$DIR"/arm_*.log 2>/dev/null | wc -l)
-echo "GATEB: candidates=$tot_cand aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum"
+echo "GATEB: candidates=$tot_cand tested=$tt_sum tested_min=$tt_min aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum"
 # Global first hit = min by (profile_rank, idx) across arms
 grep -h "FIRSTHIT:" "$DIR"/arm_*.log 2>/dev/null \
   | sed -E 's/.*idx=([0-9]+) profile_rank=([0-9]+).*/\2 \1 &/' \
