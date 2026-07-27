@@ -2,6 +2,27 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-27 (session close) — WAVE 5 SUBMITTED: THE CONCENTRATION WAVE. All fleet on
+the two PUBLISHED-SIG classes (the only classes where solutions PROVABLY exist; WZ's n=41
+scores 140 = inside our flat lane). Mechanism: WZ_FH_PROF_SKIP repurposed as a WINDOW
+SELECTOR (not resume) — skip=k dedicates each arm's full day to its (k+1)-th flattest cell,
+ZERO overlap between skip values: ~530 fresh arm-days on the flattest unexplored cells.
+IDs: Fir `51356688-690` (n=41 (0,2,9,9) flat, skips 1/2/3 — ⚠️ PD behind an upcoming Fir
+MAINTENANCE reservation, will start after) · Trillium `1946948-950` (n=41 reverse, skips
+1/2/3) · Rorqual `17528790-792` (n=42 (7,11,0,0) flat, skips 1/2/3) · Nibi: its 9 PD n=42
+reverse jobs cover its share. Checker exclusions will need these IDs post-completion.
+**WZ paper re-read finding: they acknowledge the Nanjing HPC CENTER; no runtime published —
+combined with Đoković's n=36 = 1,423 CPU-days (2010), record rungs historically cost
+CPU-YEARS. We are ~7 core-years into n=41 with a solver ~100× stronger than 2 weeks ago:
+the 'wall' is a measured mountain, ~25-45% climbed per class.** NEXT SESSION's standing
+priorities: (1) read wave-5 results (first concentrated read on proven classes); (2) per-arm
+candidate-level resume build (checkpoint file — env can't carry 178 values); (3) GPU
+feasibility spike (the ×1000-class ceiling-breaker, now priced against 5-8 CPU-waves/class);
+(4) streaming-side SIMD (bottleneck moved off completion); (5) **KOTSIREAS EMAIL — a week
+'ready', still unsent, the highest-leverage human action in the campaign.** This chat ends
+here by design: HANDOFF is canonical, the loop runs daily, fresh session starts from this
+file + the bs45-campaign skill.**
+
 **⚡ 2026-07-27 (Daniel session) — driver telemetry tar-piped to all 4; remaining tested
 sums fetched. Trillium n=41 REVERSE: 33.7-61.6M tested/class. Rorqual n=42 flat-first:
 17.1-105.6M tested/class (variance is real; `17481823` (5,9,0,8) = 0.89M, the
