@@ -2,6 +2,19 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-28 (daily loop) — WAVE 5 MID-FLIGHT, no hits, no action. Rorqual `17528790-92`
+(n=42 (7,11,0,0), skips 1/2/3) RUNNING ~6.2-6.5h of 12h (started 07:18-07:35 EDT, done
+~19:30 tonight). Trillium `1946948-50` (n=41 (0,2,9,9) reverse, skips 1/2/3) STARTED this
+morning (tri0307 10:24, tri1148/1150 11:53 EDT per output headers) but squeue shows PD
+(Priority) again = preempted + requeued; `--requeue` restarts them from scratch on the same
+deterministic window, no action needed. Fir + Nibi MISSED the Duo 180s window this check —
+zero visibility, but Fir `51356688-90` was already PD behind its maintenance reservation and
+Nibi's 9 n=42 reverse jobs (`18545816-24`) were PD; nothing to do there. No FOUND banners,
+no gate sums, SA tail stale (deliberate lapse). Insufficient runtime = bookkeeping only:
+no submits, no checker changes (wave-5 IDs stay un-excluded until their verdicts are read).
+Tomorrow's loop should have the first real wave-5 data (Rorqual finishes tonight).
+Kotsireas brief STILL ready-to-send — the standing highest-leverage human action.**
+
 **⚡ 2026-07-27 (session close) — WAVE 5 SUBMITTED: THE CONCENTRATION WAVE. All fleet on
 the two PUBLISHED-SIG classes (the only classes where solutions PROVABLY exist; WZ's n=41
 scores 140 = inside our flat lane). Mechanism: WZ_FH_PROF_SKIP repurposed as a WINDOW
