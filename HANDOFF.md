@@ -2,6 +2,29 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-28 (evening session) — WAVE 5b SUBMITTED: the NEXT concentration windows, +12
+node-days on the two published classes, zero code changes.** Rorqual `17637330-335` (n=42
+(7,11,0,0): flat skips 4/5/6 + REVERSE skips 1/2/3 — reverse windows mirror the n=41
+both-ends structure; PD, start as wave-5 nodes free ~19:30 EDT tonight) · Fir `51371189-191`
+(n=41 (0,2,9,9) flat skips 4/5/6; PD behind the same maintenance fence → SIX Fir jobs start
+in parallel when it lifts) · Trillium `1955719-721` (n=41 (0,2,9,9) reverse skips 4/5/6, PD
+Resources). Nibi untouched (its 9 PD reverse jobs = its share). All windows disjoint from
+waves 1-5 by construction (same NARMS=178/order/class, fresh skip values). **Trillium
+wave-5 `1946948-50` RESTARTED post-preemption ~14:30 EDT — squeue `%L` is Time*Left*
+(11:31 left = ~30 min in), finish ~2:50 AM.** Pre-registered abort: if tonight's Rorqual
+wave-5 outputs show the skip windows misbehaving (GATEB tested=~0 or skip not engaged in
+arm configs), scancel the PD continuations — else they ride. Wave-5b IDs stay UN-excluded
+in the checker until verdicts are read. Checker driver QoL: `check_all_retry.sh` now honors
+`CLUSTERS="fir nibi"` override for partial re-checks (default = all four, loop unchanged).
+**WZ paper re-audit (Daniel asked "did we miss something"): Thm 2.4 PSD test is ALREADY
+implemented** (joint bound wz_match.cpp:115, applied in the true pair stream) — with 2.11b +
+2.12 closed on 07-15→26, the paper is fully mined; the remaining WZ delta is compute-shape,
+not a missing trick. **RESUME BUILD GREENLIT** (approach B, flat-first-preserving per-arm
+checkpoint; spec at `docs/superpowers/specs/2026-07-28-per-arm-candidate-resume-design.md`);
+implementation + local validation next (n=19 bit-identical · n=29 blind re-find ·
+two-half resume-equivalence). Kotsireas brief STILL unsent — the standing highest-leverage
+human action.**
+
 **⚡ 2026-07-28 (daily loop) — WAVE 5 MID-FLIGHT, no hits, no action. Rorqual `17528790-92`
 (n=42 (7,11,0,0), skips 1/2/3) RUNNING ~6.2-6.5h of 12h (started 07:18-07:35 EDT, done
 ~19:30 tonight). Trillium `1946948-50` (n=41 (0,2,9,9) reverse, skips 1/2/3) STARTED this

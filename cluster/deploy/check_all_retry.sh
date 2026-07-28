@@ -24,7 +24,10 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 NTFY_URL="${NTFY_URL:-}"
 
 USER_ID="${CLUSTER_USER:-dangord}"
-CLUSTERS="fir nibi rorqual trillium"
+# Override to re-check only the clusters that missed their Duo window, e.g.
+#   CLUSTERS="fir nibi" ./cluster/deploy/check_all_retry.sh
+# Unset (the daily loop) = all four, unchanged.
+CLUSTERS="${CLUSTERS:-fir nibi rorqual trillium}"
 PUSH_WAIT="${PUSH_WAIT:-180}"     # seconds to wait for you to tap each push
 DUO="$SCRIPT_DIR/duo_ssh.py"
 # The remote checker command lives in checker_cmd.txt so Claude Code can evolve it
