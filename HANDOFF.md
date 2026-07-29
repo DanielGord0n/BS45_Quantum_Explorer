@@ -2,6 +2,38 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-29 (Daniel session) — RESUME BUILD COMPLETE, ALL 5 GATES PASS (the loop's
+"unvalidated WIP" note is superseded: the evening session HAD run the battery, holding the
+commit for the overnight canary).** Gates: (a) n=19 resume-off BIT-IDENTICAL to HEAD
+(idx=807/rank=2/nodes=8087); (c) resume-equivalence ×3 — mid-batch (ledger 20+17=37
+EXACT), batch>0 (ckpt (215,1,5) → 15+18=33, identical solution AND final state),
+non-buffered (400+407=807) — no gap, no overlap, identical hits every time; (d) CFGSIG
+mismatch → refused loudly, fresh start; (b) n=29 blind re-find canary on the NEW binary:
+FOUND idx=26694 EXACT fingerprint match to the 07-26 record (nodes=81320, ~149s),
+`tools/verify_npaf.py` independent PASS (sig 0,-6,9,1; NPAF[s]=0 all s; WZ pair encoding
+OK). Mechanism + env vars + deployment doctrine: spec
+`docs/superpowers/specs/2026-07-28-per-arm-candidate-resume-design.md` + the 07-28 late
+entry. **STRATEGIC RE-PRICING forced by waves 5+5b: the published n=41 class (0,2,9,9) now
+totals ≈590-680M tested across both ends (front ~330-390M, reverse ~260-290M), hitless —
+the COMBINED total has crossed the ~500M pessimistic band top. Under the band's own
+assumptions P(still no hit) ≈ 30%, so not yet an exclusion — but the optimistic-to-mid
+band is dead, and per the 07-28 pre-registered rule the GPU spike + Kotsireas methods ask
+move from hedge to PLAN. Full per-end exclusion (~500M EACH end) needs ~2 more
+resume-era rounds — which now cost zero re-tread.** Wave 6 TODAY (Fir + Trillium idle):
+tar-pipe the ckpt build to all 4, then fresh lanes skip 7/8/9 per idle cluster; wave 7+ =
+resubmit the SAME lanes verbatim (auto-resume). NEEDS_HUMAN: (1) today's 4-cluster
+tar-pipe + Fir/Trillium wave-6 submits (blocks below); (2) greenlight the GPU feasibility
+spike as the next session's build; (3) KOTSIREAS — now pre-registered-escalation, not just
+leverage. Wave-6 paste blocks:
+```
+cd ~/Projects/BS45_Quantum_Explorer && tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_firsthit_probe.sh | ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && cp -f cluster/deploy/cluster_firsthit_probe.sh ./cluster_firsthit_probe.sh && for k in 7 8 9; do sbatch --requeue --export=ALL,WZ_N=41,WZ_A=0,WZ_B=2,WZ_C=9,WZ_D=9,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=$k ./cluster_firsthit_probe.sh; done; squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R"'
+cd ~/Projects/BS45_Quantum_Explorer && tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_firsthit_probe.sh | ssh dangord@trillium.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && cp -f cluster/deploy/cluster_firsthit_probe.sh ./cluster_firsthit_probe.sh && for k in 7 8 9; do sbatch --requeue --export=ALL,WZ_N=41,WZ_A=0,WZ_B=2,WZ_C=9,WZ_D=9,WZ_FH_PROF_ORDER=2,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=$k ./cluster_firsthit_probe.sh; done; squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R"'
+cd ~/Projects/BS45_Quantum_Explorer && for c in rorqual nibi; do tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_firsthit_probe.sh | ssh dangord@$c.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && cp -f cluster/deploy/cluster_firsthit_probe.sh ./cluster_firsthit_probe.sh'; done
+```
+(Rorqual/Nibi = tar-pipe only: Rorqual busy with 5b until ~03:00, Nibi PD; their queued
+jobs compile the new source at start but run their old submit-time driver = checkpointing
+stays OFF for them, bit-identical behavior — validated gate (a).)**
+
 **⚡ 2026-07-29 (daily loop) — WAVES 5+5b READ: HITLESS on both n=41 ends; the published
 classes have now absorbed their deepest coverage yet.** Fir `51356688-90`+`51371189-91`
 (n=41 (0,2,9,9) FLAT, skip windows 1-6) ALL COMPLETE, arms_with_hits=0, tested

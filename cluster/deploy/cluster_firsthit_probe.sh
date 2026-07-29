@@ -29,6 +29,15 @@ GRACE=${FH_GRACE:-1800}
 BIN=fh_bin_${SLURM_JOB_ID}
 DIR=fh_arms_${SLURM_JOB_ID}
 mkdir -p "$DIR"
+# Per-arm candidate-level resume (2026-07-28): checkpoint dir is keyed by the
+# SEARCH LANE (class + arms + order + skip), NOT the job id — the next job on
+# the same lane auto-resumes every arm at its exact stopping candidate. One job
+# per lane at a time (concurrent same-lane jobs would overwrite each other's
+# checkpoints: no gaps, but wasted overlap). WZ_FH_RESUME=0 = fresh start.
+CKDIR=fh_ckpt/${N}_${A}_${B}_${C}_${D}_${NARMS}_ord${WZ_FH_PROF_ORDER:-0}_skip${WZ_FH_PROF_SKIP:-0}
+mkdir -p "$CKDIR"
+export WZ_FH_CKPT_DIR=$CKDIR
+echo "[driver] checkpoint lane: $CKDIR (resume=${WZ_FH_RESUME:-1})"
 
 echo "=== FIRSTHIT probe BS($((N+1)),$N) sig ($A,$B,$C,$D) — $NARMS arms — node $(hostname) — $(date) ==="
 g++ -O3 -march=native -std=c++17 -fopenmp -o "$BIN" src/solver/wz_match.cpp || exit 1
@@ -40,6 +49,8 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_STREAM_TOTAL" ] && export WZ_FH_STREAM_TOTAL
 [ -n "$WZ_FH_PROF_SKIP" ]    && export WZ_FH_PROF_SKIP
 [ -n "$WZ_FH_AB_PROF" ]      && export WZ_FH_AB_PROF
+[ -n "$WZ_FH_RESUME" ]       && export WZ_FH_RESUME
+[ -n "$WZ_FH_BUF_CAP" ]      && export WZ_FH_BUF_CAP
 
 # FH_SCORE_TIERS="t1,t2" (optional): first quarter of arms complete only
 # candidates with flatness score <= t1, second quarter <= t2, rest ungated.
@@ -104,6 +115,7 @@ done
 echo "arms_with_hits=$hits / $NARMS"
 # Gate B aggregation from every arm's summary/progress lines
 tot_cand=0; tot_nodes=0; tot_abort=0; cd_min=-1; cd_sum=0; tt_sum=0; tt_min=-1
+tc_sum=0; rp_min=-1; rp_max=0
 for f in "$DIR"/arm_*.log; do
   line=$(grep -E "candidates_streamed=" "$f" | tail -1)
   c=$(echo "$line" | grep -oE "candidates_streamed=[0-9]+" | cut -d= -f2)
@@ -116,6 +128,15 @@ for f in "$DIR"/arm_*.log; do
   if [ -n "$tt" ]; then
     tt_sum=$((tt_sum+tt))
     if [ "$tt_min" = -1 ] || [ "$tt" -lt "$tt_min" ]; then tt_min=$tt; fi
+  fi
+  # Cumulative (cross-wave) depth from the checkpoint ledger, and the resume
+  # frontier: min/max resume_pi across arms = the wave-over-wave depth meter.
+  tc=$(grep -oE "tested_cum=[0-9]+" "$f" | tail -1 | cut -d= -f2)
+  [ -n "$tc" ] && tc_sum=$((tc_sum+tc))
+  rp=$(grep -oE "resume_pi=[0-9]+" "$f" | tail -1 | cut -d= -f2)
+  if [ -n "$rp" ]; then
+    if [ "$rp_min" = -1 ] || [ "$rp" -lt "$rp_min" ]; then rp_min=$rp; fi
+    if [ "$rp" -gt "$rp_max" ]; then rp_max=$rp; fi
   fi
   a=$(grep -oE "budget_aborted=[0-9]+" "$f" | tail -1 | cut -d= -f2)
   [ -n "$a" ] && tot_abort=$((tot_abort+a))
@@ -134,7 +155,7 @@ done
 # never read as an empty stream again (the 07-22/23 zero-candidate artifact).
 summarized=$(grep -l "FIRSTHIT SUMMARY" "$DIR"/arm_*.log 2>/dev/null | wc -l)
 interrupted=$(grep -l "RESULT: INTERRUPTED" "$DIR"/arm_*.log 2>/dev/null | wc -l)
-echo "GATEB: candidates=$tot_cand tested=$tt_sum tested_min=$tt_min aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum"
+echo "GATEB: candidates=$tot_cand tested=$tt_sum tested_min=$tt_min tested_cum=$tc_sum resume_pi_min=$rp_min resume_pi_max=$rp_max aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum"
 # Global first hit = min by (profile_rank, idx) across arms
 grep -h "FIRSTHIT:" "$DIR"/arm_*.log 2>/dev/null \
   | sed -E 's/.*idx=([0-9]+) profile_rank=([0-9]+).*/\2 \1 &/' \

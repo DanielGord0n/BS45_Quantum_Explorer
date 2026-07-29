@@ -80,6 +80,7 @@
 #include <cmath>
 #include <functional>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <csignal>
@@ -1210,6 +1211,61 @@ int main(int argc, char **argv) {
     if (const char *e = getenv("WZ_FH_AB_PROF")) ab_prof = atoi(e) != 0;
     size_t abp_cap = 20000;    // cells with bigger lists run unconstrained
     if (const char *e = getenv("WZ_FH_AB_PROF_CAP")) abp_cap = (size_t)atoll(e);
+    // ---- Per-arm candidate-level resume (2026-07-28 spec:
+    // docs/superpowers/specs/2026-07-28-per-arm-candidate-resume-design.md).
+    // Deep-n arms die mid-drain of their first cell (cells_done=0 on every
+    // n>=41 job), so resume must be POSITIONAL IN THE SORTED BATCH SEQUENCE:
+    // (cell pi, drain batch, completed-within-batch k). Every step is
+    // deterministic (count_pairs22 DFS order + stable_sort), so re-streaming
+    // the resume cell (minutes) and skipping completions (the ~9/s bottleneck)
+    // reproduces the exact position. CFGSIG guards soundness: anything that
+    // changes stream order, sort key, or cell skipping invalidates the file
+    // (warn + fresh start, never a silent unsound resume). AB_BUDGET is
+    // deliberately EXCLUDED — it alters per-candidate completion depth, not
+    // stream position, so waves may vary it freely.
+    long long fh_buf_cap = 500000;  // cell-order drain buffer (was hardcoded)
+    if (const char *e = getenv("WZ_FH_BUF_CAP")) fh_buf_cap = atoll(e);
+    string fh_ckpt_path;            // empty = checkpointing off (local runs)
+    if (const char *e = getenv("WZ_FH_CKPT_DIR"))
+      fh_ckpt_path = string(e) + "/arm_" + to_string(fh_shard) + ".ckpt";
+    bool fh_resume_on = true;       // WZ_FH_RESUME=0 = kill switch: ignore an
+    if (const char *e = getenv("WZ_FH_RESUME"))  // existing file, start fresh
+      fh_resume_on = atoi(e) != 0;  // (new checkpoints are still written)
+    long long fh_test_stop = 0;     // TEST HOOK: fake a SIGTERM after this many
+    if (const char *e = getenv("WZ_FH_TEST_STOP_AFTER"))  // completions —
+      fh_test_stop = atoll(e);      // exercises the mid-drain interrupt path
+    char fh_sigbuf[256];
+    snprintf(fh_sigbuf, sizeof fh_sigbuf,
+             "n%d.a%d.b%d.c%d.d%d.ns%d.sh%d.ord%d.m%d.co%d.ap%d.sm%lld.cap%lld.sk%d.t1%d.t2%d",
+             n, G_SIG_A, G_SIG_B, G_SIG_C, G_SIG_D, fh_nshard, fh_shard,
+             prof_order, fh_m, cell_order ? 1 : 0, ab_prof ? 1 : 0, score_max,
+             fh_buf_cap, fh_skip, G_THM211B ? 1 : 0, G_THM212 ? 1 : 0);
+    string fh_cfg_sig = fh_sigbuf;
+    bool fh_resuming = false;
+    long long fh_res_pi = 0, fh_res_batch = 0, fh_res_k = 0, fh_tested_base = 0;
+    if (!fh_ckpt_path.empty() && fh_resume_on) {
+      if (FILE *cf = fopen(fh_ckpt_path.c_str(), "r")) {
+        char sline[300], fsig[260] = {0};
+        long long rpi = -1, rb = -1, rk = -1, tc = 0;
+        while (fgets(sline, sizeof sline, cf)) {
+          if (sscanf(sline, "CFGSIG=%259s", fsig) == 1) continue;
+          if (sscanf(sline, "resume_pi=%lld", &rpi) == 1) continue;
+          if (sscanf(sline, "resume_batch=%lld", &rb) == 1) continue;
+          if (sscanf(sline, "resume_k=%lld", &rk) == 1) continue;
+          sscanf(sline, "tested_cum=%lld", &tc);
+        }
+        fclose(cf);
+        if (fh_cfg_sig == fsig && rpi >= 0 && rb >= 0 && rk >= 0) {
+          fh_resuming = true;
+          fh_res_pi = rpi; fh_res_batch = rb; fh_res_k = rk; fh_tested_base = tc;
+          cout << "[firsthit ckpt] RESUME pi=" << rpi << " batch=" << rb
+               << " k=" << rk << " tested_cum=" << tc << "\n" << flush;
+        } else {
+          cout << "[firsthit ckpt] STALE/MISMATCHED checkpoint IGNORED ("
+               << fsig << " != " << fh_cfg_sig << ") — starting FRESH\n" << flush;
+        }
+      }
+    }
     unordered_map<uint64_t, vector<AbpRow>> abpMap;
     int half_m = fh_m / 2;
     auto cell_abp_key = [&](const Profile &p) {
@@ -1271,9 +1327,43 @@ int main(int argc, char **argv) {
     FH_ABP_M = fh_m;   // partial-class bookkeeping modulus (harmless when off)
     for (int c = 0; c < fh_m; c++) FH_ABP_TIC[c] = class_count(G_N1, c, fh_m);
     long long cells_prof_dead = 0, cells_prof_uncap = 0;
+    // Checkpoint shadow state: ck_* always describes "everything before this
+    // position is COMPLETED" — advanced only AFTER a completion returns, so a
+    // hard kill (SIGKILL) between writes can only cause bounded RE-testing
+    // (idempotent), never a gap.
+    long long ck_pi = fh_shard + fh_skip * fh_nshard, ck_batch = 0, ck_k = 0;
+    if (fh_resuming) { ck_pi = fh_res_pi; ck_batch = fh_res_batch; ck_k = fh_res_k; }
+    auto fh_write_ckpt = [&]() {
+      if (fh_ckpt_path.empty()) return;
+      string tmp = fh_ckpt_path + ".tmp";
+      FILE *cf = fopen(tmp.c_str(), "w");
+      if (!cf) return;
+      fprintf(cf, "CFGSIG=%s\nresume_pi=%lld\nresume_batch=%lld\nresume_k=%lld\ntested_cum=%lld\n",
+              fh_cfg_sig.c_str(), ck_pi, ck_batch, ck_k,
+              fh_tested_base + clean_no + aborted + (hit_idx >= 0 ? 1LL : 0LL));
+      fclose(cf);
+      rename(tmp.c_str(), fh_ckpt_path.c_str());  // atomic on same filesystem
+    };
+    auto last_ckpt = T0;
+    long long fh_ck_tick = 0;
+    auto fh_maybe_ckpt = [&]() {
+      if (fh_ckpt_path.empty()) return;
+      if ((++fh_ck_tick & 63) != 0) return;  // clock check every 64 completions
+      auto nowc = Clock::now();
+      if (chrono::duration<double>(nowc - last_ckpt).count() >= prog_sec) {
+        last_ckpt = nowc;
+        fh_write_ckpt();
+      }
+    };
+    long long fh_test_ct = 0;  // test-hook completion counter
     auto last_prog = T0;
     for (int pi = fh_shard + fh_skip * fh_nshard;
          pi < (int)fhProfs.size() && !fh_stop.load(); pi += fh_nshard) {
+      // Resume fast-forward, cell level: cells before the checkpointed cell
+      // were fully completed by prior runs — skip them entirely (no streaming).
+      if (fh_resuming && pi < fh_res_pi) continue;
+      if (fh_resuming && pi > fh_res_pi) fh_resuming = false;  // safety: ckpt
+      // pointed past a dead/last cell; everything from here is fresh ground.
       FH_ABP = nullptr;
       if (ab_prof) {
         auto it = abpMap.find(cell_abp_key(fhProfs[pi]));
@@ -1283,6 +1373,12 @@ int main(int argc, char **argv) {
           // Counts as a fully-processed cell for PROF_SKIP resume purposes.
           cells_prof_dead++;
           cells_done++;
+          if (fh_resuming && pi == fh_res_pi) fh_resuming = false;  // ckpt
+          // pointed at a (now-)dead cell: trivially done, continue fresh.
+          // Shadow-advance only (no write): arms can skip THOUSANDS of dead
+          // cells back-to-back — per-cell writes would storm Lustre metadata,
+          // and losing a dead-cell advance costs only microseconds to re-prove.
+          ck_pi = pi + fh_nshard; ck_batch = 0; ck_k = 0;
           continue;
         }
         if (it->second.size() <= abp_cap) {
@@ -1295,6 +1391,10 @@ int main(int argc, char **argv) {
         }
       }
       long long lv = 0, okc = 0;
+      long long cur_batch = 0;    // drain-batch counter within this cell
+      long long cell_done_ct = 0; // completions in this cell (non-buffered path)
+      ck_pi = pi;
+      if (!(fh_resuming && pi == fh_res_pi)) { ck_batch = 0; ck_k = 0; }
       // Flat-first within-cell ordering (WZ_FH_CELL_ORDER=0 disables; default
       // ON for mod-6 cells): buffer the cell's candidates, sort by flatness
       // score ascending, complete in that order. Every arm gets the measured
@@ -1317,6 +1417,12 @@ int main(int argc, char **argv) {
         long long nodes_before = fh_nodes_total;
         int r = fh_complete_ab(Ci, Di);
         if (r >= 2) bt_entered++;
+        // TEST HOOK: fake a SIGTERM after exactly N completions — exercises the
+        // interrupt+checkpoint path deterministically (validation gate 6c).
+        if (fh_test_stop > 0 && ++fh_test_ct >= fh_test_stop) {
+          g_fh_sigterm = 1;
+          fh_stop.store(true);
+        }
         if (r == 1) pre_rej++;
         else if (r == 2) clean_no++;
         else if (r == 3) aborted++;
@@ -1352,13 +1458,36 @@ int main(int argc, char **argv) {
         }
       };
       auto drain = [&]() {
+        // Resume fast-forward, batch level: batches before the checkpointed one
+        // were fully completed by a prior run — the stream re-produces them
+        // (cheap, minutes) and we skip the completions (the ~9/s bottleneck).
+        // Exact because count_pairs22's DFS order and stable_sort are both
+        // deterministic under an identical CFGSIG.
+        if (fh_resuming && pi == fh_res_pi && cur_batch < fh_res_batch) {
+          cur_batch++;
+          cellbuf.clear();
+          return;
+        }
+        size_t start = 0;
+        if (fh_resuming && pi == fh_res_pi && cur_batch == fh_res_batch) {
+          start = (size_t)min((long long)cellbuf.size(), fh_res_k);
+          fh_resuming = false;  // caught up — everything past here is fresh
+        }
         stable_sort(cellbuf.begin(), cellbuf.end(),
                     [](const CellCand &a, const CellCand &b){ return a.sc < b.sc; });
-        for (auto &cc : cellbuf) {
+        for (size_t ci = start; ci < cellbuf.size(); ci++) {
           if (g_found.load() || g_fh_sigterm) break;  // hits/SIGTERM abort;
           int Ci[64], Di[64];                         // max_cand still drains
-          for (int i = 0; i < n; i++) { Ci[i] = cc.C[i]; Di[i] = cc.D[i]; }
+          for (int i = 0; i < n; i++) { Ci[i] = cellbuf[ci].C[i]; Di[i] = cellbuf[ci].D[i]; }
           complete_one(Ci, Di);
+          ck_batch = cur_batch;         // completed-through position: first
+          ck_k = (long long)ci + 1;     // ci+1 of this sorted batch are DONE
+          fh_maybe_ckpt();
+        }
+        if (!(g_found.load() || g_fh_sigterm)) {  // batch fully completed
+          cur_batch++;
+          ck_batch = cur_batch;
+          ck_k = 0;
         }
         cellbuf.clear();
       };
@@ -1393,20 +1522,37 @@ int main(int argc, char **argv) {
         if (score_max > 0 && sc > score_max) { score_rej++; return; }
         if (cell_order) {
           cellbuf.push_back({sc, C, D});
-          if (cellbuf.size() >= 500000) drain();
+          if ((long long)cellbuf.size() >= fh_buf_cap) drain();
           if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
           return;
         }
+        // Non-buffered path: completion order == eligible-stream order, so the
+        // resume position is simply "skip the first k eligible candidates".
+        if (fh_resuming && pi == fh_res_pi) {
+          if (cell_done_ct < fh_res_k) { cell_done_ct++; return; }
+          fh_resuming = false;
+        }
         complete_one(Ci, Di);
+        cell_done_ct++;
+        ck_batch = 0;
+        ck_k = cell_done_ct;
+        fh_maybe_ckpt();
         if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
       };
       count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
                     lv, okc, &probe, fh_m, &fh_stop);
       if (cell_order && !cellbuf.empty()) drain();  // finish the cell in order
-      if (!fh_stop.load()) cells_done++;  // only cells processed to completion
+      if (!fh_stop.load()) {
+        cells_done++;  // only cells processed to completion
+        ck_pi = pi + fh_nshard;  // cell fully done: resume point = next cell
+        ck_batch = 0;
+        ck_k = 0;
+        fh_write_ckpt();  // cheap: live cells complete rarely at deep n
+      }
     }
     double t = chrono::duration<double>(Clock::now() - T0).count();
     long long completed_tested = clean_no + aborted + (hit_idx >= 0 ? 1 : 0);
+    fh_write_ckpt();  // final exact position (SIGTERM/deadline/test-hook paths)
     cout << "\n=== FIRSTHIT SUMMARY (n=" << n << ", sig " << G_SIG_A << ","
          << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D
          << ", shard " << fh_shard << "/" << fh_nshard << ") ===\n"
@@ -1417,7 +1563,10 @@ int main(int argc, char **argv) {
          << "  cells_done=" << cells_done << " (skip=" << fh_skip << ")"
          << "  ab_prof=" << (ab_prof ? 1 : 0)
          << "  cells_prof_dead=" << cells_prof_dead
-         << "  cells_prof_uncap=" << cells_prof_uncap << "\n"
+         << "  cells_prof_uncap=" << cells_prof_uncap
+         << "  tested_cum=" << (fh_tested_base + completed_tested)
+         << "  resume_pi=" << ck_pi << "  resume_batch=" << ck_batch
+         << "  resume_k=" << ck_k << "\n"
          << (hit_idx >= 0
              ? "RESULT: FOUND at idx=" + to_string(hit_idx)
              : (g_fh_sigterm
