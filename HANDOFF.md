@@ -32,7 +32,14 @@ cd ~/Projects/BS45_Quantum_Explorer && for c in rorqual nibi; do tar -cf - src/s
 ```
 (Rorqual/Nibi = tar-pipe only: Rorqual busy with 5b until ~03:00, Nibi PD; their queued
 jobs compile the new source at start but run their old submit-time driver = checkpointing
-stays OFF for them, bit-identical behavior — validated gate (a).)**
+stays OFF for them, bit-identical behavior — validated gate (a).)
+**WAVE 6 SUBMITTED ~13:30 EDT, all pastes landed: Fir `51517706-708` (n=41 (0,2,9,9) flat,
+CHECKPOINTED lanes skip 7/8/9, new binary+driver) · Trillium `1970159/160/162` (n=41
+reverse, ckpt lanes skip 7/8/9) · Rorqual+Nibi tar-pipe landed (new source+driver staged;
+their queued/running jobs unaffected). These are the FIRST checkpointed lanes — wave 7 =
+resubmit these exact sbatch lines verbatim, arms auto-resume, zero re-tread. Checker: wave-6
+IDs stay un-excluded until verdicts; expect `[driver] checkpoint lane:` + `[firsthit ckpt]`
+lines in outputs and `tested_cum=`/`resume_pi_min/max=` in GATEB.**
 
 **⚡ 2026-07-29 (daily loop) — WAVES 5+5b READ: HITLESS on both n=41 ends; the published
 classes have now absorbed their deepest coverage yet.** Fir `51356688-90`+`51371189-91`
