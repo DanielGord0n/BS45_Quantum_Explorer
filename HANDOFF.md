@@ -2,6 +2,27 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-29 (daily loop) — WAVES 5+5b READ: HITLESS on both n=41 ends; the published
+classes have now absorbed their deepest coverage yet.** Fir `51356688-90`+`51371189-91`
+(n=41 (0,2,9,9) FLAT, skip windows 1-6) ALL COMPLETE, arms_with_hits=0, tested
+39-53M/window ≈ **277M fresh tested this round** (aborted=0, 178/178 arms summarized).
+Trillium `1946948-50`+`1955719-21` (n=41 REVERSE, windows 1-6) ALL COMPLETE hitless,
+tested 36-41M/window ≈ **226M fresh**; note cells_done_sum=11-25 — first jobs ever to
+COMPLETE whole cells (the skip windows land on smaller cells, as designed). Rorqual wave-5
+`17528790-92` (n=42 (7,11,0,0) flat, skips 1/2/3) COMPLETE hitless, tested 76-95M/job
+≈ 265M (arms_summarized 165/178 → tested is an undercount by ~13 arms/job).
+**Pre-registered abort check: skip windows BEHAVED (tested ≫ 0, aborted=0) → Rorqual
+wave-5b `17637330-35` rides — RUNNING ~2h in at check time, done ~03:00 EDT 07-30.** Nibi
+`18545816-24` still PD (Priority). No FOUND banners anywhere; `rung_status check` =
+EXHAUSTED (deliberate, no SA refill). Checker exclusions updated for all 15 finished wave
+IDs (17637330-35 stay un-excluded). NO submits — post-wave-5b continuation (windows 7+,
+resume-build-first, or GPU spike) is Daniel's call per the no-autonomous-probe-resubmit
+rule. **Working tree holds the resume build MID-IMPLEMENTATION (wz_match.cpp +159 lines,
+driver +23, per the 07-28 spec) — left uncommitted by the evening session; it passes
+`g++ -fsyntax-only` but has NOT run its validation battery, so the loop left it untouched
+and committed bookkeeping files only.** Kotsireas brief STILL unsent — standing
+highest-leverage human action.**
+
 **⚡ 2026-07-28 (evening session) — WAVE 5b SUBMITTED: the NEXT concentration windows, +12
 node-days on the two published classes, zero code changes.** Rorqual `17637330-335` (n=42
 (7,11,0,0): flat skips 4/5/6 + REVERSE skips 1/2/3 — reverse windows mirror the n=41
