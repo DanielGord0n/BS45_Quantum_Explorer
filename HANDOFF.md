@@ -2,6 +2,26 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-30 (Daniel session, cont.) — REDEPLOYMENT SUBMITTED + n=44 CAMPAIGN OPENED.**
+Submits all landed ~14:40 EDT: Fir `51808294-296` (n=42 flat ckpt lanes 7/8/9) +
+`51808297-299` (n=43 (8,-2,5,9) flat ckpt lanes 0/1/2) · Rorqual `17952942-944` (n=42
+reverse 4/5/6) + `17952945-947` (n=43 reverse 0/1/2) · Trillium: n=41 lanes
+`1970159/160/162` scancelled (class solved, were PD) → `1982605-607` (n=42 reverse ckpt
+lanes 7/8/9). Nibi untouched. Fleet = 24 jobs, all on n=42/43 published classes + n=42
+class sweep. **n=44 FIRST CONCRETE STEP: admissible frontier ENUMERATED = 12 signature
+classes** (a,b odd / c,d even / norm 178; canonical nonneg a≤b,c≤d): (1,7,8,8) (1,13,2,2)
+(3,3,4,12) (3,5,0,12) (3,13,0,0) (5,5,8,8) (5,7,2,10) (5,9,6,6) (5,11,4,4) (7,7,4,8)
+(7,11,2,2) (9,9,0,4). Local stream-validation of all 12 launched (bounded 50-cand/300s
+per class, PROF_ORDER=0 per the local-stall trap) → identifies non-empty vs
+enumeration-bound classes = the first n=44 triage data. CLAIM DISCIPLINE for the n=41
+result (Daniel asked): we may NOT claim faster-than-WZ (they published no runtime — no
+comparison exists); the honest claims are (i) first independent BS(42,41) since WZ, (ii)
+NEW inequivalent solution (score 124 vs 140), (iii) reproducible deterministic
+architecture with a measured cost curve (~700M tested/class cumulative to the hit — the
+4.9h was window 8's clock, not the search's total cost; the days of window-burning WERE
+the search). Deterministic = same lane re-run finds the same solution at the same
+position; the cost model (hit inside the 500M-1B band) validated on its first test.**
+
 **⚡ 2026-07-30 (Daniel session) — BS(42,41) INDEPENDENTLY RE-VERIFIED in-session
 (verify_npaf.py: NPAF[s]=0 all s=1..42, norm 166, WZ encoding OK — the bank stands).
 FLEET REDEPLOYED to n=42 + n=43 (Daniel's call): the n=41 recipe (published-class flat
