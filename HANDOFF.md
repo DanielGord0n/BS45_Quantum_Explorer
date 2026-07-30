@@ -2,6 +2,30 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-30 (Daniel session) — BS(42,41) INDEPENDENTLY RE-VERIFIED in-session
+(verify_npaf.py: NPAF[s]=0 all s=1..42, norm 166, WZ encoding OK — the bank stands).
+FLEET REDEPLOYED to n=42 + n=43 (Daniel's call): the n=41 recipe (published-class flat
+windows + checkpointed lanes + both ends), applied up-ladder.** Allocation: **Fir** (idle)
+= n=42 (7,11,0,0) flat ckpt lanes skip 7/8/9 + n=43 (8,-2,5,9) flat ckpt lanes skip 0/1/2
+(n=43 published sig from `results/reference/wz_table1_bs44_43.txt`; fresh rung, no burned
+windows) · **Rorqual** (idle) = n=42 reverse ckpt lanes 4/5/6 + n=43 reverse ckpt lanes
+0/1/2 · **Trillium** = scancel the now-redundant n=41 reverse lanes `1970159/160/162`
+(PD, class solved, nothing lost) → n=42 reverse ckpt lanes 7/8/9 · **Nibi** = untouched
+(9 PD n=42 reverse skip-0, still valid coverage tickets). Window ledger: n=42 flat burned
+0-6, reverse burned 1-3 (+0 pending Nibi) — all new lanes fresh by construction. Cost
+model from the n=41 hit (fell in window 8, ~700M cumulative on-class): ×2-3/rung thinning
+⇒ n=42 ≈ 1.4-2B/class expected, n=43 ≈ 3-6B ⇒ wave-8+ = verbatim lane resubmits
+(auto-resume) + the GPU spike is THE n=43/44-scale lever. **n=44 RESEARCH PROGRAM (next
+session, Daniel greenlit out-of-box work): (1) GPU completer feasibility spike (measure
+first: one cell's completion throughput, two numbers); (2) class-triage theory — mine WZ's
+NS(44)/NNS(44) non-existence proofs for what they do NOT forbid at BS(45,44), rank the
+n=44 admissible classes by obstruction invariants before spending compute; (3) symmetry-
+restricted lanes (skew/palindromic subspaces) as a reach multiplier; (4) flat-score prior
+modeling (4 deep-n data points now: ours 124, WZ 140/142/134). Honest frame stands: n=44
+needs ~50-200B tested candidates across unknown-viability classes on CPU — the record
+attempt is real only if GPU × triage both land.** KOTSIREAS: brief must be REWRITTEN to
+lead with the new inequivalent BS(42,41) — strongest possible opener for the methods ask.**
+
 **⚡ 2026-07-30 (daily loop) — 🎯 BS(42,41) SOLVED AND BANKED: THE CAMPAIGN'S TARGET EVENT.
 Fir wave-6 job `51517707` (n=41 published WZ class (0,2,9,9), flat, window skip 8, FIRST
 CHECKPOINTED lane) hit at elapsed 17708.9s (~4.9 h): GLOBAL FIRST idx=500000
