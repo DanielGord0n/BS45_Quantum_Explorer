@@ -39,6 +39,19 @@ and it can be pushed to the profile/cell level exactly like 2.11b was.
   rate of the compression filter on 10k streamed candidates at n=41 and n=44. Reject
   rate >50% ⇒ build it into the stream; <10% ⇒ kill.
 
+**⚰️ MEASURED DEAD 2026-07-30 (same session, ~1h after writing this).** Math validated
+(banked BS(42,41): padded quadruple periodic-complementary, all 6 compressions PASS;
+filter machinery soundness-checked — accepts the real solution). Rejection measured on
+real streamed candidates (existence-of-compressed-(A,B) check, sum constraints included):
+**n=41 d=7: 0/1000 = 0.0% · n=44 d=5: 2/2000 = 0.1% · n=44 d=9: 12/2000 = 0.6%** — far
+below the pre-registered 10% kill line. Interpretation: survivors of 2.11a/2.11b/2.12
+already satisfy the compression condition almost surely; the compressed-(A,B) space is
+floppy enough to certify nearly any C,D target. Do NOT rebuild at the profile level.
+Completion-level variant (compressed-PAF targets pruning the pair-DFS, AB_PROF-style)
+remains possible but is DEPRIORITIZED below SAT+CAS and GPU — existence rarely failing
+means its capacity cuts are likely thin. Instrument kept: `WZ_FH_DUMP` (default-off,
+n=19 bit-identical verified) + `compression_filter.py` (session scratchpad).
+
 ## Lever 2 — SAT+CAS (MathCheck-style): a second, independent engine
 
 Grounding: Bright–Kotsireas–Ganesh, "Applying computer algebra systems with SAT solvers

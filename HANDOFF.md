@@ -11,9 +11,14 @@ route MATHEMATICALLY VALIDATED on our banked BS(42,41)**: pad C,D with one zero 
 quadruple is PERIODIC-complementary at length n+1 (max |PAF sum| = 0 at all shifts,
 verified numerically), and ALL six compressions (d=2,3,6,7,14,21 at L=42) pass exactly.
 This is a filter axis WZ never used (their paper slices only mod 2/3/6; at n=44,
-L=45=9·5 exposes mod-5/9 structure). NEXT KILL TEST (pre-registered): measure the d=5
-existence-filter rejection rate on ~2k streamed n=44 candidates — reject >50% ⇒ build
-into the stream; <10% ⇒ profile-level dead, completion-level variant remains. (3) SAT+CAS
+L=45=9·5 exposes mod-5/9 structure). KILL TEST RUN SAME SESSION — **VERDICT: KILLED at
+the profile level.** Rejection on real streamed candidates: n=41 d=7 = 0.0% (0/1000),
+n=44 d=5 = 0.1% (2/2000), n=44 d=9 = 0.6% (12/2000) — all far under the pre-registered
+10% line (2.11a/b+2.12 survivors already satisfy compression almost surely). Negative
+result RECORDED in the research doc's measured-dead block — do not rebuild; the
+completion-level variant is deprioritized below SAT+CAS and GPU. Cost of the answer: ~1
+laptop-hour. New permanent instrument: `WZ_FH_DUMP` candidate-dump env (default-off,
+n=19 bit-identical re-verified with it off). (3) SAT+CAS
 (MathCheck, Bright–Kotsireas–Ganesh — Williamson ≤70 record in the sibling class) = the
 second-engine lever; canary = re-find n=29, then blind n=38. (4) GPU spike + class-triage
 theory + symmetry minority lanes ranked behind. Cluster results are NOT a blocker for any

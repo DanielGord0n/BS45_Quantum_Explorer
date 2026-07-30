@@ -1234,6 +1234,9 @@ int main(int argc, char **argv) {
     long long fh_test_stop = 0;     // TEST HOOK: fake a SIGTERM after this many
     if (const char *e = getenv("WZ_FH_TEST_STOP_AFTER"))  // completions —
       fh_test_stop = atoll(e);      // exercises the mid-drain interrupt path
+    FILE *fh_dump = nullptr;        // MEASUREMENT INSTRUMENT (WZ_FH_DUMP=path):
+    if (const char *e = getenv("WZ_FH_DUMP"))  // dump each streamed C,D candidate
+      fh_dump = fopen(e, "w");      // for offline filter research; default OFF
     char fh_sigbuf[256];
     snprintf(fh_sigbuf, sizeof fh_sigbuf,
              "n%d.a%d.b%d.c%d.d%d.ns%d.sh%d.ord%d.m%d.co%d.ap%d.sm%lld.cap%lld.sk%d.t1%d.t2%d",
@@ -1517,6 +1520,12 @@ int main(int argc, char **argv) {
         }
         int Ci[64], Di[64];
         for (int i = 0; i < n; i++) { Ci[i] = C[i]; Di[i] = D[i]; }
+        if (fh_dump) {
+          for (int i = 0; i < n; i++) fprintf(fh_dump, "%d ", Ci[i]);
+          fprintf(fh_dump, "| ");
+          for (int i = 0; i < n; i++) fprintf(fh_dump, "%d ", Di[i]);
+          fprintf(fh_dump, "\n");
+        }
         long long sc = -1;
         if (score_max > 0 || cell_order) sc = flat_score(Ci, Di);
         if (score_max > 0 && sc > score_max) { score_rej++; return; }
