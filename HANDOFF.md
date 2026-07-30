@@ -18,7 +18,18 @@ n=44 d=5 = 0.1% (2/2000), n=44 d=9 = 0.6% (12/2000) — all far under the pre-re
 result RECORDED in the research doc's measured-dead block — do not rebuild; the
 completion-level variant is deprioritized below SAT+CAS and GPU. Cost of the answer: ~1
 laptop-hour. New permanent instrument: `WZ_FH_DUMP` candidate-dump env (default-off,
-n=19 bit-identical re-verified with it off). (3) SAT+CAS
+n=19 bit-identical re-verified with it off). BONUS MEASUREMENT: n=44 (1,7,8,8)
+streamed-candidate flat-score distribution (N=2000): min=124 (= our n=41 hit's exact
+score — solution-grade flatness EXISTS at the record rung) / p25=152 / median=160 /
+max=200. Flat ORDERING (cell_order) suffices; no score-gate tiers needed at n=44.
+OPTIONAL TONIGHT (Daniel's call): stack the FIRST 3 n=44 lanes on Fir behind its 6 PD
+n=42/43 jobs (start as nodes free; checkpointed from minute one; classes = the 3
+fastest-streaming: (5,9,6,6), (5,7,2,10), (1,13,2,2), flat, skip 0):
+```
+ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=44,WZ_A=5,WZ_B=9,WZ_C=6,WZ_D=6,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh && sbatch --requeue --export=ALL,WZ_N=44,WZ_A=5,WZ_B=7,WZ_C=2,WZ_D=10,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh && sbatch --requeue --export=ALL,WZ_N=44,WZ_A=1,WZ_B=13,WZ_C=2,WZ_D=2,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R"'
+```
+First n=44 search jobs of the campaign: they measure per-class candidate cost + density
+at the record rung (the experiment that grounds the whole GPU/SAT sizing) while hunting. (3) SAT+CAS
 (MathCheck, Bright–Kotsireas–Ganesh — Williamson ≤70 record in the sibling class) = the
 second-engine lever; canary = re-find n=29, then blind n=38. (4) GPU spike + class-triage
 theory + symmetry minority lanes ranked behind. Cluster results are NOT a blocker for any
