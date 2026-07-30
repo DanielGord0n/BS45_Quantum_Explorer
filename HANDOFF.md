@@ -13,6 +13,7 @@ pre-07-24 history → HANDOFF_ARCHIVE.md (~3,100 lines out of the per-session co
 budget); QUICK REFERENCE rewritten for the firsthit/checkpoint era. Next builds queued
 (none blocked on cluster results): SAT+CAS n=29 canary → GPU kernel spike → class-triage
 theory → Kotsireas brief rewrite (leads with BS(42,41)).**
+
 **⚡ 2026-07-30 (Daniel session, research) — n=44 RECORD PROGRAM WRITTEN + FIRST LEVER
 VALIDATED ON REAL DATA.** Full ranked program: `docs/n44_search_narrowing_research.md`
 (committed). Headlines: (1) **all 12 n=44 admissible classes STREAM** (50 cands each,
