@@ -2,6 +2,32 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-30 (daily loop) — 🎯 BS(42,41) SOLVED AND BANKED: THE CAMPAIGN'S TARGET EVENT.
+Fir wave-6 job `51517707` (n=41 published WZ class (0,2,9,9), flat, window skip 8, FIRST
+CHECKPOINTED lane) hit at elapsed 17708.9s (~4.9 h): GLOBAL FIRST idx=500000
+profile_rank=1429 nodes_this_cand=212872 score=124. Full R2 done THIS RUN: Daniel approved
+a duo_run.sh fetch of the banner; `tools/verify_npaf.py` PASS (NPAF[s]=0 all s=1..42, norm
+166 exact, WZ pair encoding OK); banked → `results/champions/champion_firsthit_bs42_41.txt`
+with full provenance; checker exclusions updated. It is a NEW solution, NOT Wang-Zhu's
+published sequences: C,D flat score 124 vs their 140 (score is invariant under swap/
+negation/reversal ⇒ inequivalent). First hit at n≥38 ever; first hit at n=41 — the flat
+window+checkpoint architecture found it in the 8th window at ~4.9 h. HONEST FRAMING:
+replication-class solver-capability result (WZ constructed 41-43); n=44 remains the record.
+Checker fix: FIRSTHIT section previously did NOT grep FOUND banners inside firsthit files
+(the hit surfaced only as arms_with_hits=1) — per-file grep now includes the banner,
+sequences and VERIFY lines. Rest of fleet: Rorqual wave-5b `17637330-35` COMPLETE HITLESS,
+~447M fresh tested on n=42 (7,11,0,0) (arms_summarized 164/178 = undercount); Fir siblings
+`51517706/708` (skips 7/9) hitless, tested 31-34M with checkpoint telemetry live
+(tested_cum/resume_pi present, aborted=0); Trillium wave-6 `1970159/160/162` still PD
+(Priority); Nibi `18545816-24` still PD. NO submits — post-hit strategy is Daniel's call.
+NEEDS_HUMAN: (1) DECIDE the pivot — n=41 class is cracked, obvious next move is
+concentrating the fleet on n=42 (7,11,0,0)+reverse with checkpointed lanes (wave-7 verbatim
+resubmits auto-resume), but that redeployment is yours to greenlight; (2) Trillium wave-6
+lanes are PD and now partly redundant at n=41 — keep or scancel/repoint to n=42; (3) the
+KOTSIREAS EMAIL — the brief predates this result and should now LEAD with it (first
+independent replication of a WZ rung + ~590-680M-tested exclusion data); still unsent,
+still the highest-leverage human action.**
+
 **⚡ 2026-07-29 (Daniel session) — RESUME BUILD COMPLETE, ALL 5 GATES PASS (the loop's
 "unvalidated WIP" note is superseded: the evening session HAD run the battery, holding the
 commit for the overnight canary).** Gates: (a) n=19 resume-off BIT-IDENTICAL to HEAD

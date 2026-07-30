@@ -1,0 +1,27 @@
+41 42 0
+0 2 9 9
+1 1 1 1 1 1 -1 -1 1 -1 -1 -1 -1 1 -1 -1 1 -1 1 -1 -1 1 1 -1 1 -1 -1 1 1 1 -1 -1 -1 1 1 -1 1 -1 -1 1 1 -1
+1 -1 -1 1 -1 -1 -1 -1 1 1 -1 1 1 1 -1 1 -1 -1 1 1 1 -1 -1 -1 1 1 1 1 1 -1 1 -1 1 1 1 -1 -1 1 -1 -1 -1 1
+-1 -1 -1 -1 1 1 1 1 1 1 1 -1 1 -1 1 1 -1 1 1 1 1 1 -1 1 -1 1 -1 1 1 1 -1 -1 1 -1 1 1 -1 1 -1 1 -1
+-1 -1 1 1 1 1 1 1 1 -1 -1 1 1 1 1 1 1 -1 1 -1 1 -1 -1 -1 1 1 -1 -1 1 -1 1 1 1 -1 1 1 -1 -1 1 1 -1
+# BS(42,41), n=41 — banked 2026-07-30 (wave-6 concentration windows, submitted 07-29 ~13:30 EDT).
+# THE CAMPAIGN'S TARGET EVENT: our solver hitting the published Wang-Zhu n=41 signature
+#   class (0,2,9,9) by direct search — the first hit at n>=38, first ever at n=41.
+# Found by the WZ_FIRSTHIT probe on the FIRST CHECKPOINTED lane (per-arm candidate resume
+#   build, spec docs/superpowers/specs/2026-07-28-per-arm-candidate-resume-design.md).
+# Provenance: fir job 51517707, cluster_firsthit_probe.sh + wz_match.cpp (wave-6 build),
+#   WZ_N=41, sig (0,2,9,9), WZ_FH_PROF_ORDER=1 (flat), WZ_FH_PROF_SKIP=8 (window selector),
+#   FH_NARMS=178, WZ_FH_AB_BUDGET=50000000. Node fc20544-group, started 2026-07-29 ~21:07 PDT,
+#   hit at elapsed=17708.9s (~4.9 h).
+#   Banked instance = the GLOBAL FIRST arm (shard 5/178): FIRSTHIT: idx=500000
+#   profile_rank=1429 nodes_this_cand=212872 score=124 elapsed=17708.9s
+#   arms_with_hits=1 / 178; GATEB: candidates=89000000 tested=12910527 tested_min=24722
+#   aborted=0 AB_nodes=13157789449534 arms_summarized=178/178 arms_interrupted=177
+# Verified: tools/verify_npaf.py 2026-07-30 — PASS, NPAF[s]=0 for all s=1..42,
+#   signature sum-of-squares = 166 (expect 166), fits Wang-Zhu comb8 pair encoding.
+# NOT Wang-Zhu's published sequences: their Table-1 representative (results/reference/
+#   wz_table1_bs42_41.txt) has C,D flat score 140; this solution scores 124. The flat
+#   score is invariant under C<->D swap, negation, and reversal, so the two are
+#   inequivalent under those operations — a NEW solution inside the published class.
+# Honest framing: solver-capability result (replication-class), not a record — n<=40 is
+#   known and Wang-Zhu constructed 41-43; n=44 remains the open record.
