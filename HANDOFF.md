@@ -2,6 +2,24 @@
 
 **Date**: 2026-06-30 (read the TOP OF MIND entries first; QUICK REFERENCE has the current structure, checker + deploy. Repo was reorganized 2026-06-29.)
 
+**⚡ 2026-07-30 (Daniel session, research) — n=44 RECORD PROGRAM WRITTEN + FIRST LEVER
+VALIDATED ON REAL DATA.** Full ranked program: `docs/n44_search_narrowing_research.md`
+(committed). Headlines: (1) **all 12 n=44 admissible classes STREAM** (50 cands each,
+local; no enumeration-bound classes at the record rung; slow: (9,9,0,4) 242s,
+(3,5,0,12) 113s — deprioritize). (2) **Đoković–Kotsireas COMPRESSION (arXiv:1302.0571)
+route MATHEMATICALLY VALIDATED on our banked BS(42,41)**: pad C,D with one zero →
+quadruple is PERIODIC-complementary at length n+1 (max |PAF sum| = 0 at all shifts,
+verified numerically), and ALL six compressions (d=2,3,6,7,14,21 at L=42) pass exactly.
+This is a filter axis WZ never used (their paper slices only mod 2/3/6; at n=44,
+L=45=9·5 exposes mod-5/9 structure). NEXT KILL TEST (pre-registered): measure the d=5
+existence-filter rejection rate on ~2k streamed n=44 candidates — reject >50% ⇒ build
+into the stream; <10% ⇒ profile-level dead, completion-level variant remains. (3) SAT+CAS
+(MathCheck, Bright–Kotsireas–Ganesh — Williamson ≤70 record in the sibling class) = the
+second-engine lever; canary = re-find n=29, then blind n=38. (4) GPU spike + class-triage
+theory + symmetry minority lanes ranked behind. Cluster results are NOT a blocker for any
+of this — solver R&D is local; lanes just get re-aimed as verdicts land. n=44 first lanes
+ship with tomorrow's loop (10 fast classes, flat windows, checkpointed).**
+
 **⚡ 2026-07-30 (Daniel session, cont.) — REDEPLOYMENT SUBMITTED + n=44 CAMPAIGN OPENED.**
 Submits all landed ~14:40 EDT: Fir `51808294-296` (n=42 flat ckpt lanes 7/8/9) +
 `51808297-299` (n=43 (8,-2,5,9) flat ckpt lanes 0/1/2) · Rorqual `17952942-944` (n=42
