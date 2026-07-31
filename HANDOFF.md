@@ -25,6 +25,27 @@ triage. rung_status = EXHAUSTED (SA retired, deliberate, no refill). Checker exc
 +15 wave-7 IDs; wave-8 stays un-excluded until verdicts. No banks, no code changes.
 Kotsireas brief: STILL unsent; rewrite (lead with BS(42,41)) still queued.**
 
+**⚡ 2026-07-31 (Daniel session, cont.) — GPU SPIKE BUILT + VALIDATED LOCALLY; READY TO
+QUEUE (the "something to queue" Daniel asked for).** `src/solver/gpu/fh_gpu_spike.cu`:
+the fh_complete_ab mirror-pair DFS (root canon + reversal-tie canon + sum bounds +
+Dab/Kab pruning + budget) ported to an ITERATIVE form that compiles BOTH as plain C++
+(host validation) and CUDA (one candidate per thread). VALIDATION (local, host build):
+verdict histograms EXACTLY match production at n=19 (807 cands: 1 hit/806 clean, and
+canon-off 749/57) AND n=41 no-ABP (300 cands: 103 clean/197 abort); node counts within
+0.005-0.13%, residue explained = production over-counts during abort unwinding (each
+stack level re-places one branch before re-hitting the budget) + one tie-canon
+order-difference on the n=19 hit tree — verdict-neutral, fine for a RATIO instrument.
+ABP profile constraint deliberately NOT ported (spike measures architecture speedup;
+production levers multiply). Driver `cluster/deploy/gpu_spike.sh` (30min, --gres=gpu:1,
+compiles on-node, runs 20k real n=44 (1,7,8,8) candidates at budgets 1e6 + 5e7, prints
+GPU_SPIKE: cpu_cands_per_s / gpu_cands_per_s / speedup + an exact CPU-vs-GPU
+verdict/node cross-check). Candidate file shipped at `results/n44_cands_20k.txt`.
+**PRE-REGISTERED RULE (before the number exists): speedup ≥300× ⇒ build the production
+GPU completer (n=44 ≈ weeks-scale); 30-300× ⇒ marginal, decide vs GPU availability;
+<30× ⇒ killed, record path = CPU grind + triage + Kotsireas.** SAT+CAS was killed at
+canary earlier today — this is the last throughput lever; its number decides the
+program's shape.**
+
 **⚡ 2026-07-31 (Daniel session) — SAT+CAS LEVER: KILLED AT CANARY STAGE (one afternoon,
 not the weeks a full build would cost).** Built `tools/sat_bs_encoder.py` (pysat/CaDiCaL;
 XNOR product vars, exact-cardinality NPAF, nonneg-sum WLOG). Soundness gate PASS (banked
