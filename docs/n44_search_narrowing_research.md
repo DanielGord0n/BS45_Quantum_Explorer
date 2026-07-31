@@ -70,6 +70,21 @@ blocking clauses; run CaDiCaL/kissat with cube-and-conquer (cubes = our signatur
   re-find it; then blind n=38 (we know solutions exist, our probe found them in ~min-hours)
   — if SAT is within 10× of the probe's wall on n=38, scale it; if 100× slower, kill.
 
+**⚰️ KILLED AT CANARY STAGE 2026-07-31 (direct-encoding variant).** Built
+`tools/sat_bs_encoder.py` (XNOR product vars + exact-cardinality NPAF constraints +
+nonneg-sum signature WLOG; soundness gate: banked n=29 satisfies the encoding — PASS).
+Results: blind n=11 SAT in 0.9s (real solution, NPAF re-check 0) — the encoding is
+CORRECT. But blind n=19: seqcounter >120s, totalizer + A0 symmetry unit **>600s, killed**
+— vs firsthit's **0.2s**: a ≥3,000× deficit at a rung ~10 orders of magnitude easier than
+n=44, with cardinality-heavy CNF expected to scale WORSE with n, not better. Far beyond
+the pre-registered 100× kill line. Do NOT rebuild the direct encoding. Honest caveat: a
+real MathCheck-style system (native pseudo-Boolean solvers, CAS callbacks,
+cube-and-conquer) is a different beast than naive CNF — but that is a multi-week build
+against a 3.5-order-of-magnitude canary deficit, so the question "is SAT+CAS viable for
+base sequences?" is DELEGATED TO THE KOTSIREAS EMAIL (he co-leads MathCheck; one
+paragraph in the brief replaces weeks of speculative engineering). Encoder kept as a
+tool; the GPU spike is now the sole live throughput lever.
+
 ## Lever 3 — GPU completer (the priced ×100-1000 throughput lever)
 
 Already the pre-registered escalation. Measure-first spike: port fh_complete_ab's

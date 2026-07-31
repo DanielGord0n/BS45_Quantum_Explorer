@@ -25,6 +25,21 @@ triage. rung_status = EXHAUSTED (SA retired, deliberate, no refill). Checker exc
 +15 wave-7 IDs; wave-8 stays un-excluded until verdicts. No banks, no code changes.
 Kotsireas brief: STILL unsent; rewrite (lead with BS(42,41)) still queued.**
 
+**⚡ 2026-07-31 (Daniel session) — SAT+CAS LEVER: KILLED AT CANARY STAGE (one afternoon,
+not the weeks a full build would cost).** Built `tools/sat_bs_encoder.py` (pysat/CaDiCaL;
+XNOR product vars, exact-cardinality NPAF, nonneg-sum WLOG). Soundness gate PASS (banked
+n=29 satisfies the encoding, instant); blind n=11 SAT in 0.9s with NPAF re-check 0 (the
+encoding finds REAL solutions); **blind n=19: >120s (seqcounter) and >600s (totalizer +
+A0 unit) vs firsthit's 0.2s = ≥3,000× deficit** — far beyond the pre-registered 100× kill
+line, at a rung ~10 orders easier than n=44. Negative recorded in
+`docs/n44_search_narrowing_research.md` (measured-dead block); direct encoding: do not
+rebuild. The "would a REAL MathCheck-style PB+CAS system work?" question is delegated to
+the Kotsireas email (he co-leads MathCheck). **Record program status after two kill
+tests: compression DEAD (07-30), SAT-direct DEAD (07-31) — the GPU completer spike is
+the sole surviving throughput lever and is the NEXT BUILD; class-triage theory + the
+email are the aim levers. Fleet meanwhile: n=42 at ~1.55B cumulative = inside its
+1.4-2B expected band — the next hit is likeliest there, any wave now.**
+
 **⚡ 2026-07-30 (session close) — FIRST n=44 JOBS IN CAMPAIGN HISTORY QUEUED: Fir
 `51834907-909` (classes (5,9,6,6), (5,7,2,10), (1,13,2,2) — the 3 fastest-streaming of
 the 12; flat, skip 0, CHECKPOINTED lanes; PD behind Fir's 6 n=42/43 jobs, start as nodes
