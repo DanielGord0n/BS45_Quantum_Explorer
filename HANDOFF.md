@@ -1,8 +1,29 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-07-30 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-07-31 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-07-31 (daily loop) — WAVE 7 READ: ALL 15 LANES HITLESS (first n=44 cost data in
+hand); WAVE 8 SUBMITTED = verbatim ckpt resubmits + the remaining 7 fast n=44 classes →
+the FULL 10-class n=44 frontier is now live.** Wave-7 numbers (all arms_with_hits=0,
+checkpoints healthy — tested_cum/resume_pi present everywhere): n=42 (7,11,0,0) +~753M
+fresh tested this wave (Fir flat lanes 7/8/9 = 87.6/98.5/88.4M · Rorqual reverse 4/5/6 =
+69.3/70.1/68.8M · Trillium reverse 7/8/9 = 86.8/91.4/92.7M); n=43 (8,-2,5,9) +~130M
+(Fir flat 0/1/2 = 23.0/25.7/22.9M with aborted=254-846/lane — n=43 arms abort where
+n=42's don't, watch the trend; Rorqual reverse 0/1/2 = 20.4/19.9/17.9M). **FIRST n=44
+DATA: (5,9,6,6) 11.9M / (5,7,2,10) 17.9M / (1,13,2,2) 1.9M tested per 12h lane** —
+hitless as expected; this is the per-class cost measurement the GPU/SAT sizing wanted,
+and (1,13,2,2) tests 6-9× slower than its streaming rank suggested (streaming speed ≠
+completion speed). Wave-8 submits ~13:25 EDT, all echoed job IDs: Fir `52169750-758`
+(9 verbatim: n=42 flat 7/8/9, n=43 flat 0/1/2, n=44 first-3) · Rorqual `18008165-174`
+(6 verbatim: n=42 rev 4/5/6, n=43 rev 0/1/2, +4 NEW n=44 flat skip-0 (1,7,8,8)
+(3,3,4,12) (3,13,0,0) (5,5,8,8)) · Trillium `1989519-524` (3 verbatim n=42 rev 7/8/9,
++3 NEW n=44 (5,11,4,4) (7,7,4,8) (7,11,2,2)) · Nibi `18545816-24` still PD, untouched.
+Board = 34 jobs. Slow n=44 classes (9,9,0,4)/(3,5,0,12) stay unassigned per 07-30
+triage. rung_status = EXHAUSTED (SA retired, deliberate, no refill). Checker exclusions
++15 wave-7 IDs; wave-8 stays un-excluded until verdicts. No banks, no code changes.
+Kotsireas brief: STILL unsent; rewrite (lead with BS(42,41)) still queued.**
 
 **⚡ 2026-07-30 (session close) — FIRST n=44 JOBS IN CAMPAIGN HISTORY QUEUED: Fir
 `51834907-909` (classes (5,9,6,6), (5,7,2,10), (1,13,2,2) — the 3 fastest-streaming of
@@ -483,11 +504,14 @@ STREAMED (inflated by the drain buffer); `tested_cum=` is cross-wave cumulative 
 checkpoints; `resume_pi_min/max=` is the lane frontier. TIMEOUT@12h = normal completion.
 squeue `%L` is time LEFT.
 
-**Window/lane ledger:** n=41 (0,2,9,9): SOLVED (flat windows 0-8 burned, reverse 0-6).
-n=42 (7,11,0,0): flat 0-6 burned + lanes 7/8/9 live (Fir); reverse 0-3 burned/pending +
-lanes 4/5/6 (Rorqual) + 7/8/9 (Trillium) live. n=43 (8,-2,5,9): flat lanes 0/1/2 (Fir) +
-reverse 0/1/2 (Rorqual) live. n=44: flat skip-0 lanes on (5,9,6,6),(5,7,2,10),(1,13,2,2)
-(Fir). Nibi: 9× n=42 reverse skip-0 (all classes, old driver, no ckpt).
+**Window/lane ledger (wave 8, 2026-07-31):** n=41 (0,2,9,9): SOLVED (flat windows 0-8
+burned, reverse 0-6). n=42 (7,11,0,0): flat 0-6 burned; ckpt lanes flat 7/8/9 (Fir,
+resume ~87-98M each) + reverse 4/5/6 (Rorqual, ~69-70M) + reverse 7/8/9 (Trillium,
+~87-93M) live. n=43 (8,-2,5,9): ckpt lanes flat 0/1/2 (Fir, ~23-26M) + reverse 0/1/2
+(Rorqual, ~18-20M) live. n=44 (all flat skip-0 ckpt, one lane/class): Fir (5,9,6,6)
+(5,7,2,10) (1,13,2,2) · Rorqual (1,7,8,8) (3,3,4,12) (3,13,0,0) (5,5,8,8) · Trillium
+(5,11,4,4) (7,7,4,8) (7,11,2,2) — 10 fast classes live; slow (9,9,0,4)/(3,5,0,12)
+unassigned. Nibi: 9× n=42 reverse skip-0 PD (all classes, old driver, no ckpt).
 
 **Repo:** `src/{solver,verifier}/` · `cluster/deploy/` (active scripts) ·
 `tools/verify_npaf.py` · `results/champions/` (banked) · `results/reference/` (WZ Table-1
