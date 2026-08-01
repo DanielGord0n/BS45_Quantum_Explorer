@@ -4,6 +4,13 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-01 (Daniel session, cont.) — COMBINED FIR PUSH LANDED: GPU spike `52348541`
+(PD, gres=gpu:h100:1 after Fir's new GPU-model rule bounced the first attempt — note the
+&&-chain lesson: one failed sbatch killed everything after it; blocks now use `;`) + 12
+CPU lanes `52348542-553` (9 verbatim wave-9: n=42 flat 7/8/9, n=43 flat 0/1/2, n=44
+first-3 skip-0 · 3 NEW n=44 (3,13,0,0) windows 1/2/3 — the 43.4M/day class widened).
+Fir rolls straight through the night. Board = 46 jobs + the spike.**
+
 **⚡ 2026-08-01 (Daniel session) — GPU SPIKE QUEUED TODAY (was the forgotten item);
 Fir anti-idle stack + fast-class widening; KOTSIREAS BRIEF REWRITTEN (send-ready).**
 (1) The combined Fir paste (ONE Duo push) ships+queues the GPU spike AND stacks Fir's 9
