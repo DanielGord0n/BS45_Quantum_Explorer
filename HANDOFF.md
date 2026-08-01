@@ -4,6 +4,28 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-01 (daily loop) — WAVE 8 HALF-READ: RORQUAL (10) + TRILLIUM (6) ALL HITLESS;
+WAVE 9 SUBMITTED = 16 verbatim ckpt resubmits on those two; Fir's 9 wave-8 lanes still
+RUNNING (~5h in), Nibi's 9 still PD.** Wave-8 R+T numbers (arms_with_hits=0 everywhere,
+checkpoints healthy): n=42 (7,11,0,0) reverse — Rorqual 4/5/6 tested 68.5/71.5/69.9M
+(cum 137.7/141.7/139.1M), Trillium 7/8/9 tested 88.6/89.6/91.8M (cum 175.4/181.0/184.5M)
+→ the n=42 attack is deep into its 1.4-2B expected band; n=43 (8,-2,5,9) reverse 0/1/2
+(Rorqual) tested 26.6/25.4/23.5M (cum 47.1/45.4/41.4M, aborted 0/0/7); **7 NEW n=44
+classes' first data (all flat skip-0, hitless): (1,7,8,8) 17.7M · (3,3,4,12) 17.6M ·
+(3,13,0,0) 43.4M · (5,5,8,8) 15.0M · (5,11,4,4) 6.4M · (7,7,4,8) 19.7M · (7,11,2,2)
+1.6M** — full 10-class n=44 per-lane cost table is now complete ((3,13,0,0) is the
+fastest n=44 class measured so far; (7,11,2,2) and (1,13,2,2) are the slow tail).
+Wave-9 submits ~13:1x EDT, all echoed: Rorqual `18099250-259` (10 verbatim: n=42 rev
+4/5/6, n=43 rev 0/1/2, n=44 ×4) · Trillium `1995240-245` (6 verbatim: n=42 rev 7/8/9,
+n=44 ×3). Board = 34 jobs. Checker exclusions +16 (18008165-74, 1989519-24); Fir
+52169750-58 stay un-excluded until read. rung_status = EXHAUSTED (SA retired,
+deliberate). No banks, no code changes. **GPU spike still UNQUEUED — needs Daniel's
+tar-pipe (block below); Kotsireas brief still unsent.** Paste-ready GPU spike ship+queue
+(Fir; 30min, 1 GPU):
+```
+cd ~/Projects/BS45_Quantum_Explorer && tar -cf - src/solver/gpu/fh_gpu_spike.cu cluster/deploy/gpu_spike.sh results/n44_cands_20k.txt | ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && cp -f results/n44_cands_20k.txt ./n44_cands_20k.txt && sbatch cluster/deploy/gpu_spike.sh'
+```
+
 **⚡ 2026-07-31 (daily loop) — WAVE 7 READ: ALL 15 LANES HITLESS (first n=44 cost data in
 hand); WAVE 8 SUBMITTED = verbatim ckpt resubmits + the remaining 7 fast n=44 classes →
 the FULL 10-class n=44 frontier is now live.** Wave-7 numbers (all arms_with_hits=0,
@@ -540,14 +562,16 @@ STREAMED (inflated by the drain buffer); `tested_cum=` is cross-wave cumulative 
 checkpoints; `resume_pi_min/max=` is the lane frontier. TIMEOUT@12h = normal completion.
 squeue `%L` is time LEFT.
 
-**Window/lane ledger (wave 8, 2026-07-31):** n=41 (0,2,9,9): SOLVED (flat windows 0-8
-burned, reverse 0-6). n=42 (7,11,0,0): flat 0-6 burned; ckpt lanes flat 7/8/9 (Fir,
-resume ~87-98M each) + reverse 4/5/6 (Rorqual, ~69-70M) + reverse 7/8/9 (Trillium,
-~87-93M) live. n=43 (8,-2,5,9): ckpt lanes flat 0/1/2 (Fir, ~23-26M) + reverse 0/1/2
-(Rorqual, ~18-20M) live. n=44 (all flat skip-0 ckpt, one lane/class): Fir (5,9,6,6)
-(5,7,2,10) (1,13,2,2) · Rorqual (1,7,8,8) (3,3,4,12) (3,13,0,0) (5,5,8,8) · Trillium
-(5,11,4,4) (7,7,4,8) (7,11,2,2) — 10 fast classes live; slow (9,9,0,4)/(3,5,0,12)
-unassigned. Nibi: 9× n=42 reverse skip-0 PD (all classes, old driver, no ckpt).
+**Window/lane ledger (wave 8/9, 2026-08-01):** n=41 (0,2,9,9): SOLVED (flat windows 0-8
+burned, reverse 0-6). n=42 (7,11,0,0): flat 0-6 burned; ckpt lanes flat 7/8/9 (Fir wave-8
+running) + reverse 4/5/6 (Rorqual wave-9, cum ~138-142M) + reverse 7/8/9 (Trillium
+wave-9, cum ~175-184M) live. n=43 (8,-2,5,9): ckpt lanes flat 0/1/2 (Fir wave-8 running)
++ reverse 0/1/2 (Rorqual wave-9, cum ~41-47M) live. n=44 (all flat skip-0 ckpt, one
+lane/class): Fir (5,9,6,6) (5,7,2,10) (1,13,2,2) wave-8 running · Rorqual (1,7,8,8)
+17.7M (3,3,4,12) 17.6M (3,13,0,0) 43.4M (5,5,8,8) 15.0M wave-9 · Trillium (5,11,4,4)
+6.4M (7,7,4,8) 19.7M (7,11,2,2) 1.6M wave-9 — 10 fast classes live; slow
+(9,9,0,4)/(3,5,0,12) unassigned. Nibi: 9× n=42 reverse skip-0 PD (all classes, old
+driver, no ckpt).
 
 **Repo:** `src/{solver,verifier}/` · `cluster/deploy/` (active scripts) ·
 `tools/verify_npaf.py` · `results/champions/` (banked) · `results/reference/` (WZ Table-1
