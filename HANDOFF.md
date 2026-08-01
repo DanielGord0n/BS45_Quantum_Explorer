@@ -4,6 +4,18 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-01 (Daniel session) — GPU SPIKE QUEUED TODAY (was the forgotten item);
+Fir anti-idle stack + fast-class widening; KOTSIREAS BRIEF REWRITTEN (send-ready).**
+(1) The combined Fir paste (ONE Duo push) ships+queues the GPU spike AND stacks Fir's 9
+verbatim wave-9 resubmits behind its running wave-8 lanes (they finish ~19:30; without
+the stack Fir idles ~17h until the 1 PM loop) AND widens n=44 (3,13,0,0) — the fastest
+n=44 class at 43.4M/lane-day, 27× the slow tail — with fresh flat windows skip 1/2/3.
+(2) `docs/kotsireas_brief.md` REWRITTEN from the stale 07-07 SA-era version: now leads
+with the new inequivalent BS(42,41), the measured n=41-44 frontier, and three targeted
+methods questions (class triage via his NS/NNS(44) obstructions; stronger aperiodic
+compression; MathCheck-grade SAT+CAS viability) — SEND-READY, the send itself remains
+Daniel's. GPU spike rule stands: ≥300× build / 30-300× marginal / <30× kill.**
+
 **⚡ 2026-08-01 (daily loop) — WAVE 8 HALF-READ: RORQUAL (10) + TRILLIUM (6) ALL HITLESS;
 WAVE 9 SUBMITTED = 16 verbatim ckpt resubmits on those two; Fir's 9 wave-8 lanes still
 RUNNING (~5h in), Nibi's 9 still PD.** Wave-8 R+T numbers (arms_with_hits=0 everywhere,
