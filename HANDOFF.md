@@ -4,6 +4,21 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-01 (late) — GPU SPIKE PRIMARY RESULT: 69.3× vs 1 core = the MARGINAL band;
+the naive port does NOT transform n=44.** Daniel's live peek mid-run (job `52348541`, H100
+confirmed): `GPU_SPIKE: cpu_cands_per_s=5.74 gpu_cands_per_s=398.28 speedup_vs_1core=69.3
+verdicts_nodes_match=YES` (budget 1e6, 20k real n=44 candidates; exact CPU/GPU cross-check
+PASS — the port is correct). NODE MATH: 1 H100 ≈ 69 cores ≈ 0.36 of a 192-core CPU node —
+node-for-node WORSE than the CPU fleet. Per the pre-registered rule (≥300 build / 30-300
+marginal / <30 kill): NO production GPU build on this evidence; divergence-tolerant
+restructuring (warp-per-candidate / persistent threads) is the only path to ≥300 and is
+UNPRICED — do not start it without a new spike-level measurement. Secondary line (budget
+5e7) still running; deep-budget divergence usually reads LOWER — tomorrow's loop reads it
+via the new checker GPU SPIKE section and should close the verdict. Record program after
+this week's measurements: throughput levers all priced (compression dead, SAT dead, GPU
+marginal) ⇒ n=44 rides on CPU lanes + obstruction-theory triage + the Kotsireas
+collaboration (brief SEND-READY). n=42 remains the near-term result engine.**
+
 **⚡ 2026-08-01 (session close) — CLASS-KILLER TRIAGE: ALL 12 n=44 CLASSES SURVIVE
 (negative, recorded).** Compression-as-existence-test (class dead iff no valid compressed
 quadruple): n=41 control FEASIBLE at d=2/3/6/7 ✓ method sound; all 12 n=44 classes
