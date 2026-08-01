@@ -4,6 +4,14 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-01 (session close) — CLASS-KILLER TRIAGE: ALL 12 n=44 CLASSES SURVIVE
+(negative, recorded).** Compression-as-existence-test (class dead iff no valid compressed
+quadruple): n=41 control FEASIBLE at d=2/3/6/7 ✓ method sound; all 12 n=44 classes
+feasible at d=3+d=5 → no free eliminations; deeper class triage = obstruction theory =
+Kotsireas brief question 1. Day closes: 46 CPU jobs + GPU spike `52348541` queued; brief
+SEND-READY; compression dead ×2 ways, SAT dead, GPU = the live decision. Tomorrow's loop
+reads Fir wave-8 + the spike's GPU_SPIKE line (rule: ≥300× build / <30× kill).**
+
 **⚡ 2026-08-01 (Daniel session, cont.) — COMBINED FIR PUSH LANDED: GPU spike `52348541`
 (PD, gres=gpu:h100:1 after Fir's new GPU-model rule bounced the first attempt — note the
 &&-chain lesson: one failed sbatch killed everything after it; blocks now use `;`) + 12

@@ -102,6 +102,17 @@ rank it. Every killed class = 5-20B candidates never spent. Also: flat-score pri
 has 4 deep-n data points (ours 124; WZ 140/142/134 — all ≤150) ⇒ n=44 windows sized to
 score ≤~160 first.
 
+**Class-killer variant MEASURED 2026-08-01 (negative, recorded).** Turned compression
+around as a class-level EXISTENCE test: a signature class can bear a solution only if a
+periodic-complementary compressed quadruple exists (right entry ranges/parities/sums,
+zero-pad WLOG by rotation invariance). Positive control: the solved n=41 class (0,2,9,9)
+feasible at d=2/3/6/7 ✓. Result: **ALL 12 n=44 classes FEASIBLE at d=3 and d=5 — no
+class killed.** The compressed spaces are too floppy at these divisors to obstruct.
+Deeper divisors (d=9/15) are enumeration-heavy and, given the d=5 floppiness, unlikely
+to differ — not pursued. Class triage now rests on real obstruction theory (WZ's
+NS/NNS(44) machinery) = question 1 of the Kotsireas brief. Script:
+`class_triage_compression.py` (session scratchpad).
+
 ## Lever 5 — symmetry-restricted lanes (cheap lottery tickets, run alongside)
 
 Đoković-school trick: restrict to structured subspaces (skew A / symmetric B /
