@@ -92,6 +92,20 @@ pair-DFS for ONE cell to CUDA (Fir/Rorqual have GPU partitions), two numbers:
 candidates-completed/s/GPU vs the measured ~9/s/core CPU. ≥×300/GPU ⇒ n=44's 50-200B
 becomes weeks on a handful of GPUs ⇒ BUILD. <×30 ⇒ the record waits on levers 1/2/4.
 
+**MEASURED 2026-08-01/02 — VERDICT: KILLED (naive thread-per-candidate port).** Spike
+job `52348541` (Fir, H100 80GB, exact CPU/GPU verdict+node cross-check PASS both
+budgets — the instrument is sound). Primary (budget 1e6, 20k real n=44 (1,7,8,8)
+candidates): cpu 5.74 cand/s, gpu 398.28 cand/s, **speedup 69.3× vs 1 core** =
+marginal band, 1 H100 ≈ 0.36 of a 192-core node. Secondary (production budget 5e7):
+cpu 3.31, gpu 19.47, **speedup 5.9× vs 1 core** = KILL band; at the budget production
+lanes actually run, 1 H100 ≈ 6 cores ≈ 0.03 CPU-node — divergence eats the machine
+exactly as the deep-budget caveat predicted. Per the pre-registered rule (<30× ⇒
+killed): **no production GPU build.** Divergence-tolerant restructuring
+(warp-per-candidate / persistent threads) is the only conceivable path back and is
+UNPRICED — do not start it without a new spike-level measurement. All three
+throughput levers are now priced dead (compression ×2, SAT-direct, GPU); the record
+program = CPU lanes + lever-4 class triage + the Kotsireas collaboration.
+
 ## Lever 4 — class triage theory (search WHERE solutions can live)
 
 WZ proved NS(44)=∅ and NNS(44)=∅; their obstruction techniques (and the norm-form

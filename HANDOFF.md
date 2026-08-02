@@ -1,8 +1,38 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-07-31 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-02 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-02 (daily loop) — GPU LEVER CLOSED: SECONDARY = 5.9× AT PRODUCTION BUDGET
+= KILL; WAVE 9 READ ALL HITLESS (28 lanes); WAVE 10 SUBMITTED = 28 verbatim ckpt
+resubmits on Fir/Rorqual/Trillium.** (1) GPU spike `52348541` secondary (budget 5e7 =
+the budget production lanes actually run): cpu 3.31 / gpu 19.47 cand/s = **5.9× vs 1
+core** (verdicts_nodes_match=YES) — deep-budget divergence collapsed the primary's
+69.3× exactly as predicted; per the pre-registered rule (<30× ⇒ kill) the verdict is
+CLOSED: **no production GPU build**; 1 H100 ≈ 0.03 CPU-node at production budget.
+Recorded in `docs/n44_search_narrowing_research.md` lever 3; all three throughput
+levers now priced dead (compression ×2, SAT-direct, GPU) ⇒ **the record program is CPU
+lanes + class-triage theory + the Kotsireas brief (SEND-READY, still unsent — the
+methods ask is the door)**. (2) Waves read 08-02, ALL HITLESS, checkpoints healthy:
+Fir wave-8 `52169750-58` + Fir combined wave-9 `52348542-553` + Rorqual wave-9
+`18099250-59` + Trillium wave-9 `1995240-45`. n=42 (7,11,0,0) cum per window: Fir flat
+7/8/9 = 201-219M, Rorqual rev 4/5/6 = 204-209M, Trillium rev 7/8/9 = 257-270M —
+**total n=42 cumulative ≈2.3B tested, now PAST the 1.4-2B expected band, still
+hitless** (Poisson tail, no rule breached, but the band estimate is starting to look
+optimistic — flag for the next density conversation). n=43 (8,-2,5,9) cum: flat 0/1/2
+= 75-79M, rev 0/1/2 = 66-76M (aborts trending: 138-497/lane on Fir wave-8, 0-5 on
+Rorqual wave-9). n=44: (3,13,0,0) confirmed the workhorse — windows 1/2/3 tested
+64-70M each in ONE wave on Fir + skip-0 cum ~74M on Rorqual; other 9 fast classes
+1.8-21M/wave. (3) **WAVE 10 submitted ~13:1x EDT, all echoed** (first Fir Duo push
+timed out unapproved — retry succeeded; `;`-chains per the 08-01 lesson): Fir
+`52480094-099` + `52480101-106` (12 verbatim: n=42 flat 7/8/9, n=43 flat 0/1/2, n=44
+(5,9,6,6)/(5,7,2,10)/(1,13,2,2) skip-0 + (3,13,0,0) windows 1/2/3) · Rorqual
+`18152036-045` (10 verbatim: n=42 rev 4/5/6, n=43 rev 0/1/2, n=44 ×4 skip-0) ·
+Trillium `2000138-143` (6 verbatim: n=42 rev 7/8/9, n=44 ×3 skip-0). Nibi `18545816-24`
+untouched (6 R staggered + 3 PD, old driver, no ckpt). Board = 37 jobs. Checker:
+exclusions +28, GPU SPIKE header now carries the closed verdict, pending list → wave
+10. rung_status = EXHAUSTED (SA retired, deliberate). No banks, no code changes.**
 
 **⚡ 2026-08-01 (late) — GPU SPIKE PRIMARY RESULT: 69.3× vs 1 core = the MARGINAL band;
 the naive port does NOT transform n=44.** Daniel's live peek mid-run (job `52348541`, H100
@@ -604,16 +634,17 @@ STREAMED (inflated by the drain buffer); `tested_cum=` is cross-wave cumulative 
 checkpoints; `resume_pi_min/max=` is the lane frontier. TIMEOUT@12h = normal completion.
 squeue `%L` is time LEFT.
 
-**Window/lane ledger (wave 8/9, 2026-08-01):** n=41 (0,2,9,9): SOLVED (flat windows 0-8
-burned, reverse 0-6). n=42 (7,11,0,0): flat 0-6 burned; ckpt lanes flat 7/8/9 (Fir wave-8
-running) + reverse 4/5/6 (Rorqual wave-9, cum ~138-142M) + reverse 7/8/9 (Trillium
-wave-9, cum ~175-184M) live. n=43 (8,-2,5,9): ckpt lanes flat 0/1/2 (Fir wave-8 running)
-+ reverse 0/1/2 (Rorqual wave-9, cum ~41-47M) live. n=44 (all flat skip-0 ckpt, one
-lane/class): Fir (5,9,6,6) (5,7,2,10) (1,13,2,2) wave-8 running · Rorqual (1,7,8,8)
-17.7M (3,3,4,12) 17.6M (3,13,0,0) 43.4M (5,5,8,8) 15.0M wave-9 · Trillium (5,11,4,4)
-6.4M (7,7,4,8) 19.7M (7,11,2,2) 1.6M wave-9 — 10 fast classes live; slow
-(9,9,0,4)/(3,5,0,12) unassigned. Nibi: 9× n=42 reverse skip-0 PD (all classes, old
-driver, no ckpt).
+**Window/lane ledger (wave 10, 2026-08-02):** n=41 (0,2,9,9): SOLVED (flat windows 0-8
+burned, reverse 0-6). n=42 (7,11,0,0): flat 0-6 burned; ckpt lanes flat 7/8/9 (Fir, cum
+~201-219M) + reverse 4/5/6 (Rorqual, cum ~204-209M) + reverse 7/8/9 (Trillium, cum
+~257-270M) live — total ≈2.3B tested, past the 1.4-2B expected band. n=43 (8,-2,5,9):
+ckpt lanes flat 0/1/2 (Fir, cum ~75-79M) + reverse 0/1/2 (Rorqual, cum ~66-76M) live.
+n=44 (all ckpt): Fir (5,9,6,6)/(5,7,2,10)/(1,13,2,2) skip-0 + (3,13,0,0) windows 1/2/3
+(64-70M/window/wave — the workhorse class) · Rorqual (1,7,8,8)/(3,3,4,12)/(3,13,0,0)/
+(5,5,8,8) skip-0 · Trillium (5,11,4,4)/(7,7,4,8)/(7,11,2,2) skip-0 — 10 fast classes
+live; slow (9,9,0,4)/(3,5,0,12) unassigned. Nibi: 9× n=42 reverse skip-0 (old driver,
+no ckpt) running/PD. Wave-10 IDs: Fir 52480094-099+52480101-106 · Rorqual 18152036-045
+· Trillium 2000138-143.
 
 **Repo:** `src/{solver,verifier}/` · `cluster/deploy/` (active scripts) ·
 `tools/verify_npaf.py` · `results/champions/` (banked) · `results/reference/` (WZ Table-1
