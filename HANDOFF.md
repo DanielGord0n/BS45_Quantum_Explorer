@@ -4,6 +4,21 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-02 (Daniel session) — n=42 CLASS DIVERSIFICATION: the band-overrun response.**
+n=42 (7,11,0,0) is ~2.3B tested, PAST its 1.4-2B band, hitless (P(no hit|band) ≈ 25% — not
+an exclusion, but a signal). Our own ladder data (n=36: 7/9 classes bore solutions; n=37:
+4/4) says solutions live in MANY classes per rung — concentration on the published class
+was right until the band ran out; now we hedge. Sibling triage (local, 300 cands/class,
+flat-score prior): **(1,5,0,12) median 150 · (3,9,4,8) 150 · (1,3,4,12) 154 — all with
+min score 122, flatter than the n=41 hit (124) — LANES QUEUED on these 3** (flat, skip 0,
+checkpointed, stacked on Fir behind wave 10). (1,13,0,0) + (3,5,6,10) = locally
+enumeration-bound (240s, 0 candidates, PROF_ORDER=0) — deprioritized alongside (5,9,0,8).
+Remaining 4 siblings ((3,11,2,6),(7,7,6,6),(7,9,2,6),(9,9,2,2)) still triaging — ranking
+lands in scratchpad; wave-11 can swap if one ranks flatter. GPU verdict CLOSED by the loop:
+secondary 5.9× at production budget = KILL (primary 69.3× was light-budget flattery);
+all three throughput levers now measured dead — the program is AIM (lanes + triage +
+Kotsireas), and the engine that took n=41 keeps grinding.**
+
 **⚡ 2026-08-02 (daily loop) — GPU LEVER CLOSED: SECONDARY = 5.9× AT PRODUCTION BUDGET
 = KILL; WAVE 9 READ ALL HITLESS (28 lanes); WAVE 10 SUBMITTED = 28 verbatim ckpt
 resubmits on Fir/Rorqual/Trillium.** (1) GPU spike `52348541` secondary (budget 5e7 =
