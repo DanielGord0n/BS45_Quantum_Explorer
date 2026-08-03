@@ -1,8 +1,36 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-02 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-03 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-03 (Daniel session) — 🎯 THE LOCATOR MEASUREMENT: WZ's n=42 SOLUTION SITS IN
+WINDOW 0 — THE CAMPAIGN'S SHALLOWEST-TESTED TERRITORY. Skip-0 ckpt lanes queued = the
+most targeted aim of the campaign.** New instrument `WZ_FH_LOCATE_C/_D` (in solver,
+default off): locates a known solution's C,D profile cell in the flat ordering, reports
+rank bracket + window (=rank/178); checks all 64 swap/neg/rev variants. VALIDATED: our
+banked n=41 hit brackets to windows 4-26 containing the cluster-true rank 1429/window 8
+(4,043-cell tie block explains platform spread). RESULTS: WZ-41 = windows ~499-842 (deep
+— why OUR shallower solution surfaced first); **WZ-42 (7,11,0,0) = cell_score 12, rank
+bracket [0,111] = ENTIRELY WINDOW 0**; WZ-43 = windows ~255-571 (deep). THE HOLE: window
+0 got ONE un-checkpointed day (wave 4, ~370k in-cell cands/arm) and was never revisited
+— the window-selector doctrine (skips 1-6 one day each, ckpt lanes 7-9 now 250M+ each)
+assumed wave-4 "covered" it; it didn't. ~2.66B went to windows 4-9 while a known
+solution's cell sat in barely-touched window 0. **QUEUED (Rorqual, ckpt, flat): n=42
+(7,11,0,0) skips 0/1/2 — lane skip-0 grinds a window CONTAINING A PUBLISHED SOLUTION'S
+CELL, compounding daily.** BOOKKEEPING CORRECTIONS from Daniel's cross-chat pastes:
+(1) Fir sibling lanes WERE submitted 08-03 = `52718619-621` ((1,5,0,12)/(3,9,4,8)/
+(1,3,4,12) flat skip-0 ckpt); (2) **Nibi 18545816-24 = the n=42 SIBLING sweep in
+REVERSE order, NOT the published class** (sig headers: 816=(1,13,0,0) 135M streamed ·
+817=(3,5,6,10) 100.7M · 818=(3,9,4,8) 96.2M · 819=(3,11,2,6) 102M · 820=(5,9,0,8)
+97.3M · 821=(7,7,6,6) 101.8M — all hitless, old driver, STREAMED not tested, true depth
+unknown; 822-24 still PD); (3) **TRAP REVISED: the "enumeration-bound" verdicts on
+(5,9,0,8)/(1,13,0,0)/(3,5,6,10) are ORDER-DEPENDENT stream walls, not class properties**
+— natural/flat-end stalls, reverse streams ~100M/day (misdiagnosed twice: wave-3/4 and
+the 08-02 local triage). Checker exclusions +18545816-21. Density re-fit note: n=41 fell
+INSIDE its band at ~700M; n=42 has overrun 1.4-2B by ≥1.3× — but the window-0 hole means
+the band was measured against the WRONG coverage (flattest territory undertested);
+re-price only after skip-0 lanes report. Kotsireas brief STILL unsent.**
 
 **⚡ 2026-08-03 (daily loop) — WAVE 10 READ ALL HITLESS (28 lanes, F/R/T); WAVE 11
 SUBMITTED = 28 verbatim ckpt resubmits; n=42 live-window cum now ~2.66B, well past the

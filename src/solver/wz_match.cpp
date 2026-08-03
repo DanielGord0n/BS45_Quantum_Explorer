@@ -1180,6 +1180,74 @@ int main(int argc, char **argv) {
          << " score_max=" << score_max
          << " shard=" << fh_shard << "/" << fh_nshard << "\n" << flush;
 
+    // ---- MEASUREMENT INSTRUMENT (WZ_FH_LOCATE_C/_D, 2026-08-03): locate a
+    // known solution's C,D profile cell in the current ordering and report its
+    // rank + window (= rank / NARMS). Turns the depth question ("how far in is
+    // the solution?") from a Poisson band into a ruler. Checks all 64
+    // swap/negation/reversal variants (the search finds any representative).
+    // Prints and exits; default OFF.
+    if (const char *lc = getenv("WZ_FH_LOCATE_C")) {
+      const char *ld = getenv("WZ_FH_LOCATE_D");
+      auto parse = [&](const char *s) {
+        vector<int> v; int val, cnt;
+        while (sscanf(s, "%d%n", &val, &cnt) == 1) { v.push_back(val); s += cnt; while (*s == ',' || *s == ' ') s++; }
+        return v;
+      };
+      vector<int> C0 = parse(lc), D0 = parse(ld ? ld : "");
+      auto classsum = [&](const vector<int> &X) {
+        vector<int> p(fh_m, 0);
+        for (size_t i = 0; i < X.size(); i++) p[i % fh_m] += X[i];
+        return p;
+      };
+      auto rev = [](vector<int> v) { for (size_t i = 0, j = v.size() - 1; i < j; i++, j--) swap(v[i], v[j]); return v; };
+      auto neg = [](vector<int> v) { for (auto &x : v) x = -x; return v; };
+      long long best_lo = -1, best_ties = 0; int matches = 0; long long best_score = -1;
+      for (int var = 0; var < 64; var++) {
+        vector<int> C = C0, D = D0;
+        if (var & 1) C = rev(C);
+        if (var & 2) D = rev(D);
+        if (var & 4) C = neg(C);
+        if (var & 8) D = neg(D);
+        if (var & 16) swap(C, D);
+        if (var & 32) { C = neg(rev(C0)); }  // extra composite; harmless dupes
+        vector<int> px = classsum(C), py = classsum(D);
+        for (size_t pi2 = 0; pi2 < fhProfs.size(); pi2++) {
+          if (fhProfs[pi2].px == px && fhProfs[pi2].py == py) {
+            long long sc = 0;
+            for (int v2 : fhProfs[pi2].px) sc += abs(v2);
+            for (int v2 : fhProfs[pi2].py) sc += abs(v2);
+            long long lo = 0, ties = 0;
+            for (auto &q : fhProfs) {
+              long long s2 = 0;
+              for (int v2 : q.px) s2 += abs(v2);
+              for (int v2 : q.py) s2 += abs(v2);
+              if (s2 < sc) lo++;
+              else if (s2 == sc) ties++;
+            }
+            matches++;
+            if (best_lo < 0 || (long long)pi2 < best_lo || lo < best_lo) {
+              best_lo = lo; best_ties = ties; best_score = sc;
+              cout << "  [locate] variant=" << var << " exact_idx_this_binary=" << pi2
+                   << " (window " << pi2 / 178 << ")\n";
+            }
+            break;
+          }
+        }
+      }
+      if (best_lo < 0) {
+        cout << "LOCATE: cell NOT FOUND in filtered profile list (all 64 variants) — "
+                "either filtered out (BUG: filters must keep known solutions) or "
+                "modulus/parse mismatch\n" << flush;
+      } else {
+        cout << "LOCATE: cell_score=" << best_score << " rank_lo=" << best_lo
+             << " ties=" << best_ties << " of " << fhProfs.size()
+             << " cells; window_lo=" << best_lo / 178
+             << " window_hi=" << (best_lo + best_ties - 1) / 178
+             << " (178 arms; flat order; matches=" << matches << ")\n" << flush;
+      }
+      return 0;
+    }
+
     long long cand = 0, pre_rej = 0, score_rej = 0, clean_no = 0, aborted = 0;
     long long cells_done = 0;  // fully-processed profile cells (feeds WZ_FH_PROF_SKIP)
     long long bt_entered = 0, hit_idx = -1;
