@@ -4,6 +4,28 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-03 (daily loop) — WAVE 10 READ ALL HITLESS (28 lanes, F/R/T); WAVE 11
+SUBMITTED = 28 verbatim ckpt resubmits; n=42 live-window cum now ~2.66B, well past the
+band.** (1) Wave-10 numbers (arms_with_hits=0 everywhere, checkpoints advancing): n=42
+(7,11,0,0) — Fir flat 7/8/9 tested 46-48M (cum 248/268/248M), Rorqual rev 4/5/6 60-63M
+(cum 264-272M), Trillium rev 7/8/9 78-81M (cum 354-370M) → live-window cum sum ≈2.66B
+(≈2.9B with burned flat 0-6), the 1.4-2B band estimate is now clearly optimistic — the
+08-02 diversification hedge (3 sibling lanes on Fir) is the standing response; sibling
+outputs were NOT in this check (they started ~01:30 EDT after wave 10 drained, finish
+~13:30 — read them tomorrow by sig header, their job IDs were never recorded). n=43
+(8,-2,5,9) cum: flat 98-102M, rev 89-101M (aborted 69-223/lane Fir, 0-9 Rorqual). n=44:
+(3,13,0,0) confirmed workhorse again — Fir windows 1/2/3 tested 39/43/53M (cum 105-123M),
+Rorqual skip-0 20.9M (cum 96.9M); other 9 classes 1.3-20.5M/wave. (2) **WAVE 11 submitted
+~13:1x-13:2x EDT 08-03, all echoed** (Fir + Rorqual each needed retries — unapproved Duo
+pushes; Rorqual took 3 attempts): Fir `52706408-419` (12 verbatim: n=42 flat 7/8/9, n=43
+flat 0/1/2, n=44 (5,9,6,6)/(5,7,2,10)/(1,13,2,2) skip-0 + (3,13,0,0) windows 1/2/3) ·
+Rorqual `18266737-746` (10 verbatim: n=42 rev 4/5/6, n=43 rev 0/1/2, n=44 ×4 skip-0) ·
+Trillium `2007532-537` (6 verbatim: n=42 rev 7/8/9, n=44 ×3 skip-0). Nibi missed its Duo
+window in the check — untouched (18545816-24, old driver). Board = 28 wave-11 + 3 Fir
+siblings + 9 Nibi. Checker: exclusions +28 wave-10 IDs, pending → wave 11 + siblings.
+rung_status = EXHAUSTED (SA retired, deliberate). No banks, no code changes. Kotsireas
+brief: SEND-READY, still unsent — the methods ask is the door to 42+.**
+
 **⚡ 2026-08-02 (Daniel session) — n=42 CLASS DIVERSIFICATION: the band-overrun response.**
 n=42 (7,11,0,0) is ~2.3B tested, PAST its 1.4-2B band, hitless (P(no hit|band) ≈ 25% — not
 an exclusion, but a signal). Our own ladder data (n=36: 7/9 classes bore solutions; n=37:
@@ -649,17 +671,19 @@ STREAMED (inflated by the drain buffer); `tested_cum=` is cross-wave cumulative 
 checkpoints; `resume_pi_min/max=` is the lane frontier. TIMEOUT@12h = normal completion.
 squeue `%L` is time LEFT.
 
-**Window/lane ledger (wave 10, 2026-08-02):** n=41 (0,2,9,9): SOLVED (flat windows 0-8
+**Window/lane ledger (wave 11, 2026-08-03):** n=41 (0,2,9,9): SOLVED (flat windows 0-8
 burned, reverse 0-6). n=42 (7,11,0,0): flat 0-6 burned; ckpt lanes flat 7/8/9 (Fir, cum
-~201-219M) + reverse 4/5/6 (Rorqual, cum ~204-209M) + reverse 7/8/9 (Trillium, cum
-~257-270M) live — total ≈2.3B tested, past the 1.4-2B expected band. n=43 (8,-2,5,9):
-ckpt lanes flat 0/1/2 (Fir, cum ~75-79M) + reverse 0/1/2 (Rorqual, cum ~66-76M) live.
-n=44 (all ckpt): Fir (5,9,6,6)/(5,7,2,10)/(1,13,2,2) skip-0 + (3,13,0,0) windows 1/2/3
-(64-70M/window/wave — the workhorse class) · Rorqual (1,7,8,8)/(3,3,4,12)/(3,13,0,0)/
-(5,5,8,8) skip-0 · Trillium (5,11,4,4)/(7,7,4,8)/(7,11,2,2) skip-0 — 10 fast classes
-live; slow (9,9,0,4)/(3,5,0,12) unassigned. Nibi: 9× n=42 reverse skip-0 (old driver,
-no ckpt) running/PD. Wave-10 IDs: Fir 52480094-099+52480101-106 · Rorqual 18152036-045
-· Trillium 2000138-143.
+~248-268M) + reverse 4/5/6 (Rorqual, cum ~264-272M) + reverse 7/8/9 (Trillium, cum
+~354-370M) live — live-window cum ≈2.66B (≈2.9B with burned windows), well past the
+1.4-2B expected band; 3 sibling-class hedge lanes (1,5,0,12)/(3,9,4,8)/(1,3,4,12) flat
+skip-0 ckpt on Fir (stacked 08-02, IDs unrecorded — read by sig header). n=43
+(8,-2,5,9): ckpt lanes flat 0/1/2 (Fir, cum ~98-102M) + reverse 0/1/2 (Rorqual, cum
+~89-101M) live. n=44 (all ckpt): Fir (5,9,6,6)/(5,7,2,10)/(1,13,2,2) skip-0 + (3,13,0,0)
+windows 1/2/3 (39-53M/window/wave — the workhorse class, cum 105-123M) · Rorqual
+(1,7,8,8)/(3,3,4,12)/(3,13,0,0)/(5,5,8,8) skip-0 · Trillium (5,11,4,4)/(7,7,4,8)/
+(7,11,2,2) skip-0 — 10 fast classes live; slow (9,9,0,4)/(3,5,0,12) unassigned. Nibi: 9×
+n=42 reverse skip-0 (old driver, no ckpt) running/PD. Wave-11 IDs: Fir 52706408-419 ·
+Rorqual 18266737-746 · Trillium 2007532-537.
 
 **Repo:** `src/{solver,verifier}/` · `cluster/deploy/` (active scripts) ·
 `tools/verify_npaf.py` · `results/champions/` (banked) · `results/reference/` (WZ Table-1
