@@ -16,9 +16,12 @@ bracket [0,111] = ENTIRELY WINDOW 0**; WZ-43 = windows ~255-571 (deep). THE HOLE
 0 got ONE un-checkpointed day (wave 4, ~370k in-cell cands/arm) and was never revisited
 — the window-selector doctrine (skips 1-6 one day each, ckpt lanes 7-9 now 250M+ each)
 assumed wave-4 "covered" it; it didn't. ~2.66B went to windows 4-9 while a known
-solution's cell sat in barely-touched window 0. **QUEUED (Rorqual, ckpt, flat): n=42
-(7,11,0,0) skips 0/1/2 — lane skip-0 grinds a window CONTAINING A PUBLISHED SOLUTION'S
-CELL, compounding daily.** BOOKKEEPING CORRECTIONS from Daniel's cross-chat pastes:
+solution's cell sat in barely-touched window 0. **QUEUED+CONFIRMED (Rorqual, ckpt, flat): n=42 (7,11,0,0) skips 0/1/2 = `18288317-319`
+(submitted ~17:40 after the SSH-key detour: digicopy overwrote ~/.ssh/id_ed25519 at
+14:09 — unrelated project; resolved via NEW dedicated key ~/.ssh/alliance_ed25519 +
+IdentitiesOnly config pin + CCDB registration; old key unrecoverable, old CCDB entry
+stale-safe). Lane skip-0 grinds a window CONTAINING A PUBLISHED SOLUTION'S CELL,
+compounding daily.** BOOKKEEPING CORRECTIONS from Daniel's cross-chat pastes:
 (1) Fir sibling lanes WERE submitted 08-03 = `52718619-621` ((1,5,0,12)/(3,9,4,8)/
 (1,3,4,12) flat skip-0 ckpt); (2) **Nibi 18545816-24 = the n=42 SIBLING sweep in
 REVERSE order, NOT the published class** (sig headers: 816=(1,13,0,0) 135M streamed ·
