@@ -160,3 +160,31 @@ prior. n=44 rides on: the lanes (10 live), obstruction-theory triage (Kotsireas 
 and the collaboration itself. The measured ladder (n41=0.7B, n42=3.3B, x4.7/rung) prices
 n=44 at 50-70B+ — the record is a methods-or-mathematics problem now, by measurement.
 
+## Lever 6 — C,D ORBIT CANONICALIZATION (discovered 2026-08-04): ✅ BUILT + VALIDATED,
+the largest lever since flat ordering
+
+DISCOVERY: the cell stream never canonicalized the C,D side — negC/negD/revC/revD/swap
+all preserve the completion problem (targets + |sums| invariant), yet the enumeration
+carries every orbit 3.8-29x redundantly (measured: n=29 3.74x, n=42 (7,11,0,0) 29.2x,
+n=43 (8,-2,5,9) 3.8x, n=44 (3,13,0,0) 28.9x, (1,7,8,8) 7.9x; remaining n=44 classes to
+be tabulated — batch audit run hit an unexplained empty-output issue, re-run pending).
+Direct evidence it was costing node-days: the n=42 bank came from THREE lanes converging
+on the same quad "up to C<->D swap" = lanes burning days on equivalent copies. Because
+the flat score is invariant under the orbit group, duplicates sit ADJACENT in flat order
+— dedup advances through distinct territory at the full redundancy factor.
+
+BUILD: WZ_FH_ORBIT_CANON=1 (default OFF): keep-set = lex-min real cell per orbit
+(deterministic, order-independent, always a real enumerated cell => every solution's
+orbit retains a searchable representative — retention is structural). CFGSIG carries
+oc flag (canon lanes = new lanes); driver lane dirs suffixed _oc1; telemetry
+cells_orbit_dup. VALIDATION: (a) canon-off BIT-IDENTICAL to pre-canon binary at n=19;
+(b) n=19 canon-on finds the hit (dedup 2.88x); (c) n=29 canary canon-on re-finds THE
+SAME solution (rank 588, nodes 81320) at idx 15,850 vs 26,694, wall 94s vs 149s = the
+predicted stream compression, live; (e) n=44 workhorse dedup 28.92x, stream flows.
+
+IMPACT (measured factors): n=43's 18-lane ~month => ~8-10 days effective; n=44
+per-class effective cost drops 8-29x => the 50-70B raw extrapolation deflates toward
+single-digit billions effective — the record moves from "methods-or-mathematics only"
+to "hard but in range of the fleet + patience". Cutover = wave 13 (tar-pipe + fresh
+_oc1 lanes, same window structure).
+

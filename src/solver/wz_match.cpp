@@ -1174,11 +1174,105 @@ int main(int argc, char **argv) {
     else if (prof_order == 2)
       sort(fhProfs.begin(), fhProfs.end(), [&](const Profile &a, const Profile &b)
            { return profScore(a) > profScore(b); });
+    // ---- C,D ORBIT CANONICALIZATION (WZ_FH_ORBIT_CANON=1, 2026-08-04).
+    // The cell list enumerates each C,D equivalence orbit REDUNDANTLY (measured:
+    // 3.8x at n=43 published, 7.9-28.9x at n=44) under negC/negD/revC/revD/swap
+    // — transforms that leave the A,B completion problem invariant (targets and
+    // |sums| unchanged), so equivalent cells hold isomorphic candidate streams.
+    // Keep ONE representative per orbit: the member with the lexicographically
+    // smallest key AMONG THE REAL CELLS of the orbit (deterministic, order-
+    // independent, and guaranteed to be an enumerated cell — soundness: every
+    // solution's orbit retains a searchable representative). Default OFF; the
+    // wave-13+ driver enables it. Skipped cells counted in the summary.
+    bool orbit_canon = false;
+    if (const char *e = getenv("WZ_FH_ORBIT_CANON")) orbit_canon = atoi(e) != 0;
+    unordered_set<string> fh_keep;
+    long long cells_orbit_dup = 0;
+    auto fh_cellkey = [&](const vector<int> &px, const vector<int> &py) {
+      string k;
+      for (int v : px) { k += to_string(v); k += ','; }
+      k += '|';
+      for (int v : py) { k += to_string(v); k += ','; }
+      return k;
+    };
+    if (orbit_canon) {
+      auto revp = [&](vector<int> p) {
+        vector<int> q(fh_m);
+        for (int c = 0; c < fh_m; c++) q[((n - 1 - c) % fh_m + fh_m) % fh_m] = p[c];
+        return q;
+      };
+      auto negp = [&](vector<int> p) { for (auto &x : p) x = -x; return p; };
+      // orbit id = min variant key; keep = the real cell with min OWN key per orbit
+      unordered_map<string, string> orbit_min;  // orbit id -> min real-cell key
+      vector<string> own(fhProfs.size()), oid(fhProfs.size());
+      for (size_t i = 0; i < fhProfs.size(); i++) {
+        own[i] = fh_cellkey(fhProfs[i].px, fhProfs[i].py);
+        string best;
+        for (int var = 0; var < 32; var++) {
+          vector<int> px = fhProfs[i].px, py = fhProfs[i].py;
+          if (var & 1) px = negp(px);
+          if (var & 2) py = negp(py);
+          if (var & 4) px = revp(px);
+          if (var & 8) py = revp(py);
+          if (var & 16) swap(px, py);
+          string k = fh_cellkey(px, py);
+          if (best.empty() || k < best) best = k;
+        }
+        oid[i] = best;
+        auto it = orbit_min.find(best);
+        if (it == orbit_min.end() || own[i] < it->second) orbit_min[best] = own[i];
+      }
+      for (size_t i = 0; i < fhProfs.size(); i++)
+        if (orbit_min[oid[i]] == own[i]) fh_keep.insert(own[i]);
+      cout << "[orbitcanon] cells=" << fhProfs.size() << " kept_orbits="
+           << fh_keep.size() << " dedup="
+           << (double)fhProfs.size() / max((size_t)1, fh_keep.size()) << "x\n" << flush;
+    }
     cout << "[firsthit] profiles=" << fhProfs.size() << " m=" << fh_m
          << " order=" << prof_order
          << " ab_budget=" << FH_BUDGET << " max_cand=" << max_cand
          << " score_max=" << score_max
          << " shard=" << fh_shard << "/" << fh_nshard << "\n" << flush;
+
+    // ---- MEASUREMENT INSTRUMENT (WZ_FH_ORBIT_AUDIT=1, 2026-08-04): count the
+    // C,D-side orbit redundancy of the cell list. Group: negC (px->-px), negD
+    // (py->-py), revC/revD (class permutation c -> (n-1-c) mod m), swap
+    // (px<->py). If cells/orbits >= ~2, the stream tests each equivalence
+    // class multiple times and a canonical-cell skip is a free speedup.
+    if (getenv("WZ_FH_ORBIT_AUDIT")) {
+      auto revp = [&](vector<int> p) {
+        vector<int> q(fh_m);
+        for (int c = 0; c < fh_m; c++) q[((n - 1 - c) % fh_m + fh_m) % fh_m] = p[c];
+        return q;
+      };
+      auto negp = [&](vector<int> p) { for (auto &x : p) x = -x; return p; };
+      auto keyof = [&](const vector<int> &px, const vector<int> &py) {
+        string k;
+        for (int v : px) k += to_string(v) + ",";
+        k += "|";
+        for (int v : py) k += to_string(v) + ",";
+        return k;
+      };
+      unordered_set<string> orbits;
+      for (auto &p : fhProfs) {
+        string best;
+        for (int var = 0; var < 32; var++) {
+          vector<int> px = p.px, py = p.py;
+          if (var & 1) px = negp(px);
+          if (var & 2) py = negp(py);
+          if (var & 4) px = revp(px);
+          if (var & 8) py = revp(py);
+          if (var & 16) swap(px, py);
+          string k = keyof(px, py);
+          if (best.empty() || k < best) best = k;
+        }
+        orbits.insert(best);
+      }
+      cout << "ORBIT_AUDIT: cells=" << fhProfs.size() << " orbits=" << orbits.size()
+           << " redundancy=" << (double)fhProfs.size() / max((size_t)1, orbits.size())
+           << "x\n" << flush;
+      return 0;
+    }
 
     // ---- MEASUREMENT INSTRUMENT (WZ_FH_LOCATE_C/_D, 2026-08-03): locate a
     // known solution's C,D profile cell in the current ordering and report its
@@ -1307,10 +1401,11 @@ int main(int argc, char **argv) {
       fh_dump = fopen(e, "w");      // for offline filter research; default OFF
     char fh_sigbuf[256];
     snprintf(fh_sigbuf, sizeof fh_sigbuf,
-             "n%d.a%d.b%d.c%d.d%d.ns%d.sh%d.ord%d.m%d.co%d.ap%d.sm%lld.cap%lld.sk%d.t1%d.t2%d",
+             "n%d.a%d.b%d.c%d.d%d.ns%d.sh%d.ord%d.m%d.co%d.ap%d.sm%lld.cap%lld.sk%d.t1%d.t2%d.oc%d",
              n, G_SIG_A, G_SIG_B, G_SIG_C, G_SIG_D, fh_nshard, fh_shard,
              prof_order, fh_m, cell_order ? 1 : 0, ab_prof ? 1 : 0, score_max,
-             fh_buf_cap, fh_skip, G_THM211B ? 1 : 0, G_THM212 ? 1 : 0);
+             fh_buf_cap, fh_skip, G_THM211B ? 1 : 0, G_THM212 ? 1 : 0,
+             orbit_canon ? 1 : 0);
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;
     long long fh_res_pi = 0, fh_res_batch = 0, fh_res_k = 0, fh_tested_base = 0;
@@ -1348,8 +1443,11 @@ int main(int argc, char **argv) {
     if (ab_prof) {
       auto tb0 = Clock::now();
       for (int pi = fh_shard + fh_skip * fh_nshard; pi < (int)fhProfs.size();
-           pi += fh_nshard)
+           pi += fh_nshard) {
+        if (orbit_canon && !fh_keep.count(fh_cellkey(fhProfs[pi].px, fhProfs[pi].py)))
+          continue;
         abpMap.try_emplace(cell_abp_key(fhProfs[pi]));
+      }
       // Single-side tuples over BOTH signed targets: the completer accepts
       // sum(A) = ±a (and ±b) — the A[0]=B[0]=+1 canonical representative of a
       // completion class can carry either sign, so pruning to one sign would
@@ -1435,6 +1533,12 @@ int main(int argc, char **argv) {
       if (fh_resuming && pi < fh_res_pi) continue;
       if (fh_resuming && pi > fh_res_pi) fh_resuming = false;  // safety: ckpt
       // pointed past a dead/last cell; everything from here is fresh ground.
+      if (orbit_canon && !fh_keep.count(fh_cellkey(fhProfs[pi].px, fhProfs[pi].py))) {
+        cells_orbit_dup++;  // orbit duplicate: its kept representative covers it
+        if (fh_resuming && pi == fh_res_pi) fh_resuming = false;
+        ck_pi = pi + fh_nshard; ck_batch = 0; ck_k = 0;  // shadow-advance only
+        continue;
+      }
       FH_ABP = nullptr;
       if (ab_prof) {
         auto it = abpMap.find(cell_abp_key(fhProfs[pi]));
@@ -1641,6 +1745,7 @@ int main(int argc, char **argv) {
          << "  ab_prof=" << (ab_prof ? 1 : 0)
          << "  cells_prof_dead=" << cells_prof_dead
          << "  cells_prof_uncap=" << cells_prof_uncap
+         << "  cells_orbit_dup=" << cells_orbit_dup
          << "  tested_cum=" << (fh_tested_base + completed_tested)
          << "  resume_pi=" << ck_pi << "  resume_batch=" << ck_batch
          << "  resume_k=" << ck_k << "\n"

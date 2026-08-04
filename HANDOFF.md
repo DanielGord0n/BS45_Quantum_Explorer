@@ -4,6 +4,25 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-04 (late session) — 🔥 ORBIT CANONICALIZATION: 3.8-29x REDUNDANCY FOUND IN
+THE CELL STREAM, LEVER BUILT + FULLY VALIDATED (the biggest solver gain since flat
+ordering; Daniel's "think outside the box" session delivered).** The C,D cell list
+never deduped its equivalence orbits (negC/negD/revC/revD/swap — all completion-
+invariant): measured redundancy n=29 3.74x · n=42 29.2x · n=43 3.8x · n=44 (3,13,0,0)
+28.9x / (1,7,8,8) 7.9x. The n=42 three-lane same-quad convergence WAS this waste, live.
+Built WZ_FH_ORBIT_CANON (keep lex-min real cell per orbit; retention structural; CFGSIG
++oc; driver lanes _oc1; cells_orbit_dup telemetry). VALIDATED: canon-off bit-identical
+(n=19); canon-on finds n=19 hit; **n=29 canary: SAME solution, idx 15,850 vs 26,694,
+94s vs 149s — the dedup compresses the stream ahead of hits exactly as predicted**;
+n=44 dedup 28.92x with flowing stream. EFFECT ON THE LADDER: n=43 ~month -> ~8-10 days
+effective; n=44 effective cost deflates 8-29x per class — THE RECORD IS BACK IN RANGE
+of the CPU fleet. CUTOVER = WAVE 13 (Daniel's paste, tomorrow): tar-pipe solver+driver
+to all 4, then resubmit the SAME wave-12 window structure with WZ_FH_ORBIT_CANON=1
+(fresh _oc1 lanes; wave-12's oc0 checkpoints retire — one day's overlap, then the
+multiplier forever). Loose end: 9-class n=44 batch audit printed empty (single-class
+runs fine) — re-run when tabulating. Kotsireas email: OFF per Daniel's decision —
+progress updates on his own cadence; research continues in-house.**
+
 **⚡ 2026-08-04 (Daniel session) — BS(43,42) RE-VERIFIED IN-SESSION (bank stands:
 NPAF[s]=0 all s=1..43, norm 170, WZ encoding OK); WAVE 12 = FULL REALLOCATION to
 n=43 + n=44.** Notable reads: the window-0 locator lanes (18288317-319, 104-122M) did

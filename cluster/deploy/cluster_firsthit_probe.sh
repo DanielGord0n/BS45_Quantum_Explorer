@@ -34,7 +34,7 @@ mkdir -p "$DIR"
 # the same lane auto-resumes every arm at its exact stopping candidate. One job
 # per lane at a time (concurrent same-lane jobs would overwrite each other's
 # checkpoints: no gaps, but wasted overlap). WZ_FH_RESUME=0 = fresh start.
-CKDIR=fh_ckpt/${N}_${A}_${B}_${C}_${D}_${NARMS}_ord${WZ_FH_PROF_ORDER:-0}_skip${WZ_FH_PROF_SKIP:-0}
+CKDIR=fh_ckpt/${N}_${A}_${B}_${C}_${D}_${NARMS}_ord${WZ_FH_PROF_ORDER:-0}_skip${WZ_FH_PROF_SKIP:-0}_oc${WZ_FH_ORBIT_CANON:-0}
 mkdir -p "$CKDIR"
 export WZ_FH_CKPT_DIR=$CKDIR
 echo "[driver] checkpoint lane: $CKDIR (resume=${WZ_FH_RESUME:-1})"
@@ -51,6 +51,7 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_AB_PROF" ]      && export WZ_FH_AB_PROF
 [ -n "$WZ_FH_RESUME" ]       && export WZ_FH_RESUME
 [ -n "$WZ_FH_BUF_CAP" ]      && export WZ_FH_BUF_CAP
+[ -n "$WZ_FH_ORBIT_CANON" ]  && export WZ_FH_ORBIT_CANON
 
 # FH_SCORE_TIERS="t1,t2" (optional): first quarter of arms complete only
 # candidates with flatness score <= t1, second quarter <= t2, rest ungated.
