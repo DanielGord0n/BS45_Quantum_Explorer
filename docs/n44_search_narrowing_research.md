@@ -149,3 +149,14 @@ did not use (1, 2) multiplied by throughput (3) and aim (4).
 - Bright, Kotsireas, Ganesh — Williamson via SAT+CAS: https://cs.uwaterloo.ca/~cbright/reports/jsc-willsat.pdf
   · MathCheck: https://uwaterloo.ca/mathcheck/publications
 - New results on periodic Golay pairs (compression in current use): https://arxiv.org/html/2408.15611
+
+**⚰️ Lever 5 DEAD BY PRIOR 2026-08-04.** Symmetry audit of all 31 banked firsthit
+solutions (n=32..37, 41, 42): best single-sequence palindromic/anti-palindromic match =
+0.77; typical 0.5-0.65 = random baseline; ZERO solutions show symmetry structure.
+Symmetry-restricted lanes would exclude everything we have ever found. Do not build.
+**PROGRAM STATUS: every lever in this document is now measured** — compression (filter +
+class-killer) dead, SAT-direct dead, GPU dead at production budget, symmetry dead by
+prior. n=44 rides on: the lanes (10 live), obstruction-theory triage (Kotsireas Q1),
+and the collaboration itself. The measured ladder (n41=0.7B, n42=3.3B, x4.7/rung) prices
+n=44 at 50-70B+ — the record is a methods-or-mathematics problem now, by measurement.
+

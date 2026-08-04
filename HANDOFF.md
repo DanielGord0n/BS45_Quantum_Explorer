@@ -20,7 +20,11 @@ Fir 12 = n=43 flat 0-5 (0-2 resume cum ~124M, 3-5 fresh) + n=44 (3,13,0,0) w1-4 
 (5,9,6,6)/(5,7,2,10) skip0 resume · Rorqual 10 = n=43 rev 0-5 (0-2 resume cum ~126M,
 3-5 fresh) + n=44 (1,7,8,8)/(3,3,4,12)/(3,13,0,0)/(5,5,8,8) skip0 resume · Trillium 6 =
 n=43 flat 6/7/8 + rev 6/7/8 fresh. n=43 total = 18 lanes both ends. Nibi 18545822-24
-PD untouched. IDs on submit echo.**
+PD untouched. **WAVE 12 CONFIRMED, all echoed: Fir `52885658-669` · Rorqual
+`18333391-400` · Trillium `2011886-891`. LEVER 5 (symmetry lanes) killed by prior same
+session: 0 of 31 banked solutions show any palindromic/anti-palindromic structure (best
+0.77, typical 0.5-0.65 = random) — the research program's every lever is now MEASURED;
+n=44 = lanes + obstruction triage + Kotsireas, by measurement not opinion.**
 
 **⚡ 2026-08-04 (daily loop) — ★★★ n=42 FALLS: BS(43,42) FOUND, VERIFIED, BANKED — THE
 SECOND RUNG OF THE WZ TRIO, BY THREE INDEPENDENT LANES.** (1) THE HIT: wave-11 lanes
