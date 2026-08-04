@@ -16,10 +16,15 @@ Built WZ_FH_ORBIT_CANON (keep lex-min real cell per orbit; retention structural;
 94s vs 149s — the dedup compresses the stream ahead of hits exactly as predicted**;
 n=44 dedup 28.92x with flowing stream. EFFECT ON THE LADDER: n=43 ~month -> ~8-10 days
 effective; n=44 effective cost deflates 8-29x per class — THE RECORD IS BACK IN RANGE
-of the CPU fleet. CUTOVER = WAVE 13 (Daniel's paste, tomorrow): tar-pipe solver+driver
-to all 4, then resubmit the SAME wave-12 window structure with WZ_FH_ORBIT_CANON=1
-(fresh _oc1 lanes; wave-12's oc0 checkpoints retire — one day's overlap, then the
-multiplier forever). Loose end: 9-class n=44 batch audit printed empty (single-class
+of the CPU fleet. CUTOVER EXECUTED SAME NIGHT — WAVE 13 SUBMITTED, all echoed:
+Fir `52894730-741` (12: n=43 flat 0-5 + n=44 (3,13,0,0) w0-3 + (5,9,6,6)/(5,7,2,10)
+skip-0, ALL oc1) · Rorqual `18334381-390` (10: n=43 REV 0-5 + n=44 REVERSE skip-0
+(1,7,8,8)/(3,3,4,12)/(3,13,0,0)/(5,5,8,8) — n=44's FIRST reverse lanes, the n=42
+lesson applied) · Trillium `2012042-047` (6: n=43 flat+rev 6/7/8). Tar-pipes landed
+all 3 BEFORE submits (jobs compile at start = all wave-13 runs canonical).
+RECOMMENDED to Daniel: scancel wave-12 oc0 jobs (52885658-69, 18333391-400,
+2011886-91) — ALL still PD, zero work done, 74-97% redundant if run, and they delay
+the canon lanes a day; block provided, his call. Loose end: 9-class n=44 batch audit printed empty (single-class
 runs fine) — re-run when tabulating. Kotsireas email: OFF per Daniel's decision —
 progress updates on his own cadence; research continues in-house.**
 
