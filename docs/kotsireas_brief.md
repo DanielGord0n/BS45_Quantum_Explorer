@@ -1,17 +1,23 @@
-# A new BS(42,41), a measured search frontier at n=42–44, and three methods questions
+# New solutions for BS(42,41) AND BS(43,42), a measured frontier at n=43–44, and three methods questions
 
 *Daniel Gordon (dangord, Alliance clusters; supervisor account def-ikotsire).
-2026-08-01. One page. This is a methods conversation, not a compute request.*
+2026-08-04. One page. This is a methods conversation, not a compute request.*
 
-## The headline result
+## The headline results
 
 On 2026-07-30 our solver found a **new solution for BS(42,41)** — the Wang–Zhu signature
 class (0,2,9,9), but **not their published sequences**: the C,D flatness score
 Σ|NPAF_C+NPAF_D| is 124 vs their 140, and the score is invariant under swap, negation,
 and reversal, so the solutions are inequivalent. Independently verified (NPAF[s]=0 for
 all s=1..42, norm 166, WZ pair encoding). To our knowledge this is the first independent
-solution at any of Wang–Zhu's rungs since their paper (arXiv:2506.20296). Full sequences
-on request.
+solution at any of Wang–Zhu's rungs since their paper (arXiv:2506.20296).
+
+**On 2026-08-04 the same engine solved BS(43,42)** — again the published class
+((−7),11,0,0) and again NOT their sequences (flat score 150 vs their 142; outside their
+full 128-variant orbit). Three independent search lanes converged on the same quadruple,
+an internal replication. Independently verified as above. Two of their three rungs are
+now independently re-solved with new solutions; n=43 is in progress. Full sequences on
+request.
 
 It came from a direct-search architecture we can fully describe (and would gladly):
 Thm-2.2-encoded C,D pair streaming from mod-6 residue cells with eq. 2.11a/2.11b/2.12
@@ -26,10 +32,10 @@ attempted; 26 solutions banked, all independently verified).
 ## The measured frontier (numbers, not impressions)
 
 - **n=41 (0,2,9,9): solved** at ~700M tested candidates cumulative (both stream ends).
-- **n=42 (7,11,0,0):** ~1.5B+ tested and counting, hitless — consistent with ×2–3/rung
-  density thinning (expected first hit 1.4–2B).
-- **n=43 (8,−2,5,9):** opened; tests ~3.5× slower per node-day than n=42, with rising
-  budget-abort fractions.
+- **n=42 (7,11,0,0): solved** at ~3.3B tested cumulative — a measured ×4-5 cost step
+  over n=41 (the ×2-3/rung model under-predicted; both rungs' costs are now data).
+- **n=43 (8,−2,5,9):** under both-ends attack (~240M tested); naive extrapolation from
+  the measured n=41→n=42 step prices it at ~10-15B — the rung where methods beat patience.
 - **n=44 — the open problem:** we enumerated the admissible frontier (12 signature
   classes at norm 178) and stream-validated all 12 (none enumeration-bound); per-class
   completion cost is measured at 1.6–43M candidates per 12h node across the 10 fastest
