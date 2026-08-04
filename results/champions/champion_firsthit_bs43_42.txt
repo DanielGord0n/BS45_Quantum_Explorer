@@ -1,0 +1,34 @@
+42 43 0
+-7 11 0 0
+1 -1 1 1 1 -1 1 -1 1 -1 -1 1 1 -1 1 1 1 -1 -1 1 -1 1 -1 -1 1 1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 1 1 1 -1
+1 1 1 -1 1 1 -1 1 1 1 1 -1 -1 -1 -1 1 -1 1 -1 -1 1 1 1 1 1 -1 1 -1 1 -1 1 1 1 1 -1 1 1 1 -1 -1 1 -1 1
+1 -1 1 -1 1 1 1 -1 -1 -1 -1 -1 1 -1 1 1 -1 -1 1 -1 1 1 -1 1 1 1 -1 -1 1 1 -1 -1 1 -1 -1 1 1 -1 1 1 -1 -1
+1 -1 1 -1 1 1 -1 1 1 1 -1 -1 -1 -1 -1 -1 1 1 -1 1 1 1 1 -1 -1 -1 1 1 1 -1 -1 -1 -1 1 1 -1 1 -1 1 1 -1 -1
+# BS(43,42), n=42 — banked 2026-08-04 (wave-11 verbatim ckpt resubmits, submitted 08-03 ~13:20 EDT).
+# THE CAMPAIGN'S n=42 TARGET: our solver replicating Wang-Zhu's published n=42 result
+#   by direct search in their signature class (7,11,0,0) — second rung of the WZ trio
+#   (41-42-43) after the 07-30 n=41 hit. Found INDEPENDENTLY by THREE lanes on TWO clusters,
+#   all converging on this same quad (up to C<->D swap):
+#     * Trillium 2007533 (n=42 reverse ckpt lane, resume_pi 1424-1956): GLOBAL FIRST
+#       chronologically — job start Mon 03 Aug 2026 19:46:48 EDT, hit at elapsed=2280.74s
+#       (~20:24 EDT). FIRSTHIT: idx=1000000 profile_rank=1572 nodes_this_cand=86976
+#       score=150. This file banks its exact printed form.
+#     * Trillium 2007532 (reverse ckpt lane, resume_pi 1247-1948): same quad verbatim,
+#       elapsed=17179s, profile_rank=1572.
+#     * Rorqual 18266737 (n=42 reverse ckpt lane, resume_pi 713-1379): same quad with
+#       C and D swapped, elapsed=36114.1s (~00:09 EDT 08-04), profile_rank=851.
+# Provenance: cluster_firsthit_probe.sh + wz_match.cpp (checkpointed per-arm resume build),
+#   WZ_N=42, sig (7,11,0,0) (printed as (-7,11,0,0), A-sum=-7), reverse profile ordering,
+#   FH_NARMS=178. Cumulative n=42 live-window effort at time of hit ~2.7B candidates
+#   across Fir/Rorqual/Trillium — past the 1.4-2B band estimate.
+# Verified: tools/verify_npaf.py 2026-08-04 — PASS on BOTH the Trillium and the Rorqual
+#   forms: NPAF[s]=0 for all s=1..43, signature sum-of-squares = 170 (expect 170), fits
+#   Wang-Zhu comb8 pair encoding.
+# NOT Wang-Zhu's published sequences: checked against results/reference/wz_table1_bs43_42.txt
+#   under the full 128-element variant group (A<->B swap x C<->D swap x independent
+#   negations x reversal) — no match. C,D flat score: ours 150 vs WZ's 142. A NEW solution
+#   inside the published class.
+# Note: the hit came from the long-grinding REVERSE window lanes, not the 08-03 window-0
+#   skip-0 lanes (18288317-319 read hitless 104-122M this same cycle).
+# Honest framing: solver-capability result (replication-class), not a record — n<=40 is
+#   known and Wang-Zhu constructed 41-43; n=44 remains the open record.

@@ -1,8 +1,47 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-03 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-04 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-04 (daily loop) — ★★★ n=42 FALLS: BS(43,42) FOUND, VERIFIED, BANKED — THE
+SECOND RUNG OF THE WZ TRIO, BY THREE INDEPENDENT LANES.** (1) THE HIT: wave-11 lanes
+Trillium `2007533` (rev ckpt, GLOBAL FIRST chronologically — hit at elapsed 2,280.7s,
+~20:24 EDT 08-03), Trillium `2007532` (rev, elapsed 17,179s), and Rorqual `18266737`
+(rev w4, elapsed 36,114s, ~00:09 08-04) ALL found the SAME quad (Rorqual's C,D =
+Trillium's D,C — one solution up to C<->D swap), sig (-7,11,0,0) = the published class.
+R2 COMPLETE: `verify_npaf.py` PASS on BOTH forms (NPAF[s]=0 all s=1..43, norm 170, WZ
+comb8 encoding OK); NOT Wang-Zhu's sequences — checked against
+`results/reference/wz_table1_bs43_42.txt` under the FULL 128-variant group (A<->B x
+C<->D x negations x reversal), no match; C,D flat score 150 vs WZ's 142 = a NEW
+inequivalent solution in the published class. BANKED:
+`results/champions/champion_firsthit_bs43_42.txt` (Trillium 2007533 form + full
+provenance). Claim discipline (same as n=41): independent replication + NEW inequivalent
+solution; NO runtime comparison vs WZ; not a record. (2) IRONY FOR THE LOCATOR DOCTRINE:
+the 08-03 window-0 skip lanes `18288317-319` read HITLESS at 104-122M tested each — the
+hit came from the LONG-GRINDING REVERSE lanes (profile_rank 851/1572), not window 0; the
+locator's "WZ-42 cell sits in window 0" remains true but OUR solution lived elsewhere
+(same lesson as n=41: our solutions surface where cumulative depth is, not where WZ's
+cell is). n=42 total effort at hit ≈3.4B tested across all lanes/windows/siblings —
+~1.7x past the 1.4-2B band; the density model needs re-pricing before it prices n=43.
+(3) EVERYTHING ELSE HITLESS (wave 11 + siblings first read + skip-0): n=43 cum flat
+121-124M / rev 112-126M; n=44 (3,13,0,0) cum 135-169M (w1/2/3) + 113M (R skip-0), other
+classes 7-85M cum; siblings (1,5,0,12)/(3,9,4,8)/(1,3,4,12) = 27.8/152.8/67.9M first
+read — (3,9,4,8) is FAST (153M/day). Checker exclusions +31 (whole wave-11 board + ★x3).
+(4) **NO WAVE 12 SUBMITTED — NEEDS_HUMAN: the n=42 bank retires 12 of 28 verbatim lanes
++ 3 siblings; reallocation is Daniel's call.** RECOMMENDED single move: paste the
+continuation block below (19 uncontroversial lanes: n=43 + n=44 verbatim, n=42 dropped),
+then decide the freed ~15-lane capacity next session (leading candidate: locator-guided
+n=43 windows — WZ-43 measured deep at ranks ~255-571 on 08-03 — vs widening n=44).
+Kotsireas brief: NOW STRONGER — two independent inequivalent WZ-class solutions (n=41 +
+n=42); worth a one-line update before sending. STILL UNSENT. Continuation block
+(3 pastes, one per cluster; `;`-chains, ckpt lanes resume automatically):
+```
+ssh dangord@fir.alliancecan.ca 'cd $SCRATCH/bs45 && for k in 0 1 2; do sbatch --requeue --export=ALL,WZ_N=43,WZ_A=8,WZ_B=-2,WZ_C=5,WZ_D=9,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=$k ./cluster_firsthit_probe.sh; done; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=5,WZ_B=9,WZ_C=6,WZ_D=6,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=5,WZ_B=7,WZ_C=2,WZ_D=10,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=1,WZ_B=13,WZ_C=2,WZ_D=2,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; for k in 1 2 3; do sbatch --requeue --export=ALL,WZ_N=44,WZ_A=3,WZ_B=13,WZ_C=0,WZ_D=0,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=$k ./cluster_firsthit_probe.sh; done; squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R"'
+ssh dangord@rorqual.alliancecan.ca 'cd $SCRATCH/bs45 && for k in 0 1 2; do sbatch --requeue --export=ALL,WZ_N=43,WZ_A=8,WZ_B=-2,WZ_C=5,WZ_D=9,WZ_FH_PROF_ORDER=2,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=$k ./cluster_firsthit_probe.sh; done; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=1,WZ_B=7,WZ_C=8,WZ_D=8,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=3,WZ_B=3,WZ_C=4,WZ_D=12,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=3,WZ_B=13,WZ_C=0,WZ_D=0,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=5,WZ_B=5,WZ_C=8,WZ_D=8,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R"'
+ssh dangord@trillium.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=44,WZ_A=5,WZ_B=11,WZ_C=4,WZ_D=4,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=7,WZ_B=7,WZ_C=4,WZ_D=8,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; sbatch --requeue --export=ALL,WZ_N=44,WZ_A=7,WZ_B=11,WZ_C=2,WZ_D=2,WZ_FH_PROF_ORDER=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=0 ./cluster_firsthit_probe.sh; squeue -u dangord -h -o "%.14i %.10j %.2t %.11L %R"'
+```
+**
 
 **⚡ 2026-08-03 (Daniel session) — 🎯 THE LOCATOR MEASUREMENT: WZ's n=42 SOLUTION SITS IN
 WINDOW 0 — THE CAMPAIGN'S SHALLOWEST-TESTED TERRITORY. Skip-0 ckpt lanes queued = the
