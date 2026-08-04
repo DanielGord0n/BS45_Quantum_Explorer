@@ -22,9 +22,15 @@ skip-0, ALL oc1) · Rorqual `18334381-390` (10: n=43 REV 0-5 + n=44 REVERSE skip
 (1,7,8,8)/(3,3,4,12)/(3,13,0,0)/(5,5,8,8) — n=44's FIRST reverse lanes, the n=42
 lesson applied) · Trillium `2012042-047` (6: n=43 flat+rev 6/7/8). Tar-pipes landed
 all 3 BEFORE submits (jobs compile at start = all wave-13 runs canonical).
-RECOMMENDED to Daniel: scancel wave-12 oc0 jobs (52885658-69, 18333391-400,
-2011886-91) — ALL still PD, zero work done, 74-97% redundant if run, and they delay
-the canon lanes a day; block provided, his call. Loose end: 9-class n=44 batch audit printed empty (single-class
+WAVE-12 SCANCEL EXECUTED (Daniel, same night): 52885658-69 + 18333391-400 +
+2011886-91 all cancelled while still PD — zero completed work lost, canon lanes
+promoted a full day. FINAL BOARD: 28 canonical (_oc1) lanes ONLY — Fir `52894730-741`
+(n=43 flat 0-5 + n=44 flat: (3,13,0,0) w0-3, (5,9,6,6), (5,7,2,10)) · Rorqual
+`18334381-390` (n=43 rev 0-5 + n=44 REVERSE ×4) · Trillium `2012042-047` (n=43
+flat+rev 6/7/8) · plus Nibi's 3 stale old-driver PD (18545822-24, inert). Every
+node-hour from tonight runs deduplicated territory. Checker: wave-13 IDs un-excluded
+until verdicts; wave-12 IDs never produced outputs (cancelled PD) — nothing to
+exclude. Loose end: 9-class n=44 batch audit printed empty (single-class
 runs fine) — re-run when tabulating. Kotsireas email: OFF per Daniel's decision —
 progress updates on his own cadence; research continues in-house.**
 
