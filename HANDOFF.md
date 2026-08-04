@@ -4,6 +4,24 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-04 (Daniel session) — BS(43,42) RE-VERIFIED IN-SESSION (bank stands:
+NPAF[s]=0 all s=1..43, norm 170, WZ encoding OK); WAVE 12 = FULL REALLOCATION to
+n=43 + n=44.** Notable reads: the window-0 locator lanes (18288317-319, 104-122M) did
+NOT produce the hit — the long-grinding REVERSE lanes did (reverse window 4, three-lane
+convergence): classes hold MULTIPLE solutions and deep compounding lanes win; the
+locator aim was sound but another solution sat closer to the reverse frontier. Sibling
+(3,9,4,8) measured 152.8M/day (fastest n=42 class) — moot post-bank. **MEASURED COST
+CURVE (replaces all band estimates): n=41 ≈ 0.7B, n=42 ≈ 3.3B (×4.7 step) ⇒ n=43
+naive ≈ 10-15B ⇒ at ~24M/lane/day needs ~18 lanes × ~30 days. n=44 extrapolates
+50-70B+ = CPU-infeasible without triage/methods — KOTSIREAS (brief now leads with BOTH
+new solutions) is no longer optional for the record.** WAVE 12 (28 jobs): retire ALL
+n=42 lanes + siblings + n=44 slow tail ((1,13,2,2)/(5,11,4,4)/(7,11,2,2) at 1-3M/day);
+Fir 12 = n=43 flat 0-5 (0-2 resume cum ~124M, 3-5 fresh) + n=44 (3,13,0,0) w1-4 +
+(5,9,6,6)/(5,7,2,10) skip0 resume · Rorqual 10 = n=43 rev 0-5 (0-2 resume cum ~126M,
+3-5 fresh) + n=44 (1,7,8,8)/(3,3,4,12)/(3,13,0,0)/(5,5,8,8) skip0 resume · Trillium 6 =
+n=43 flat 6/7/8 + rev 6/7/8 fresh. n=43 total = 18 lanes both ends. Nibi 18545822-24
+PD untouched. IDs on submit echo.**
+
 **⚡ 2026-08-04 (daily loop) — ★★★ n=42 FALLS: BS(43,42) FOUND, VERIFIED, BANKED — THE
 SECOND RUNG OF THE WZ TRIO, BY THREE INDEPENDENT LANES.** (1) THE HIT: wave-11 lanes
 Trillium `2007533` (rev ckpt, GLOBAL FIRST chronologically — hit at elapsed 2,280.7s,
