@@ -199,7 +199,11 @@ fi
 
 if grep -qi '^NEEDS_HUMAN' "$SUMMARY" 2>/dev/null; then
   ntfy_push "⚠️ BS45 needs you" "$msg" "high" "warning"
-elif grep -qiE 'verified|champion banked' "$SUMMARY" 2>/dev/null; then
+elif grep -qE '^RESULT_BANKED' "$SUMMARY" 2>/dev/null; then
+  # Sentinel contract (2026-08-05): the agent writes a line starting exactly
+  # RESULT_BANKED only when a solution passed verify_npaf and was banked THIS
+  # run. The old substring match ('verified') fired on "no verified solutions"
+  # -- a false trophy that trains the reader to ignore the real one.
   ntfy_push "🏆 BS45 — verified result!" "$msg" "urgent" "rotating_light,tada"
 else
   ntfy_push "BS45 daily" "$msg" "default" "satellite"

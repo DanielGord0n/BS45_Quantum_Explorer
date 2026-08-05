@@ -154,6 +154,13 @@ Do not re-run the checker.
 
 3. **Keep the checker current.** The remote checker command lives in
    `cluster/deploy/checker_cmd.txt` and is EXPECTED to evolve — edit it whenever:
+**NOTIFICATION SENTINEL (hard rule, 2026-08-05):** the phone summary's trophy title fires
+ONLY on a line starting exactly `RESULT_BANKED:` -- write that line if and only if a
+solution passed tools/verify_npaf.py AND was banked to results/champions/ THIS run
+(e.g. `RESULT_BANKED: BS(44,43) champion_firsthit_bs44_43.txt`). NEVER write the token
+otherwise -- phrases like "no verified solutions" are fine, the title no longer
+substring-matches them. A false celebration is a cry-wolf bug.
+
    - a solution gets banked → add its file id to the `grep -vE` exclusion list, or
      "NEW FOUND?" will cry wolf on old banked files every run;
    - the ladder climbs a rung → update the `n=32 progress` label and any globs;
