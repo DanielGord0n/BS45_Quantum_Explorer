@@ -4,6 +4,18 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-05 (daily loop) — WAVE 13 FIRST READ: ALL 28 CANONICAL LANES HEALTHY, NO
+HITS, INSUFFICIENT RUNTIME — NO ACTION.** Fir `52894730-741` all 12 R (~4.2-4.9h into
+12h, started ~02:15 PDT; headers confirm canonical source: n=43 (8,-2,5,9) ×6 + n=44
+(3,13,0,0) ×4 + (5,9,6,6) + (5,7,2,10)); Rorqual `18334381-390` all 10 R (~3.2h in,
+headers confirm n=43 ×6 + n=44 REVERSE (1,7,8,8)/(3,3,4,12)/(3,13,0,0)/(5,5,8,8));
+Trillium `2012042-047` all 6 PD (Priority — normal queue wait); Nibi `18545822-24`
+still PD behind maintenance (stale old-driver, inert — leave to lapse). NEW FOUND:
+none. Outputs are day-0 headers only, so no telemetry to record; first real
+depth/dedup read (incl. cells_orbit_dup at n=43/44 production scale) comes at the
+next check after the 12h walltime. Board full on all three productive clusters —
+nothing idle, nothing to refill, no code change.**
+
 **⚡ 2026-08-04 (late session) — 🔥 ORBIT CANONICALIZATION: 3.8-29x REDUNDANCY FOUND IN
 THE CELL STREAM, LEVER BUILT + FULLY VALIDATED (the biggest solver gain since flat
 ordering; Daniel's "think outside the box" session delivered).** The C,D cell list
