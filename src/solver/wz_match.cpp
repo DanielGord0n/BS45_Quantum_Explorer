@@ -774,13 +774,39 @@ static inline bool fh_abp_leaf_ok() {
 // at n=19 (200k/200k aborted, zero completions) — the encoding is not optional.
 
 // Place single position p with (av,bv); update Dab/Kab against placed q's.
+// Branchless placement update (WZ_FH_PLACE_V2=1, 2026-08-05, default OFF):
+// A[q]==0 contributes 0 to the Dab sum (A,B zero together), and A[p]==0
+// pre-placement — so the guard in the V1 loop only SKIPS work, it never
+// changes the result. Split into two loops with contiguous Dab[s] indexing
+// so the compiler can autovectorize (the completer's hottest loop; ~O(L)
+// per node × billions of nodes). Kab needs the placed-count, tracked
+// branchlessly via FH_PLACED_AT[]. Bit-identical to V1 by construction —
+// validated n=19 full + n=29 canary before any deployment.
+static signed char FH_PLACED_AT[256];
+static bool fh_place_v2_init() {
+  const char *e = getenv("WZ_FH_PLACE_V2");
+  return e && atoi(e) != 0;
+}
+static const bool FH_PLACE_V2 = fh_place_v2_init();
 static inline void fh_place(int p, int av, int bv, int *A, int *B,
                             int *Dab, int *Kab, int L) {
-  for (int q = 0; q < L; q++) {
-    if (A[q] == 0 || q == p) continue;
-    int s = q > p ? q - p : p - q;
-    Dab[s] += A[q] * av + B[q] * bv;
-    Kab[s] -= 2;
+  if (FH_PLACE_V2) {
+    for (int s = 1; s <= p; s++) {
+      Dab[s] += A[p - s] * av + B[p - s] * bv;
+      Kab[s] -= 2 * FH_PLACED_AT[p - s];
+    }
+    for (int s = 1; s < L - p; s++) {
+      Dab[s] += A[p + s] * av + B[p + s] * bv;
+      Kab[s] -= 2 * FH_PLACED_AT[p + s];
+    }
+    FH_PLACED_AT[p] = 1;
+  } else {
+    for (int q = 0; q < L; q++) {
+      if (A[q] == 0 || q == p) continue;
+      int s = q > p ? q - p : p - q;
+      Dab[s] += A[q] * av + B[q] * bv;
+      Kab[s] -= 2;
+    }
   }
   A[p] = av; B[p] = bv;
   int pc = p % FH_ABP_M;
@@ -791,6 +817,18 @@ static inline void fh_unplace(int p, int *A, int *B, int *Dab, int *Kab, int L) 
   A[p] = 0; B[p] = 0;
   int pc = p % FH_ABP_M;
   FH_PA[pc] -= av; FH_PB[pc] -= bv; FH_PLACED[pc]--;
+  if (FH_PLACE_V2) {
+    FH_PLACED_AT[p] = 0;
+    for (int s = 1; s <= p; s++) {
+      Dab[s] -= A[p - s] * av + B[p - s] * bv;
+      Kab[s] += 2 * FH_PLACED_AT[p - s];
+    }
+    for (int s = 1; s < L - p; s++) {
+      Dab[s] -= A[p + s] * av + B[p + s] * bv;
+      Kab[s] += 2 * FH_PLACED_AT[p + s];
+    }
+    return;
+  }
   for (int q = 0; q < L; q++) {
     if (A[q] == 0 || q == p) continue;
     int s = q > p ? q - p : p - q;
@@ -911,7 +949,8 @@ static int fh_complete_ab(const int *C, const int *D) {
     if (abs(FH_CD_target[s]) > 2 * (n1 - s)) return 1;
   int A[256], B[256], Dab[256], Kab[256];
   memset(A, 0, sizeof(A)); memset(B, 0, sizeof(B));
-  memset(Dab, 0, sizeof(Dab));
+  memset(FH_PLACED_AT, 0, sizeof(FH_PLACED_AT));  // FOUND returns without
+  memset(Dab, 0, sizeof(Dab));                    // unwinding — reset per cand
   for (int s = 0; s <= n; s++)
     Kab[s] = (s >= 1 && s < n1) ? 2 * (n1 - s) : 0;
   FH_ABS_A = abs(G_SIG_A);

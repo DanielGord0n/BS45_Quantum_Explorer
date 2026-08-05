@@ -116,7 +116,7 @@ done
 echo "arms_with_hits=$hits / $NARMS"
 # Gate B aggregation from every arm's summary/progress lines
 tot_cand=0; tot_nodes=0; tot_abort=0; cd_min=-1; cd_sum=0; tt_sum=0; tt_min=-1
-tc_sum=0; rp_min=-1; rp_max=0
+tc_sum=0; rp_min=-1; rp_max=0; od_sum=0
 for f in "$DIR"/arm_*.log; do
   line=$(grep -E "candidates_streamed=" "$f" | tail -1)
   c=$(echo "$line" | grep -oE "candidates_streamed=[0-9]+" | cut -d= -f2)
@@ -139,6 +139,8 @@ for f in "$DIR"/arm_*.log; do
     if [ "$rp_min" = -1 ] || [ "$rp" -lt "$rp_min" ]; then rp_min=$rp; fi
     if [ "$rp" -gt "$rp_max" ]; then rp_max=$rp; fi
   fi
+  od=$(grep -oE "cells_orbit_dup=[0-9]+" "$f" | tail -1 | cut -d= -f2)
+  [ -n "$od" ] && od_sum=$((od_sum+od))
   a=$(grep -oE "budget_aborted=[0-9]+" "$f" | tail -1 | cut -d= -f2)
   [ -n "$a" ] && tot_abort=$((tot_abort+a))
   nn=$(grep -oE "total_AB_nodes=[0-9]+" "$f" | tail -1 | cut -d= -f2)
@@ -156,7 +158,7 @@ done
 # never read as an empty stream again (the 07-22/23 zero-candidate artifact).
 summarized=$(grep -l "FIRSTHIT SUMMARY" "$DIR"/arm_*.log 2>/dev/null | wc -l)
 interrupted=$(grep -l "RESULT: INTERRUPTED" "$DIR"/arm_*.log 2>/dev/null | wc -l)
-echo "GATEB: candidates=$tot_cand tested=$tt_sum tested_min=$tt_min tested_cum=$tc_sum resume_pi_min=$rp_min resume_pi_max=$rp_max aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum"
+echo "GATEB: candidates=$tot_cand tested=$tt_sum tested_min=$tt_min tested_cum=$tc_sum resume_pi_min=$rp_min resume_pi_max=$rp_max orbit_dup=$od_sum aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum"
 # Global first hit = min by (profile_rank, idx) across arms
 grep -h "FIRSTHIT:" "$DIR"/arm_*.log 2>/dev/null \
   | sed -E 's/.*idx=([0-9]+) profile_rank=([0-9]+).*/\2 \1 &/' \

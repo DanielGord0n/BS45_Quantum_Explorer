@@ -1,8 +1,29 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-04 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-05 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-05 (Daniel session) — CRY-WOLF NOTIFICATION FIXED + ORBIT VISIBILITY
+CLOSED + PLACE-V2 LEVER BUILT (pricing on cluster).** (1) The 1:02 PM trophy title was
+FALSE (no hit): daily_auto matched substring 'verified' inside "no verified solutions" —
+fixed with a sentinel contract: trophy fires ONLY on a summary line starting
+`RESULT_BANKED:` which auto_prompt now instructs the agent to write ONLY after a
+verify_npaf-passed bank (tested both directions). (2) Checker audit found tomorrow's
+canonical read would be BLIND to dedup telemetry (cells_orbit_dup aggregated nowhere):
+checker now greps [orbitcanon] + cells_orbit_dup from newest arm logs (works tomorrow,
+no cluster change); driver GATEB adds orbit_dup= (ships with wave-14 tar-pipe). (3)
+n=44 REDUNDANCY TABLE completed: every class 3.9-8.0x ((1,7,8,8) 7.88 · (1,13,2,2) 7.98
+· (3,3,4,12) 3.95 · (3,5,0,12) 7.59 · (5,5,8,8) 7.88 · (5,7,2,10) 4.0 · (5,9,6,6) 7.98
+· (5,11,4,4) 7.88 · (7,7,4,8) 3.95 · (3,13,0,0) 28.92 measured 08-04; last two
+computing). (4) NEW LEVER: WZ_FH_PLACE_V2 — branchless split-loop fh_place (the
+completer's hottest O(L)-per-node loop; zero-entries contribute zero so the branch only
+skipped vectorizable work). VALIDATED bit-identical at n=19 (V1 vs V2, incl. hit path;
+per-candidate FH_PLACED_AT reset covers the FOUND-no-unwind case); Mac-ARM hint +6%;
+the DECIDING x86/AVX-512 number = `cluster/deploy/place_v2_bench.sh` (30min, 1 core,
+pre-registered: >=15% => default-on wave 15+, bit-identical so NOT in CFGSIG and lanes
+resume unaffected; 5-15% keep opt-in; <5% drop). Wave 13 mid-flight, healthy, first
+canonical verdicts tomorrow. NOT blocked.**
 
 **⚡ 2026-08-05 (daily loop) — WAVE 13 FIRST READ: ALL 28 CANONICAL LANES HEALTHY, NO
 HITS, INSUFFICIENT RUNTIME — NO ACTION.** Fir `52894730-741` all 12 R (~4.2-4.9h into
