@@ -188,3 +188,22 @@ single-digit billions effective — the record moves from "methods-or-mathematic
 to "hard but in range of the fleet + patience". Cutover = wave 13 (tar-pipe + fresh
 _oc1 lanes, same window structure).
 
+**n=44 ORBIT REDUNDANCY TABLE — COMPLETE (2026-08-05, all 12 classes):**
+```
+n=44 (1 7 8 8): cells=977601 orbits=123994 redundancy=7.88426x
+n=44 (1 13 2 2): cells=502076 orbits=62919 redundancy=7.97972x
+n=44 (3 3 4 12): cells=921646 orbits=233433 redundancy=3.94822x
+n=44 (3 5 0 12): cells=975172 orbits=128494 redundancy=7.58924x
+n=44 (5 5 8 8): cells=972489 orbits=123337 redundancy=7.88481x
+n=44 (5 7 2 10): cells=483840 orbits=120960 redundancy=4x
+n=44 (5 9 6 6): cells=496428 orbits=62219 redundancy=7.97872x
+n=44 (5 11 4 4): cells=1008233 orbits=127876 redundancy=7.88446x
+n=44 (7 7 4 8): cells=987487 orbits=250079 redundancy=3.9487x
+n=44 (7 11 2 2): cells=502076 orbits=62919 redundancy=7.97972x
+n=44 (9 9 0 4): cells=968858 orbits=127943 redundancy=7.57258x
+n=44 (3 13 0 0): redundancy=28.92x (measured 08-04)
+```
+Every class 3.9-29x redundant — the canonical fleet's gain is universal, not class luck.
+V2-canary note: n=29 with WZ_FH_PLACE_V2=1 (orbit canon off) reproduces the EXACT
+historical fingerprint (idx=26694, rank 588, nodes 81320, NPAF==0) — place-V2 is
+search-invariant, confirmed end-to-end.
