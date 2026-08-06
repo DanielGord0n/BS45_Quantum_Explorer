@@ -4,6 +4,22 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-06 (session, cont.) — PAPER RECORD COMPILED + GPU WARP-V2 BUILT (last
+unpriced lever, ready to queue).** (1) `docs/paper_methods_record.md` = self-contained
+paper input (both solutions + provenance job IDs/timings, method description, measured
+cost table with redundancy correction, negative-results section, hardware TBD pending
+lscpu fetch) — Daniel pastes it into Claude Desktop to draft the paper. (2) GPU spike
+v2: warp-cooperative kernel (one candidate/warp, lane 0 drives DFS, 32 lanes
+parallelize the O(L) place/prune loops via fused shift-partitioned updates + ballots)
++ V2A variant (naive kernel with host-side flatness sort). Job
+`cluster/deploy/gpu_spike2.sh` (30min, h100, production budget 5e7, 6k cands, exact
+CPU cross-check built in). PRE-REGISTERED: >=200x build / 60-200x marginal / <60x GPU
+CLOSED permanently. Checker section added. CAVEAT: warp kernel is untestable locally
+(no nvcc) — a compile error on Fir is possible; if nvcc fails the output says so and
+one fix round-trip is expected. (3) Queue blocks issued: Nibi re-entry (6 canonical
+n=43 lanes), combined driver-tar-pipe+lscpu per cluster (wave-15 GATEB orbit_dup= +
+paper hardware specs), spike2 on Fir.**
+
 **⚡ 2026-08-06 (Daniel session) — KOTSIREAS VERIFIED BOTH SOLUTIONS, PAPER IS ON
 (his reply: "definitely correct... record all search details... I will take care of the
 combinatorial-objects part of the paper"); timeline reply sent with the CORRECTED cost

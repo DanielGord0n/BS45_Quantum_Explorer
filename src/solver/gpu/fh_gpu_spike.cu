@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 #include <vector>
 #include <chrono>
 
@@ -199,6 +200,177 @@ __global__ void spike_kernel(const signed char *Cs, const signed char *Ds,
   nodes[idx] = r.nodes;
 }
 #endif
+#ifndef HOST_ONLY
+
+// ---- v2 (2026-08-06): WARP-COOPERATIVE kernel — one candidate per WARP.
+// Lane 0 owns DFS control flow; all 32 lanes parallelize the O(L) node work
+// (fused place/unplace update over shift s, prune scan via ballot). Targets
+// the deep-budget divergence that killed thread-per-candidate (5.9x at 5e7).
+__global__ void spike_kernel_warp(const signed char *Cs, const signed char *Ds,
+                                  int ncand, int n, int *verdicts, long long *nodes,
+                                  SpikeCfg cfg) {
+  const int wpb = blockDim.x / 32;
+  const int warp = blockIdx.x * wpb + (threadIdx.x / 32);
+  const int lane = threadIdx.x & 31;
+  if (warp >= ncand) return;
+  const int L = cfg.L, half = cfg.half;
+  extern __shared__ int smem[];
+  const int woff = (threadIdx.x / 32) * (4 * MAXL + 8 * MAXHALF + 16);
+  int *A   = smem + woff;
+  int *B   = A + MAXL;
+  int *Dab = B + MAXL;
+  int *Kab = Dab + MAXL;
+  int *kk  = Kab + MAXL;             // per-depth branch index
+  int *sA  = kk + MAXHALF + 2;
+  int *sB  = sA + MAXHALF + 2;
+  int *tie = sB + MAXHALF + 2;       // packed: tstA|tcmA+2|tstB|tcmB+2 nibbles
+  short target[MAXL];
+  const signed char *C = Cs + (size_t)warp * n;
+  const signed char *D = Ds + (size_t)warp * n;
+  // targets + pre-filter (parallel over s, ballot verdict)
+  bool pre_bad = false;
+  for (int s = 1 + lane; s <= n; s += 32) {
+    int cd = 0;
+    for (int i = 0; i + s < n; i++) cd += C[i] * C[i + s] + D[i] * D[i + s];
+    target[s] = (short)(-cd);
+    if (target[s] > 2 * (L - s) || -target[s] > 2 * (L - s)) pre_bad = true;
+  }
+  // share targets: each lane computed a subset; broadcast via shared Dab scratch
+  for (int s = 1 + lane; s <= n; s += 32) Dab[s] = target[s];
+  __syncwarp();
+  for (int s = 1; s <= n; s++) target[s] = (short)Dab[s];
+  if (__any_sync(0xffffffffu, pre_bad)) {
+    if (lane == 0) { verdicts[warp] = 1; nodes[warp] = 0; }
+    return;
+  }
+  for (int i = lane; i < L; i += 32) { A[i] = 0; B[i] = 0; }
+  for (int s = lane; s <= n; s += 32) {
+    Dab[s] = 0;
+    Kab[s] = (s >= 1 && s < L) ? 2 * (L - s) : 0;
+  }
+  __syncwarp();
+  long long nd = 0;
+  int d = 0, verdict = 2;
+  if (lane == 0) { kk[0] = 0; sA[0] = 0; sB[0] = 0; tie[0] = 1 | (0 + 2) << 4 | 1 << 8 | (0 + 2) << 12; }
+  __syncwarp();
+  auto upd = [&](int p, int av, int bv, int sgn) {
+    // fused: for every shift s, both mirror contributions; lanes take disjoint s
+    for (int s = 1 + lane; s < L; s += 32) {
+      int acc = 0, kacc = 0;
+      if (s <= p)     { acc += A[p - s] * av + B[p - s] * bv; kacc += (A[p - s] != 0); }
+      if (s < L - p)  { acc += A[p + s] * av + B[p + s] * bv; kacc += (A[p + s] != 0); }
+      Dab[s] += sgn * acc;
+      Kab[s] -= sgn * 2 * kacc;
+    }
+    __syncwarp();
+    if (lane == 0) { A[p] = (sgn > 0) ? av : 0; B[p] = (sgn > 0) ? bv : 0; }
+    __syncwarp();
+  };
+  while (true) {
+    if (d == half) {
+      bool found = false;
+      if (L % 2 == 1) {
+        for (int k = 0; k < 4 && !found; k++) {
+          int av = cfg.p22mid[k][0], bv = cfg.p22mid[k][1];
+          // place mid (A[p] must be set BEFORE, mirror-loop skips self via A==0)
+          upd(half, av, bv, +1);
+          nd++;
+          int fsA = sA[d] + av, fsB = sB[d] + bv;
+          bool bad = (abs(fsA) != cfg.absA || abs(fsB) != cfg.absB);
+          bool lb = false;
+          for (int s = 1 + lane; s <= n; s += 32) if (Dab[s] != target[s]) lb = true;
+          bad |= __any_sync(0xffffffffu, lb);
+          if (!bad) found = true;
+          else { if (lane == 0) { A[half] = 0; B[half] = 0; } __syncwarp(); upd(half, av, bv, -1); }
+        }
+      } else {
+        int fsA = sA[d], fsB = sB[d];
+        bool bad = (abs(fsA) != cfg.absA || abs(fsB) != cfg.absB);
+        bool lb = false;
+        for (int s = 1 + lane; s <= n; s += 32) if (Dab[s] != target[s]) lb = true;
+        found = !(bad | __any_sync(0xffffffffu, lb));
+      }
+      if (found) { verdict = 0; break; }
+      d--;
+      if (d < 0) { verdict = 2; break; }
+      { int i2 = L - 1 - d, i1 = d;
+        int av2 = A[i2], bv2 = B[i2];
+        if (lane == 0) { A[i2] = 0; B[i2] = 0; } __syncwarp();
+        upd(i2, av2, bv2, -1);
+        int av1 = A[i1], bv1 = B[i1];
+        if (lane == 0) { A[i1] = 0; B[i1] = 0; } __syncwarp();
+        upd(i1, av1, bv1, -1); }
+      if (lane == 0) kk[d]++; __syncwarp();
+      continue;
+    }
+    if (kk[d] >= 8) {
+      d--;
+      if (d < 0) { verdict = 2; break; }
+      { int i2 = L - 1 - d, i1 = d;
+        int av2 = A[i2], bv2 = B[i2];
+        if (lane == 0) { A[i2] = 0; B[i2] = 0; } __syncwarp();
+        upd(i2, av2, bv2, -1);
+        int av1 = A[i1], bv1 = B[i1];
+        if (lane == 0) { A[i1] = 0; B[i1] = 0; } __syncwarp();
+        upd(i1, av1, bv1, -1); }
+      if (lane == 0) kk[d]++; __syncwarp();
+      continue;
+    }
+    const int (*S)[4] = (d == 0) ? cfg.p22neg : cfg.p22pos;
+    int k = kk[d];
+    int a1 = S[k][0], b1 = S[k][1], a2 = S[k][2], b2 = S[k][3];
+    int t = tie[d];
+    int tA = t & 1, cA = ((t >> 4) & 15) - 2, tB = (t >> 8) & 1, cB = ((t >> 12) & 15) - 2;
+    bool skip = false;
+    int nA = tA, ncA = cA, nB = tB, ncB = cB;
+    if (d == 0) {
+      if (a1 != 1 || b1 != 1) skip = true;
+      ncA = a2; ncB = b2;
+    } else {
+      if (!skip && tA) { int cv = cA * a2; if (a1 != cv) { if (a1 != 1) skip = true; else nA = 0; } }
+      if (!skip && tB) { int cv = cB * b2; if (b1 != cv) { if (b1 != 1) skip = true; else nB = 0; } }
+    }
+    if (skip) { if (lane == 0) kk[d]++; __syncwarp(); continue; }
+    upd(d, a1, b1, +1);
+    upd(L - 1 - d, a2, b2, +1);
+    nd++;
+    if (cfg.budget > 0 && nd > cfg.budget) { verdict = 3; break; }
+    int nsA = sA[d] + a1 + a2, nsB = sB[d] + b1 + b2;
+    int rem = L - 2 * (d + 1);
+    int d1 = abs(cfg.absA - nsA), d2 = abs(-cfg.absA - nsA);
+    int d3 = abs(cfg.absB - nsB), d4 = abs(-cfg.absB - nsB);
+    bool prune = !((d1 <= rem || d2 <= rem) && (d3 <= rem || d4 <= rem));
+    bool lp = false;
+    for (int s = 1 + lane; s <= n; s += 32) {
+      int diff = target[s] - Dab[s]; if (diff < 0) diff = -diff;
+      if (diff > Kab[s]) lp = true;
+    }
+    prune |= __any_sync(0xffffffffu, lp);
+    if (prune) {
+      { int i2 = L - 1 - d, i1 = d;
+        int av2 = A[i2], bv2 = B[i2];
+        if (lane == 0) { A[i2] = 0; B[i2] = 0; } __syncwarp();
+        upd(i2, av2, bv2, -1);
+        int av1 = A[i1], bv1 = B[i1];
+        if (lane == 0) { A[i1] = 0; B[i1] = 0; } __syncwarp();
+        upd(i1, av1, bv1, -1); }
+      if (lane == 0) kk[d]++; __syncwarp();
+      continue;
+    }
+    if (lane == 0) {
+      d++;
+      kk[d] = 0; sA[d] = nsA; sB[d] = nsB;
+      tie[d] = nA | (ncA + 2) << 4 | nB << 8 | (ncB + 2) << 12;
+      d--;
+    }
+    __syncwarp();
+    d++;
+    __syncwarp();
+  }
+  if (lane == 0) { verdicts[warp] = verdict; nodes[warp] = nd; }
+}
+
+#endif
 
 static void build_p22(SpikeCfg &cfg) {
   int npos = 0, nneg = 0;
@@ -289,6 +461,74 @@ int main(int argc, char **argv) {
   if (gs_nodes != cpu_nodes) match = false;
   printf("GPU_SPIKE: cpu_cands_per_s=%.2f gpu_cands_per_s=%.2f speedup_vs_1core=%.1f verdicts_nodes_match=%s\n",
          cpu_rate, gpu_rate, gpu_rate / cpu_rate, match ? "YES" : "NO");
+
+  // ---- v2a: naive kernel, candidates SORTED by flatness (divergence reduction,
+  // host-side only). Same set of candidates => histogram must match unsorted.
+  {
+    std::vector<int> ord(ncand);
+    for (int i = 0; i < ncand; i++) ord[i] = i;
+    std::vector<long long> score(ncand);
+    for (int i = 0; i < ncand; i++) {
+      const signed char *C = &Cs[(size_t)i * cfg.n], *D = &Ds[(size_t)i * cfg.n];
+      long long sc = 0;
+      for (int sh = 1; sh < cfg.n; sh++) {
+        int cd = 0;
+        for (int j = 0; j + sh < cfg.n; j++) cd += C[j] * C[j + sh] + D[j] * D[j + sh];
+        sc += cd < 0 ? -cd : cd;
+      }
+      score[i] = sc;
+    }
+    std::sort(ord.begin(), ord.end(), [&](int a, int b){ return score[a] < score[b]; });
+    std::vector<signed char> Cs2(Cs.size()), Ds2(Ds.size());
+    for (int i = 0; i < ncand; i++) {
+      memcpy(&Cs2[(size_t)i * cfg.n], &Cs[(size_t)ord[i] * cfg.n], cfg.n);
+      memcpy(&Ds2[(size_t)i * cfg.n], &Ds[(size_t)ord[i] * cfg.n], cfg.n);
+    }
+    cudaMemcpy(dC, Cs2.data(), Cs2.size(), cudaMemcpyHostToDevice);
+    cudaMemcpy(dD, Ds2.data(), Ds2.size(), cudaMemcpyHostToDevice);
+    cudaDeviceSynchronize();
+    auto ts = std::chrono::steady_clock::now();
+    spike_kernel<<<nb, bs>>>(dC, dD, ncand, cfg.n, dV, dN);
+    cudaError_t e2 = cudaDeviceSynchronize();
+    double w2 = std::chrono::duration<double>(std::chrono::steady_clock::now() - ts).count();
+    if (e2 != cudaSuccess) printf("V2A CUDA ERROR: %s\n", cudaGetErrorString(e2));
+    else {
+      cudaMemcpy(hv.data(), dV, ncand * sizeof(int), cudaMemcpyDeviceToHost);
+      int h2[4] = {0,0,0,0};
+      for (int i = 0; i < ncand; i++) h2[hv[i]]++;
+      bool hm = true;
+      for (int j = 0; j < 4; j++) if (h2[j] != ghist[j]) hm = false;
+      printf("GPU_SPIKE_V2A_SORTED: cands_per_s=%.2f speedup_vs_1core=%.1f histogram_match=%s\n",
+             ncand / w2, (ncand / w2) / cpu_rate, hm ? "YES" : "NO");
+    }
+  }
+  // ---- v2b: WARP-COOPERATIVE kernel (original candidate order).
+  {
+    cudaMemcpy(dC, Cs.data(), Cs.size(), cudaMemcpyHostToDevice);
+    cudaMemcpy(dD, Ds.data(), Ds.size(), cudaMemcpyHostToDevice);
+    int tpb = 256, wpb = tpb / 32;
+    int nb2 = (ncand + wpb - 1) / wpb;
+    size_t shmem = (size_t)wpb * (4 * MAXL + 8 * MAXHALF + 16) * sizeof(int);
+    cudaDeviceSynchronize();
+    auto tw = std::chrono::steady_clock::now();
+    spike_kernel_warp<<<nb2, tpb, shmem>>>(dC, dD, ncand, cfg.n, dV, dN, cfg);
+    cudaError_t e3 = cudaDeviceSynchronize();
+    double w3 = std::chrono::duration<double>(std::chrono::steady_clock::now() - tw).count();
+    if (e3 != cudaSuccess) printf("V2B CUDA ERROR: %s\n", cudaGetErrorString(e3));
+    else {
+      cudaMemcpy(hv.data(), dV, ncand * sizeof(int), cudaMemcpyDeviceToHost);
+      cudaMemcpy(hn.data(), dN, ncand * sizeof(long long), cudaMemcpyDeviceToHost);
+      int h3[4] = {0,0,0,0}; long long n3 = 0;
+      for (int i = 0; i < ncand; i++) { h3[hv[i]]++; n3 += hn[i]; }
+      // exact per-candidate cross-check on the CPU sample
+      bool wm = true; long long ws_nodes = 0; int ws_hist[4] = {0,0,0,0};
+      for (int i = 0; i < csamp; i++) { ws_hist[hv[i]]++; ws_nodes += hn[i]; }
+      for (int j = 0; j < 4; j++) if (ws_hist[j] != cpu_hist[j]) wm = false;
+      if (ws_nodes != cpu_nodes) wm = false;
+      printf("GPU_SPIKE_V2B_WARP: cands_per_s=%.2f speedup_vs_1core=%.1f verdicts_nodes_match=%s (hist %d/%d/%d/%d nodes=%lld)\n",
+             ncand / w3, (ncand / w3) / cpu_rate, wm ? "YES" : "NO", h3[0], h3[1], h3[2], h3[3], n3);
+    }
+  }
 #endif
   return 0;
 }
