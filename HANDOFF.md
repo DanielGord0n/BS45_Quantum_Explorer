@@ -1,8 +1,36 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-05 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-06 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-06 (daily loop) — WAVE 13 FULL READ (FIR+RORQUAL): FIRST CANONICAL WAVE
+ALL HITLESS, DEDUP CONFIRMED AT PRODUCTION SCALE (workhorse ~2-3x real throughput);
+PLACE-V2 = DROP (x86 bench slower); WAVE 14 SUBMITTED, ALL ECHOED.** (1) Wave-13 Fir
+`52894730-741` + Rorqual `18334381-390` completed 12h, arms_with_hits=0 everywhere.
+Telemetry: Fir n=43 flat 0-5 tested 22.3-23.7M/lane (cum ~143-148M; per-wave rate
+unchanged vs wave 11 — n=43's 3.8x dedup shows as distinct-orbit coverage, not
+tested/day); n=44 (3,13,0,0) w0-3 76.5-81.8M/lane vs 28-44M in wave 11 = ~2-3x real
+throughput (the 28.9x class; w0 first canonical read 76.5M, w1-3 cum ~216-250M);
+(5,9,6,6) 25.9M + (5,7,2,10) 29.9M (~2x wave-11). Rorqual n=43 rev 0-5 19.4-21.7M
+(cum ~132-148M); n=44 FIRST REVERSE reads (1,7,8,8) 16.0M / (3,3,4,12) 14.1M /
+(3,13,0,0) 37.6M / (5,5,8,8) 13.2M. [orbitcanon] headers live on all three clusters,
+dedup 3.81-28.92x, cells_orbit_dup 0-92. (2) PLACE-V2 VERDICT (53188641,
+pre-registered rule): V2_wall=82s vs V1_wall=79s on Fir x86 = V2 SLOWER (~-4%);
+correctness cross-check identical. Rule <5% => DROP — V1 stays production,
+WZ_FH_PLACE_V2 stays dormant opt-in, no wave-15 default-on (Mac-ARM +6% did not
+transfer to x86/AVX-512). (3) WAVE 14 SUBMITTED via duo_run, same board + same
+configs incl WZ_FH_ORBIT_CANON=1 (same CKDIRs => lanes resume), all echoed, all PD
+12h at submit: Fir `53407677-687`+`53407689` (12: n=43 flat 0-5 + n=44 (3,13,0,0)
+w0-3 + (5,9,6,6) + (5,7,2,10)) · Rorqual `18533301-310` (10: n=43 rev 0-5 + n=44 REV
+(1,7,8,8)/(3,3,4,12)/(3,13,0,0)/(5,5,8,8)). Wave 14 runs the on-cluster source — the
+pending driver upgrade (GATEB orbit_dup= aggregate) still needs Daniel's tar-pipe
+before wave 15; the checker's arm-log grep covers that telemetry meanwhile. Trillium
+`2012042-047` (6 n=43 lanes) still R (~5h left at check) — first read tomorrow. Nibi
+`18545822-24` stale PD, leave to lapse. Checker: wave-13 F+R IDs excluded as
+processed, PLACE-V2 section marked VERDICT CLOSED; QUICK REFERENCE submit template
+gained WZ_FH_ORBIT_CANON=1 (stale-template trap: without it the CKDIR forks to
+_oc0).**
 
 **⚡ 2026-08-05 (Daniel session) — CRY-WOLF NOTIFICATION FIXED + ORBIT VISIBILITY
 CLOSED + PLACE-V2 LEVER BUILT (pricing on cluster).** (1) The 1:02 PM trophy title was
@@ -814,8 +842,11 @@ Daily loop: `daily_auto.sh` at ~1 PM (launchd), ntfy to phone.
 **Submit template (checkpointed lane — resubmit the SAME line to auto-resume, zero
 re-tread; one job per lane at a time):**
 ```
-ssh dangord@<cluster>.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=<n>,WZ_A=<a>,WZ_B=<b>,WZ_C=<c>,WZ_D=<d>,WZ_FH_PROF_ORDER=<1 flat|2 reverse>,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=<k> ./cluster_firsthit_probe.sh'
+ssh dangord@<cluster>.alliancecan.ca 'cd $SCRATCH/bs45 && sbatch --requeue --export=ALL,WZ_N=<n>,WZ_A=<a>,WZ_B=<b>,WZ_C=<c>,WZ_D=<d>,WZ_FH_PROF_ORDER=<1 flat|2 reverse>,WZ_FH_ORBIT_CANON=1,WZ_FH_AB_BUDGET=50000000,FH_NARMS=178,WZ_FH_PROF_SKIP=<k> ./cluster_firsthit_probe.sh'
 ```
+⚠️ `WZ_FH_ORBIT_CANON=1` is MANDATORY on every canonical (wave 13+) lane — the
+checkpoint dir is keyed `..._oc${WZ_FH_ORBIT_CANON:-0}`, so omitting it silently forks
+the lane to a fresh non-deduplicated `_oc0` checkpoint (no resume, no dedup).
 Nibi adds `--account=def-ikotsire_cpu`. Ship source via tar-pipe (scp does NOT expand
 $SCRATCH): `tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_firsthit_probe.sh |
 ssh dangord@<c>.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && cp -f
