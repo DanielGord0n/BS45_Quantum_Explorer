@@ -120,9 +120,19 @@ depending on class; completion rate ~3-9 candidates/s/core at budget 5e7.
 
 ## 5. Hardware and compute
 
-Four Digital Research Alliance of Canada clusters: Fir, Rorqual, Trillium, Nibi.
-Standard nodes, 192 cores each (exact CPU models/frequencies to be inserted — fetch
-pending), jobs compiled on-node with gcc 12.3, -O3 -march=native, StdEnv/2023.
+Four Digital Research Alliance of Canada clusters. Login-node measurements
+(2026-08-06) and compute-node status:
+- Rorqual: dual AMD EPYC 9654 (96-core), 192 cores/node, ~755 GB (login matches
+  compute-class spec).
+- Trillium: dual AMD EPYC 9655 (96-core), 192 cores/node, ~755 GB (login matches
+  compute-class spec).
+- Fir: compute nodes are 192-core (job telemetry); login node reads dual EPYC 9135 —
+  compute-node model to be confirmed (driver now logs lscpu per job; next wave's
+  outputs will carry the authoritative model).
+- Nibi: login node reads Intel Xeon Platinum 8480+; compute-node core count/model to
+  be confirmed the same way.
+GPU experiments: NVIDIA H100 80GB HBM3 (Fir). Jobs compiled on-node with gcc 12.3,
+-O3 -march=native, StdEnv/2023.
 Search jobs: 1 node x 12 h x 178 single-core arms. GPU experiments used one NVIDIA
 H100 80GB (Fir). Approximate total campaign compute through 2026-08-06: order of
 10-15 core-years across the four clusters (job-level records available for an exact

@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-06 (session close) — ALL FOUR PASTES LANDED: spike-v2 pricing QUEUED
+(Fir `53498573`, h100, production budget, rule 200x/60x); NIBI RE-ENTERED with 6
+canonical n=43 lanes (`19217371-376`, windows 9/10/11 both ends, PD); drivers with
+GATEB orbit_dup= + per-job lscpu echo staged on ALL FOUR clusters (wave 15 telemetry
+complete + paper hardware self-documenting). Login-node hardware recorded (Rorqual
+EPYC 9654 / Trillium EPYC 9655 = 192-core compute-class; Fir/Nibi compute models
+confirm via next wave's job headers). Board: wave 14 running (F+R), Trillium 6 lanes
+running, Nibi 6 PD, spike2 PD. DONE FOR THE DAY — tomorrow's loop reads wave-14
+verdicts + first Nibi lanes + the spike-v2 GPU verdict (checker sections armed for
+all three).**
+
 **⚡ 2026-08-06 (session, cont.) — PAPER RECORD COMPILED + GPU WARP-V2 BUILT (last
 unpriced lever, ready to queue).** (1) `docs/paper_methods_record.md` = self-contained
 paper input (both solutions + provenance job IDs/timings, method description, measured

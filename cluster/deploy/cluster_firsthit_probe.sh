@@ -40,6 +40,7 @@ export WZ_FH_CKPT_DIR=$CKDIR
 echo "[driver] checkpoint lane: $CKDIR (resume=${WZ_FH_RESUME:-1})"
 
 echo "=== FIRSTHIT probe BS($((N+1)),$N) sig ($A,$B,$C,$D) — $NARMS arms — node $(hostname) — $(date) ==="
+lscpu | grep -m1 "Model name"   # compute-node CPU for the paper hardware section
 g++ -O3 -march=native -std=c++17 -fopenmp -o "$BIN" src/solver/wz_match.cpp || exit 1
 
 export WZ_FIRSTHIT=1 OMP_NUM_THREADS=1
