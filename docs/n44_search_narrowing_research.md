@@ -207,3 +207,13 @@ Every class 3.9-29x redundant — the canonical fleet's gain is universal, not c
 V2-canary note: n=29 with WZ_FH_PLACE_V2=1 (orbit canon off) reproduces the EXACT
 historical fingerprint (idx=26694, rank 588, nodes 81320, NPAF==0) — place-V2 is
 search-invariant, confirmed end-to-end.
+
+**Lever 7 — in-cell stabilizer redundancy: PRICED DEAD 2026-08-06.** Cells fixed by
+nontrivial orbit-group elements could carry candidate-level duplicates the cell dedup
+cannot see. Measured (STAB_AUDIT instrument): avg stabilizer 1.015-1.11, nontrivial
+cells 1.4-9.3% ((8,-2,5,9) 4.5%/1.049 · (3,13,0,0) 9.3%/1.107 · (1,7,8,8) 1.4%/1.015).
+Ceiling ~5-10% gain for a candidate-level canon build inside symmetric cells — not worth
+the complexity. Dead by measurement, five minutes' cost. Remaining unpriced: GPU
+warp-cooperative spike v2 only. No-code tweak available: orbit-count-weighted n=44 lane
+allocation (smallest distinct spaces first: (3,13,0,0) 35,925 orbits · (5,9,6,6) 62,219
+· (1,13,2,2)/(7,11,2,2) 62,919 vs largest 250,079).

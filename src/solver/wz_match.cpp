@@ -1307,6 +1307,28 @@ int main(int argc, char **argv) {
         }
         orbits.insert(best);
       }
+      // Stabilizer audit: cells FIXED by nontrivial group elements carry
+      // in-cell candidate redundancy the cell-level dedup cannot see.
+      long long stab_nontriv = 0, stab_sum = 0;
+      for (auto &p2 : fhProfs) {
+        string self = keyof(p2.px, p2.py);
+        int stab = 0;
+        for (int var = 0; var < 32; var++) {
+          vector<int> px = p2.px, py = p2.py;
+          if (var & 1) px = negp(px);
+          if (var & 2) py = negp(py);
+          if (var & 4) px = revp(px);
+          if (var & 8) py = revp(py);
+          if (var & 16) swap(px, py);
+          if (keyof(px, py) == self) stab++;
+        }
+        stab_sum += stab;
+        if (stab > 1) stab_nontriv++;
+      }
+      cout << "STAB_AUDIT: cells_with_nontrivial_stabilizer=" << stab_nontriv
+           << " (" << 100.0 * stab_nontriv / max((size_t)1, fhProfs.size())
+           << "%) avg_stab=" << (double)stab_sum / max((size_t)1, fhProfs.size())
+           << "\n" << flush;
       cout << "ORBIT_AUDIT: cells=" << fhProfs.size() << " orbits=" << orbits.size()
            << " redundancy=" << (double)fhProfs.size() / max((size_t)1, orbits.size())
            << "x\n" << flush;

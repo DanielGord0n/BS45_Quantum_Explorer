@@ -4,6 +4,21 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-06 (Daniel session) — KOTSIREAS VERIFIED BOTH SOLUTIONS, PAPER IS ON
+(his reply: "definitely correct... record all search details... I will take care of the
+combinatorial-objects part of the paper"); timeline reply sent with the CORRECTED cost
+model.** COST-MODEL CORRECTION (Daniel's instinct caught it): the n=41→n=42 "×4.7 cost
+step" was a REDUNDANCY ARTIFACT — solved classes' orbit factors differ (n=41 (0,2,9,9)
+7.53× vs n=42 (7,11,0,0) 29.18×); in DISTINCT ORBITS the rungs cost ~93M vs ~113M
+(ratio 1.2, not 4.7). n=43 (3.81×) has already absorbed ~525M distinct orbits = ~4.6×
+n=42's real cost — the rung is statistically OVERDUE, not weeks away (honest caveat:
+per-orbit density varies by class; n=42 overran too). Paper deliverable opened:
+compile `docs/paper_methods_record.md` (job IDs/timings/configs from HANDOFF+archive)
++ hardware-spec fetch block pending. STAB LEVER (lever 7) PRICED DEAD same session:
+avg stabilizer 1.015-1.11 ⇒ ≤5-10% ceiling, not worth building. NIBI RE-ENTRY block
+issued (tar-pipe canonical solver + 6 n=43 lanes windows 9/10/11 both ends,
+--account=def-ikotsire_cpu). Remaining unpriced: GPU warp-v2 only.**
+
 **⚡ 2026-08-06 (daily loop) — WAVE 13 FULL READ (FIR+RORQUAL): FIRST CANONICAL WAVE
 ALL HITLESS, DEDUP CONFIRMED AT PRODUCTION SCALE (workhorse ~2-3x real throughput);
 PLACE-V2 = DROP (x86 bench slower); WAVE 14 SUBMITTED, ALL ECHOED.** (1) Wave-13 Fir
