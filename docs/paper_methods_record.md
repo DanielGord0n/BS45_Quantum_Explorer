@@ -152,6 +152,12 @@ figure).
 - **GPU (thread-per-candidate CUDA port)**: exact verdict/node parity with CPU;
   69.3x vs one core at light budget but only 5.9x at the production budget (deep-tree
   warp divergence) — below cost-effectiveness vs 192-core CPU nodes.
+- **GPU (warp-cooperative kernel, one candidate per warp)**: 32 lanes parallelize
+  the O(L) place/prune inner loops (fused shift-partitioned updates + ballots);
+  exact verdict/node parity with CPU. 24.0x vs one core at the production budget
+  (host-side flatness sorting of the naive kernel: 2.8x) — under the pre-registered
+  60x line, so one H100 stays below ~1/8 of a 192-core CPU node and the GPU route
+  was closed permanently.
 - **Branchless/vectorizable placement loop**: bit-identical, +6% on ARM but -4% on
   the production x86 target — dropped.
 - **Symmetry-restricted search**: 0 of 31 banked solutions show palindromic or

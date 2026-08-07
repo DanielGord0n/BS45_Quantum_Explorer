@@ -101,10 +101,19 @@ cpu 3.31, gpu 19.47, **speedup 5.9× vs 1 core** = KILL band; at the budget prod
 lanes actually run, 1 H100 ≈ 6 cores ≈ 0.03 CPU-node — divergence eats the machine
 exactly as the deep-budget caveat predicted. Per the pre-registered rule (<30× ⇒
 killed): **no production GPU build.** Divergence-tolerant restructuring
-(warp-per-candidate / persistent threads) is the only conceivable path back and is
-UNPRICED — do not start it without a new spike-level measurement. All three
-throughput levers are now priced dead (compression ×2, SAT-direct, GPU); the record
-program = CPU lanes + lever-4 class triage + the Kotsireas collaboration.
+(warp-per-candidate / persistent threads) was the only conceivable path back.
+
+**MEASURED 2026-08-07 — WARP-V2 ALSO KILLED, GPU CLOSED PERMANENTLY.** Spike v2 job
+`53498573` (Fir H100, production budget 5e7, 6k real n=44 candidates, exact CPU
+cross-check verdicts_nodes_match=YES): warp-cooperative kernel (one candidate/warp,
+32 lanes parallelize the O(L) place/prune loops) **79.88 cand/s = 24.0× vs 1 core**;
+host-side flatness-sorted naive variant 2.8×; plain naive rerun 2.5×. Pre-registered
+rule (≥200× build / 60–200× marginal / <60× closed): **CLOSED.** Even with
+intra-candidate parallelism the deep-budget divergence keeps 1 H100 ≈ ⅛ of a
+192-core CPU node — not cost-effective on any Alliance allocation. All throughput
+levers are now priced dead (compression ×2, SAT-direct, GPU naive + warp, place-V2,
+stabilizer); the record program = CPU canonical lanes + lever-4 class triage + the
+Kotsireas collaboration.
 
 ## Lever 4 — class triage theory (search WHERE solutions can live)
 

@@ -1,8 +1,29 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-06 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-07 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-07 (daily loop) — GPU SPIKE V2 VERDICT: 24.0x ⇒ <60x PRE-REGISTERED RULE
+⇒ GPU CLOSED PERMANENTLY (last unpriced lever now priced dead — every lever in the
+n=44 narrowing table has a number); NO HITS; wave-13 Trillium read complete, wave-14
+Rorqual 3/10 read, everything else R/PD — no refill, no code change.** (1) Spike2
+53498573 (Fir h100, production budget 5e7, 6k cands): warp-cooperative kernel V2B
+79.88 cands/s = **24.0x** vs 1 core (verdicts_nodes_match=YES, hist 0/0/5999/1),
+V2A host-sorted 9.31/s = 2.8x, naive 8.20/s = 2.5x. Rule was >=200x build / 60-200x
+marginal / <60x closed ⇒ CLOSED, no fix round-trip needed (kernel compiled and
+cross-checked clean). CPU waves remain the engine. (2) Wave-13 Trillium 2012042-047
+n=43 (8,-2,5,9) reverse: ALL HITLESS, tested 22.8-28.7M/lane, arms 178/178, dedup
+3.81x live — first Trillium canonical read. (3) Wave-14 Rorqual partial: 18533301-303
+n=43 rev COMPLETED HITLESS tested 27.3-28.6M (tested_cum 48-50M, arms 158/178
+summarized); 18533304-310 still R (~2.6-5.3h in; n=44 REV lanes incl (3,13,0,0)
+28.92x + (1,7,8,8)/(3,3,4,12)/(5,5,8,8) headers live). (4) Board otherwise: Fir
+wave-14 53407677-687+689 all 12 still PD (Priority — day 1 in queue); Nibi re-entry
+19217371-376 all 6 still PD; Trillium NEW 2054696-701 (6× n=43 (8,-2,5,9), resumed
+CKDIRs, dedup 3.81x) R since ~08:00 EDT 08-07 — **these IDs are not in the ledger;
+presumably Daniel's morning submit — Daniel: confirm/annotate**. NEW FOUND: none
+anywhere. Checker updated: spike2 section VERDICT CLOSED, 2012042-047 + 18533301-303
+excluded as processed. No idle capacity, nothing to submit.**
 
 **⚡ 2026-08-06 (session close) — ALL FOUR PASTES LANDED: spike-v2 pricing QUEUED
 (Fir `53498573`, h100, production budget, rule 200x/60x); NIBI RE-ENTERED with 6
