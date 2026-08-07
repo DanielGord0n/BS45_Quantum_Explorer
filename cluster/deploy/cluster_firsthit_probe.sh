@@ -25,6 +25,13 @@ module load gcc/12.3
 
 N=${WZ_N:?need WZ_N}; A=${WZ_A:?}; B=${WZ_B:?}; C=${WZ_C:?}; D=${WZ_D:?}
 NARMS=${FH_NARMS:-190}
+# Split-lane support (2026-08-07, the META-Farm/queue-time answer): FH_SHARD_LO /
+# FH_SHARD_HI run only arms [LO,HI) of the NARMS-shard lane, so small jobs
+# (sbatch --cpus-per-task=32) can backfill idle cores while covering disjoint
+# shard ranges of the SAME checkpoint lane (per-arm ckpt files never collide).
+# Defaults = whole lane = existing behavior, byte-identical.
+SHARD_LO=${FH_SHARD_LO:-0}
+SHARD_HI=${FH_SHARD_HI:-$NARMS}
 GRACE=${FH_GRACE:-1800}
 BIN=fh_bin_${SLURM_JOB_ID}
 DIR=fh_arms_${SLURM_JOB_ID}
@@ -71,7 +78,8 @@ if [ -n "$T1" ]; then
   echo "[driver] score tiers: arms 0-$((NARMS/4-1)) <=$T1, $((NARMS/4))-$((NARMS/2-1)) <=$T2, rest ungated"
 fi
 pids=()
-for ((i=0; i<NARMS; i++)); do
+echo "[driver] arm range: $SHARD_LO..$((SHARD_HI-1)) of $NARMS"
+for ((i=SHARD_LO; i<SHARD_HI; i++)); do
   tier=""
   if [ -n "$T1" ] && [ "$i" -lt $((NARMS/4)) ]; then tier=$T1
   elif [ -n "$T2" ] && [ "$i" -lt $((NARMS/2)) ]; then tier=$T2; fi

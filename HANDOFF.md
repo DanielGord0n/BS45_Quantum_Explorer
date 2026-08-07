@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-07 (Daniel session) — GPU CLOSED (loop verdict confirmed: warp 24.0x,
+sorted 2.8x, <60x rule => the research program's every lever is now PRICED); Trillium
+`2054696-701` CONFIRMED = Daniel's 08-06 evening anti-idle stack (6 verbatim n=43
+lanes, flat+rev 6/7/8 — ledger gap was mine, closed); SPLIT-LANE DRIVER built
+(FH_SHARD_LO/HI: small jobs cover disjoint arm ranges of the same ckpt lane —
+sbatch --cpus-per-task=32 backfill without losing exact resume; defaults byte-identical
+= whole lane). Today: queue-time experiment (the Kotsireas META-Farm follow-up) via
+sbatch --test-only estimates on Fir (192 vs 32 vs 16 cpus); wave-15 anti-idle stacks
+on Rorqual (10 verbatim) + Trillium (6 verbatim) — first wave with orbit_dup= GATEB +
+per-job lscpu on all clusters.**
+
 **⚡ 2026-08-07 (daily loop) — GPU SPIKE V2 VERDICT: 24.0x ⇒ <60x PRE-REGISTERED RULE
 ⇒ GPU CLOSED PERMANENTLY (last unpriced lever now priced dead — every lever in the
 n=44 narrowing table has a number); NO HITS; wave-13 Trillium read complete, wave-14
