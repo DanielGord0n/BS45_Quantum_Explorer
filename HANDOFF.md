@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-07 (session close) — QUEUE-TIME LEVER PRICED DEAD (whole-node schedules
+FASTEST: 192c 11:14:50 vs 32c 11:50:25 vs 16c 11:15:50 on Fir `--test-only`) ⇒ no
+split-lane migration, META-Farm answer is settled, split-lane driver stays dormant.
+COROLLARY: new whole-node job would start within the hour while 12 Fir lanes sit PD ⇒
+those are PRIORITY-limited, not resource-limited ⇒ the fleet is at its allocation
+ceiling; more queued jobs ≠ more throughput (confirm PD reason with squeue %r next
+check). WAVE 15 SUBMITTED: Rorqual `18622442-451` (10: n=43 rev 0-5 + n=44 rev ×4),
+Trillium `2061447-452` (6: n=43 flat+rev 6/7/8) — both stacked behind running lanes,
+new driver (orbit_dup= GATEB + per-job lscpu) live on all four clusters. Board: Rorqual
+7 R + 10 PD, Trillium 6 R + 6 PD, Fir 12 PD, Nibi 6 PD = 47 lanes. Levers now priced:
+9 dead, 6 shipped, 0 open — the solver research program is CLOSED; remaining work is
+the grind, the paper, and (if wanted) an allocation conversation.**
+
 **⚡ 2026-08-07 (Daniel session) — GPU CLOSED (loop verdict confirmed: warp 24.0x,
 sorted 2.8x, <60x rule => the research program's every lever is now PRICED); Trillium
 `2054696-701` CONFIRMED = Daniel's 08-06 evening anti-idle stack (6 verbatim n=43

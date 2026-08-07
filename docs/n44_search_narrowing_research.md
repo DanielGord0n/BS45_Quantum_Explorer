@@ -226,3 +226,19 @@ the complexity. Dead by measurement, five minutes' cost. Remaining unpriced: GPU
 warp-cooperative spike v2 only. No-code tweak available: orbit-count-weighted n=44 lane
 allocation (smallest distinct spaces first: (3,13,0,0) 35,925 orbits · (5,9,6,6) 62,219
 · (1,13,2,2)/(7,11,2,2) 62,919 vs largest 250,079).
+
+**Lever 8 — queue-time / job-granularity (the META-Farm question): PRICED DEAD
+2026-08-07, zero cluster cost.** Hypothesis: whole-node (192-core) requests wait longer
+than small jobs that backfill idle cores, so splitting lanes would raise throughput.
+Test: `sbatch --test-only` start estimates on Fir for the same lane at three
+granularities. Result: **192-core starts 11:14:50 · 32-core 11:50:25 (35 min LATER) ·
+16-core 11:15:50 (1 min later)** — whole-node is the FASTEST-scheduling option; the
+by-core partition gives no advantage. Split-lane driver support (FH_SHARD_LO/HI) is
+built, validated and dormant (defaults byte-identical) in case a future cluster differs.
+COROLLARY (inferred, not directly confirmed): Fir would start a NEW whole-node job
+within the hour while 12 existing lanes sit PD, so those lanes are limited by
+fair-share PRIORITY, not node availability. Implication for planning: the fleet is at
+its allocation-throughput ceiling — queueing more jobs cannot buy more compute, and
+the only ways to raise output are (a) make each core-hour count more (what orbit canon
+did) or (b) raise the allocation itself, which is a PI-level conversation. Confirm the
+PD reason string (`squeue -o "%r"`) on a future check before acting on (b).
