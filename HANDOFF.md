@@ -4,6 +4,25 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-08 (daily loop) — NO HITS; wave-14 Rorqual tail + Trillium 2054696-701
+ALL read HITLESS; WAVE 16 verbatim anti-idle STACKED on Trillium (2069143-148) +
+Rorqual (18662519-528), all echoed, PD behind wave 15.** (1) Wave-14 Rorqual tail
+18533304-310 completed HITLESS: n=43 rev (8,-2,5,9) tested 25.4-27.5M/lane
+(tested_cum 45-48M), n=44 REV (1,7,8,8) 22.3M / (3,3,4,12) 14.6M / (3,13,0,0) 38.8M
+/ (5,5,8,8) 16.8M, arms 134-158/178 summarized. (2) Trillium 2054696-701 (Daniel's
+08-06 anti-idle stack) completed HITLESS: n=43 tested 27.2-36.8M/lane, arms 178/178,
+dedup 3.81x. (3) Wave 15 mid-flight: Rorqual 18622442-451 all 10 R (~1h in, headers
+02:00 EDT = likely requeued restart), Trillium 2061447-452 all 6 R (~11h in, finish
+~14:00), Nibi 19217371-374 R (7-8.5h) + 375/376 PD. Fir UNREACHED this check (Duo
+push not approved in 180s) — its 12 wave-14 lanes unread, presumed still PD
+(priority-limited per 08-07 verdict); squeue %r confirmation still pending. (4) WAVE
+16 stacked via duo_run, both approved, all 16 echoed: Trillium 2069143-148 = 6
+verbatim n=43 flat+rev 6/7/8 (PD Resources — start as wave 15 drains); Rorqual
+18662519-528 = 10 verbatim n=43 rev 0-5 + n=44 REV 4-sig board (PD). Same CKDIRs +
+WZ_FH_ORBIT_CANON=1 ⇒ lanes resume, zero re-tread. Checker: 18533304-310 +
+2054696-701 excluded as processed, narrative updated. No code change, no new lever
+(program CLOSED — this is the grind).**
+
 **⚡ 2026-08-07 (session close) — QUEUE-TIME LEVER PRICED DEAD (whole-node schedules
 FASTEST: 192c 11:14:50 vs 32c 11:50:25 vs 16c 11:15:50 on Fir `--test-only`) ⇒ no
 split-lane migration, META-Farm answer is settled, split-lane driver stays dormant.
