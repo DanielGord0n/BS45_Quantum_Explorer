@@ -16,10 +16,10 @@ lane, n=44 rev (1,7,8,8) cum 81.5M / (3,3,4,12) 57.5M / (3,13,0,0) cum 143.2M /
 15.3-17.5M/lane (slower nodes), orbit_dup 307-557 = dedup skipping live, 375 R /
 376 PD. n=44 workhorse (3,13,0,0) now ~293M combined both ends on a 35,925-orbit
 class. Checker exclusions +36 IDs (53407677-89, 18622442-51, 18662519-28,
-19217371-74). **RESTACK: Fir = 12 lanes × 2 with `-J <lane> -d singleton` (same-name
-jobs serialize ⇒ two days of autonomous work per paste, immune to one missed loop
-day, no same-lane collisions) · Rorqual = 10 verbatim · Trillium = 6 verbatim
-(harmless if wave 16 still running there).** Fir Duo misses are now the campaign's
+19217371-74). **RESTACK CONFIRMED, all echoed: Fir `53882195-218` (24 = 12 lanes × 2, singleton-
+serialized per lane = 2 autonomous days) · Rorqual `18724004-013` (10 verbatim) ·
+Trillium `2077225-230` (6; 3 started immediately). Fleet whole: 40 jobs queued/running
+across 4 clusters, windows 0-11 both ends at n=43, workhorse + 5 classes at n=44.** Fir Duo misses are now the campaign's
 main leak (3 of last 4 checks) — the singleton double-stack is the mitigation.**
 
 **⚡ 2026-08-08 (daily loop) — NO HITS; wave-14 Rorqual tail + Trillium 2054696-701
