@@ -10,12 +10,13 @@ class or bad luck, either way the EV now favors spreading); ALL 8 sibling classe
 enumerated + triaged (norm 174: (0,2,1,13) (0,2,7,11) (0,10,5,7) (2,12,1,5) (4,6,1,11)
 (4,10,3,7) (6,8,5,7) (8,10,1,3)) — 7/8 confirmed streaming with uniform ~3.81x orbit
 dedup (8th completing). Ladder precedent: n=36 7/9 classes bore solutions, n=37 4/4.
-REBALANCE (allocation-ceiling-aware: REPLACE not add): Rorqual scancel its 6 fresh-PD
-published rev lanes -> 6 sibling REVERSE skip-0 lanes; Trillium scancel its 3 PD
-published lanes -> 3 sibling FLAT skip-0 ((6,8,5,7),(8,10,1,3),(0,2,1,13)); published
-class keeps Fir flat 0-5 (x2 singleton), Trillium f6/r6/f7 running, Nibi 9-11 = still
-the largest single-class share. Net: all 9 n=43 classes under search, published-heavy
-but no longer all-in. Ordering-prior experiment (flat-L1 vs L2/PSD-peak/max-shift on
+REBALANCE EXECUTED, all echoed: Rorqual sibling REV lanes `18725943-948`
+((0,2,1,13)/(0,2,7,11)/(0,10,5,7)/(2,12,1,5)/(4,6,1,11)/(4,10,3,7)) replacing the
+scancelled fresh-PD published rev 0-5; Trillium sibling FLAT lanes `2077295-297`
+((6,8,5,7)/(8,10,1,3)/(0,2,1,13)) replacing the 3 PD published. 8th sibling audit
+completed: ALL 8 uniform ~3.81x, all streaming. Published class keeps Fir flat 0-5
+(x2 singleton) + Trillium f6/r6/f7 R + Nibi 9-11 = largest single share. **ALL 9 n=43
+CLASSES NOW UNDER SEARCH** — the n=36/37 multi-class pattern finally applied to n=43. Ordering-prior experiment (flat-L1 vs L2/PSD-peak/max-shift on
 the 3 known deep hits) running in bg — any switch is a future validated change, not
 tonight's lanes.**
 
