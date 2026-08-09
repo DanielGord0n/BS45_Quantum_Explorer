@@ -242,3 +242,15 @@ its allocation-throughput ceiling — queueing more jobs cannot buy more compute
 the only ways to raise output are (a) make each core-hour count more (what orbit canon
 did) or (b) raise the allocation itself, which is a PI-level conversation. Confirm the
 PD reason string (`squeue -o "%r"`) on a future check before acting on (b).
+
+**Lever 9 — ordering-prior tune-up: FLAT-L1 CONFIRMED, no change (2026-08-09).**
+Compared the production ordering (flat L1 = sum|NPAF_C+NPAF_D|) against L2, PSD-peak,
+and max-shift by measuring what percentile each known deep solution occupies vs a
+1,500-candidate background of its own class. Result: flat-L1 = 0.9% / 31.9% / 2.7%
+(n=41 hit / n=42 hit / WZ-43) — the only consistently strong score; L2 worse
+everywhere; max-shift never better than noise; PSD-peak catastrophic at n=41 (65%)
+despite a striking single-case win at n=43 (WZ's solution is PSD-rank #1 of 1,500).
+The PSD anomaly is recorded but not actionable: one case, and the locator already
+placed that solution's CELL at window ~255+ where in-cell ordering is moot. Production
+ordering keeps its job with its first formal confirmation. Research ledger: 16 ideas
+priced — 6 shipped, 10 dead/confirmed-baseline, 0 open.

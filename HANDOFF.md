@@ -4,6 +4,14 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-09 (late) — ORDERING EXPERIMENT VERDICT: FLAT-L1 CONFIRMED (0.9%/31.9%/
+2.7% percentiles on the three known deep solutions — only consistently strong score;
+PSD-peak wins a striking single case at n=43 (WZ solution = rank #1 of 1500) but fails
+n=41 at 65% and the cell-rank dominates anyway — recorded, not actionable). The last
+open research thread is CLOSED: 16 ideas priced this month, 6 shipped, 10 dead or
+confirmed-baseline, 0 open. Board overnight: all 9 n=43 classes hunting both ends,
+n=44 on 10+ lanes, Fir singleton-stacked 2 days deep, ordering formally optimal.**
+
 **⚡ 2026-08-09 (session, cont.) — n=43 DIVERSIFICATION: published class is ~10x past
 the distinct-orbit cost of BOTH previous rungs (a real statistical anomaly — sparse
 class or bad luck, either way the EV now favors spreading); ALL 8 sibling classes
