@@ -1,8 +1,26 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-07 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-09 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-09 (Daniel manual check, full 4-cluster) — NO HITS; ~20+ NODE-DAYS LOST
+TO IDLE (Fir empty since 08-08 morning after 2 missed Duo windows; Rorqual empty since
+~midnight after burning waves 15 AND 16); RESTACK ISSUED with singleton double-stack
+on Fir.** Reads: **Fir wave-14 (12 lanes, ran overnight 08-07→08) ALL HITLESS** — n=43
+flat 0-5 tested 25.7-27.3M (cum 48-51M, aborts 2-300), n=44 (3,13,0,0) w0-3
+66.7-70.0M/lane (cum 142-149M!), (5,9,6,6) 23.1M (cum 49.8M), (5,7,2,10) 18.5M (cum
+53.9M). **Rorqual wave 15 + wave 16 BOTH complete hitless**: n=43 rev 0-5 cum 96-104M/
+lane, n=44 rev (1,7,8,8) cum 81.5M / (3,3,4,12) 57.5M / (3,13,0,0) cum 143.2M /
+(5,5,8,8) 67.9M. **Nibi first canonical reads (19217371-374) HITLESS**: n=43 w9-11
+15.3-17.5M/lane (slower nodes), orbit_dup 307-557 = dedup skipping live, 375 R /
+376 PD. n=44 workhorse (3,13,0,0) now ~293M combined both ends on a 35,925-orbit
+class. Checker exclusions +36 IDs (53407677-89, 18622442-51, 18662519-28,
+19217371-74). **RESTACK: Fir = 12 lanes × 2 with `-J <lane> -d singleton` (same-name
+jobs serialize ⇒ two days of autonomous work per paste, immune to one missed loop
+day, no same-lane collisions) · Rorqual = 10 verbatim · Trillium = 6 verbatim
+(harmless if wave 16 still running there).** Fir Duo misses are now the campaign's
+main leak (3 of last 4 checks) — the singleton double-stack is the mitigation.**
 
 **⚡ 2026-08-08 (daily loop) — NO HITS; wave-14 Rorqual tail + Trillium 2054696-701
 ALL read HITLESS; WAVE 16 verbatim anti-idle STACKED on Trillium (2069143-148) +
