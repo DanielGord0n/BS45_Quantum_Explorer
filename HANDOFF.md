@@ -1,8 +1,32 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-09 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-10 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-10 (daily loop) — NO HITS (all 4 clusters reached); FULL READ of the
+08-09 restack+rebalance; WAVE 17 DOUBLE-STACK submitted, all echoed, singleton-
+serialized (2 jobs/lane => ~24h autonomous coverage per cluster).** Reads: **Fir
+first singleton rep 53882195-206 ALL HITLESS** — n=43 flat 0-5 tested 24.6-26.1M
+(cum 75-77M), n=44 (3,13,0,0) w0-3 52-56M/lane (cum 195-203M!), (5,9,6,6) 22.3M
+(cum 72.8M), (5,7,2,10) 18.8M (cum 73.4M); second rep 53882207-218 R (~7h left at
+check). **Rorqual: FIRST sibling-class read 18725943-948 ALL HITLESS** (rev skip-0,
+20.4-32.8M each across (0,2,1,13)/(0,2,7,11)/(0,10,5,7)/(2,12,1,5)/(4,6,1,11)/
+(4,10,3,7)); n=44 REV 18724010-013 hitless, cum (1,7,8,8) 106.0M / (3,3,4,12)
+73.8M / (3,13,0,0) 177.8M / (5,5,8,8) 86.1M; 18724004-009 output files are
+header-only = the rebalance-scancelled published rev lanes (no data, NOT an
+anomaly). **Trillium: waves 15/16 (2061447-452, 2069143-148) + kept published
+f6/r6/f7 (2077225-227, cum 102.8-137.2M) + FIRST sibling FLAT read (2077295-297:
+(6,8,5,7) 24.1M / (8,10,1,3) 37.8M / (0,2,1,13) 20.7M) ALL HITLESS.** Nibi:
+19217375 read hitless 15.4M (slow nodes), 19217376 still PD (Priority) — left
+alone per 08-09 precedent. Rorqual+Trillium queues were EMPTY at check ⇒ **WAVE 17
+submitted via duo_run, all 44 echoed: Rorqual `18780488-507` = 10 lanes × 2
+(6 sibling rev + 4 n=44 rev, verbatim configs, -J names R43sA-F/R44rA-D +
+--dependency=singleton so reps serialize); Trillium `2089860-871` = 6 lanes × 2
+(T43f6/T43r6/T43f7 published + T43sA-C siblings); Fir `53995221-234` = third
+singleton rep on all 12 lanes (queued Dependency behind the running rep, covers
+tonight 20:10 EDT → tomorrow morning).** Checker exclusions +50 IDs. No code
+change, no new lever (program CLOSED — this is the grind).**
 
 **⚡ 2026-08-09 (late) — ORDERING EXPERIMENT VERDICT: FLAT-L1 CONFIRMED (0.9%/31.9%/
 2.7% percentiles on the three known deep solutions — only consistently strong score;
