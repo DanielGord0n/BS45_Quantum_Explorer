@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-11 (Daniel session) — Nibi recheck: 19217376 RUNNING (~4h in, window 11);
+19217375 read 08-10 (15.4M). PRIORITY DIAGNOSIS (Fir sprio): wave-17 jobs carry
+priority ~1.526M, almost entirely FAIRSHARE component (1.5257M) + AGE 260 — the
+fairshare standing is NOT collapsed; the queues are simply BUSY with higher-priority
+competition. sshare returned headers only (association row not visible) — the earlier
+"allocation ceiling" inference stands as queue-competition, softened from "fairshare
+exhausted." Kotsireas allocation/RAC ask remains the one capacity lever, framed as
+"long queues everywhere, a priority allocation converts to search-days." NO new
+solver work opened: research ledger stays 16 priced / 6 shipped / 0 open. The board
+is fully stacked and grinding as scheduled.**
+
 **⚡ 2026-08-11 (daily loop) — NO HITS; Fir SECOND singleton rep read, fleet fully
 stacked, bookkeeping only.** New read: **Fir 53882207-218 (12 lanes, second singleton
 rep) ALL HITLESS** — n=43 (8,-2,5,9) flat 0-5 tested 23.2-25.2M/lane (cum 97-102M),
