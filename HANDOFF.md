@@ -1,8 +1,22 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-10 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-11 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-11 (daily loop) — NO HITS; Fir SECOND singleton rep read, fleet fully
+stacked, bookkeeping only.** New read: **Fir 53882207-218 (12 lanes, second singleton
+rep) ALL HITLESS** — n=43 (8,-2,5,9) flat 0-5 tested 23.2-25.2M/lane (cum 97-102M),
+n=44 (3,13,0,0) w0-3 38.4-42.9M/lane (cum 233-244M!), (5,9,6,6) 21.2M (cum 94.4M),
+(5,7,2,10) 19.0M (cum 92.7M). Queues: **Fir wave-17 third rep 53995221-234 all 12 PD
+(Priority)** — singleton dependency satisfied, so Fir is momentarily idle waiting on
+priority; per 08-07 allocation-ceiling verdict more queued jobs ≠ more throughput, so
+no action. **Rorqual 18780488-507 all 20 PD** (10 Priority + 10 Dependency pairs),
+**Trillium 2089860-871 all 12 PD** — wave 17 not yet started on either. **Nibi Duo
+unapproved (skipped)**; 19217376 presumed still PD per 08-09/08-10 precedent. No
+refill possible or needed (every reached cluster has a full queue), no code change,
+no new lever (program CLOSED — this is the grind). Checker exclusions +12
+(53882207-218).**
 
 **⚡ 2026-08-10 (daily loop) — NO HITS (all 4 clusters reached); FULL READ of the
 08-09 restack+rebalance; WAVE 17 DOUBLE-STACK submitted, all echoed, singleton-
