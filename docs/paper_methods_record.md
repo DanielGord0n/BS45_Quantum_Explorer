@@ -126,17 +126,22 @@ Four Digital Research Alliance of Canada clusters. Login-node measurements
   compute-class spec).
 - Trillium: dual AMD EPYC 9655 (96-core), 192 cores/node, ~755 GB (login matches
   compute-class spec).
-- Fir: compute nodes are 192-core (job telemetry); login node reads dual EPYC 9135 —
-  compute-node model to be confirmed (driver now logs lscpu per job; next wave's
-  outputs will carry the authoritative model).
-- Nibi: login node reads Intel Xeon Platinum 8480+; compute-node core count/model to
-  be confirmed the same way.
+- Fir: compute nodes CONFIRMED dual AMD EPYC 9655 (192 cores/node) via per-job lscpu
+  across 24 job outputs (2026-08-12). The login node's EPYC 9135 is NOT the compute
+  model.
+- Nibi: login node reads Intel Xeon Platinum 8480+; compute-node model still pending
+  (the probe script deployed on Nibi predates per-job lscpu logging; scontrol node
+  query queued).
 GPU experiments: NVIDIA H100 80GB HBM3 (Fir). Jobs compiled on-node with gcc 12.3,
 -O3 -march=native, StdEnv/2023.
-Search jobs: 1 node x 12 h x 178 single-core arms. GPU experiments used one NVIDIA
-H100 80GB (Fir). Approximate total campaign compute through 2026-08-06: order of
-10-15 core-years across the four clusters (job-level records available for an exact
-figure).
+Search jobs: 1 node x 12 h x 178 single-core arms.
+Measured compute accounting (sacct CPUTimeRAW, all jobs 2026-06-20 onward, queried
+2026-08-12): Rorqual 804,037 core-hours; Trillium 319,711; Nibi 157,649; Fir pending
+(slurmdbd rejects wide date ranges; chunked query queued). Subtotal excluding Fir:
+1,281,397 core-hours (~146 core-years). Fir is expected to add a comparable share
+(largest job count of the four). The earlier "10-15 core-years" estimate was an
+underestimate by roughly an order of magnitude and is superseded by these measured
+figures.
 
 ## 6. Negative results worth reporting (all measured, pre-registered thresholds)
 

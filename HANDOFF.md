@@ -4,6 +4,14 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-12 (paper data landed) — sacct totals (since 06-20): Rorqual 804,037 ch,
+Trillium 319,711 ch, Nibi 157,649 ch = 1.28M core-hours (~146 core-years) EXCLUDING
+Fir (its slurmdbd rejects wide ranges; chunked query outstanding). Old "10-15
+core-years" estimate superseded — off by ~10x. Fir compute nodes CONFIRMED dual EPYC
+9655 (24 job lscpu outputs; login's 9135 is not the compute model). Nibi model still
+pending (its deployed probe script predates lscpu logging) — scontrol query
+outstanding. paper_methods_record.md §5 updated with all measured figures.**
+
 **⚡ 2026-08-12 (later) — Paper-support day (solver blocked, campaign not): (1) coverage
 accounting added to docs/paper_methods_record.md §7 — 12h lanes exhaust only tens of
 cells vs 10^5-10^6 per class, cumulative <0.1%, so hitless waves bound nothing
