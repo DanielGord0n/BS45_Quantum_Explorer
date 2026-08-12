@@ -4,6 +4,16 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-12 (later) — Paper-support day (solver blocked, campaign not): (1) coverage
+accounting added to docs/paper_methods_record.md §7 — 12h lanes exhaust only tens of
+cells vs 10^5-10^6 per class, cumulative <0.1%, so hitless waves bound nothing
+(budget-bound not coverage-bound); (2) OUTSTANDING PASTE: paper-data collection
+(Fir/Nibi compute-node CPU models via Model-name grep on firsthit outputs + sacct
+core-hour totals on all 4 clusters) — closes the two "insert when available" items
+in §5/§7 before Kotsireas's OverLeaf lands; (3) allocation-ask paragraph drafted for
+Daniel's next email (fairshare healthy, queues competitive — framed as priority ->
+search-days). No cluster action needed beyond the data-collection pastes.**
+
 **⚡ 2026-08-12 (Daniel session, Rorqual recheck after missed Duo) — WAVE 17 FIRST REP
 IS RUNNING on Rorqual: all 10 first-rep lanes 18780488/90/92/94/96/98/500/02/04/06
 started 04:18-05:16 EDT today (~8-9h elapsed, ~3-4h left at 1:20 PM check; finish

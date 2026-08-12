@@ -174,5 +174,12 @@ figure).
   object is open — a solution would settle the next rung of the conjecture.
 - n=43 search in progress (18-24 lanes, both stream ends, windows 0-11). n=44 search
   running in parallel (10 lanes, all fast classes, both ends).
+- Coverage accounting (2026-08-12, from lane telemetry): a 12 h lane fully exhausts
+  only tens of cells against per-class cell lists of order 10^5-10^6 (e.g. n=44
+  (3,13,0,0): 1,038,952 cells, 35,925 orbit representatives after 28.92x dedup;
+  measured cells_done_sum 11-25 per lane). Cumulative fully-exhausted coverage per
+  class is well under 0.1%. Hitless waves therefore carry no evidence of
+  nonexistence at n=43/44 — the search is budget-bound (candidates tested per
+  12 h allocation), not coverage-bound.
 - To insert when available: exact CPU models per cluster; exact core-year total from
   job accounting; n=43 solution and its provenance if found before submission.
