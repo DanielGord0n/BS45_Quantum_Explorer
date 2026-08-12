@@ -1,8 +1,23 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-11 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-12 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-12 (daily loop) — NO HITS; Nibi re-entry set COMPLETE (all 6 hitless),
+Nibi queue was EMPTY ⇒ verbatim RESTACK submitted, all echoed.** New read: **Nibi
+19217376 HITLESS** — n=43 (8,-2,5,9), tested 16.9M (orbit_dup=557, 158/178
+summarized, dedup 3.81x live), closing the 08-06 re-entry set 19217371-376 (6 lanes,
+w9-11 both ends, ~95-100M total, all hitless). Nibi had NOTHING queued after it ⇒
+anti-idle restack per 08-08/08-10 precedent: **19683928-933 = 6 verbatim resumed
+CKDIR lanes (flat+rev, skips 9/10/11, oc1, all `Submitted batch job` echoed, all PD
+12h)** — one Duo push, approved. Rest of fleet unchanged: **Fir third rep
+53995221-234 all 12 PD (Priority)**, **Trillium wave 17 2089860-871 all 12 PD**,
+**Rorqual Duo missed** (18780488-507 presumed PD per 08-11). rung_status check run
+for the idle-cluster rail: EXHAUSTED = SA-refill forbidden as always (this was a
+firsthit ckpt resume, not SA; its listed escalations were completed weeks ago).
+Checker exclusions +1 (19217376). No code change, no new lever (program CLOSED —
+this is the grind).**
 
 **⚡ 2026-08-11 (Daniel session) — Nibi recheck: 19217376 RUNNING (~4h in, window 11);
 19217375 read 08-10 (15.4M). PRIORITY DIAGNOSIS (Fir sprio): wave-17 jobs carry
