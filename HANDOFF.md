@@ -4,6 +4,14 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-12 (paper data COMPLETE) — Fir chunked sacct: 839,449 ch => campaign
+TOTAL 2,120,846 core-hours (~242 core-years) across all 4 clusters since 06-20,
+measured. Nibi compute nodes = dual Intel Xeon 6 GRANITE RAPIDS 192c/766GB
+(scontrol c148: feature "granite") — login's 8480+ was NOT the compute model (third
+login-node trap caught). paper_methods_record.md hardware + compute sections now
+COMPLETE; only open insert = exact Nibi SKU (minor) + n=43 provenance if found.
+Day closed: fleet 4/4 covered, docs current, no builds (ledger 16 priced / 0 open).**
+
 **⚡ 2026-08-12 (paper data landed) — sacct totals (since 06-20): Rorqual 804,037 ch,
 Trillium 319,711 ch, Nibi 157,649 ch = 1.28M core-hours (~146 core-years) EXCLUDING
 Fir (its slurmdbd rejects wide ranges; chunked query outstanding). Old "10-15

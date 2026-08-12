@@ -129,19 +129,17 @@ Four Digital Research Alliance of Canada clusters. Login-node measurements
 - Fir: compute nodes CONFIRMED dual AMD EPYC 9655 (192 cores/node) via per-job lscpu
   across 24 job outputs (2026-08-12). The login node's EPYC 9135 is NOT the compute
   model.
-- Nibi: login node reads Intel Xeon Platinum 8480+; compute-node model still pending
-  (the probe script deployed on Nibi predates per-job lscpu logging; scontrol node
-  query queued).
+- Nibi: compute nodes are dual Intel Xeon 6 (Granite Rapids), 192 cores/node, 766 GB
+  (scontrol on node c148, 2026-08-12: Sockets=2, CPUTot=192, feature "granite";
+  exact SKU pending). The login node's Xeon Platinum 8480+ is NOT the compute model.
 GPU experiments: NVIDIA H100 80GB HBM3 (Fir). Jobs compiled on-node with gcc 12.3,
 -O3 -march=native, StdEnv/2023.
 Search jobs: 1 node x 12 h x 178 single-core arms.
-Measured compute accounting (sacct CPUTimeRAW, all jobs 2026-06-20 onward, queried
-2026-08-12): Rorqual 804,037 core-hours; Trillium 319,711; Nibi 157,649; Fir pending
-(slurmdbd rejects wide date ranges; chunked query queued). Subtotal excluding Fir:
-1,281,397 core-hours (~146 core-years). Fir is expected to add a comparable share
-(largest job count of the four). The earlier "10-15 core-years" estimate was an
-underestimate by roughly an order of magnitude and is superseded by these measured
-figures.
+Measured compute accounting (sacct CPUTimeRAW, all jobs 2026-06-20 to 2026-08-12,
+COMPLETE): Fir 839,449 core-hours; Rorqual 804,037; Trillium 319,711; Nibi 157,649.
+TOTAL: 2,120,846 core-hours (~242 core-years) across the four clusters. (The earlier
+"10-15 core-years" estimate was an order-of-magnitude undercount and is superseded
+by these measured figures.)
 
 ## 6. Negative results worth reporting (all measured, pre-registered thresholds)
 
@@ -186,5 +184,7 @@ figures.
   class is well under 0.1%. Hitless waves therefore carry no evidence of
   nonexistence at n=43/44 — the search is budget-bound (candidates tested per
   12 h allocation), not coverage-bound.
-- To insert when available: exact CPU models per cluster; exact core-year total from
-  job accounting; n=43 solution and its provenance if found before submission.
+- To insert when available: exact Nibi compute-node SKU (arch confirmed Granite
+  Rapids; minor); n=43 solution and its provenance if found before submission.
+  Hardware models and the exact compute total are otherwise COMPLETE as of
+  2026-08-12 (see section 5).
