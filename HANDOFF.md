@@ -4,6 +4,18 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-12 (Daniel session, Rorqual recheck after missed Duo) — WAVE 17 FIRST REP
+IS RUNNING on Rorqual: all 10 first-rep lanes 18780488/90/92/94/96/98/500/02/04/06
+started 04:18-05:16 EDT today (~8-9h elapsed, ~3-4h left at 1:20 PM check; finish
+~4-5 PM), second reps 18780489...507 PD (Dependency) behind them — double-stack
+working as designed. Headers confirm the rebalance board: 6 n=43 sibling REV lanes
+(0,2,1,13)/(0,2,7,11)/(0,10,5,7)/(2,12,1,5)/(4,6,1,11)/(4,10,3,7) + 4 n=44 REV
+(1,7,8,8)/(3,3,4,12)/(3,13,0,0)/(5,5,8,8). Orbit canon live on n=44 lanes (7.88x/
+3.95x/7.88x/28.92x). Outputs header-only (mid-run), NEW FOUND? none. NO ACTION:
+Rorqual busy + fully stacked; fleet 4/4 covered today (Nibi restacked 19683928-933
+this morning, Fir 3rd rep + Trillium wave 17 PD). Next read = tomorrow's loop, first
+sibling SECOND-rep data lands there.**
+
 **⚡ 2026-08-12 (daily loop) — NO HITS; Nibi re-entry set COMPLETE (all 6 hitless),
 Nibi queue was EMPTY ⇒ verbatim RESTACK submitted, all echoed.** New read: **Nibi
 19217376 HITLESS** — n=43 (8,-2,5,9), tested 16.9M (orbit_dup=557, 158/178
