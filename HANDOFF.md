@@ -1,8 +1,23 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-12 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-13 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-13 (daily loop) — NO HITS; Rorqual WAVE-17 FIRST REP READ (10 lanes, all
+hitless), fleet 4/4 busy, bookkeeping only.** New read: Rorqual 18780488/90/92/94/96/
+98/500/02/04/06 ALL HITLESS (arms_with_hits=0/178 each) — first sibling SECOND-rep
+data: n=43 sibling REV (0,2,1,13) 27.9M (cum 48.3M), (0,2,7,11) 27.4M (48.0M),
+(0,10,5,7) 40.4M (73.2M), (2,12,1,5) 36.1M (64.3M), (4,6,1,11) 31.1M (55.9M),
+(4,10,3,7) 30.2M (53.5M); n=44 REV (1,7,8,8) 20.4M (cum 125.2M), (3,3,4,12) 14.9M
+(86.7M), (3,13,0,0) 33.3M (cum 210.2M rev-side), (5,5,8,8) 17.3M (102.6M). Board:
+Rorqual second rep 18780489-507 (odd) all R ~3h (double-stack rolling as designed),
+Fir third rep 53995221-234 RUNNING 12 lanes ~3h in (started 00:45-01:37 PDT), Trillium
+wave-17 first rep 2089860-871: 6 R ~7:49 in + 6 PD (Dependency), Nibi restack
+19683928-933 all PD (Priority). No cluster idle, no queue empty ⇒ NO submits, no code
+change, no new lever (program CLOSED — this is the grind). Checker exclusions +10
+(wave-17 Rorqual first rep). Next read: Trillium wave-17 first-rep data + Fir third
+rep land tomorrow; Rorqual second rep too.**
 
 **⚡ 2026-08-12 (paper data COMPLETE) — Fir chunked sacct: 839,449 ch => campaign
 TOTAL 2,120,846 core-hours (~242 core-years) across all 4 clusters since 06-20,
