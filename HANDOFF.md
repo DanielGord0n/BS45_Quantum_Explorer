@@ -1,8 +1,33 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-13 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-14 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-14 (daily loop) — NO HITS; 28 lanes read (Fir 3rd rep + Rorqual wave-17
+2nd rep + Trillium wave-17 1st rep, ALL HITLESS); Fir + Rorqual queues EMPTY ⇒ WAVE-18
+double-stack RESTACKED on both, all 44 echoed.** Reads: **Fir third rep 53995221-234
+(12 lanes) ALL HITLESS** — n=43 (8,-2,5,9) flat 0-5 tested 21.9-24.2M (cum 120-126M),
+n=44 (3,13,0,0) w0-3 32.4-35.7M (cum 264-277M!), (5,9,6,6) 18.1M (cum 112.6M),
+(5,7,2,10) 16.7M (cum 109.6M). **Rorqual wave-17 SECOND rep 18780489-507 odd (10
+lanes) ALL HITLESS** — n=43 sibling REV (0,2,1,13) 28.3M (cum 76.7M), (0,2,7,11)
+29.7M (77.8M), (0,10,5,7) 37.2M (110.4M), (2,12,1,5) 34.9M (99.3M), (4,6,1,11) 28.8M
+(84.9M), (4,10,3,7) 29.0M (82.5M); n=44 REV (1,7,8,8) 21.0M (cum 145.8M), (3,3,4,12)
+14.1M (98.7M), (3,13,0,0) 32.5M (cum 242.3M rev-side), (5,5,8,8) 17.5M (121.0M).
+**Trillium wave-17 FIRST rep 2089860-870 even (6 lanes) ALL HITLESS, 178/178 arms**
+— n=43 (8,-2,5,9) ×3 23.5-31.8M (cum 126.5-168.9M), (8,10,1,3) 35.4M (73.2M),
+(0,2,1,13) 27.8M (48.5M), (6,8,5,7) 29.6M (53.6M). Board: **RESTACK (wave 18):
+Rorqual 19023731-741 first rep + 19023742-776 second rep (10 verbatim rev lanes ×2,
+-J R43sA-F/R44rA-D, singleton, all `Submitted batch job` echoed; first rep PD
+Priority)** — first Fir Duo push MISSED (180s), retry seconds after the Rorqual
+approval SUCCEEDED: **Fir 54681547-558 fourth rep + 54681559-570 fifth rep (12
+verbatim flat lanes ×2, -J F43f0-5/F44w0-3/F44sA-B, singleton, all echoed; first rep
+PD None = starting)**. Trillium wave-17 second rep 2089861-871 odd all R (~6.7h in,
+lands tomorrow), Nibi restack 19683928-933: 3 R + 3 PD (Priority). rung_status check
+run for the idle rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit
+ckpt resume, not SA). Checker exclusions +28 (53995221-234, 18780489-507 odd,
+2089860-870 even). No code change, no new lever (program CLOSED — this is the
+grind). n=44 workhorse (3,13,0,0) now ~264-277M flat + 242M rev.**
 
 **⚡ 2026-08-13 (daily loop) — NO HITS; Rorqual WAVE-17 FIRST REP READ (10 lanes, all
 hitless), fleet 4/4 busy, bookkeeping only.** New read: Rorqual 18780488/90/92/94/96/
