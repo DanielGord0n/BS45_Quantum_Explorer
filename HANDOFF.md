@@ -4,6 +4,18 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-14 (Daniel session) — PRE-REGISTERED TILT CRITERION (answering "is it
+working"): the n=43 published-class anomaly (~10x past both rungs' distinct cost) was
+caught 08-08 and answered by the 9-class diversification; the sibling bet is only
+~3-4% evaluated (siblings 77-110M cum each vs ~2.66B-equivalent at which n=42
+yielded). CRITERION, registered now: when EACH sibling class reaches ~450M cumulative
+tested (~= one n=42-rung of distinct depth at 3.81x dedup) with all 9 n=43 classes
+still hitless, n=43 is declared empirically sparse and HALF the n=43 fleet share
+tilts to n=44 window breadth at the next natural restack. ETA at current throughput
+~10-14 days; an allocation bump shortens it proportionally. No board change today
+(wave-18 restacked by loop, fleet 4/4, dry-streak length still within both prior
+rungs' pre-hit history).**
+
 **⚡ 2026-08-14 (daily loop) — NO HITS; 28 lanes read (Fir 3rd rep + Rorqual wave-17
 2nd rep + Trillium wave-17 1st rep, ALL HITLESS); Fir + Rorqual queues EMPTY ⇒ WAVE-18
 double-stack RESTACKED on both, all 44 echoed.** Reads: **Fir third rep 53995221-234
