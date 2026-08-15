@@ -1,8 +1,25 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-14 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-15 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-15 (daily loop) — NO HITS; 9 lanes read (Trillium wave-17 SECOND rep all 6 +
+Nibi restack first 3), ALL HITLESS; Trillium queue EMPTY ⇒ WAVE-18 double-stack RESTACKED
+(2126192-203, all 12 echoed).** Reads: **Trillium wave-17 second rep 2089861/63/65/67/69/71
+(6 lanes) ALL HITLESS** — n=43 published (8,-2,5,9) f6 22.4M (cum 149.0M) / r6 32.9M (cum
+201.8M, deepest Trillium lane) / f7 22.7M (cum 149.2M); siblings FLAT (6,8,5,7) 28.6M (cum
+82.2M), (8,10,1,3) 18.7M (cum 91.9M), (0,2,1,13) 27.6M (cum 76.1M). **Nibi 19683928/29/30
+(n=43 (8,-2,5,9) resumed lanes) ALL HITLESS** — tested 17.9-18.7M each (cum ~33-35M),
+158-159/178 summarized; 19683931-933 still PD (Priority). Board: **Trillium RESTACK (wave
+18): 2126192-197 first rep (PD Resources) + 2126198-203 second rep (-J T43f6/T43r6/T43f7/
+T43sA-C, singleton, all `Submitted batch job` echoed)**; Fir wave-18 fourth rep 54681547-558
+all R (~6.3h in, fifth rep PD Dependency); Rorqual wave-18 first rep 19023731-741 all R
+(~2.5h in, second rep PD); fleet 4/4 busy. rung_status check run for the idle rail:
+EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt resume, not SA). Checker
+exclusions +9 (2089861-871 odd, 19683928-930). Tilt-criterion bookkeeping: sibling cums
+still 48-110M/class-end vs the ~450M line — no tilt, grind continues. No code change, no
+new lever (program CLOSED — this is the grind).**
 
 **⚡ 2026-08-14 (Daniel session) — PRE-REGISTERED TILT CRITERION (answering "is it
 working"): the n=43 published-class anomaly (~10x past both rungs' distinct cost) was
