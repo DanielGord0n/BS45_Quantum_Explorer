@@ -254,3 +254,21 @@ The PSD anomaly is recorded but not actionable: one case, and the locator alread
 placed that solution's CELL at window ~255+ where in-cell ordering is moot. Production
 ordering keeps its job with its first formal confirmation. Research ledger: 16 ideas
 priced — 6 shipped, 10 dead/confirmed-baseline, 0 open.
+
+
+## Lever 17 (2026-08-15): n=44 WINDOW-FRONT SWEEP — deployment fix, evidence-based
+
+Not a solver change; a board-staleness correction. Evidence: BOTH banked hits came
+from mid-band windows, not the flat-front windows — n=41 was candidate RANK 1429 of
+window skip-8 (the very front of a mid window); n=42 came from reverse window 4. The
+n=44 board was shaped on 07-31 (before either lesson) and never revisited: workhorse
+(3,13,0,0) covered only flat w0-3 (264-277M deep) + rev skip-0 (242M); (5,9,6,6) and
+(5,7,2,10) only skip-0; rev skips 1+ never opened. Under flat-first ordering a
+lane-day deep in w0-3 tests ranks ~270M of that window while a lane-day on a fresh
+window tests ranks 0-30M — and rank ~1.4k is where n=41 lived. DEPLOYED 2026-08-15:
+Fir flat (3,13,0,0) skips 4-8 + (5,9,6,6)/(5,7,2,10) skips 1-3 (11 lanes); Rorqual
+rev (3,13,0,0) skips 1-5 + (1,7,8,8)/(5,5,8,8) skips 1-2 (9 lanes). All fresh CKDIRs
+(no collision with running w0-3/skip-0 lanes), WZ_FH_ORBIT_CANON=1, standard budget.
+Additive to the n=43 program (no lanes cannibalized); partially pre-empts the 450M
+tilt criterion by growing the n=44 share +20 lanes. Measurement: first rep per
+window covers its front (~15-40M); read like any wave.

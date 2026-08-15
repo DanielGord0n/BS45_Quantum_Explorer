@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-15 (Daniel session) — n=44 WINDOW-FRONT SWEEP designed + issued (lever 17,
+docs/n44_search_narrowing_research.md): board audit against hit-location evidence
+found the real gap — both banked hits came from MID-BAND windows (n=41 = rank 1429
+of skip-8; n=42 = rev w4) but the n=44 board (shaped 07-31, never revisited) only
+covers flat w0-3 + rev skip-0. Fresh-window FRONTS (flattest candidates of each
+window) are the highest-EV untested space in the program. PASTES ISSUED: Fir 11 flat
+lanes ((3,13,0,0) skips 4-8; (5,9,6,6)+(5,7,2,10) skips 1-3), Rorqual 9 rev lanes
+((3,13,0,0) skips 1-5; (1,7,8,8)+(5,5,8,8) skips 1-2) — all fresh CKDIRs, no
+collisions, ORBIT_CANON=1, additive (n=43 program untouched; tilt criterion stands).
+Job IDs pending Daniel's Duo pastes.**
+
 **⚡ 2026-08-15 (daily loop) — NO HITS; 9 lanes read (Trillium wave-17 SECOND rep all 6 +
 Nibi restack first 3), ALL HITLESS; Trillium queue EMPTY ⇒ WAVE-18 double-stack RESTACKED
 (2126192-203, all 12 echoed).** Reads: **Trillium wave-17 second rep 2089861/63/65/67/69/71
