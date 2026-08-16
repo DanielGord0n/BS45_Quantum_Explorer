@@ -1,8 +1,33 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-15 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-16 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-16 (daily loop) — NO HITS; 32 lanes read (Fir wave-18 4th rep 12 +
+Rorqual wave-18 BOTH reps 20, ALL HITLESS); Rorqual queue EMPTY ⇒ LEVER-17
+WINDOW-FRONT SWEEP SUBMITTED BY THE LOOP (Daniel's 08-15 pastes never went in):
+Rorqual 19123939-956 = 9 rev lanes ×2 singleton, Fir 54990112-122 = 11 flat lanes.
+⚠️ DANIEL: do NOT paste the 08-15 window-front blocks — they are IN (all 29 echoed
+`Submitted batch job`).** Reads: **Fir 4th rep 54681547-558 ALL HITLESS** — n=43
+(8,-2,5,9) flat 0-5 tested 21.1-22.4M (cum 142-149M), n=44 (3,13,0,0) w0-3
+28.6-30.3M (cum 293-306M!), (5,9,6,6) 17.0M (cum 130.4M), (5,7,2,10) 15.7M (cum
+126.0M). **Rorqual wave-18 first rep 19023731/33-41 + second rep 19023742-45/71-76
+ALL HITLESS** — n=43 sibling rev cum: (0,2,1,13) 131.7M, (0,2,7,11) 132.0M,
+(0,10,5,7) 184.2M, (2,12,1,5) 169.0M, (4,6,1,11) 143.5M, (4,10,3,7) 138.5M; n=44
+rev cum: (1,7,8,8) 187.9M, (3,3,4,12) 127.7M, (3,13,0,0) 306.3M, (5,5,8,8) 153.0M.
+Window-front lanes as designed: Rorqual rev (3,13,0,0) w1-5 (-J R44rC1-5) +
+(1,7,8,8) w1-2 (R44rA1-2) + (5,5,8,8) w1-2 (R44rD1-2), first rep starting + second
+rep singleton-Dependency; Fir flat (3,13,0,0) w4-8 (F44w4-8) + (5,9,6,6) w1-3
+(F44sA1-3) + (5,7,2,10) w1-3 (F44sB1-3), PD behind the running 5th rep (~9h in,
+lands tonight ⇒ no idle gap). Fresh CKDIRs auto-keyed by skip, ORBIT_CANON=1,
+budget 5e7, NARMS=178 — same config as all wave-13+ lanes, no code change. Board:
+Fir 12 R + 11 PD, Rorqual 18 PD, Trillium wave-18 2126192-203 all PD, Nibi
+19683931-933 PD (Priority) — fleet 4/4 covered. rung_status check run for the idle
+rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt resume, not
+SA). Tilt-criterion bookkeeping: deepest sibling (0,10,5,7) rev 184M vs the ~450M
+line — no tilt, grind continues (lever 17 already pre-empts it partially, +20 n=44
+lanes). Checker exclusions +32 (54681547-558, 19023731-45, 19023771-76).**
 
 **⚡ 2026-08-15 (Daniel session) — n=44 WINDOW-FRONT SWEEP designed + issued (lever 17,
 docs/n44_search_narrowing_research.md): board audit against hit-location evidence
