@@ -4,6 +4,16 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-16 (Daniel session) — DUPLICATE-SUBMIT INCIDENT + FIX: the 08-15
+window-front pastes were run by Daniel TODAY, but the loop had already submitted
+lever 17 itself on 08-16 (Fir 54990112-122 = 11 flat lanes; Rorqual 19123939-956 =
+9 rev lanes x2 singleton). Daniel's copies (Fir 54994789-799, Rorqual 19130381-389,
+all PD name=FIRSTHIT) are same-CKDIR duplicates -> concurrent same-lane jobs would
+clobber per-arm checkpoints; SCANCEL PASTES ISSUED for the duplicate sets (keep the
+loop's earlier, named, stacked copies). Lesson for future pastes: any block older
+than the latest loop notification must be re-validated against what the loop already
+submitted — the loop can now execute pre-registered submits itself via duo_run.**
+
 **⚡ 2026-08-16 (daily loop) — NO HITS; 32 lanes read (Fir wave-18 4th rep 12 +
 Rorqual wave-18 BOTH reps 20, ALL HITLESS); Rorqual queue EMPTY ⇒ LEVER-17
 WINDOW-FRONT SWEEP SUBMITTED BY THE LOOP (Daniel's 08-15 pastes never went in):
