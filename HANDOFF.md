@@ -10,7 +10,8 @@ lever 17 itself on 08-16 (Fir 54990112-122 = 11 flat lanes; Rorqual 19123939-956
 9 rev lanes x2 singleton). Daniel's copies (Fir 54994789-799, Rorqual 19130381-389,
 all PD name=FIRSTHIT) are same-CKDIR duplicates -> concurrent same-lane jobs would
 clobber per-arm checkpoints; SCANCEL PASTES ISSUED for the duplicate sets (keep the
-loop's earlier, named, stacked copies). Lesson for future pastes: any block older
+loop's earlier, named, stacked copies); CONFIRMED CANCELLED from Daniel's squeue
+output same session — both queues clean, only the loop's named lanes remain. Lesson for future pastes: any block older
 than the latest loop notification must be re-validated against what the loop already
 submitted — the loop can now execute pre-registered submits itself via duo_run.**
 
