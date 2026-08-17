@@ -13,7 +13,8 @@ WZ-v3 edge summary recorded: WZ proved NNS(44)/NS(44) EMPTY (no classical shortc
 exists at 44); their v3 describes no orbit canon / no checkpointing / no validated
 ordering => our search holds 3 measured edges over published SOTA. PASTE ISSUED: Fir
 window-front SECOND rep x11 (-J F44w4-8/F44sA1-3/F44sB1-3, -d singleton = collision-
-proof vs loop restacks). Job IDs pending Daniel's Duo.**
+proof vs loop restacks). CONFIRMED IN: 55203769-780 (11 echoed, all PD Dependency
+behind the Priority first reps 54990112-122 — Fir window fronts double-stacked).**
 
 **⚡ 2026-08-17 (Daniel session) — Fir recheck + LITERATURE SWEEP: Fir 5th rep
 54681559-570 read ALL HITLESS (n=43 flat cum 162-170M/lane; n=44 (3,13,0,0) w0-3 cum
