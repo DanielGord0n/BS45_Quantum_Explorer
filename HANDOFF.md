@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-17 (later) — CODE-CURRENCY AUDIT (Daniel asked "any clusters on outdated
+code?"): NO — every active lane fleet-wide shows [orbitcanon] headers = canonical
+checkpointed solver; the "old" checker sections (SA tail, GATE PROBES) are July
+archive files, not running jobs; only staleness = Nibi driver missing the cosmetic
+lscpu line (solver current; refresh piggybacks on next Nibi touch). CANCEL NOTHING.
+WZ-v3 edge summary recorded: WZ proved NNS(44)/NS(44) EMPTY (no classical shortcut
+exists at 44); their v3 describes no orbit canon / no checkpointing / no validated
+ordering => our search holds 3 measured edges over published SOTA. PASTE ISSUED: Fir
+window-front SECOND rep x11 (-J F44w4-8/F44sA1-3/F44sB1-3, -d singleton = collision-
+proof vs loop restacks). Job IDs pending Daniel's Duo.**
+
 **⚡ 2026-08-17 (Daniel session) — Fir recheck + LITERATURE SWEEP: Fir 5th rep
 54681559-570 read ALL HITLESS (n=43 flat cum 162-170M/lane; n=44 (3,13,0,0) w0-3 cum
 309-338M; (5,9,6,6) 146M; (5,7,2,10) 143M; NOTE resume_pi_max 27,586/35,925 = deepest
