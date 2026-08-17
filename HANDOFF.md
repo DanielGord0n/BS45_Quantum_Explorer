@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-17 (Daniel session) — Fir recheck + LITERATURE SWEEP: Fir 5th rep
+54681559-570 read ALL HITLESS (n=43 flat cum 162-170M/lane; n=44 (3,13,0,0) w0-3 cum
+309-338M; (5,9,6,6) 146M; (5,7,2,10) 143M; NOTE resume_pi_max 27,586/35,925 = deepest
+arms have ENTERED ~77% of workhorse cell lists — flat w0-3 marginal value falling,
+exactly what lever 17 addresses); Fir window-front lanes 54990112-122 STILL PD
+Priority (no flat-side lever-17 data yet). LITERATURE: Wang-Zhu has a v3 (2026-02-05)
+— still constructs ONLY 41-43, "n>43 open" stands, NS nonexistence extended to n=46,
+NNS(42)/(44) counterexamples unchanged; NO other 2026 base-sequence papers found =
+nobody has scooped n=44. Their described C,D method (Hall polynomial test at 200
+angles, Thm 2.4) VERIFIED PRESENT in our solver (hall_ok/hall_ok_single,
+wz_match.cpp:103-140, per-seq + per-pair) — stream-filter parity with the published
+state of the art confirmed at source level. No new lever; no action; fleet booked.**
+
 **⚡ 2026-08-17 (daily loop) — NO HITS; 9 lanes read (Rorqual LEVER-17 WINDOW-FRONT
 FIRST rep 19123939-947, the first-ever reads of the fresh n=44 windows) ALL HITLESS;
 no idle capacity ⇒ bookkeeping only, no submits.** Reads: (3,13,0,0) rev w1-5
