@@ -1,8 +1,23 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-16 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-17 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-17 (daily loop) — NO HITS; 9 lanes read (Rorqual LEVER-17 WINDOW-FRONT
+FIRST rep 19123939-947, the first-ever reads of the fresh n=44 windows) ALL HITLESS;
+no idle capacity ⇒ bookkeeping only, no submits.** Reads: (3,13,0,0) rev w1-5
+(R44rC1-5 = 19123939-943) tested 38.6/39.9/39.3/40.5/39.9M (arms 142/178
+summarized, aborted=0); (1,7,8,8) rev w1-2 (19123944/946) 16.9/16.7M; (5,5,8,8)
+rev w1-2 (19123945/947) 13.2/12.8M (A/D lanes 138/178, orbit dedup 7.88x on the
+fresh windows vs 3.81x on skip-0). These are first-read depths on fresh CKDIRs —
+no prior cum. Board: Rorqual second rep 19123948-956 all R (40min-3h in at check);
+Trillium wave-18 2126192-203 all PD; Nibi 19683931-933 PD (Priority); Fir Duo push
+MISSED (180s) — unreached, its 5th rep 54681559-570 + 11 window-front flat lanes
+54990112-122 unread this cycle. rung_status check run for the idle rail: EXHAUSTED
+= SA-refill forbidden as always (this is firsthit ckpt work, not SA). Tilt-criterion
+bookkeeping: NO n=43 reads this cycle — sibling cums unchanged vs the ~450M line,
+no tilt, grind continues. Checker exclusions +9 (19123939-947).**
 
 **⚡ 2026-08-16 (Daniel session) — DUPLICATE-SUBMIT INCIDENT + FIX: the 08-15
 window-front pastes were run by Daniel TODAY, but the loop had already submitted
