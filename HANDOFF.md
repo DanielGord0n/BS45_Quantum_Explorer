@@ -1,8 +1,26 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-17 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-18 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-18 (daily loop) — NO HITS; Rorqual window-front SECOND rep read
+(19123948-956, all 9 lanes) ALL HITLESS; Rorqual queue EMPTY ⇒ 3rd+4th rep RESTACKED
+via duo_run: 19215936-944 (R44rC1-5/A1-2/D1-2, PD starting) + 19215945-953
+(singleton-Dependency) — all 18 echoed `Submitted batch job`, verbatim QUICK-REFERENCE
+config (rev PROF_ORDER=2, ORBIT_CANON=1, budget 5e7, NARMS=178, skips 1-5/1-2/1-2),
+same CKDIRs resume.** Reads (2nd rep): (3,13,0,0) rev w1-5 tested 37.0/39.6/39.2/38.4/
+39.5M (cum 73.8/77.8/76.1/76.2/77.1M — the fresh windows now ~2 reps deep); (1,7,8,8)
+w1-2 22.0/21.2M (cum 38.9/37.8M); (5,5,8,8) w1-2 17.2/15.7M (cum 30.4/28.5M). NOTE:
+first cells COMPLETING on the (3,13,0,0) window lanes (cells_done_sum=1-2,
+resume_pi_max to 31,193) — window fronts are being consumed, not just nibbled. Board:
+Fir window-front 1st rep 54990112-122 R (~6-7h in) + 2nd rep 55203769-780 PD
+Dependency; Trillium wave-18 2126192-203 all PD; Nibi 19683931-933 PD Priority — fleet
+4/4 booked. rung_status check run for the idle rail: EXHAUSTED = SA-refill forbidden as
+always (this is firsthit ckpt resume, not SA). Tilt-criterion bookkeeping: NO n=43
+reads this cycle — sibling cums unchanged vs the ~450M line, no tilt, grind continues.
+Checker exclusions +21 (19123948-956 this cycle's reads + 54681559-570, read 08-17
+Daniel session but never excluded — they were reprinting in the FIRSTHIT section).**
 
 **⚡ 2026-08-17 (later) — CODE-CURRENCY AUDIT (Daniel asked "any clusters on outdated
 code?"): NO — every active lane fleet-wide shows [orbitcanon] headers = canonical
