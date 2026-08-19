@@ -1,8 +1,24 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-18 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-19 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-19 (daily loop) — NO HITS; Fir window-front FIRST rep read (54990112-122,
+all 11 flat lanes) ALL HITLESS; fleet fully booked ⇒ bookkeeping only, no submits.**
+Reads (first read on fresh window-front CKDIRs): (3,13,0,0) flat w4-8 (54990112-116)
+tested 78.8/80.3/80.5/80.7/79.3M (arms 142/178 summarized, aborted=0, dedup 4x on flat);
+(5,9,6,6) w1-3 (54990117/119/121) 27.8/27.8/28.0M (dedup 7.98x, aborted=1 each);
+(5,7,2,10) w1-3 (54990118/120/122) 36.5/41.8/38.2M (dedup 4x). cells_done_sum=0 on all
+11 — fresh fronts, no cells consumed yet (contrast Rorqual's 2nd-rep cells completing).
+Board: Fir 2nd rep 55203769-780 now PD PRIORITY (dependency cleared, 11 lanes next up);
+Rorqual 3rd rep 19215936-944 R (~6h in, headers only) + 4th rep 19215945-953 PD
+Dependency; Trillium wave-18 2126192-203 all PD; Nibi 19683931 R (~5.6h, header only) +
+932/933 PD — fleet 4/4 booked, no idle capacity. rung_status check run for the idle
+rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not SA).
+Tilt-criterion bookkeeping: NO n=43 reads this cycle (Nibi lane mid-run) — sibling cums
+unchanged vs the ~450M line, no tilt, grind continues. Checker exclusions +11
+(54990112-122).**
 
 **⚡ 2026-08-18 (daily loop) — NO HITS; Rorqual window-front SECOND rep read
 (19123948-956, all 9 lanes) ALL HITLESS; Rorqual queue EMPTY ⇒ 3rd+4th rep RESTACKED
