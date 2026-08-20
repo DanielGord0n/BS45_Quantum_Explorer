@@ -1,8 +1,27 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-19 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-20 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-20 (daily loop) — NO HITS; Rorqual window-front THIRD rep read (19215936-944,
+all 9 rev lanes) ALL HITLESS + Nibi 19683931 (n=43) HITLESS; fleet fully booked ⇒
+bookkeeping only, no submits.** Reads (3rd rep on window-front CKDIRs): (3,13,0,0) rev
+w1-5 (19215936-940) tested 37.7/37.0/38.5/38.0/37.7M (cum 110.1/113.9/114.2/112.5/112.8M
+— w1-5 now ~3 reps deep, aborted=0, arms 142/178); (1,7,8,8) w1-2 (19215941/942)
+22.3/22.4M (cum 61.1/59.8M, aborted 8/15); (5,5,8,8) w1-2 (19215943/944) 18.5/18.6M (cum
+48.9/46.8M, aborted 57/69 — budget-aborts elevated on the deep-resume A/D lanes,
+telemetry only). cells_done_sum=0 this rep (resume_pi_max holds at 31,193 high-water).
+Nibi 19683931 n=43 (8,-2,5,9) rev lane HITLESS tested 21.9M (cum 39.4M, 158/178
+summarized). Board: Fir 2nd rep 55203769-780 all 11 R (~5.5-6.6h in, headers only);
+Rorqual 4th rep 19215945-948 R (~8h, headers only) + 949-953 PD Priority; Trillium
+wave-18 2126192-203 all PD; Nibi 19683932/933 PD Priority — fleet 4/4 booked, no idle
+capacity. WATCH: fh_arms_19215948 shows no-orbitcanon-header (fresh arm log mid-start;
+sibling lanes 945-947 canonical 28.92x — recheck next read). rung_status check run for
+the idle rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work,
+not SA). Tilt-criterion bookkeeping: one n=43 read (Nibi, published class, cum 39.4M);
+sibling cums unchanged vs the ~450M line — no tilt, grind continues. Checker exclusions
++10 (19215936-944, 19683931).**
 
 **⚡ 2026-08-19 (daily loop) — NO HITS; Fir window-front FIRST rep read (54990112-122,
 all 11 flat lanes) ALL HITLESS; fleet fully booked ⇒ bookkeeping only, no submits.**
