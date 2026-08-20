@@ -4,6 +4,23 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-20 (Daniel session) — TILT MADE EXPLICIT: since lever 17 (08-16) the loop's
+verbatim restacks put Fir + Rorqual 100% on n=44 window fronts; Trillium (n=43
+published f6/r6/f7 + siblings sA-C, 2126192-203) has been PD Priority since 08-15;
+Nibi is the only n=43 compute running => siblings frozen at ~76-184M, the 450M tilt
+line is NOT being approached. DECISION (recorded, not drifted): n=44 = FOREGROUND
+(Fir+Rorqual: window fronts w1-8 both ends + deep w0-3), n=43 = BACKGROUND
+(Trillium+Nibi only; siblings advance at T+N pace; the 450M line becomes a watch, not
+a fleet gate). Rationale: record target is 44; fronts run ~3x/lane-day; published
+n=43 class is the measured anomaly (~10x overdue); n=43 is optional for the record.
+Progress framing: n=44 workhorse (3,13,0,0) total tested across w0-8 both ends is
+now roughly 2.2B+ (deep w0-3 ~320M each + rev fronts 110-114M x5 + flat fronts ~80M
+x5) — comparable accounting to the ~2.66B at which n=42 fell. NO estimate for n=43
+is defensible (published class anomalous, siblings at background pace). Watch item
+from loop: 19215948 arm log lacked [orbitcanon] header at read time (likely not yet
+printed at job start) — loop rechecks 08-21; if it is a fresh-start _oc0 CKDIR,
+scancel + resubmit with ORBIT_CANON=1. Fleet 4/4 booked, nothing to queue.**
+
 **⚡ 2026-08-20 (daily loop) — NO HITS; Rorqual window-front THIRD rep read (19215936-944,
 all 9 rev lanes) ALL HITLESS + Nibi 19683931 (n=43) HITLESS; fleet fully booked ⇒
 bookkeeping only, no submits.** Reads (3rd rep on window-front CKDIRs): (3,13,0,0) rev
