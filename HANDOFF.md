@@ -1,8 +1,34 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-20 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-21 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-21 (daily loop) — NO HITS; Fir window-front SECOND rep (55203769-780, all
+11 lanes) + Rorqual 4th-rep C1-4 (19215945-948) ALL HITLESS; Fir idle + Rorqual/Nibi
+queues emptying ⇒ TRIPLE RESTACK via duo_run, all 52 echoed `Submitted batch job`:
+Fir 55911371-392 = 11 flat lanes x2 singleton (3rd+4th window-front rep), Rorqual
+19379847-864 = 9 rev lanes x2 singleton (5th+6th rep), Nibi 20249817-828 = 6 n=43
+lanes x2 singleton (NEW -J names N43f9-11/N43r9-11 — Nibi now in the singleton
+discipline; its running unnamed 19683932/933 had ~30 min left at submit and Nibi
+queue latency is days, so no CKDIR-collision window).** Reads: Fir 2nd rep —
+(3,13,0,0) flat w4-8 tested 69.2-72.1M (cum 146.5-148.9M), (5,9,6,6) w1-3 24.3-25.0M
+(cum 53.0-53.5M), (5,7,2,10) w1-3 17.0-19.0M (cum 53.9-61.2M), cells_done_sum=0;
+Rorqual 4th rep (3,13,0,0) rev w1-4 tested 35.7-36.7M (cum 144.7-149.2M, aborted=0 —
+the elevated aborts were the A/D lanes, still R). WATCH ITEM 19215948 RESOLVED: it
+finished with tested_cum=148.7M >> tested=35.8M and resume_pi_max=31,193 (the known
+CKDIR high-water) ⇒ it RESUMED the canonical CKDIR, no _oc0 fork; the missing
+[orbitcanon] header on 08-20 was just the arm log mid-start; no scancel needed.
+Workhorse accounting: (3,13,0,0) total ≈ deep w0-3 ~1.28B + flat fronts w4-8 ~0.74B +
+rev fronts w1-5 ~0.70B ≈ 2.7B tested — now PAST the ~2.66B comparable accounting at
+which n=42 fell. Board after action: Fir 22 PD (first rep starting), Rorqual 5 R
+(19215949-953, ~6h left) + 18 PD, Trillium wave-18 2126192-197 finally R (~5h in,
+first data tomorrow) + 198-203 PD singleton, Nibi 19683932/933 finishing ~13:35 (read
+tomorrow) + 12 PD — fleet 4/4 double-stacked. rung_status check run for the idle
+rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not SA).
+Tilt-criterion bookkeeping: NO new n=43 reads this cycle (Nibi lanes end after the
+check; Trillium mid-run) — sibling cums unchanged vs the ~450M line, no tilt, grind
+continues. Checker exclusions +15 (55203769-780, 19215945-948).**
 
 **⚡ 2026-08-20 (Daniel session) — TILT MADE EXPLICIT: since lever 17 (08-16) the loop's
 verbatim restacks put Fir + Rorqual 100% on n=44 window fronts; Trillium (n=43
