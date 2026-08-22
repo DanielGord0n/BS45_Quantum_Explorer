@@ -1,8 +1,29 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-21 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-22 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-22 (daily loop) — NO HITS; 13 lanes read ALL HITLESS (Rorqual 4th-rep tail
+19215949-953 + Nibi 19683932/933 + Trillium wave-18 FIRST rep 2126192-197 — first
+Trillium data since 08-15); Trillium's last rep was R with nothing behind it ⇒ WAVE-19
+RESTACKED via duo_run: 2178711-722 = 6 verbatim lanes x2 singleton (T43f6/T43r6/T43f7/
+T43sA-C), all 12 echoed `Submitted batch job`.** Reads: Rorqual (3,13,0,0) rev w5 36.3M
+(cum 151.3M — matches w1-4's 144.7-149.2M band), (1,7,8,8) w1-2 22.1/21.5M (cum
+82.5/80.8M, aborted 2/19), (5,5,8,8) w1-2 18.6/17.7M (cum 67.5/64.7M, aborted 32/65 —
+the elevated A/D aborts persist, telemetry only); Nibi n=43 (8,-2,5,9) rev lanes
+22.1/22.4M (cum 38.8/39.3M, 158/178); Trillium n=43 178/178 all six — published
+(8,-2,5,9) f6 21.1M (cum 170.0M) / r6 32.5M (cum 234.3M, deepest lane fleet-wide) /
+f7 21.4M (cum 170.6M), siblings (6,8,5,7) 27.5M (cum 109.8M) / (8,10,1,3) 12.1M (cum
+104.0M) / (0,2,1,13) 22.0M (cum 98.1M). Board after action: Fir UNREACHED (Duo 180s
+missed; per 08-21 ledger 55911371-392 = 22 booked), Rorqual 19379847-855 9 R (5th rep,
+headers only) + 19379856-864 PD, Trillium 2126198-203 6 R (2nd rep, ~7.5h left,
+finish ~20:40 EDT) + wave-19 2178711-722 12 PD singleton, Nibi 20249817-828 12 PD —
+fleet 4/4 double-stacked. rung_status check run for the idle rail: EXHAUSTED =
+SA-refill forbidden as always (this is firsthit ckpt work, not SA). Tilt-criterion
+bookkeeping: n=43 sibling cums now 98-110M flat-end (T) vs the ~450M/class line —
+no tilt, background grind continues per the 08-20 foreground/background decision.
+Checker exclusions +13 (19215949-953, 19683932/933, 2126192-197).**
 
 **⚡ 2026-08-21 (daily loop) — NO HITS; Fir window-front SECOND rep (55203769-780, all
 11 lanes) + Rorqual 4th-rep C1-4 (19215945-948) ALL HITLESS; Fir idle + Rorqual/Nibi
