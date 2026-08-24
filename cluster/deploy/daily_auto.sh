@@ -40,7 +40,12 @@ RETRY_WAIT="${RETRY_WAIT:-1800}"     # 30 min between attempts
 MAX_RETRY="${MAX_RETRY:-8}"          # 8 x 30min = up to 4h of waiting
 
 STAMP="$(date +%Y-%m-%d)"
+# SUPPLEMENTARY=1 (2026-08-24): a second pass, spawned by the main run, that
+# re-pushes Duo every hour for the cluster(s) missed at 1pm and — once approved —
+# reads/restacks ONLY those. Own log file; never spawns another supplementary.
+SUPPLEMENTARY="${SUPPLEMENTARY:-0}"
 LOG="$REPO/results/auto_${STAMP}.log"
+[ "$SUPPLEMENTARY" = 1 ] && LOG="$REPO/results/auto_${STAMP}_supp.log"
 CHECK_OUTPUT="$REPO/results/latest_check.txt"
 SUMMARY="$REPO/results/last_summary.txt"
 export CHECK_OUTPUT
@@ -68,12 +73,27 @@ chmod +x "$DIR/check_all_retry.sh" "$DIR/duo_run.sh" "$DIR/next_seeds.sh" \
          "$DIR/rung_status.sh" 2>/dev/null
 
 # --- 1. check ---------------------------------------------------------------
-log "Running checker…"
-"$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"
+ALL_CLUSTERS="fir nibi rorqual trillium"
+if [ "$SUPPLEMENTARY" = 1 ]; then
+  log "SUPPLEMENTARY pass for missed cluster(s): ${CLUSTERS:-?} — hourly Duo re-push (RETRY_MAX=${RETRY_MAX:-10})."
+  "$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"          # CLUSTERS from env; hourly retries inside
+else
+  log "Running checker (first pass, no waiting on missed taps)…"
+  RETRY_MAX=0 "$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"
+fi
+# Which clusters missed their push? Parsed from the checker's own Summary line.
+MISSED="$(grep -m1 '^Summary:' "$CHECK_OUTPUT" 2>/dev/null | sed -n 's/.*missed:\([^;(]*\).*/\1/p' | xargs)"
 if ! grep -q "NEW FOUND" "$CHECK_OUTPUT" 2>/dev/null; then
-  log "No cluster answered (no Duo taps). Aborting before the agent."
-  ntfy_push "BS45: no Duo taps" "Nothing was reachable — approve the pushes and re-run." "default" "warning"
-  exit 0
+  if [ "$SUPPLEMENTARY" = 1 ]; then
+    log "Supplementary pass: no approval after the hourly retries — giving up for today."
+    ntfy_push "BS45: gave up on ${CLUSTERS:-?}" \
+      "No Duo approval after the hourly retries. ${CLUSTERS:-?} stays unread today (the clusters keep computing). When you can: CLUSTERS=\"${CLUSTERS:-?}\" ./cluster/deploy/check_all_retry.sh" \
+      "default" "warning"
+    exit 0
+  fi
+  log "No cluster answered on the first pass — switching to hourly Duo re-push for all of them."
+  ntfy_push "BS45: no Duo taps yet" "Nothing was reachable on the first pass. I'll re-push every hour (up to 10 h) — tap when you see it." "default" "hourglass"
+  SUPPLEMENTARY=1 CLUSTERS="${CLUSTERS:-$ALL_CLUSTERS}" exec "$DIR/daily_auto.sh"
 fi
 
 # --- 2. agent, with session-limit deferral ----------------------------------
@@ -124,6 +144,13 @@ rm -f "$INTERIM"
 ) &
 INTERIM_PID=$!
 
+PROMPT="$(cat "$DIR/auto_prompt.md")"
+if [ "$SUPPLEMENTARY" = 1 ]; then
+  PROMPT="SUPPLEMENTARY READ (${STAMP}): today's main run already happened and handled every other cluster (see HANDOFF's newest entry and results/last_summary.txt). Only these cluster(s) were re-checked after missed Duo pushes and appear in \$CHECK_OUTPUT: ${CLUSTERS:-?}. Interpret, bookkeep, and (if idle) restack ONLY them. Do not touch or re-summarize the others. Append a short '(supplementary)' entry to HANDOFF instead of rewriting today's main entry.
+
+$PROMPT"
+fi
+
 MODEL="$MODEL_PRIMARY"
 attempt=1
 rc=1
@@ -132,7 +159,7 @@ SUBMITS_THIS_RUN=0
 while : ; do
   log "Invoking headless Claude (model=$MODEL, attempt $attempt/$((MAX_RETRY+1)))…"
   # shellcheck disable=SC2086
-  "$CLAUDE_BIN" -p "$(cat "$DIR/auto_prompt.md")" --model "$MODEL" $CLAUDE_ARGS >>"$LOG" 2>&1
+  "$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" $CLAUDE_ARGS >>"$LOG" 2>&1
   rc=$?
   log "Claude exited rc=$rc"
 
@@ -234,6 +261,17 @@ elif grep -qE '^RESULT_BANKED' "$SUMMARY" 2>/dev/null; then
   # -- a false trophy that trains the reader to ignore the real one.
   ntfy_push "🏆 BS45 — verified result!" "$msg" "urgent" "rotating_light,tada"
 else
-  ntfy_push "BS45 daily" "$msg" "default" "satellite"
+  if [ "$SUPPLEMENTARY" = 1 ]; then ntfy_push "BS45 supplementary (${CLUSTERS:-?})" "$msg" "default" "satellite"
+  else ntfy_push "BS45 daily" "$msg" "default" "satellite"; fi
+fi
+
+# --- 4. hourly re-push for clusters missed at 1pm (2026-08-24) --------------
+# Runs AFTER the main agent pass, so today's read was never delayed. Sequential:
+# the supplementary agent only starts once this pass is completely done.
+if [ "$SUPPLEMENTARY" != 1 ] && [ -n "$MISSED" ]; then
+  log "Missed Duo on: ${MISSED} — starting hourly re-push + supplementary read."
+  ntfy_push "BS45: will retry ${MISSED}" \
+    "You missed the Duo push(es) for ${MISSED}. I'll re-push every hour (up to 10 h) and read/restack as soon as you approve." "default" "hourglass"
+  SUPPLEMENTARY=1 CLUSTERS="$MISSED" "$DIR/daily_auto.sh"
 fi
 log "Done."

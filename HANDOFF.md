@@ -4,6 +4,27 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-24 (later) — HOURLY DUO RE-PUSH shipped (Daniel: "if I miss a push, ask
+again every hour until accepted"). Three files, all bash -n clean + stub-tested
+(missed-then-approved, never-approved cap, duo_run retry ok/give-up, missed-list
+parsing, no false NEW-HIT on the new output shape, real FOUND still alerts):
+(1) check_all_retry.sh — per-cluster attempt is now check_one(); after the first
+pass, every missed cluster gets a HIGH-priority phone nudge then a fresh push each
+RETRY_INTERVAL (3600s) for up to RETRY_MAX (10) rounds; tunables RETRY_MAX /
+RETRY_INTERVAL / RETRY_NUDGE(45s) / DUO (stub-able); "check starting" count is
+dynamic; NEW FOUND parser also stops at cluster banners / retry / missed lines.
+(2) duo_run.sh — nudge before every push + ONE bounded retry (RUN_RETRIES=1,
+RUN_RETRY_WAIT=300s) because it runs inside the agent session (hours of blocking
+would drop the API connection); sources notify.conf. (3) daily_auto.sh — main pass
+runs the checker with RETRY_MAX=0 (today's read is never delayed), parses MISSED
+from the Summary line, and AFTER the main agent pass spawns a SUPPLEMENTARY=1 child
+(own log auto_<date>_supp.log) for the missed clusters: hourly re-push, then a
+prompt-prefixed agent run that reads/restacks ONLY those clusters; zero taps on the
+first pass => exec straight into the supplementary for all four; supplementary
+never spawns another; give-up notification names the manual re-check command.
+Manual use unchanged: CLUSTERS="fir" ./cluster/deploy/check_all_retry.sh now
+re-pushes hourly until approved (Ctrl-C to stop).**
+
 **⚡ 2026-08-24 (Daniel session) — LOOP HARDENING after the 08-23 failure: root cause =
 "API Error: Connection closed mid-response" after a 3.5 h headless run (log
 results/auto_2026-08-23.log); the loop correctly refused to retry (agent had already

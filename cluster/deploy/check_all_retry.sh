@@ -11,11 +11,17 @@
 #     (no copy-paste), and a summary is texted to your phone via ntfy.
 #
 # If you don't approve a cluster's push within PUSH_WAIT, that cluster is
-# skipped (rather than re-pushing at you). Just re-run to pick it up.
+# skipped on the FIRST pass so the others are not held up. Then (2026-08-24,
+# Daniel's ask) every missed cluster gets a phone nudge + a fresh Duo push every
+# RETRY_INTERVAL seconds (default hourly), up to RETRY_MAX rounds (default 10),
+# until you approve. Ctrl-C stops a manual run. The daily loop runs the first
+# pass with RETRY_MAX=0 and does the hourly retries in a supplementary pass
+# AFTER the main agent run, so the day's read is never delayed by a missed tap.
 #
 # Requires: python3 (ships with macOS Command Line Tools).
 # Usage:  ./cluster/deploy/check_all_retry.sh
-# Tunables (env): PUSH_WAIT (default 180s), CLUSTER_USER.
+# Tunables (env): PUSH_WAIT (180s), RETRY_MAX (10), RETRY_INTERVAL (3600s),
+#                 RETRY_NUDGE (45s between the phone nudge and the push), CLUSTER_USER.
 
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -29,7 +35,10 @@ USER_ID="${CLUSTER_USER:-dangord}"
 # Unset (the daily loop) = all four, unchanged.
 CLUSTERS="${CLUSTERS:-fir nibi rorqual trillium}"
 PUSH_WAIT="${PUSH_WAIT:-180}"     # seconds to wait for you to tap each push
-DUO="$SCRIPT_DIR/duo_ssh.py"
+RETRY_MAX="${RETRY_MAX:-10}"      # hourly re-push rounds for missed clusters (0 = none)
+RETRY_INTERVAL="${RETRY_INTERVAL:-3600}"
+RETRY_NUDGE="${RETRY_NUDGE:-45}"  # phone nudge lands, then the push follows this many s later
+DUO="${DUO:-$SCRIPT_DIR/duo_ssh.py}"
 # The remote checker command lives in checker_cmd.txt so Claude Code can evolve it
 # (exclusion filter, rung label, gate probes) without touching this driver.
 CMD_FILE="$SCRIPT_DIR/checker_cmd.txt"
@@ -54,11 +63,11 @@ REMOTE='echo ===BS45BEGIN===
 '"$INNER"'
 echo ===BS45END==='
 
-ntfy_push "BS45 check starting" "4 Duo pushes coming one at a time — tap each to approve." "low" "hourglass"
+n_clusters="$(echo $CLUSTERS | wc -w | tr -d ' ')"
+ntfy_push "BS45 check starting" "${n_clusters} Duo push(es) coming one at a time (${CLUSTERS}) — tap each to approve." "low" "hourglass"
 
-reached=""
-missed=""
-for c in $CLUSTERS; do
+check_one() {  # $1 = cluster -> 0 if its output was captured, 1 if the push was missed
+  local c="$1" raw body
   echo ""                                    | tee -a "$OUT"
   echo "════════════════ $c ════════════════" | tee -a "$OUT"
   echo ">> [$c] Duo push sent — approve on your phone (waiting up to ${PUSH_WAIT}s)…"
@@ -68,21 +77,50 @@ for c in $CLUSTERS; do
   body="$(printf '%s' "$raw" | tr -d '\r' | awk '/===BS45BEGIN===/{f=1;next} /===BS45END===/{f=0} f')"
   if [ -n "$body" ]; then
     printf '%s\n' "$body" | tee -a "$OUT"
-    reached="$reached $c"
-  else
-    echo "(no approval within ${PUSH_WAIT}s — skipped; re-run to retry $c)" | tee -a "$OUT"
-    missed="$missed $c"
+    return 0
   fi
+  echo "(no approval within ${PUSH_WAIT}s — skipped this attempt)" | tee -a "$OUT"
+  return 1
+}
+
+reached=""
+missed=""
+for c in $CLUSTERS; do
+  if check_one "$c"; then reached="$reached $c"; else missed="$missed $c"; fi
+done
+
+# --- hourly re-push for missed clusters (2026-08-24) ------------------------
+# One nudge + one push per missed cluster per round; nothing overlaps. A cluster
+# that answers leaves the missed list; the loop ends when the list is empty or
+# RETRY_MAX rounds are used (bounded so a run can never collide with tomorrow's).
+round=0
+while [ -n "$missed" ] && [ "$round" -lt "$RETRY_MAX" ]; do
+  round=$((round+1))
+  echo ">> missed:${missed} — Duo retry round $round/$RETRY_MAX in ${RETRY_INTERVAL}s" | tee -a "$OUT"
+  sleep "$RETRY_INTERVAL"
+  still=""
+  for c in $missed; do
+    ntfy_push "BS45 Duo retry ${round}/${RETRY_MAX}: $c" \
+      "You missed the $c push earlier — a fresh one arrives in ${RETRY_NUDGE}s. Tap to approve." "high" "bell"
+    sleep "$RETRY_NUDGE"
+    if check_one "$c"; then reached="$reached $c"; else still="$still $c"; fi
+  done
+  missed="$still"
 done
 
 # --- phone summary ----------------------------------------------------------
 # End the section at ANY next "--- … ---" header: checker_cmd.txt's rung label is
 # EXPECTED to change (n=32 -> n=33 …); hardcoding it here would turn every
 # post-climb run into a false "possible NEW hit" alert (validated 2026-07-12).
-hits="$(awk '/--- NEW FOUND\? ---/{f=1;next} /^--- /{f=0} f' "$OUT" \
+# Also end at a cluster banner, a retry line, or a missed-push line (2026-08-24:
+# with hourly re-pushes those can directly follow a section).
+hits="$(awk '/--- NEW FOUND\? ---/{f=1;next} /^--- |^════|^>> |^\(no approval/{f=0} f' "$OUT" \
         | grep -vE '^\(none yet\)$' | grep -E '\S' | sort -u)"
 msg="reached:${reached:- none};"
-[ -n "$missed" ] && msg="$msg missed:${missed};"
+if [ -n "$missed" ]; then
+  if [ "$RETRY_MAX" -gt 0 ]; then msg="$msg missed:${missed} (gave up after $RETRY_MAX retry rounds);"
+  else msg="$msg missed:${missed};"; fi
+fi
 if [ -n "$hits" ]; then
   ntfy_push "🚨 BS45 possible NEW hit" "NEW FOUND line(s): ${hits}. Verify with tools/verify_npaf.py before claiming." "urgent" "rotating_light"
   msg="$msg NEW HIT — verify!"
