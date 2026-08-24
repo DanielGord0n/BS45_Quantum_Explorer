@@ -16,8 +16,10 @@ echoes in the run log, and the phone text says exactly that (bash -n OK); (2)
 auto_prompt.md — COMMIT-AS-YOU-GO hard rule (commit reads before any submit; commit
 IDs after each cluster's submits) and STACK DEPTH rule (maintain THREE singleton reps
 per lane on Fir/Rorqual so a missed Duo + a failed loop cannot idle a cluster).
-PASTES ISSUED to Daniel for immediate depth-3: Fir 7th rep x11 window-front lanes +
-Rorqual 11th rep x9 (names/env verbatim, -d singleton). Workhorse (3,13,0,0) total
+DEPTH-3 CONFIRMED IN (Daniel's pastes, all echoed): Fir 7th rep 56601161-171 (11
+lanes, Dependency behind 56591125-161 = 33 window-front jobs 3 deep); Rorqual 11th
+rep 19530229-238 (9 lanes, Dependency; 8th rep 19479915-917 R, 9th+10th 19526677-694
+PD) — both clusters now survive a missed Duo + a failed loop without idling. Workhorse (3,13,0,0) total
 ~3.7B tested (~1.4x n=42's fall depth) — variance territory, not yet anomalous.**
 
 **⚡ 2026-08-24 (daily loop) — NO HITS; 47 lanes read ALL HITLESS (Fir 3rd+4th
