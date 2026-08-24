@@ -127,6 +127,8 @@ INTERIM_PID=$!
 MODEL="$MODEL_PRIMARY"
 attempt=1
 rc=1
+PARTIAL=0
+SUBMITS_THIS_RUN=0
 while : ; do
   log "Invoking headless Claude (model=$MODEL, attempt $attempt/$((MAX_RETRY+1)))…"
   # shellcheck disable=SC2086
@@ -175,11 +177,35 @@ while : ; do
   fi
 
   # Anything else (incl. a PARTIAL run) -> stop. A human must look.
-  if limit_hit && ! did_nothing; then
-    log "USAGE LIMIT hit but the agent had ALREADY acted (summary or commit present)."
+  # 2026-08-24: this branch used to fire ONLY on a usage limit. The 08-23 run died on
+  # "API Error: Connection closed mid-response" after 3.5 h with a Rorqual restack
+  # already done and NOTHING committed -> fell through to a bare "no summary" text and
+  # the whole cycle's bookkeeping was lost until the next day reconstructed it.
+  # Now: any death after the agent acted -> preserve its edits as a PARTIAL commit,
+  # count the submit echoes in this run's log, and say so on the phone.
+  if ! did_nothing; then
+    PARTIAL=1
+    SUBMITS_THIS_RUN=$(grep -c "Submitted batch job" "$LOG" 2>/dev/null || echo 0)
+    if limit_hit; then why="Usage limit hit mid-run"; else why="Agent died mid-run (rc=$rc, e.g. API connection dropped)"; fi
+    log "$why after the agent had ALREADY acted (summary/commit/tree change present)."
     log "NOT retrying — a retry could double-submit. Human review required."
+    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+      if git add -A && git commit -q -m "auto: PARTIAL run ${STAMP} (rc=$rc) — agent edits preserved for review; ${SUBMITS_THIS_RUN} submit echo(es) in log"; then
+        log "Preserved uncommitted agent edits in a PARTIAL commit."
+        # bounded push (no coreutils timeout on macOS; osxkeychain can hang headless)
+        python3 - >>"$LOG" 2>&1 <<'PY' || log "push of PARTIAL commit did not complete — run git push origin main at the Mac"
+import subprocess, sys
+try:
+    subprocess.run(["git","push","-q","origin","main"], timeout=60, check=True)
+except Exception:
+    sys.exit(1)
+PY
+      else
+        log "Could not commit partial edits (see git status)."
+      fi
+    fi
     ntfy_push "⚠️ BS45 — partial run, needs you" \
-      "Usage limit hit mid-run after the agent had already acted. NOT retried (double-submit risk). Check results/auto_${STAMP}.log and squeue." \
+      "$why after the agent had already acted. NOT retried (double-submit risk). ${SUBMITS_THIS_RUN} 'Submitted batch job' echo(es) in this run's log; bookkeeping edits were committed as PARTIAL. Check results/auto_${STAMP}.log and squeue." \
       "high" "warning"
   fi
   break
@@ -193,6 +219,8 @@ elif credits_gone; then
   msg="BLOCKED — out of Claude usage credits ($(limit_reset_note)). Nothing was submitted, nothing changed; the clusters keep computing regardless. Re-run ./cluster/deploy/daily_auto.sh once credits reset."
 elif limit_hit; then
   msg="BLOCKED by the Claude usage limit after $attempt attempt(s). Nothing was submitted, nothing changed. Re-run ./cluster/deploy/daily_auto.sh once your limit resets."
+elif [ "${PARTIAL:-0}" = 1 ]; then
+  msg="PARTIAL run (rc=$rc): the agent acted (${SUBMITS_THIS_RUN:-0} submit echo(es) logged) but died before writing a summary. Its bookkeeping edits were committed as PARTIAL. Review results/auto_${STAMP}.log + squeue; the next loop folds this cycle in."
 else
   msg="Run finished (rc=$rc) but no summary was written — see results/auto_${STAMP}.log."
 fi

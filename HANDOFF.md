@@ -4,6 +4,22 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-24 (Daniel session) — LOOP HARDENING after the 08-23 failure: root cause =
+"API Error: Connection closed mid-response" after a 3.5 h headless run (log
+results/auto_2026-08-23.log); the loop correctly refused to retry (agent had already
+restacked Rorqual 19479900-917 -> double-submit risk) BUT nothing was committed, so
+the cycle's reads were lost until 08-24 reconstructed them, and a missed Fir Duo the
+same day left Fir IDLE until the 08-24 restack. FIXES SHIPPED: (1) daily_auto.sh —
+any post-action death (not just usage limits) now preserves the agent's uncommitted
+edits as an "auto: PARTIAL run" commit + bounded push, counts "Submitted batch job"
+echoes in the run log, and the phone text says exactly that (bash -n OK); (2)
+auto_prompt.md — COMMIT-AS-YOU-GO hard rule (commit reads before any submit; commit
+IDs after each cluster's submits) and STACK DEPTH rule (maintain THREE singleton reps
+per lane on Fir/Rorqual so a missed Duo + a failed loop cannot idle a cluster).
+PASTES ISSUED to Daniel for immediate depth-3: Fir 7th rep x11 window-front lanes +
+Rorqual 11th rep x9 (names/env verbatim, -d singleton). Workhorse (3,13,0,0) total
+~3.7B tested (~1.4x n=42's fall depth) — variance territory, not yet anomalous.**
+
 **⚡ 2026-08-24 (daily loop) — NO HITS; 47 lanes read ALL HITLESS (Fir 3rd+4th
 window-front reps 55911371-392 — first Fir data since 08-21 — + Nibi 1st rep
 20249817-822 + Rorqual 6th-rep tail 19379861-864 + full 7th rep 19479900-908 +

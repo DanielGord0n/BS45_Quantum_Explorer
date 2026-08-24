@@ -42,6 +42,15 @@ Do not re-run the checker.
    Daniel's phone within seconds; without it he waits an hour staring at "check
    done". The full summary still goes to `results/last_summary.txt` at the end.
 
+   **1b. COMMIT-AS-YOU-GO (hard rule, 2026-08-24).** The 08-23 run died on an API
+   connection drop after 3.5 h with NOTHING committed — the cycle's reads and a
+   Rorqual restack had to be reconstructed the next day. So: (a) as soon as the reads
+   are interpreted and HANDOFF + checker exclusions are updated for them, run
+   `git add -A && git commit -m "auto: <date> reads"` and the bounded push from step 4
+   BEFORE any duo_run submit; (b) after EACH cluster's submits echo job IDs, append
+   the IDs to HANDOFF and commit again immediately. A dropped connection must never
+   lose more than one cluster's restack IDs.
+
 2. **Decide** the single smartest action (skill doctrine: one option, one
    sentence of why). Branches:
    - **Jobs still running / too early for results** → do nothing but bookkeeping.
@@ -77,6 +86,11 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **STACK DEPTH (2026-08-24):** when restacking FIRSTHIT checkpoint lanes on Fir or
+     Rorqual, maintain THREE singleton reps queued per lane (`-J <lane> -d singleton`,
+     verbatim env incl. `WZ_FH_ORBIT_CANON=1`), not two — a missed Duo day plus one
+     failed loop idled Fir on 08-23/24. Submit (3 minus reps currently queued) per lane;
+     singleton serialization makes extra reps collision-proof.
    - *(RESOLVED 07-16: the JOIN22 n=29 canary `16243606` PASSED — banked, frontier re-opened.
      Its instructions are retired; the live priority is now the FIRSTHIT probes below.)*
 
