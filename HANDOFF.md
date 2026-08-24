@@ -1,8 +1,38 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-22 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-24 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-24 (daily loop) — NO HITS; 47 lanes read ALL HITLESS (Fir 3rd+4th
+window-front reps 55911371-392 — first Fir data since 08-21 — + Nibi 1st rep
+20249817-822 + Rorqual 6th-rep tail 19379861-864 + full 7th rep 19479900-908 +
+Trillium wave-19 1st rep 2178711-716); Fir IDLE + Rorqual 8th rep R with nothing
+behind ⇒ DOUBLE RESTACK via duo_run, all 40 echoed `Submitted batch job`: Fir
+56591125-161 = 11 flat lanes x2 singleton (5th+6th window-front rep), Rorqual
+19526677-694 = 9 rev lanes x2 singleton (9th+10th rep) — verbatim configs, same
+CKDIRs resume.** ⚠️ BOOKKEEPING NOTE: the 08-23 loop read Rorqual 5th rep
+19379847-855 + 6th-rep C lanes 19379856-860 and Trillium wave-18 2nd rep
+2126198-203 (all hitless) and RESTACKED Rorqual 19479900-917, updated the checker
+exclusions, but never wrote HANDOFF or committed — that cycle is recorded here and
+folded into today's commit. Reads: Fir (3,13,0,0) flat w4-8 tested 42.8-58.3M/rep
+(cum 243.9-248.1M), (5,9,6,6) w1-3 (cum 100.8-101.9M), (5,7,2,10) w1-3 (cum
+93.0-101.6M); Rorqual (3,13,0,0) rev w1-5 7th rep 32.4-33.3M (cum 241.0-247.0M),
+(1,7,8,8) w1-2 cum 145.3/142.5M, (5,5,8,8) w1-2 cum 120.0/117.0M (aborts still
+elevated on A/D, 23-107/lane, telemetry only); Nibi n=43 (8,-2,5,9) f9-11/r9-11
+1st rep 18.5-24.5M (cum 52.2-64.0M); Trillium (8,-2,5,9) f6 19.8M (cum 210.6M) /
+r6 30.6M (cum 296.0M, deepest lane fleet-wide) / f7 19.8M (cum 211.2M), siblings
+(6,8,5,7) 23.7M (cum 158.7M) / (8,10,1,3) 9.4M (cum 124.6M) / (0,2,1,13) 22.6M
+(cum 142.7M), all 178/178. Workhorse accounting: (3,13,0,0) deep w0-3 ~1.28B +
+flat fronts w4-8 ~1.23B + rev fronts w1-5 ~1.22B ≈ 3.7B tested — ~1.4x past
+n=42's ~2.66B comparable fall depth. Board after action: Fir 22 PD (5th rep
+Priority + 6th Dependency), Rorqual 19479909-917 9 R (8th rep, ~3.3h left) +
+19526677-694 18 PD, Trillium 2178717-722 6 PD (wave-19 2nd rep), Nibi
+20249823-828 6 PD — fleet 4/4 double-stacked. rung_status check run for the idle
+rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not
+SA). Tilt-criterion bookkeeping: Trillium sibling cums now 124.6-158.7M flat-end
+vs the ~450M/class line — no tilt, background grind continues. Checker exclusions
++47 (55911371-392, 20249817-822, 19379861-864, 19479900-908, 2178711-716).**
 
 **⚡ 2026-08-22 (daily loop) — NO HITS; 13 lanes read ALL HITLESS (Rorqual 4th-rep tail
 19215949-953 + Nibi 19683932/933 + Trillium wave-18 FIRST rep 2126192-197 — first
