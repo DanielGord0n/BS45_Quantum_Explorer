@@ -1,8 +1,33 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-24 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-25 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-25 (daily loop) — NO HITS; 20 lanes read ALL HITLESS (Fir window-front
+5th rep 56591125-138 + Rorqual 8th rep 19479909-917); all 4 clusters reached, first
+zero-missed-Duo day since the hourly re-push shipped.** Reads: Fir (3,13,0,0) flat
+w4-8 (56591125/27/28/30/32) tested 36.1-37.4M (cum 277.7-283.8M), (5,9,6,6) w1-3
+(56591133-135) 19.7-20.2M (cum 121.2-122.3M), (5,7,2,10) w1-3 (56591136-138)
+17.2-18.7M (cum 110.8-120.9M), aborted 0-2, arms 142-168/178; Rorqual (3,13,0,0)
+rev w1-5 (19479909-913) 29.9-33.1M (cum 271.9-276.9M, aborted=0), (1,7,8,8) w1-2
+(19479914/915) 20.1/19.7M (cum 165.1/162.8M), (5,5,8,8) w1-2 (19479916/917)
+16.6/17.1M (cum 136.7/132.9M) — A/D budget-aborts still elevated (45-102/lane,
+telemetry only, consistent since 08-20). Workhorse (3,13,0,0) accounting: deep w0-3
+~1.28B + flat fronts w4-8 ~1.40B + rev fronts w1-5 ~1.38B ≈ 4.06B tested ≈ 1.5x
+n=42's ~2.66B comparable fall depth — variance territory still, but the class is now
+half again past the n=42 precedent. Board at check: Fir 6th rep R + 7th rep
+56601161-171 PD = 2 reps/lane (depth-3 rule ⇒ top-up due); Rorqual 9th rep
+19526677-685 R + 10th 19526686-694 PD + 11th 19530229-238 PD = 3 deep, no action;
+Trillium wave-19 2nd rep 2178717-722 PD with NOTHING behind (⇒ wave-20 restack due,
+same trigger as 08-22); Nibi 2nd rep 20249823-828 PD Priority (queue latency days —
+1 rep queued is normal cover there, no action). ACTIONS: Fir 8th-rep top-up (11
+lanes x1 singleton) + Trillium wave-20 (6 lanes x2 singleton) via duo_run — IDs
+appended below after submit echoes. rung_status check run for the idle rail:
+EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not SA).
+Tilt-criterion bookkeeping: NO new n=43 reads this cycle (Trillium/Nibi lanes all
+PD) — sibling cums unchanged vs the ~450M/class line, no tilt, grind continues.
+Checker exclusions +20 (56591125/27/28/30/32-38, 19479909-917).**
 
 **⚡ 2026-08-24 (later) — HOURLY DUO RE-PUSH shipped (Daniel: "if I miss a push, ask
 again every hour until accepted"). Three files, all bash -n clean + stub-tested
