@@ -25,7 +25,9 @@ same trigger as 08-22); Nibi 2nd rep 20249823-828 PD Priority (queue latency day
 lanes x1 singleton) + Trillium wave-20 (6 lanes x2 singleton) via duo_run. FIR
 TOP-UP IN, all 11 echoed `Submitted batch job`: 56749324/325 (F44w4/w5),
 56749386 (F44w6), 56749390 (F44w7), 56749395-401 (F44w8, sA1-3, sB1-3) — Fir
-back to depth 3 (6th R + 7th PD + 8th PD). rung_status check run for the idle rail:
+back to depth 3 (6th R + 7th PD + 8th PD). TRILLIUM WAVE-20 IN, all 12 echoed:
+2192770-775 (1st rep T43f6/r6/f7/sA/sB/sC) + 2192776-781 (2nd rep, singleton) —
+Trillium 3 reps queued behind wave-19's 2178717-722. rung_status check run for the idle rail:
 EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not SA).
 Tilt-criterion bookkeeping: NO new n=43 reads this cycle (Trillium/Nibi lanes all
 PD) — sibling cums unchanged vs the ~450M/class line, no tilt, grind continues.
