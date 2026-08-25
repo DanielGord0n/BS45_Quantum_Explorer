@@ -13,7 +13,7 @@ than the shallow 41->42 trend — uniformly sparser OR concentrated classes empt
 streamers deprioritized 07-31). LEVER 18 = exploration hedge: 1 canonical lane each,
 flat skip-0, Nibi (--account=def-ikotsire_cpu, -J N44tA..E -d singleton), ~10% of
 fleet; pre-registered: <0.5M after 1 rep => stream-walled -> one rev try -> drop.
-PASTE ISSUED (Nibi, 1 push); IDs pending. Percentage-of-space answer for Daniel:
+CONFIRMED IN: Nibi 20506642-646 = N44tA (9,9,0,4) / tB (3,5,0,12) / tC (1,13,2,2) / tD (7,11,2,2) / tE (5,11,4,4), all PD; Nibi's n=43 2nd rep 20249823-828 PD Priority behind. Percentage-of-space answer for Daniel:
 <0.1% of cells exhausted, ~1e-4..1e-7 of the candidate stream — correct but the
 wrong yardstick (ordered search); depth-vs-hit-history is the yardstick, above.
 Fleet otherwise 4/4 stacked 2-3 deep (loop's first clean-sweep Duo day; nudges +
