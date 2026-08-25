@@ -4,6 +4,21 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-25 (Daniel session) — OVERDUE ANALYSIS + LEVER 18: workhorse (3,13,0,0)
+~4.06B tested, almost all post-dedup => ~40x n=42's DISTINCT cost (~91M), hitless;
+n=43 published ~10x overdue. Verdict: n>=43 is >=10x harder per distinct candidate
+than the shallow 41->42 trend — uniformly sparser OR concentrated classes empty
+(indistinguishable without breadth). Five n=44 classes essentially untested
+((9,9,0,4) 0, (3,5,0,12) 0, (1,13,2,2) ~9M, (7,11,2,2) ~8M, (5,11,4,4) ~20M; slow
+streamers deprioritized 07-31). LEVER 18 = exploration hedge: 1 canonical lane each,
+flat skip-0, Nibi (--account=def-ikotsire_cpu, -J N44tA..E -d singleton), ~10% of
+fleet; pre-registered: <0.5M after 1 rep => stream-walled -> one rev try -> drop.
+PASTE ISSUED (Nibi, 1 push); IDs pending. Percentage-of-space answer for Daniel:
+<0.1% of cells exhausted, ~1e-4..1e-7 of the candidate stream — correct but the
+wrong yardstick (ordered search); depth-vs-hit-history is the yardstick, above.
+Fleet otherwise 4/4 stacked 2-3 deep (loop's first clean-sweep Duo day; nudges +
+commit-as-you-go confirmed working: 3 commits).**
+
 **⚡ 2026-08-25 (daily loop) — NO HITS; 20 lanes read ALL HITLESS (Fir window-front
 5th rep 56591125-138 + Rorqual 8th rep 19479909-917); all 4 clusters reached, first
 zero-missed-Duo day since the hourly re-push shipped.** Reads: Fir (3,13,0,0) flat

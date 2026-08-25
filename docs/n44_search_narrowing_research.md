@@ -272,3 +272,21 @@ rev (3,13,0,0) skips 1-5 + (1,7,8,8)/(5,5,8,8) skips 1-2 (9 lanes). All fresh CK
 Additive to the n=43 program (no lanes cannibalized); partially pre-empts the 450M
 tilt criterion by growing the n=44 share +20 lanes. Measurement: first rep per
 window covers its front (~15-40M); read like any wave.
+
+
+## Lever 18 (2026-08-25): n=44 TAIL-CLASS EXPLORATION HEDGE — breadth, pre-registered
+
+Finding: workhorse (3,13,0,0) has absorbed ~4.06B tested (mostly post-dedup, i.e.
+distinct) vs n=42's ~91M distinct at its fall (2.66B raw / 29.18x) — roughly 40x
+n=42's distinct cost, hitless; n=43 published is ~10x overdue. So n>=43 is >=10x
+harder per distinct candidate than the 41->42 trend (~1.2x/rung) predicted: either
+density is uniformly far lower at these n (then window fronts remain the best use of
+a lane-day) or the concentrated classes are EMPTY (then only breadth can find the
+solution). The two hypotheses are indistinguishable without breadth data, and five
+of the twelve n=44 classes are essentially untested: (9,9,0,4) 0, (3,5,0,12) 0,
+(1,13,2,2) ~9M, (7,11,2,2) ~8M, (5,11,4,4) ~20M (deprioritized 07-31 for 30-80x
+slower streaming). HEDGE DEPLOYED 2026-08-25: ONE canonical lane per tail class,
+flat skip-0, on Nibi (lightest queue, keeps Fir/Rorqual fronts undiluted) = ~10% of
+the fleet. Pre-registered read: after 1 rep, tested <0.5M => stream-walled at that
+end -> one reverse-end try, then drop; otherwise keep at depth 2-3 (singleton
+restacks). Not a throughput play — an exploration/exploitation hedge.
