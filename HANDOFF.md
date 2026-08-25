@@ -22,8 +22,10 @@ half again past the n=42 precedent. Board at check: Fir 6th rep R + 7th rep
 Trillium wave-19 2nd rep 2178717-722 PD with NOTHING behind (⇒ wave-20 restack due,
 same trigger as 08-22); Nibi 2nd rep 20249823-828 PD Priority (queue latency days —
 1 rep queued is normal cover there, no action). ACTIONS: Fir 8th-rep top-up (11
-lanes x1 singleton) + Trillium wave-20 (6 lanes x2 singleton) via duo_run — IDs
-appended below after submit echoes. rung_status check run for the idle rail:
+lanes x1 singleton) + Trillium wave-20 (6 lanes x2 singleton) via duo_run. FIR
+TOP-UP IN, all 11 echoed `Submitted batch job`: 56749324/325 (F44w4/w5),
+56749386 (F44w6), 56749390 (F44w7), 56749395-401 (F44w8, sA1-3, sB1-3) — Fir
+back to depth 3 (6th R + 7th PD + 8th PD). rung_status check run for the idle rail:
 EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not SA).
 Tilt-criterion bookkeeping: NO new n=43 reads this cycle (Trillium/Nibi lanes all
 PD) — sibling cums unchanged vs the ~450M/class line, no tilt, grind continues.
