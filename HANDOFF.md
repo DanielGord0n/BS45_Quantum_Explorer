@@ -26,7 +26,9 @@ no action; Nibi n=43 2nd rep 20249823-827 R (first Nibi runtime since the 08-21
 submit — queue latency cleared) + 828 PD, lever-18 lanes 20506642-646 PD Priority,
 no action. ACTIONS: Fir 9th-rep top-up (11 lanes x1 singleton) + Rorqual 12th-rep
 top-up (9 lanes x1 singleton) via duo_run, verbatim configs, same CKDIRs.
-FIR 9TH REP IN: <pending>. RORQUAL 12TH REP IN: <pending>. rung_status check run
+FIR 9TH REP IN, all 11 echoed `Submitted batch job`: 56917602-606 (F44w4-8),
+56917607-609 (F44sA1-3), 56917610-612 (F44sB1-3) — Fir back to depth 3 (7th R +
+8th PD + 9th PD). RORQUAL 12TH REP IN: <pending>. rung_status check run
 for the idle rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit
 ckpt work, not SA). Tilt-criterion bookkeeping: NO new n=43 reads this cycle
 (Nibi lanes R, Trillium all PD) — sibling cums unchanged vs the ~450M/class line,
