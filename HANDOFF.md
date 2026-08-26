@@ -4,6 +4,35 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-26 (daily loop) — NO HITS; 20 lanes read ALL HITLESS (Fir 6th
+window-front rep 56591139-143/148/157-161 + Rorqual 9th rep 19526677-685); all 4
+clusters reached.** Reads: Fir (3,13,0,0) flat w4-8 (56591139-143) tested
+29.4-32.8M (cum 310.0-314.2M), (5,9,6,6) w1-3 (56591148/157/158) 18.6-18.8M (cum
+140.5-141.5M), (5,7,2,10) w1-3 (56591159-161) 16.8-18.2M (cum 128.1-139.6M),
+aborted=0, arms 141-168/178; Rorqual (3,13,0,0) rev w1-5 (19526677-681) tested
+29.1-31.4M (cum 302.0-308.0M, aborted=0), (1,7,8,8) w1-2 (19526682/683) 19.5/19.7M
+(cum 185.8/180.7M), (5,5,8,8) w1-2 (19526684/685) 17.3/16.9M (cum 154.0/150.0M) —
+A/D budget-aborts still elevated (27-131/lane, telemetry only, consistent since
+08-20). NOTE: first nonzero cells_done on workhorse rev lanes (19526677
+cells_done_sum=4 orbit_dup=47; 19526680 sum=1 orbit_dup=13) — deepest rev arms are
+now COMPLETING whole cells. Workhorse (3,13,0,0) accounting: deep w0-3 ~1.28B +
+flat fronts w4-8 ~1.56B + rev fronts w1-5 ~1.52B ≈ 4.36B tested ≈ 1.64x n=42's
+~2.66B comparable fall depth — grinding past the 08-25 overdue-analysis line, no
+tilt trigger. Board at check: Fir 7th rep 56601161-171 R (~5.5h in) + 8th rep
+56749324-401 PD = depth 2 (⇒ 9th-rep top-up due); Rorqual 10th rep 19526686-694 R
++ 11th rep 19530229-238 PD = depth 2 (⇒ 12th-rep top-up due); Trillium wave-19 2nd
+rep 2178717-722 PD Priority + wave-20 2192770-781 PD Dependency = 3 reps queued,
+no action; Nibi n=43 2nd rep 20249823-827 R (first Nibi runtime since the 08-21
+submit — queue latency cleared) + 828 PD, lever-18 lanes 20506642-646 PD Priority,
+no action. ACTIONS: Fir 9th-rep top-up (11 lanes x1 singleton) + Rorqual 12th-rep
+top-up (9 lanes x1 singleton) via duo_run, verbatim configs, same CKDIRs.
+FIR 9TH REP IN: <pending>. RORQUAL 12TH REP IN: <pending>. rung_status check run
+for the idle rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit
+ckpt work, not SA). Tilt-criterion bookkeeping: NO new n=43 reads this cycle
+(Nibi lanes R, Trillium all PD) — sibling cums unchanged vs the ~450M/class line,
+no tilt, grind continues. Checker exclusions +20 (56591139-143/148/157-161,
+19526677-685).**
+
 **⚡ 2026-08-25 (Daniel session) — OVERDUE ANALYSIS + LEVER 18: workhorse (3,13,0,0)
 ~4.06B tested, almost all post-dedup => ~40x n=42's DISTINCT cost (~91M), hitless;
 n=43 published ~10x overdue. Verdict: n>=43 is >=10x harder per distinct candidate
