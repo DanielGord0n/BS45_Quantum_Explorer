@@ -28,7 +28,9 @@ no action. ACTIONS: Fir 9th-rep top-up (11 lanes x1 singleton) + Rorqual 12th-re
 top-up (9 lanes x1 singleton) via duo_run, verbatim configs, same CKDIRs.
 FIR 9TH REP IN, all 11 echoed `Submitted batch job`: 56917602-606 (F44w4-8),
 56917607-609 (F44sA1-3), 56917610-612 (F44sB1-3) — Fir back to depth 3 (7th R +
-8th PD + 9th PD). RORQUAL 12TH REP IN: <pending>. rung_status check run
+8th PD + 9th PD). RORQUAL 12TH REP IN, all 9 echoed `Submitted batch job`: 19666521-525 (R44rC1-5),
+19666526/527 (R44rA1-2), 19666528/529 (R44rD1-2) — Rorqual back to depth 3 (10th
+R + 11th PD + 12th PD). rung_status check run
 for the idle rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit
 ckpt work, not SA). Tilt-criterion bookkeeping: NO new n=43 reads this cycle
 (Nibi lanes R, Trillium all PD) — sibling cums unchanged vs the ~450M/class line,
