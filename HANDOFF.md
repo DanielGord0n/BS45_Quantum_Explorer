@@ -31,6 +31,9 @@ bookkeeping: NEW n=43 reads this cycle (Nibi w9-11 cum 70-86M) — far below the
 rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not
 SA). ACTIONS: Fir 10th-rep top-up (11 lanes x1 singleton) + Rorqual 13th-rep
 top-up (9 lanes x1 singleton) via duo_run, verbatim configs, same CKDIRs.
+FIR 10TH REP IN, all 11 echoed `Submitted batch job`: 57086727-731 (F44w4-8),
+57086732-734 (F44sA1-3), 57086735-737 (F44sB1-3) — Fir back to depth 3 (8th R +
+9th PD + 10th PD).
 Checker exclusions +25 (56601161-171, 19526686-694, 20249823-827).**
 
 **⚡ 2026-08-26 (daily loop) — NO HITS; 20 lanes read ALL HITLESS (Fir 6th
