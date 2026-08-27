@@ -33,7 +33,9 @@ SA). ACTIONS: Fir 10th-rep top-up (11 lanes x1 singleton) + Rorqual 13th-rep
 top-up (9 lanes x1 singleton) via duo_run, verbatim configs, same CKDIRs.
 FIR 10TH REP IN, all 11 echoed `Submitted batch job`: 57086727-731 (F44w4-8),
 57086732-734 (F44sA1-3), 57086735-737 (F44sB1-3) — Fir back to depth 3 (8th R +
-9th PD + 10th PD).
+9th PD + 10th PD). RORQUAL 13TH REP IN, all 9 echoed `Submitted batch job`:
+19742337-341 (R44rC1-5), 19742342/343 (R44rA1-2), 19742344/345 (R44rD1-2) —
+Rorqual back to depth 3 (11th R + 12th PD + 13th PD); fleet 4/4 covered.
 Checker exclusions +25 (56601161-171, 19526686-694, 20249823-827).**
 
 **⚡ 2026-08-26 (daily loop) — NO HITS; 20 lanes read ALL HITLESS (Fir 6th
