@@ -1,8 +1,41 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-27 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-28 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-28 (daily loop) — NO HITS; 21 lanes read ALL HITLESS (Fir 8th
+window-front rep 56749324/325/386/390/395-401 + Rorqual 11th rep 19530229-238 +
+Nibi 20249828 = last n=43 2nd-rep lane, set COMPLETE); all 4 clusters reached.**
+Reads: Fir (3,13,0,0) flat w4-8 (56749324/325/386/390/395) tested 23.6-26.1M
+(cum 358.6-368.7M, aborted=0, arms 142-143/178, cells_done_sum=0), (5,9,6,6)
+w1-3 (56749396-398) 15.3-16.2M (cum 173.0-175.5M), (5,7,2,10) w1-3
+(56749399-401) 15.8-17.7M (cum 160.8-175.0M); Rorqual (3,13,0,0) rev w1-5
+(19530229-233) tested 28.8-30.9M (cum 361.3-365.3M, aborted=0) — cell
+completions continue on rev fronts (19530230 cells_done_sum=2 orbit_dup=22;
+third consecutive cycle), (1,7,8,8) w1-2 (19530234/235) 20.4/19.8M (cum
+226.7/219.9M), (5,5,8,8) w1-2 (19530237/238) 15.9/15.6M (cum 184.1/184.1M) —
+A/D budget-aborts still elevated (13-97/lane, telemetry only, consistent since
+08-20); Nibi n=43 (8,-2,5,9) w11 2nd rep (20249828) tested 22.4M (cum 85.0M,
+arms 158/178, aborted=2) — Nibi 2nd-rep set 20249823-828 COMPLETE all hitless.
+Workhorse (3,13,0,0) accounting: deep w0-3 ~1.28B + flat fronts w4-8 ~1.82B +
+rev fronts w1-5 ~1.82B ≈ 4.92B tested ≈ 1.85x n=42's ~2.66B comparable fall
+depth — grinding, no tilt trigger. Board at check: Fir 9th rep w4-8 56917602-606
+R (~7.5h in) + 9th rep sA/sB 56917607-612 PD Priority + 10th rep 57086727-737 PD
+= depth 2 (⇒ 11th-rep top-up due); Rorqual 12th rep 19666521-529 R (~1.8-3.9h
+in) + 13th rep 19742337-345 PD = depth 2 (⇒ 14th-rep top-up due); Trillium
+wave-19 2nd rep 2178717-722 now R (~4-4.4h in, first runtime after days PD) +
+wave-20 2192770-781 PD Dependency = 3 reps, no action; Nibi lever-18 tail-class
+lanes 20506642-646 PD Priority (still zero runtime — queue latency), n=43 lanes
+now EMPTY — no n=43 restack this cycle: lever-18 is Nibi's queued work and 6
+more n=43 singletons in the same account queue would contend with the
+pre-registered hedge; revisit once lever-18 gets runtime. Tilt-criterion
+bookkeeping: NEW n=43 read this cycle (Nibi w11 cum 85M) — far below the
+~450M/class line, no tilt, grind continues. rung_status check run for the idle
+rail: EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not
+SA). ACTIONS: Fir 11th-rep top-up (11 lanes x1 singleton) + Rorqual 14th-rep
+top-up (9 lanes x1 singleton) via duo_run, verbatim configs, same CKDIRs.
+Checker exclusions +21 (56749324/325/386/390/395-401, 19530229-238, 20249828).**
 
 **⚡ 2026-08-27 (daily loop) — NO HITS; 25 lanes read ALL HITLESS (Fir 7th
 window-front rep 56601161-171 + Rorqual 10th rep 19526686-694 + Nibi n=43 2nd rep
