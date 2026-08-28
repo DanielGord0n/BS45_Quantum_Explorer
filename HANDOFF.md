@@ -11,7 +11,7 @@ distinct cost). FIX: mirror the 5 tail-class lanes onto FIR (the only cluster
 admitting our jobs daily): -J F44tA..E -d singleton, same env, fresh Fir CKDIRs.
 Nibi copies left PD as backup (if both run it is ~5 lane-days of duplicate work,
 accepted; whichever reports first is read under the pre-registered stream-wall rule).
-PASTE ISSUED (Fir, 1 push); IDs pending.**
+CONFIRMED IN: Fir 57273914/915/917/918/919 = F44tA..E, PD (None) — Fir admits daily, first tail-class telemetry expected within 1-2 reads.**
 
 **⚡ 2026-08-28 (daily loop) — NO HITS; 21 lanes read ALL HITLESS (Fir 8th
 window-front rep 56749324/325/386/390/395-401 + Rorqual 11th rep 19530229-238 +
