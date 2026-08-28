@@ -4,6 +4,15 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-28 (Daniel session) — LEVER 18 STUCK: Nibi tail-class lanes 20506642-646
+still PD with ZERO runtime after 3 days (Nibi priority), so the breadth hedge has not
+run at all while the workhorse climbed to ~4.92B (~1.85x n=42 raw depth, ~50x its
+distinct cost). FIX: mirror the 5 tail-class lanes onto FIR (the only cluster
+admitting our jobs daily): -J F44tA..E -d singleton, same env, fresh Fir CKDIRs.
+Nibi copies left PD as backup (if both run it is ~5 lane-days of duplicate work,
+accepted; whichever reports first is read under the pre-registered stream-wall rule).
+PASTE ISSUED (Fir, 1 push); IDs pending.**
+
 **⚡ 2026-08-28 (daily loop) — NO HITS; 21 lanes read ALL HITLESS (Fir 8th
 window-front rep 56749324/325/386/390/395-401 + Rorqual 11th rep 19530229-238 +
 Nibi 20249828 = last n=43 2nd-rep lane, set COMPLETE); all 4 clusters reached.**
