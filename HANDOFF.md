@@ -1,8 +1,31 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-28 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-29 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-29 (daily loop) — NO HITS; TRILLIUM ONLY (Fir/Nibi/Rorqual Duo pushes
+unanswered in 180s — no reads, no board visibility there this pass); Trillium wave-19
+2nd rep 2178717-722 read ALL HITLESS (6 n=43 lanes, arms 178/178 summarized each,
+arms_with_hits=0).** Reads: (8,-2,5,9) f6 (2178717) tested 18.7M (cum 229.3M) / r6
+(2178718) 30.6M (cum 326.6M, deepest n=43 lane fleet-wide) / f7 (2178719) 16.5M (cum
+227.8M); siblings FLAT (6,8,5,7) (2178720) 22.9M (cum 181.6M), (8,10,1,3) (2178721)
+8.3M (cum 132.9M), (0,2,1,13) (2178722) 20.3M (cum 163.1M); aborted 0-57/lane,
+telemetry only; all cums arithmetic-consistent with the 08-24 1st-rep reads. Board at
+check: Trillium wave-20 1st rep 2192770-775 R (~6.4-6.6h in, lands ~19:00 EDT) + 2nd
+rep 2192776-781 PD Dependency = depth 2, NOT at the restack trigger (last-rep-with-
+nothing-behind) — wave-21 due at the next natural read, no action today. Tilt-criterion
+bookkeeping: NEW n=43 reads this cycle — deepest sibling (6,8,5,7) 181.6M vs the
+~450M/class line, no tilt, grind continues. rung_status check run for the idle rail:
+EXHAUSTED = SA-refill forbidden as always (this is firsthit ckpt work, not SA).
+ACTIONS: bookkeeping only — NO submits this pass; the daily_auto SUPPLEMENTARY child
+(hourly Duo re-push, up to 10 rounds) takes over fir/nibi/rorqual after this run: it
+will read Fir 9th rep + Rorqual 12th rep + any lever-18 F44tA-E telemetry (57273914/
+915/917/918/919) and top up Fir (11 lanes) / Rorqual (9 lanes) to depth 3 with real
+queue state; blind top-ups from the main pass would only duplicate that. Depth math:
+Fir and Rorqual each held 3 reps at the 08-28 check, so even with today's rep landed
+they sit at depth 2 — covered through tomorrow's loop even if every re-push is missed.
+Checker exclusions +6 (2178717-722).**
 
 **⚡ 2026-08-28 (Daniel session) — LEVER 18 STUCK: Nibi tail-class lanes 20506642-646
 still PD with ZERO runtime after 3 days (Nibi priority), so the breadth hedge has not
