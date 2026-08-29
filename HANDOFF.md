@@ -12,9 +12,10 @@ submits and no summary. FIXES: auto_prompt.md hard rule (duo_run FOREGROUND only
 ending the turn ends the run); daily_auto.sh SUBMITS count "0\n0" bug fixed and rc=0
 no-summary case worded correctly. THE THREE PLANNED SUBMITS still due -> PASTES
 ISSUED to Daniel: Fir 12th-rep top-up x11 + F44tAr ((9,9,0,4) REVERSE try per the
-lever-18 rule, ord2 skip0 fresh CKDIR); Rorqual 15th-rep top-up x9. Queue snapshot
-at the supp read: Fir 10th rep R (~9.5h) + 11th PD (depth 2), tails F44tB-E R;
-Rorqual 13th R (~3.5-5h) + 14th PD (depth 2). IDs pending.**
+lever-18 rule, ord2 skip0 fresh CKDIR); Rorqual 15th-rep top-up x9. SUBMITTED BY CLAUDE via duo_run (Daniel tapped):
+Fir 57437171-183 = 12th rep x11 (F44w4-8/sA1-3/sB1-3) + F44tAr (57437183) rev try
+=> 38 F44 jobs queued; Rorqual 19917514-522 = 15th rep x9 => 26 R44 jobs (depth 3
+both). Trillium top-up next (T43 lanes, verbatim).**
 
 **⚡ 2026-08-29 (supplementary) — NO HITS; Fir/Nibi/Rorqual ALL REACHED on the hourly
 re-push (Fir on retry round 1); 23 lanes read ALL HITLESS, incl. the FIRST lever-18
