@@ -1357,6 +1357,7 @@ int main(int argc, char **argv) {
       auto rev = [](vector<int> v) { for (size_t i = 0, j = v.size() - 1; i < j; i++, j--) swap(v[i], v[j]); return v; };
       auto neg = [](vector<int> v) { for (auto &x : v) x = -x; return v; };
       long long best_lo = -1, best_ties = 0; int matches = 0; long long best_score = -1;
+      int canon_kept = 0;  // 2026-08-29: how many matched orbit cells survive WZ_FH_ORBIT_CANON
       for (int var = 0; var < 64; var++) {
         vector<int> C = C0, D = D0;
         if (var & 1) C = rev(C);
@@ -1380,6 +1381,12 @@ int main(int argc, char **argv) {
               else if (s2 == sc) ties++;
             }
             matches++;
+            {
+              bool kept = !orbit_canon || fh_keep.count(fh_cellkey(fhProfs[pi2].px, fhProfs[pi2].py)) > 0;
+              if (kept) canon_kept++;
+              cout << "  [locate] variant=" << var << " cell_idx=" << pi2
+                   << " canon_kept=" << (kept ? "YES" : "no") << "\n";
+            }
             if (best_lo < 0 || (long long)pi2 < best_lo || lo < best_lo) {
               best_lo = lo; best_ties = ties; best_score = sc;
               cout << "  [locate] variant=" << var << " exact_idx_this_binary=" << pi2
@@ -1394,6 +1401,8 @@ int main(int argc, char **argv) {
                 "either filtered out (BUG: filters must keep known solutions) or "
                 "modulus/parse mismatch\n" << flush;
       } else {
+        cout << "LOCATE_CANON: orbit_canon=" << (orbit_canon ? 1 : 0) << " matched_cells=" << matches
+             << " kept_cells=" << canon_kept << " retained=" << (canon_kept > 0 ? "YES" : "NO — BUG: canon dropped every cell of a known solution's orbit") << "\n";
         cout << "LOCATE: cell_score=" << best_score << " rank_lo=" << best_lo
              << " ties=" << best_ties << " of " << fhProfs.size()
              << " cells; window_lo=" << best_lo / 178

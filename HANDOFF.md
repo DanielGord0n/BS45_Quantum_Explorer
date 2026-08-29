@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-29 (Daniel session, evening) — SOLVER AUDIT PASSED + WINDOW MAP FINDING.
+Daniel asked whether the post-08-04 build (orbit canon) broke the search. Verified
+locally with the LOCATE instrument (extended: LOCATE_CANON retained=YES/NO, committed):
+all 5 known solutions (ours 41/42, WZ 41/42/43) keep >=1 canonical cell -> canon is
+sound at the campaign lengths incl. even n. End-to-end regression queued: Fir 57454076
+F41regr (our n=41 hit's exact lane, oc1) — expect FOUND in one rep. NO BUG. FINDING:
+known solutions' cells sit at flat windows 0 / ~8-15 / ~255-571 / ~499-842 / and the
+far reverse end (ours-42 = rev w4) — our n=43 published-class lanes (flat w0-11, rev
+w0-11) have NEVER reached WZ-43's band (w255-571); the "overdue" verdicts assumed a
+front-loaded prior the data refutes (56k-cell tie blocks). NEXT: lever 19 = broad
+shallow window sweep (docs/n44_search_narrowing_research.md, design pending: walltime,
+CKDIR keying, queue limits). Professor update drafted for Daniel.**
+
 **⚡ 2026-08-29 (Daniel session, after the PARTIAL) — ROOT CAUSE of the supplementary
 PARTIAL: reads + bookkeeping succeeded and were committed (a7c37ed, commit-as-you-go
 worked), but the agent ran the Fir duo_run submit IN THE BACKGROUND and ended its turn

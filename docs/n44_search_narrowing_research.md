@@ -290,3 +290,35 @@ flat skip-0, on Nibi (lightest queue, keeps Fir/Rorqual fronts undiluted) = ~10%
 the fleet. Pre-registered read: after 1 rep, tested <0.5M => stream-walled at that
 end -> one reverse-end try, then drop; otherwise keep at depth 2-3 (singleton
 restacks). Not a throughput play — an exploration/exploitation hedge.
+
+
+## 2026-08-29 — SOLVER AUDIT (Daniel: "double check your code") + the WINDOW MAP finding
+
+Audit: LOCATE instrument extended with a canon-retention verdict (`LOCATE_CANON:
+retained=YES/NO`, wz_match.cpp). Local run on all five known solutions with
+WZ_FH_ORBIT_CANON=1: ours-41 kept 1/8 orbit cells, WZ-41 1/8, ours-42 5/48, WZ-42 4/64,
+WZ-43 1/4 — ALL retained (even n included; canon had only been re-find-validated at
+n=19/29 before). Orbit code reviewed: 32 variants = full neg/rev/swap group, reversal
+index map correct, representative always a real cell. End-to-end regression lane
+queued: Fir 57454076 F41regr (our n=41 hit's exact lane, ord1 skip8, oc1 fresh CKDIR);
+expected FOUND within one rep (original hit at 4.9 h). VERDICT: no bug; the "old
+solver" = this solver minus canon.
+
+THE WINDOW MAP (flat-order cell rank of the five known solutions, 178-cell windows):
+  ours-41  window ~8-15  (cluster-true 8)     tie block 4k cells
+  WZ-41    window ~499-842                    tie block 61k cells
+  ours-42  window ~3932-3955 = REVERSE w4     (cell_score 36, the un-flat END)
+  WZ-42    window 0                           tie block 112 cells
+  WZ-43    window ~255-571                    tie block 56k cells
+Implications: (1) known solutions sit ANYWHERE in the ordering — front, middle, deep,
+and the extreme back; the cell-level flatness prior is weak (huge tie blocks). (2) Our
+n=43 published-class coverage (flat w0-11 + rev w0-11) has NEVER reached the band that
+contains the one known n=43 solution (flat w255-571) — the "10x overdue" verdict was
+measured against a front-loaded prior the data does not support. (3) Depth in ~15
+windows (n=44 workhorse: 5B tested, w0-8 flat + w0-5 rev of ~200 canonical windows)
+buys much less than breadth: lever 17's "fronts are gold" applies to ALL windows.
+NEXT LEVER (19, to design): BROAD SHALLOW WINDOW SWEEP — many windows x short reps,
+front-first; for n=43 a sweep of w255-571 replicates WZ-43 deterministically (a
+capability result for the paper), for n=44 sweep all ~200 workhorse windows + the
+fast classes. Design questions: walltime per window (3h vs 12h), checkpoint keying
+per window, queue limits (~300 jobs/cluster), stack order.
