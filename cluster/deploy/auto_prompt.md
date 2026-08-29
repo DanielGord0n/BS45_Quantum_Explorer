@@ -92,6 +92,13 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **LEVER 19 SWEEP RULES (2026-08-29, supersede stack-depth for sweep lanes):** read
+     `docs/lever19_sweep_plan.md`. Sweep lanes (names F44i*/F44Bi*/R44i*/R44Ai*/R44Di*/
+     T43b*/N43b*) are ONE rep each — never restack the same k. Do NOT top up the deep
+     front stacks (F44w*/F44s*/R44r*) while sweep lanes are pending on that cluster.
+     When a cluster's pending sweep lanes drop below ~8, submit the NEXT pass/phase
+     from the plan tables (verbatim env, k in the name) and append it to the plan.
+     Controls to report loudly: F41regr (n=41 re-find) and any Track-B FOUND.
      **STACK DEPTH (2026-08-24):** when restacking FIRSTHIT checkpoint lanes on Fir or
      Rorqual, maintain THREE singleton reps queued per lane (`-J <lane> -d singleton`,
      verbatim env incl. `WZ_FH_ORBIT_CANON=1`), not two — a missed Duo day plus one
