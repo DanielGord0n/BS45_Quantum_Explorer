@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-29 (Daniel session, late) — LEVER 19 PASS 1 SUBMITTED via duo_run (Daniel
+tapped 4): Track A n=44 interior — Fir 39 lanes (F44i100..2900 workhorse step 100 +
+F44Bi500..5000 (3,3,4,12) step 500), Rorqual 48 (R44i3000..5700 workhorse + R44Ai/R44Di
+500..5000 for (1,7,8,8)/(5,5,8,8)); Track B n=43 WZ-43 band control — Trillium 24
+(T43b255..439 step 8), Nibi 16 (N43b447..567 step 8). All -J named, -d singleton,
+ORBIT_CANON=1, one rep each, fresh CKDIRs (skip-keyed). Plan + pass tables + loop rules:
+docs/lever19_sweep_plan.md (prompt updated: no front top-ups while sweep pending; advance
+passes when pending <8). Queue order: sweep lanes sit behind the already-queued front
+stacks (age priority) — expect first sweep reads in ~2-3 days on Fir/Rorqual. Controls
+outstanding: F41regr 57454076 (n=41 re-find), Track B (WZ-43 re-find).**
+
 **⚡ 2026-08-29 (Daniel session, evening) — SOLVER AUDIT PASSED + WINDOW MAP FINDING.
 Daniel asked whether the post-08-04 build (orbit canon) broke the search. Verified
 locally with the LOCATE instrument (extended: LOCATE_CANON retained=YES/NO, committed):
