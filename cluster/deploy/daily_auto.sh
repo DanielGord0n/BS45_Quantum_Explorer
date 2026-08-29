@@ -212,8 +212,10 @@ while : ; do
   # count the submit echoes in this run's log, and say so on the phone.
   if ! did_nothing; then
     PARTIAL=1
-    SUBMITS_THIS_RUN=$(grep -c "Submitted batch job" "$LOG" 2>/dev/null || echo 0)
-    if limit_hit; then why="Usage limit hit mid-run"; else why="Agent died mid-run (rc=$rc, e.g. API connection dropped)"; fi
+    SUBMITS_THIS_RUN=$(grep -c "Submitted batch job" "$LOG" 2>/dev/null); SUBMITS_THIS_RUN=${SUBMITS_THIS_RUN:-0}
+    if limit_hit; then why="Usage limit hit mid-run"
+    elif [ "$rc" -eq 0 ]; then why="Agent exited cleanly (rc=0) but wrote NO summary (ended its turn early — e.g. waiting on a backgrounded duo_run)"
+    else why="Agent died mid-run (rc=$rc, e.g. API connection dropped)"; fi
     log "$why after the agent had ALREADY acted (summary/commit/tree change present)."
     log "NOT retrying — a retry could double-submit. Human review required."
     if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
@@ -247,7 +249,7 @@ elif credits_gone; then
 elif limit_hit; then
   msg="BLOCKED by the Claude usage limit after $attempt attempt(s). Nothing was submitted, nothing changed. Re-run ./cluster/deploy/daily_auto.sh once your limit resets."
 elif [ "${PARTIAL:-0}" = 1 ]; then
-  msg="PARTIAL run (rc=$rc): the agent acted (${SUBMITS_THIS_RUN:-0} submit echo(es) logged) but died before writing a summary. Its bookkeeping edits were committed as PARTIAL. Review results/auto_${STAMP}.log + squeue; the next loop folds this cycle in."
+  msg="PARTIAL run (rc=$rc): the agent acted (${SUBMITS_THIS_RUN:-0} submit echo(es) logged) but ended without writing a summary. Its bookkeeping edits were committed as PARTIAL. Review results/auto_${STAMP}.log + squeue; the next loop folds this cycle in."
 else
   msg="Run finished (rc=$rc) but no summary was written — see results/auto_${STAMP}.log."
 fi

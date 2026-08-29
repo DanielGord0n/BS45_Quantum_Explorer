@@ -4,6 +4,18 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-29 (Daniel session, after the PARTIAL) — ROOT CAUSE of the supplementary
+PARTIAL: reads + bookkeeping succeeded and were committed (a7c37ed, commit-as-you-go
+worked), but the agent ran the Fir duo_run submit IN THE BACKGROUND and ended its turn
+"to wait" — headless -p sessions are not re-invoked, so the run ended rc=0 with 0
+submits and no summary. FIXES: auto_prompt.md hard rule (duo_run FOREGROUND only;
+ending the turn ends the run); daily_auto.sh SUBMITS count "0\n0" bug fixed and rc=0
+no-summary case worded correctly. THE THREE PLANNED SUBMITS still due -> PASTES
+ISSUED to Daniel: Fir 12th-rep top-up x11 + F44tAr ((9,9,0,4) REVERSE try per the
+lever-18 rule, ord2 skip0 fresh CKDIR); Rorqual 15th-rep top-up x9. Queue snapshot
+at the supp read: Fir 10th rep R (~9.5h) + 11th PD (depth 2), tails F44tB-E R;
+Rorqual 13th R (~3.5-5h) + 14th PD (depth 2). IDs pending.**
+
 **⚡ 2026-08-29 (supplementary) — NO HITS; Fir/Nibi/Rorqual ALL REACHED on the hourly
 re-push (Fir on retry round 1); 23 lanes read ALL HITLESS, incl. the FIRST lever-18
 tail-class telemetry.** Reads: Fir 9th window-front rep 56917602-612 — (3,13,0,0)

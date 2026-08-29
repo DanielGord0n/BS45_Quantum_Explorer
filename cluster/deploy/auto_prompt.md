@@ -83,6 +83,11 @@ Do not re-run the checker.
      ./cluster/deploy/duo_run.sh <cluster> 'cd $SCRATCH/bs45 && sbatch --requeue \
        --export=ALL,WZ_N=<n>,WZ_SEED_BASE=<base> ./cluster_sa_ladder.sh'
      ```
+     **RUN duo_run.sh IN THE FOREGROUND and wait for it (2026-08-29 hard rule).** You are
+     a headless `-p` session: ending your turn ENDS THE RUN — nothing re-invokes you
+     when a background task finishes. The 08-29 supplementary run backgrounded the Fir
+     submit, ended its turn "to wait", and exited with 0 submits and no summary. Never
+     use run_in_background for duo_run.sh, git push, or anything you need the result of.
      It auto-types the Duo "1"; Daniel taps his phone to approve. **Confirm each
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
