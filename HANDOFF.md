@@ -15,7 +15,12 @@ ISSUED to Daniel: Fir 12th-rep top-up x11 + F44tAr ((9,9,0,4) REVERSE try per th
 lever-18 rule, ord2 skip0 fresh CKDIR); Rorqual 15th-rep top-up x9. SUBMITTED BY CLAUDE via duo_run (Daniel tapped):
 Fir 57437171-183 = 12th rep x11 (F44w4-8/sA1-3/sB1-3) + F44tAr (57437183) rev try
 => 38 F44 jobs queued; Rorqual 19917514-522 = 15th rep x9 => 26 R44 jobs (depth 3
-both). Trillium top-up next (T43 lanes, verbatim).**
+both). Trillium 2222591-596 = wave-21 x6 (T43f6/r6/sA/f7/sB/sC, configs parsed from each
+running lane's CKDIR name: (8,-2,5,9) ord1 skip6 / ord2 skip6 / ord1 skip7; siblings
+(6,8,5,7)/(8,10,1,3)/(0,2,1,13) ord1 skip0) => 18 T43 jobs, depth 3. Nibi left as-is
+(tails tC-E PD backup, n=43 lanes empty by design). FLEET 4/4 COVERED, depth 3 on
+F/R/T. Trillium's push was missed once and approved on duo_run's retry — the
+retry path works live.**
 
 **⚡ 2026-08-29 (supplementary) — NO HITS; Fir/Nibi/Rorqual ALL REACHED on the hourly
 re-push (Fir on retry round 1); 23 lanes read ALL HITLESS, incl. the FIRST lever-18
