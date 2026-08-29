@@ -1662,6 +1662,20 @@ door to 42+).**
 
 ## 🚀 QUICK REFERENCE — the current system (rewritten 2026-07-30)
 
+**CURRENT PROGRAM (2026-08-29, supersedes the "stack fronts" doctrine below): LEVER 19
+STRATIFIED WINDOW SWEEP — `docs/lever19_sweep_plan.md` is the operating table.** Basis:
+the known-solution window map (five known solutions sit at flat windows 0 / ~8 /
+~255-571 / ~499-842 / far reverse end; cells never exhaust) => sample the whole ordering
+at spaced offsets, one 12 h rep per offset, refine stride per pass. Track A = n=44
+interior (Fir + Rorqual: workhorse every 100 windows + 3 fast classes every 500);
+Track B = n=43 WZ-43 band control (Trillium + Nibi: windows 255-571, stride 8, four
+phases). Controls with known answers: F41regr (n=41 re-find, Fir 57454076) and Track B
+(WZ-43 re-find). Loop rules: sweep lanes are one rep each (never restack the same k);
+no front top-ups while sweep lanes pend; advance the next pass when pending < ~8.
+Solver build verified 08-29 (orbit canon retains all 5 known solutions; LOCATE_CANON).
+Standing human lever: the allocation ask (drafted, unsent).
+
+
 **Active solver: `src/solver/wz_match.cpp` in `WZ_FIRSTHIT` mode** — streams the
 Thm-2.2-constrained C,D candidate stream from mod-6 profile cells (2.11a+2.11b+2.12
 forced at n≥36), flat-first cell+in-cell ordering, profile-constrained A,B completion
