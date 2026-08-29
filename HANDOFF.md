@@ -4,6 +4,37 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-29 (supplementary) — NO HITS; Fir/Nibi/Rorqual ALL REACHED on the hourly
+re-push (Fir on retry round 1); 23 lanes read ALL HITLESS, incl. the FIRST lever-18
+tail-class telemetry.** Reads: Fir 9th window-front rep 56917602-612 — (3,13,0,0)
+flat w4-8 tested 21.2-23.3M (cum 380.5-387.7M), (5,9,6,6) w1-3 14.3-15.7M (cum
+187.6-191.5M), (5,7,2,10) w1-3 14.6-17.1M (cum 175.8-191.2M); Rorqual 12th rep
+19666521-529 — (3,13,0,0) rev w1-5 tested 27.7-30.0M (cum 385.4-395.5M,
+cells_done_sum 1-4/lane continuing), (1,7,8,8) w1-2 19.5/18.7M (cum 243.9/239.4M),
+(5,5,8,8) w1-2 15.9/16.0M (cum 202.8/199.2M), A/D aborts 25-89 telemetry only.
+LEVER-18 TAIL TELEMETRY: (9,9,0,4) produced ZERO candidates over a full window on
+BOTH clusters (Nibi 20506642 + Fir mirror 57273914: candidates=0 tested=0
+AB_nodes=0, arms ran the whole slot, resume_pi advanced) ⇒ the pre-registered
+<0.5M-after-1-rep rule FIRES: stream-walled at flat ⇒ ONE rev try (F44tAr, ord2
+skip0, fresh auto-keyed CKDIR) — if the rev rep also lands <0.5M the class is
+DROPPED per the rule. (3,5,0,12) Nibi 20506643 tested 1.87M (aborted=43, AB_nodes
+5.0e12) — ABOVE the 0.5M line, survives; its Fir mirror F44tB is R. Board at check:
+Fir 10th rep w4-8 57086727-731 R (~9.5h) + sA/sB 57086732-737 PD Priority + 11th
+rep 57238023-033 PD = depth 2 ⇒ 12th-rep top-up due; Fir tail mirrors F44tB-E
+(57273915/917/918/919) R, 1-rep-at-a-time by lever-18 design (read-then-decide,
+NOT depth-3 stock); Rorqual 13th rep 19742337-345 R (~3.4-5.2h) + 14th rep
+19838962-971 PD = depth 2 ⇒ 15th-rep top-up due; Nibi tail copies 20506644-646
+still PD (accepted backup), n=43 lanes stay EMPTY (lever-18 still Nibi's queued
+work — same rationale as 08-28). Workhorse (3,13,0,0) accounting: deep w0-3 ~1.28B
++ flat fronts w4-8 ~1.92B + rev fronts w1-5 ~1.95B ≈ 5.16B tested ≈ 1.94x n=42's
+~2.66B fall depth — grinding, no tilt trigger (no new n=43 reads this pass).
+rung_status check run for the idle rail: EXHAUSTED = SA-refill forbidden as always
+(firsthit ckpt work, not SA). ACTIONS: Fir 12th-rep top-up (11 lanes x1 singleton)
++ F44tAr rev try + Rorqual 15th-rep top-up (9 lanes x1 singleton) via duo_run,
+verbatim configs, same CKDIRs (F44tAr fresh by ord-key). Job IDs appended below
+after submit. Checker exclusions +23 (56917602-612, 57273914, 19666521-529,
+20506642/643).**
+
 **⚡ 2026-08-29 (daily loop) — NO HITS; TRILLIUM ONLY (Fir/Nibi/Rorqual Duo pushes
 unanswered in 180s — no reads, no board visibility there this pass); Trillium wave-19
 2nd rep 2178717-722 read ALL HITLESS (6 n=43 lanes, arms 178/178 summarized each,
