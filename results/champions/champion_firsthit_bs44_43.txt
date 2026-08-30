@@ -1,0 +1,29 @@
+43 44 0
+8 -2 5 9
+1 1 1 1 1 1 -1 1 -1 1 1 -1 1 -1 1 1 -1 1 1 1 1 -1 -1 1 -1 1 1 1 -1 -1 -1 -1 1 -1 -1 -1 1 1 1 1 -1 -1 1 -1
+1 -1 1 -1 -1 -1 1 -1 -1 -1 -1 1 -1 1 1 1 -1 1 -1 1 1 1 1 1 -1 -1 1 1 -1 -1 1 1 -1 1 1 -1 -1 -1 -1 -1 1 -1 -1 1
+-1 -1 -1 1 -1 -1 1 1 1 -1 1 1 -1 -1 1 1 -1 1 1 -1 1 -1 1 1 1 -1 1 -1 1 1 -1 -1 1 1 1 -1 1 1 1 1 -1 -1 -1
+1 -1 -1 1 -1 1 1 1 1 -1 1 -1 1 -1 1 1 1 1 1 -1 -1 -1 -1 1 1 -1 -1 -1 1 1 1 1 1 1 1 -1 1 -1 1 1 -1 -1 1
+# BS(44,43), n=43 — banked 2026-08-30 (lever-19 Track B window-band sweep, pass 1).
+# THE CAMPAIGN'S n=43 TARGET: our solver replicating Wang-Zhu's published n=43 result
+#   by direct search in their signature class (8,-2,5,9) — the THIRD and FINAL rung of
+#   the WZ trio (41 ★ 07-30, 42 ★ 08-04, 43 ★ this file). The WZ trio is now COMPLETE.
+# Found by: Trillium job 2223007, lane T43b327 — a lever-19 Track B control lane at
+#   flat window 327, submitted 08-29 (docs/lever19_sweep_plan.md), ONE rep, fresh
+#   skip-keyed CKDIR, WZ_FH_ORBIT_CANON=1, FH_NARMS=178. Job start Sun Aug 30
+#   03:22:30 EDT, hit at elapsed=14441.1s (~4.0h, ~07:23 EDT).
+#   GLOBAL FIRST: idx=500000 profile_rank=58505 nodes_this_cand=88616 score=130.
+#   arms_with_hits=1/178, tested=5,823,450 this lane (single rep).
+# WINDOW-MAP VALIDATION: the 08-29 LOCATE finding showed WZ-43's cells sit at flat
+#   windows ~255-571, while all prior n=43 lanes (flat/rev w0-11) had NEVER reached
+#   that band. Track B existed precisely to test that band; the hit landed at window
+#   327 — inside the predicted band, in the first pass, in a single rep, after the
+#   w0-11 lanes ground ~330M+ candidates hitless. The band prior is confirmed real.
+# Verified: tools/verify_npaf.py 2026-08-30 — PASS: NPAF[s]=0 for all s=1..44,
+#   signature sum-of-squares = 174 (expect 174), fits Wang-Zhu comb8 pair encoding.
+# NOT Wang-Zhu's published sequences: checked against results/reference/
+#   wz_table1_bs44_43.txt under the full variant group (A<->B swap x C<->D swap x
+#   independent negations x reversals, 1024 forms — superset of the 128-element
+#   group) — no match. A NEW solution inside the published class (banner score 130).
+# Honest framing: solver-capability result (replication-class), not a record — n<=40
+#   is known and Wang-Zhu constructed 41-43; n=44 (BS(45,44)) remains the open record.

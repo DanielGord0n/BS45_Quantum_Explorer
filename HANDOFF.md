@@ -1,8 +1,36 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-29 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-08-30 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-08-30 (daily loop) — ★★★★★ n=43 HIT: BS(44,43) FOUND, VERIFIED, BANKED —
+THE WANG-ZHU TRIO (41/42/43) IS COMPLETE, AND THE WINDOW-MAP BAND PRIOR IS CONFIRMED.**
+Trillium job 2223007 = lever-19 Track B lane T43b327 (sig (8,-2,5,9), flat window 327,
+ONE rep, fresh CKDIR, orbit canon on) hit at elapsed 14441s (~4.0h into the lane's FIRST
+slot), tested only 5.8M candidates. GLOBAL FIRST: idx=500000 profile_rank=58505
+nodes_this_cand=88616 score=130, arms_with_hits=1/178. Independent
+tools/verify_npaf.py PASS (NPAF[s]=0 all s=1..44, sumsq 174); NOT Wang-Zhu's published
+quad — no match under the full 1024-form variant group vs wz_table1_bs44_43.txt = a NEW
+solution in the published class. BANKED: results/champions/champion_firsthit_bs44_43.txt.
+STRATEGIC READ: window 327 is INSIDE the WZ-43 band (w255-571) that the 08-29 LOCATE
+window map flagged — the w0-11 lanes ground ~330M+ hitless for weeks while the band lane
+hit in ONE rep at 5.8M. The band prior is real; this is exactly the Track B control
+lever 19 was designed to fire. Other reads ALL HITLESS: Fir 10th rep sA2/A3+sB1-3
+57086733-737 (cum 190-207M), Rorqual 13th rep 19742337-345 ((3,13,0,0) rev w1-5 cum
+415-423M, A 260-265M, D 214-217M), Nibi tail tC/tD/tE FIRST telemetry 20506644-646 =
+10.4/9.5/18.7M all survive the 0.5M line, Nibi Track B first 3 reps 20792775-777
+(b447/455/463, ~11-11.8M each), Trillium T43sC 1st rep 2192775 (18.8M, cum 181.8M).
+Board: all 4 clusters saturated with lever-19 pass-1 lanes (Fir 39 R incl F41regr +
+F44tAr, Rorqual 10 R + 37 PD, Trillium 23 Track B R + wave-20/21 PD, Nibi 14 Track B
+PD) — no refills due (pending ≥8 everywhere), sweep-pending = no front top-ups. NOTE:
+Fir 57086727-732 + Trillium 2192770-774 finished but were crowded out of the checker's
+head -30 cap by the 24+ new sweep headers — cap raised to 60 in checker_cmd.txt, their
+reads land next check. ACTIONS: banked + excluded 2223007 and the 20 read lanes,
+no submits. NEEDS_HUMAN: WZ trio done — decide (a) whether remaining T43b/N43b control
+lanes keep running or get scancelled and re-aimed at Track A n=44 band windows, (b)
+whether the professor update / allocation ask ships now with the trio complete, (c)
+Track A pass-2 window placement given the band prior is confirmed at n=43.**
 
 **⚡ 2026-08-29 (Daniel session, late) — LEVER 19 PASS 1 SUBMITTED via duo_run (Daniel
 tapped 4): Track A n=44 interior — Fir 39 lanes (F44i100..2900 workhorse step 100 +
