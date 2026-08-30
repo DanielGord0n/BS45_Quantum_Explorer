@@ -4,6 +4,16 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-30 (Daniel session, "go") — POST-n=43 RE-AIM EXECUTED via duo_run (3 taps):
+(1) Nibi: 13 pending Track-B control lanes (N43b471..567) scancelled; 13 n=44 workhorse
+pass-2 midpoint lanes submitted (N44i50..1250 step 100, --account=def-ikotsire_cpu).
+Trillium's 23 running T43b lanes left to finish (second n=43 = bonus). (2) Fir: 11
+pending 12th-rep front top-ups (57437171-182) scancelled; ALL 39 Fir sweep lanes
+(F44i/F44Bi) are RUNNING and F41regr (n=41 re-find control) is RUNNING. (3) Rorqual:
+9 pending 15th-rep top-ups (19917514-522) scancelled; sweep lanes 10 running + 38
+pending. Track A pass 2 on Fir/Rorqual per plan when pending <8. Professor email
+(trio complete + sequences) drafted; Daniel to send.**
+
 **⚡ 2026-08-30 (Daniel session) — n=43 RE-VERIFIED INDEPENDENTLY (Daniel: "please
 verify"): pure-python check outside project code — lengths 44/44/43/43, sums
 (8,-2,5,9), sum-of-squares 174 = 4n+2, all entries ±1, NPAF sum = 0 at every shift
