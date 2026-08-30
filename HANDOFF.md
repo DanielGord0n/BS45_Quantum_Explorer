@@ -4,6 +4,16 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-30 (Daniel session, afternoon) — TRILLIUM BAND LANES READ (Daniel saw the
+COMPLETED emails; RunTime 11:30 = driver's 30-min pre-walltime stop, NOT a hit signal):
+21 of 23 hitless T43b lanes read, 0/178 arms each, 14.5-19.9M tested per lane,
+cells_done 0-11; NEW FOUND none — 2223007 (T43b327) remains the only n=43 hit.
+Track B phase 1 fronted ~68 of the 317 band windows. Trillium queue emptied =>
+RE-AIMED to n=44 (consistent with the morning decision): 24 workhorse pass-2 midpoint
+lanes T44i1350..3650 step 100 submitted via duo_run (24 echoed). Pass-2 workhorse
+coverage now: Nibi k=50..1250, Trillium k=1350..3650; Fir/Rorqual pass 2 (k=3750..5750
++ other classes) due when their pass-1 pending <8. Checker exclusions +24.**
+
 **⚡ 2026-08-30 (Daniel session, "go") — POST-n=43 RE-AIM EXECUTED via duo_run (3 taps):
 (1) Nibi: 13 pending Track-B control lanes (N43b471..567) scancelled; 13 n=44 workhorse
 pass-2 midpoint lanes submitted (N44i50..1250 step 100, --account=def-ikotsire_cpu).
