@@ -42,6 +42,30 @@ Context: the base sequence conjecture was verified for n <= 40 in prior literatu
 n = 41, 42, 43. These are, to our knowledge, the first independent solutions at any
 of those rungs, and are new (inequivalent) solutions in both cases.
 
+
+### 1.3 BS(44,43), n=43 — found 2026-08-30 (results/champions/champion_firsthit_bs44_43.txt)
+
+Signature (a,b,c,d) = (8,-2,5,9), sum of squares 174 = 4n+2. NOT Wang-Zhu's published
+n=43 quadruple (checked under the full 1024-variant group) — a new solution in their
+class. Verified: tools/verify_npaf.py PASS (NPAF[s]=0, s=1..44) + independent pure-python
+re-check 2026-08-30.
+
+```
+A = 1 1 1 1 1 1 -1 1 -1 1 1 -1 1 -1 1 1 -1 1 1 1 1 -1 -1 1 -1 1 1 1 -1 -1 -1 -1 1 -1 -1 -1 1 1 1 1 -1 -1 1 -1
+B = 1 -1 1 -1 -1 -1 1 -1 -1 -1 -1 1 -1 1 1 1 -1 1 -1 1 1 1 1 1 -1 -1 1 1 -1 -1 1 1 -1 1 1 -1 -1 -1 -1 -1 1 -1 -1 1
+C = -1 -1 -1 1 -1 -1 1 1 1 -1 1 1 -1 -1 1 1 -1 1 1 -1 1 -1 1 1 1 -1 1 -1 1 1 -1 -1 1 1 1 -1 1 1 1 1 -1 -1 -1
+D = 1 -1 -1 1 -1 1 1 1 1 -1 1 -1 1 -1 1 1 1 1 1 -1 -1 -1 -1 1 1 -1 -1 -1 1 1 1 1 1 1 1 -1 1 -1 1 1 -1 -1 1
+```
+
+Provenance: Trillium job 2223007 (lane T43b327: flat ordering, PROF_SKIP=327 = window
+327, orbit canonicalization on, 178 arms, 12 h walltime), first rep on a fresh
+checkpoint lane, hit at elapsed 14,441 s (~4.0 h), 5,823,450 candidates tested in the
+lane, banner score 130. The lane was one of 40 in the "window-band sweep" (lever 19
+Track B) placed on flat windows 255-571 after a LOCATE measurement (2026-08-29) showed
+the published n=43 solution's cells lie in that band; the earlier n=43 lanes (windows
+0-11 from both ends, ~330M candidates per window) never reached it. The hit landed
+inside the predicted band in the first pass — the window-map prior validated at n=43.
+
 ## 2. Search method (the solver as it found both solutions)
 
 Single C++ program (wz_match.cpp, WZ_FIRSTHIT mode), first-hit search: stop at the

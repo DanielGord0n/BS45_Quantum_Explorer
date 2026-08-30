@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-30 (Daniel session) — n=43 RE-VERIFIED INDEPENDENTLY (Daniel: "please
+verify"): pure-python check outside project code — lengths 44/44/43/43, sums
+(8,-2,5,9), sum-of-squares 174 = 4n+2, all entries ±1, NPAF sum = 0 at every shift
+1..43; NOT any of Wang-Zhu's 1024 variants (A<->B x C<->D x negations x reversals) =
+NEW solution in the published class. Official gate tools/verify_npaf.py re-run: PASS
+(s=1..44, pair encoding OK). Champion file provenance reviewed (Trillium 2223007,
+T43b327, first rep, 5.82M tested, window 327 inside the predicted 255-571 band).
+VERDICT CONFIRMED. Trio complete: 41 (07-30) / 42 (08-04) / 43 (08-30), all new
+solutions. Decisions pending Daniel: re-aim remaining Track B lanes to n=44; Track A
+pass 2; professor update (draft below in session).**
+
 **⚡ 2026-08-30 (daily loop) — ★★★★★ n=43 HIT: BS(44,43) FOUND, VERIFIED, BANKED —
 THE WANG-ZHU TRIO (41/42/43) IS COMPLETE, AND THE WINDOW-MAP BAND PRIOR IS CONFIRMED.**
 Trillium job 2223007 = lever-19 Track B lane T43b327 (sig (8,-2,5,9), flat window 327,
