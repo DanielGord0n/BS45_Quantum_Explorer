@@ -4,6 +4,23 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-31 (Daniel session) — RAC CUTOVER EXECUTED + blocked day recovered (loop
+was usage-limit blocked at 1 PM; this session did the cycle). DRAC ticket 0323126:
+Daniel is a member of rrg-ikotsire; the working association is rrg-ikotsire_cpu on
+FIR, RORQUAL, NIBI (Trillium: none — stays def-ikotsire). Done via duo_run (6 taps):
+Fir — 33 new lanes (F41regr reps 2-3 + workhorse pass-2 k=3750..5750 + (3,3,4,12)
+k=250..4750), 57238027 released from held, ALL 40 pending moved to RAC; Rorqual —
+queue was EMPTY (pass 1 fully consumed overnight, hitless), 50 pass-2/3 lanes
+submitted under RAC ((1,7,8,8)+(5,5,8,8) k=250..4750 + workhorse pass-3 k=25..5825
+step 200), 2 RUNNING WITHIN SECONDS of submit (RAC priority live); Trillium — no rrg
+assoc, 31 lanes stay def; Nibi — 9 pending moved to RAC, 4 running. READS: Fir 39
+pass-1 sweep lanes + F41regr all HITLESS (F41regr rep 1: 38.0M tested vs original
+hit job's 12.9M, arms at resume_pi 1428-10290; canon-failure rule pre-registered in
+docs/lever19_sweep_plan.md: hitless after rep 3 => disable canon fleet-wide).
+Rorqual/Trillium data from the blocked 1 PM cycle was overwritten locally by the
+supplementary checker — no agent processed it; nothing lost on-cluster; tomorrow's
+loop reads current state. Docs: RAC doctrine + pass-2 ledger committed (152c06f).**
+
 **⚡ 2026-08-31 (daily loop) — NO HITS; Rorqual+Trillium reached, Fir/Nibi Duo missed.
 Rorqual pass-1 sweep: first 30 lanes ALL HITLESS (R44i3000..5700 workhorse (3,13,0,0)
 tested 24-38M/lane, cells_done_sum 0-26, plus R44Ai500/1000 (1,7,8,8) 21-22M), 18 lanes
