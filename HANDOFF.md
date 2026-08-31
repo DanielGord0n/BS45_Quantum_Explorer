@@ -4,6 +4,22 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-08-31 (daily loop) — NO HITS; Rorqual+Trillium reached, Fir/Nibi Duo missed.
+Rorqual pass-1 sweep: first 30 lanes ALL HITLESS (R44i3000..5700 workhorse (3,13,0,0)
+tested 24-38M/lane, cells_done_sum 0-26, plus R44Ai500/1000 (1,7,8,8) 21-22M), 18 lanes
+still R (R44Ai1500-5000 + R44Di500-5000, IDs 19921447-464), pending 0 => PASS-2 TRIGGER
+FIRED: submitted Rorqual pass-2 via duo_run = R44i3750..5750 step 100 (21 workhorse
+midpoints, completing pass-2 coverage 50..5750 with Nibi 50-1250 / Trillium 1350-3650)
++ R44Ai/R44Di 250..4750 step 500 (10+10 class midpoints), verbatim env, one rep each.
+Also read: Rorqual 14th-rep front-stack tails 19838962/964-971 hitless ((3,13,0,0)
+tested_cum to 445M, (1,7,8,8) 275-282M, (5,5,8,8) 230-234M), Trillium wave-20 BOTH reps
+2192770-780 hitless ((8,-2,5,9) f6/r6/f7 cum 245-388M, (6,8,5,7) 203-223M, (8,10,1,3)
+141-148M). Trillium board healthy: 24 T44i pass-2 lanes + wave-21 (2222591-96, 2192781)
+all PD, pending >=8, no action. CHECKER BUG FIXED: 08-30's "+24 exclusions" landed only
+in the section-header comment, not the live grep -vE — the 24 T43b lanes re-showed
+today; band range 2222998-2223021 now in the real regex (2223007 stays the banked hit).
+F41regr control still unread (Fir missed). Job IDs appended below after submit echoes.**
+
 **⚡ 2026-08-30 (Daniel session, afternoon) — TRILLIUM BAND LANES READ (Daniel saw the
 COMPLETED emails; RunTime 11:30 = driver's 30-min pre-walltime stop, NOT a hit signal):
 21 of 23 hitless T43b lanes read, 0/178 arms each, 14.5-19.9M tested per lane,
