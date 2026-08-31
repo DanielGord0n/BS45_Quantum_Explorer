@@ -92,6 +92,10 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **RAC ACCOUNT (2026-08-31):** submit with `--account=rrg-ikotsire` on clusters where
+     the association exists (`sacctmgr -n show assoc user=dangord account=rrg-ikotsire`
+     non-empty; Nibi may need `rrg-ikotsire_cpu`), else def-ikotsire. Pending jobs can be
+     moved with `scontrol update job <id> Account=rrg-ikotsire`.
      **LEVER 19 SWEEP RULES (2026-08-29, supersede stack-depth for sweep lanes):** read
      `docs/lever19_sweep_plan.md`. Sweep lanes (names F44i*/F44Bi*/R44i*/R44Ai*/R44Di*/
      T43b*/N43b*) are ONE rep each — never restack the same k. Do NOT top up the deep

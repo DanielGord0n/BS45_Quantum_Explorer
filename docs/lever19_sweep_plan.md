@@ -38,3 +38,25 @@ WZ-43 = a NEW n=43 solution (bank as usual).
   from the tables above (verbatim env; names carry the k), and record it here.
 - Controls: Fir F41regr (n=41 re-find) — expect FOUND in one rep; report loudly
   either way. Track B FOUND => verify, bank as replication or new, report.
+
+## RAC cutover (2026-08-31)
+DRAC confirmed Daniel is a member of project rrg-ikotsire (ticket 0323126): all submits
+now use `--account=rrg-ikotsire` where the association exists (auto-detect via
+`sacctmgr -n show assoc user=dangord account=rrg-ikotsire`; Nibi variant likely
+`rrg-ikotsire_cpu`); pending jobs moved in place via `scontrol update job <id>
+Account=...`. Fallback: def-ikotsire.
+
+## Pass-2 assignment ledger
+- Nibi: workhorse k=50..1250 step 100 (13, submitted 08-30)
+- Trillium: workhorse k=1350..3650 step 100 (24, submitted 08-30)
+- Fir: workhorse k=3750..5750 step 100 (21) + (3,3,4,12) k=250..4750 step 500 (10) +
+  F41regr reps 2-3 (submitted 08-31, RAC-detected)
+- Rorqual: pass-1 lanes still pending get RAC re-prioritization 08-31; its pass-2 =
+  (1,7,8,8)+(5,5,8,8) midpoints k=250..4750 step 500 when pending <8.
+
+## F41regr control status (2026-08-31)
+Rep 1 HITLESS: 38.0M tested (vs 12.9M for the original hit job), arms at
+resume_pi 1428-10290 (original hit cell rank 1429; canon keeps a DIFFERENT orbit
+cell whose in-cell depth requirement is ~500k on its arm). PRE-REGISTERED RULE:
+still hitless after rep 3 (~115M) => CANON REGRESSION FAILURE => disable
+WZ_FH_ORBIT_CANON fleet-wide pending investigation.
