@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-01 (Daniel session, late) — DUO-NAG BUG FIXED: the hourly re-pusher kept
+sending "tap to approve" for Fir all afternoon while Fir was in a listed Slurm-upgrade
+outage (login shows the Duo menu but no push reaches the phone). check_all_retry.sh
+now consults status.alliancecan.ca before EVERY push (cluster_outage(): "cloud_off"
+marker => skip the push, one quiet low-priority note when first seen, silent hourly
+re-checks, an "is back" note + real push when it clears); after 3 undelivered pushes
+on an up cluster the nudge downgrades to low priority with "ignore these". bash-3.2
+safe (macOS: no associative arrays — first version crashed on declare -A, caught by
+the stub e2e). Tested: outage-skip, outage-clears, normal path, live parse (Fir =
+outage, Rorqual = up). STATUS_SRC=<script|file> overrides the fetch for tests.
+Today's old-code re-pusher was killed; tomorrow's 1 PM loop reads Fir on the new code.
+Loop guidance stands: Fir F41regr reps 2-3 + 40 RAC lanes wait on the upgrade.**
+
 **⚡ 2026-09-01 (Daniel session, evening) — LEVER 20 BUILT + VALIDATED: FRONT-ONLY TOP-K
 DRAIN (`WZ_FH_DRAIN_TOP=K`, wz_match.cpp; driver CKDIR gains `_dt<K>`; CFGSIG gains
 `.dt`). Evidence: all 3 deep hits surfaced inside the FIRST 500k sorted buffer of
