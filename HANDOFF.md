@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-01 (Daniel session) — MAINTENANCE WEEK MAP (status.alliancecan.ca, fetched
+this session): FIR in OUTAGE TODAY (planned Slurm upgrade) — that is why no Fir Duo
+push arrived (ssh unreachable = no push generated); hourly re-pusher will catch it on
+return; F41regr reps 2-3 (canon verdict) blocked until then, rule stays armed.
+RORQUAL: Slurm maintenance 09-02 12:00 (running jobs requeue; checkpoints lossless).
+TRILLIUM: compute offline Sept 8-10 (STACK ITS QUEUE BEFORE THE 8th so it resumes
+instantly). NIBI: planned outage listed, date unclear — treat unreachable as
+maintenance this week, not failure. Loop guidance: missed/unreachable clusters this
+week are EXPECTED; do not escalate; requeued jobs resume their CKDIRs. Sweep status
+per 09-01 loop: Rorqual ate its entire 50-lane pass-2/3 overnight under RAC + pass-3
+submitted by the loop itself (49 lanes); Nibi pass-2 done, pass-3 in (15); Trillium
+31 pending; all hitless so far.**
+
 **⚡ 2026-09-01 (daily loop) — NO HITS; RAC THROUGHPUT CONFIRMED: Rorqual consumed its
 ENTIRE 50-lane 08-31 pass-2/3 submission OVERNIGHT (20007700-749 all read hitless:
 (1,7,8,8) midpoints 250-4750 = 20007700-709, (5,5,8,8) midpoints = 20007710-719,
