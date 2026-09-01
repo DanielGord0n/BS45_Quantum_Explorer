@@ -14,8 +14,11 @@ the arm advances: cells/lane-day x(500k/K). VALIDATION (local, n=29 with WZ_FH_M
 force the buffered path, 500 s bounded): off => byte-identical stream/cells vs the
 pre-edit binary (442,763 streamed, same cells/dups/resume_pi); on (K=200) => 15 cells
 advanced vs 1, cells_capped=4 at exactly 200 each; CFGSIG dt2000 confirmed in the
-ckpt file; interrupt+resume under the lever works. Not yet deployed (needs the two
-files on each cluster). Pre-registered test in docs/n44_search_narrowing_research.md:
+ckpt file; interrupt+resume under the lever works. DEPLOYED TO NIBI via duo_run curl from GitHub (repo is
+public; pinned b4547cd; grep-verified before mv) and the CONTROL IS LIVE: N43dt327
+(our n=43 hit's window, K=50000 — must re-find) + N43dt257..567 step 8 (band phase 2,
+K=50000), ~40 lanes on rrg-ikotsire_cpu. Other clusters self-deploy via the new loop
+rule when needed; lever 20 stays GATED off n=44 until a control re-finds a known n=43. Pre-registered test in docs/n44_search_narrowing_research.md:
 n=43 controls (our window-327 hit re-find + band phase-2 offsets) at K=50000 on Nibi
 (RAC), F41regr-style K=50000 at n=41 on Fir; success = known solution re-found by a
 capped lane at >=3x cells/lane-day. FULL n=44 CLASS INVENTORY recorded (all 12 stream;
