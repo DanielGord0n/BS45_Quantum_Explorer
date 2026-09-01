@@ -21,8 +21,9 @@ rrg-ikotsire_cpu (verified live on both 08-31). Trillium healthy: 31 PD all Prio
 (24 T44i pass-2 lanes now queued as 2225668-91 + wave-21 2222591-96 + 2192781),
 pending >=8, no action. Fir Duo missed — F41regr reps 2-3 unread (canon-failure rule
 still armed, fires only after rep 3 is read hitless). rung_status EXHAUSTED as always
-(SA rail closed; firsthit work is the escalation). Checker exclusions +73. Submit
-echoes appended below.**
+(SA rail closed; firsthit work is the escalation). Checker exclusions +73. SUBMITS:
+Rorqual 49/49 echoed = 20052847-875 (R44i125..5725 step 200) + 20052876-885
+(R44Ai125..4625 step 500) + 20052886-895 (R44Di125..4625), QUEUE_COUNT=49.**
 
 **⚡ 2026-08-31 (Daniel session) — RAC CUTOVER EXECUTED + blocked day recovered (loop
 was usage-limit blocked at 1 PM; this session did the cycle). DRAC ticket 0323126:
