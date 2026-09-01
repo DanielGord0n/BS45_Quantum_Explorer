@@ -23,7 +23,8 @@ pending >=8, no action. Fir Duo missed — F41regr reps 2-3 unread (canon-failur
 still armed, fires only after rep 3 is read hitless). rung_status EXHAUSTED as always
 (SA rail closed; firsthit work is the escalation). Checker exclusions +73. SUBMITS:
 Rorqual 49/49 echoed = 20052847-875 (R44i125..5725 step 200) + 20052876-885
-(R44Ai125..4625 step 500) + 20052886-895 (R44Di125..4625), QUEUE_COUNT=49.**
+(R44Ai125..4625 step 500) + 20052886-895 (R44Di125..4625), QUEUE_COUNT=49. Nibi
+15/15 echoed = 20990489/490 + 20990501-513 (N44i75..2875 step 200), QUEUE_COUNT=15.**
 
 **⚡ 2026-08-31 (Daniel session) — RAC CUTOVER EXECUTED + blocked day recovered (loop
 was usage-limit blocked at 1 PM; this session did the cycle). DRAC ticket 0323126:
