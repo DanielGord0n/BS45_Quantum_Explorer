@@ -54,6 +54,17 @@ Account=...`. Fallback: def-ikotsire.
 - Rorqual: pass-1 lanes still pending get RAC re-prioritization 08-31; its pass-2 =
   (1,7,8,8)+(5,5,8,8) midpoints k=250..4750 step 500 when pending <8.
 
+## Pass-3 assignment ledger (quarter-points, k ≡ 25/75/125/175 mod 200 for workhorse)
+- Rorqual (submitted 08-31, with its pass-2): workhorse k=25..5825 step 200 (30) —
+  read 09-01 ALL HITLESS (20007720-749)
+- Rorqual (submitted 09-01): workhorse k=125..5725 step 200 (29, R44i$k) + (1,7,8,8)
+  k=125..4625 step 500 (10, R44Ai$k) + (5,5,8,8) k=125..4625 step 500 (10, R44Di$k),
+  --account=rrg-ikotsire_cpu
+- Nibi (submitted 09-01): workhorse k=75..2875 step 200 (15, N44i$k), rrg-ikotsire_cpu
+- Remaining pass-3 inventory: workhorse k=3075..5675 step 200 (14) + k=175..5775
+  step 200 (29); (1,7,8,8)/(5,5,8,8) k=375..4875 step 500 (10 each); (3,3,4,12)
+  k=125..4625 + 375..4875 step 500 (Fir, after its pass-2 lands)
+
 ## F41regr control status (2026-08-31)
 Rep 1 HITLESS: 38.0M tested (vs 12.9M for the original hit job), arms at
 resume_pi 1428-10290 (original hit cell rank 1429; canon keeps a DIFFERENT orbit

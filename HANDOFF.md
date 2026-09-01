@@ -1,8 +1,28 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-08-30 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-01 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-01 (daily loop) — NO HITS; RAC THROUGHPUT CONFIRMED: Rorqual consumed its
+ENTIRE 50-lane 08-31 pass-2/3 submission OVERNIGHT (20007700-749 all read hitless:
+(1,7,8,8) midpoints 250-4750 = 20007700-709, (5,5,8,8) midpoints = 20007710-719,
+workhorse pass-3 k=25..5825 step 200 = 20007720-749, tested 11.1-52.1M/lane) plus the
+R44Di pass-1 tail 19921455-464 ((5,5,8,8) k=500-5000, 13.4-27.1M) — 60 files shown =
+EXACTLY the head cap; 19921447-454 (R44Ai pass-1 k=1500-5000) + 19838963 finished but
+crowded out, telemetry next check (the NEW FOUND grep scans ALL files uncapped =
+confirmed no hit hiding there). Nibi N44i pass-2 set COMPLETE hitless: 20835991-95 +
+20835997-99 + 20836000-004 = 13 lanes k=50..1250, tested 21.7-55.2M. Rorqual + Nibi
+queues EMPTY => pass-3 advance per lever19 loop rules (pending <8): Rorqual =
+workhorse quarter-points k=125..5725 step 200 (29, R44i$k) + (1,7,8,8) k=125..4625
+step 500 (10, R44Ai$k) + (5,5,8,8) same ks (10, R44Di$k); Nibi = workhorse k=75..2875
+step 200 (15, N44i$k); verbatim env, ORBIT_CANON=1, one rep each, --account=
+rrg-ikotsire_cpu (verified live on both 08-31). Trillium healthy: 31 PD all Priority
+(24 T44i pass-2 lanes now queued as 2225668-91 + wave-21 2222591-96 + 2192781),
+pending >=8, no action. Fir Duo missed — F41regr reps 2-3 unread (canon-failure rule
+still armed, fires only after rep 3 is read hitless). rung_status EXHAUSTED as always
+(SA rail closed; firsthit work is the escalation). Checker exclusions +73. Submit
+echoes appended below.**
 
 **⚡ 2026-08-31 (Daniel session) — RAC CUTOVER EXECUTED + blocked day recovered (loop
 was usage-limit blocked at 1 PM; this session did the cycle). DRAC ticket 0323126:
