@@ -322,3 +322,43 @@ front-first; for n=43 a sweep of w255-571 replicates WZ-43 deterministically (a
 capability result for the paper), for n=44 sweep all ~200 workhorse windows + the
 fast classes. Design questions: walltime per window (3h vs 12h), checkpoint keying
 per window, queue limits (~300 jobs/cluster), stack order.
+
+
+## 2026-09-01 — n=44 FULL CLASS INVENTORY (local canon runs) + Lever 20
+
+| class | cells | windows (178) | kept orbits | dedup |
+|---|---|---|---|---|
+| (3, 13, 0, 0) | 1,038,952 | 5,836 | 35,925 | 28.92x |
+| (5, 9, 6, 6) | 496,428 | 2,788 | 62,219 | 7.98x |
+| (5, 7, 2, 10) | 483,840 | 2,718 | 120,960 | 4.0x |
+| (1, 7, 8, 8) | 977,601 | 5,492 | 123,994 | 7.88x |
+| (3, 3, 4, 12) | 921,646 | 5,177 | 233,433 | 3.95x |
+| (5, 5, 8, 8) | 972,489 | 5,463 | 123,337 | 7.88x |
+| (5, 11, 4, 4) | 1,008,233 | 5,664 | 127,876 | 7.88x |
+| (7, 7, 4, 8) | 987,487 | 5,547 | 250,079 | 3.95x |
+| (7, 11, 2, 2) | 502,076 | 2,820 | 62,919 | 7.98x |
+| (1, 13, 2, 2) | 502,076 | 2,820 | 62,919 | 7.98x |
+| (9, 9, 0, 4) | 968,858 | 5,443 | 127,943 | 7.57x |
+| (3, 5, 0, 12) | 975,172 | 5,478 | 128,494 | 7.59x |
+
+All 12 classes stream (the 08-29 zero-candidate result for (9,9,0,4) was a
+stream-wall at the FLAT end of its ordering, not an empty class; rev try pending).
+
+## Lever 20 (2026-09-01): FRONT-ONLY TOP-K DRAIN (`WZ_FH_DRAIN_TOP=K`)
+
+Evidence: the three deep hits surfaced at arm stream idx 500000 / 1000000 / 500000
+= inside the first sorted 500k buffer of a cell, at in-cell flatness percentiles
+0.9% / 31.9% / 2.7%. Completing a full buffer costs ~14 h per arm at ~10
+completions/s, so today an arm spends an entire 12 h rep on ONE buffer of ONE cell
+and every "sweep offset" really samples 178 cells x (part of one buffer). With
+DRAIN_TOP=K an arm completes only the K flattest of the first buffer of each cell,
+abandons the remainder, and advances: cells per lane-day x (500k/K). K=50k => ~10x
+cells at P(catch | hit in cell) ~ 2/3 by the three percentiles; K=175k (35%) => ~3x
+at ~1.0. Sound as a coverage policy (abandoned remainder = unsearched, never
+mis-scored); CFGSIG carries dt so capped lanes never resume uncapped CKDIRs (driver
+CKDIR gets _dt<K>). Telemetry: cells_capped=. PRE-REGISTERED TEST: n=43 band
+controls at offsets not yet fronted (phase-2 offsets 257..567), K=50000 vs the
+standard 12 h lanes — success = a known n=43 solution (WZ or ours) re-found by a
+capped lane at >=3x the cells/lane-day; also F41regr-style at n=41 skip-8 with
+K=50000 (original hit was rank 1429 in-cell / idx 500000). Deploy needs a tar-pipe
+of src/solver/wz_match.cpp + cluster/deploy/cluster_firsthit_probe.sh per cluster.

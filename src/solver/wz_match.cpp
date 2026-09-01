@@ -1457,6 +1457,18 @@ int main(int argc, char **argv) {
     // stream position, so waves may vary it freely.
     long long fh_buf_cap = 500000;  // cell-order drain buffer (was hardcoded)
     if (const char *e = getenv("WZ_FH_BUF_CAP")) fh_buf_cap = atoll(e);
+    // ---- FRONT-ONLY MODE (WZ_FH_DRAIN_TOP=K, 2026-09-01, lever 20). Evidence:
+    // all three deep hits (n=41/42/43) surfaced inside the FIRST sorted buffer of
+    // their arm's cell (idx 500000/1000000/500000) at in-cell flatness percentiles
+    // 0.9/31.9/2.7%, while completing a full 500k buffer costs ~14 h/arm — so an
+    // arm spends a whole 12 h rep on one buffer of one cell. With K>0 an arm
+    // completes only the K flattest of the FIRST buffer of each cell, then
+    // abandons the rest of that cell and advances: cells/lane-day x (buf/K).
+    // Sound as a coverage policy (never a correctness change): the abandoned
+    // remainder is simply unsearched. Part of CFGSIG (changes cell skipping).
+    long long fh_drain_top = 0;
+    if (const char *e = getenv("WZ_FH_DRAIN_TOP")) fh_drain_top = atoll(e);
+    long long cells_capped = 0;
     string fh_ckpt_path;            // empty = checkpointing off (local runs)
     if (const char *e = getenv("WZ_FH_CKPT_DIR"))
       fh_ckpt_path = string(e) + "/arm_" + to_string(fh_shard) + ".ckpt";
@@ -1471,11 +1483,11 @@ int main(int argc, char **argv) {
       fh_dump = fopen(e, "w");      // for offline filter research; default OFF
     char fh_sigbuf[256];
     snprintf(fh_sigbuf, sizeof fh_sigbuf,
-             "n%d.a%d.b%d.c%d.d%d.ns%d.sh%d.ord%d.m%d.co%d.ap%d.sm%lld.cap%lld.sk%d.t1%d.t2%d.oc%d",
+             "n%d.a%d.b%d.c%d.d%d.ns%d.sh%d.ord%d.m%d.co%d.ap%d.sm%lld.cap%lld.sk%d.t1%d.t2%d.oc%d.dt%lld",
              n, G_SIG_A, G_SIG_B, G_SIG_C, G_SIG_D, fh_nshard, fh_shard,
              prof_order, fh_m, cell_order ? 1 : 0, ab_prof ? 1 : 0, score_max,
              fh_buf_cap, fh_skip, G_THM211B ? 1 : 0, G_THM212 ? 1 : 0,
-             orbit_canon ? 1 : 0);
+             orbit_canon ? 1 : 0, fh_drain_top);
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;
     long long fh_res_pi = 0, fh_res_batch = 0, fh_res_k = 0, fh_tested_base = 0;
@@ -1638,6 +1650,7 @@ int main(int argc, char **argv) {
       long long lv = 0, okc = 0;
       long long cur_batch = 0;    // drain-batch counter within this cell
       long long cell_done_ct = 0; // completions in this cell (non-buffered path)
+      atomic<bool> cell_stop{false}; // front-only: abandon THIS cell, keep the arm
       ck_pi = pi;
       if (!(fh_resuming && pi == fh_res_pi)) { ck_batch = 0; ck_k = 0; }
       // Flat-first within-cell ordering (WZ_FH_CELL_ORDER=0 disables; default
@@ -1720,7 +1733,10 @@ int main(int argc, char **argv) {
         }
         stable_sort(cellbuf.begin(), cellbuf.end(),
                     [](const CellCand &a, const CellCand &b){ return a.sc < b.sc; });
-        for (size_t ci = start; ci < cellbuf.size(); ci++) {
+        size_t stop_at = cellbuf.size();
+        if (fh_drain_top > 0 && cur_batch == 0)
+          stop_at = min(cellbuf.size(), (size_t)fh_drain_top);  // front-only: top-K of batch 0
+        for (size_t ci = start; ci < stop_at; ci++) {
           if (g_found.load() || g_fh_sigterm) break;  // hits/SIGTERM abort;
           int Ci[64], Di[64];                         // max_cand still drains
           for (int i = 0; i < n; i++) { Ci[i] = cellbuf[ci].C[i]; Di[i] = cellbuf[ci].D[i]; }
@@ -1733,12 +1749,14 @@ int main(int argc, char **argv) {
           cur_batch++;
           ck_batch = cur_batch;
           ck_k = 0;
+          if (fh_drain_top > 0) { cell_stop.store(true); cells_capped++; }  // abandon rest of cell
         }
         cellbuf.clear();
       };
       function<void(const vector<int>&, const vector<int>&)> probe =
           [&](const vector<int> &C, const vector<int> &D) {
-        if (fh_stop.load()) return;
+        if (fh_stop.load()) { cell_stop.store(true); return; }
+        if (cell_stop.load()) return;
         cand++;
         // Progress is TIME-based and carries the exact tokens the driver
         // aggregates: the old every-200k-cands line never printed at n>=41
@@ -1791,8 +1809,10 @@ int main(int argc, char **argv) {
         if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
       };
       count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
-                    lv, okc, &probe, fh_m, &fh_stop);
-      if (cell_order && !cellbuf.empty()) drain();  // finish the cell in order
+                    lv, okc, &probe, fh_m, &cell_stop);
+      if (cell_order && !cellbuf.empty() && !cell_stop.load()) drain();  // finish the cell in order
+      // (front-only: a cell abandoned by cell_stop falls through to the
+      //  "cell fully done" bookkeeping below unless the ARM was stopped)
       if (!fh_stop.load()) {
         cells_done++;  // only cells processed to completion
         ck_pi = pi + fh_nshard;  // cell fully done: resume point = next cell
@@ -1816,6 +1836,7 @@ int main(int argc, char **argv) {
          << "  cells_prof_dead=" << cells_prof_dead
          << "  cells_prof_uncap=" << cells_prof_uncap
          << "  cells_orbit_dup=" << cells_orbit_dup
+         << "  cells_capped=" << cells_capped << " (drain_top=" << fh_drain_top << ")"
          << "  tested_cum=" << (fh_tested_base + completed_tested)
          << "  resume_pi=" << ck_pi << "  resume_batch=" << ck_batch
          << "  resume_k=" << ck_k << "\n"

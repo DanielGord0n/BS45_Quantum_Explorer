@@ -4,6 +4,25 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-01 (Daniel session, evening) — LEVER 20 BUILT + VALIDATED: FRONT-ONLY TOP-K
+DRAIN (`WZ_FH_DRAIN_TOP=K`, wz_match.cpp; driver CKDIR gains `_dt<K>`; CFGSIG gains
+`.dt`). Evidence: all 3 deep hits surfaced inside the FIRST 500k sorted buffer of
+their arm's cell (idx 500000/1000000/500000; in-cell percentiles 0.9/31.9/2.7%) while
+completing a full buffer costs ~14 h/arm => today an arm spends a whole rep on one
+buffer of one cell. K caps completions per cell at the K flattest of buffer 0, then
+the arm advances: cells/lane-day x(500k/K). VALIDATION (local, n=29 with WZ_FH_M6=1 to
+force the buffered path, 500 s bounded): off => byte-identical stream/cells vs the
+pre-edit binary (442,763 streamed, same cells/dups/resume_pi); on (K=200) => 15 cells
+advanced vs 1, cells_capped=4 at exactly 200 each; CFGSIG dt2000 confirmed in the
+ckpt file; interrupt+resume under the lever works. Not yet deployed (needs the two
+files on each cluster). Pre-registered test in docs/n44_search_narrowing_research.md:
+n=43 controls (our window-327 hit re-find + band phase-2 offsets) at K=50000 on Nibi
+(RAC), F41regr-style K=50000 at n=41 on Fir; success = known solution re-found by a
+capped lane at >=3x cells/lane-day. FULL n=44 CLASS INVENTORY recorded (all 12 stream;
+windows 2,718-5,836 each). Fir: Duo flow reaches the Duo menu (push generated hourly);
+delivery to phone is the failing step during the Slurm upgrade — tip: open Duo Mobile
+directly after the nudge. Zsh trap: unquoted $var does not word-split (broke a loop).**
+
 **⚡ 2026-09-01 (Daniel session) — MAINTENANCE WEEK MAP (status.alliancecan.ca, fetched
 this session): FIR in OUTAGE TODAY (planned Slurm upgrade) — that is why no Fir Duo
 push arrived (ssh unreachable = no push generated); hourly re-pusher will catch it on
