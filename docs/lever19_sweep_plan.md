@@ -71,3 +71,11 @@ resume_pi 1428-10290 (original hit cell rank 1429; canon keeps a DIFFERENT orbit
 cell whose in-cell depth requirement is ~500k on its arm). PRE-REGISTERED RULE:
 still hitless after rep 3 (~115M) => CANON REGRESSION FAILURE => disable
 WZ_FH_ORBIT_CANON fleet-wide pending investigation.
+
+## Lever 20 control lanes (submitted 2026-09-01, Nibi, RAC)
+- N43dt327: (8,-2,5,9) flat window 327 = our n=43 hit's window, WZ_FH_DRAIN_TOP=50000.
+  EXPECTED: re-find within one rep (hit was at idx 500000 = first buffer). If not
+  re-found: its in-cell rank exceeds 50k => raise K (175k) before any n=44 use.
+- N43dt257..567 step 8 (40 lanes): band phase-2 offsets, K=50000 — hunts WZ-43 / new
+  n=43 while measuring cells/lane-day under the cap (compare cells_done vs the
+  phase-1 uncapped lanes: 0-11 cells/lane).

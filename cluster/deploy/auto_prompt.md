@@ -92,6 +92,18 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **SELF-DEPLOY FROM GITHUB (2026-09-01):** the repo is public. If a cluster's
+     `$SCRATCH/bs45/src/solver/wz_match.cpp` or `./cluster_firsthit_probe.sh` lacks
+     `WZ_FH_DRAIN_TOP`, deploy the pinned files via duo_run:
+     `R=https://raw.githubusercontent.com/DanielGord0n/BS45_Quantum_Explorer/<HEAD sha>;
+     curl -fsSL $R/src/solver/wz_match.cpp -o src/solver/wz_match.cpp.new && curl -fsSL
+     $R/cluster/deploy/cluster_firsthit_probe.sh -o cluster_firsthit_probe.sh.new && grep -q
+     WZ_FH_DRAIN_TOP both && mv into place && cp to cluster/deploy/`. The new source is
+     byte-identical in behaviour when WZ_FH_DRAIN_TOP is unset (validated 09-01), so
+     running/queued lanes are unaffected. **LEVER 20 (`WZ_FH_DRAIN_TOP=50000`) is
+     gated on its pre-registered control** (docs/n44_search_narrowing_research.md):
+     do NOT apply it to n=44 lanes until Nibi's N43dt327 (our n=43 hit's window, capped)
+     or another N43dt lane re-finds a known n=43 solution. Report that verdict loudly.
      **RAC ACCOUNT (2026-08-31):** submit with `--account=rrg-ikotsire` on clusters where
      the association exists (`sacctmgr -n show assoc user=dangord account=rrg-ikotsire`
      non-empty; Nibi may need `rrg-ikotsire_cpu`), else def-ikotsire. Pending jobs can be
