@@ -1,8 +1,28 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-01 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-02 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-02 (daily loop) — NO HITS; FIR BACK from Slurm-upgrade outage (reached, ~35
+lanes read), Rorqual reached + queue EMPTY again, Trillium reached (31 PD healthy, no
+action), Nibi in listed outage (AIaaS Brine — checker skipped push as designed; lever-20
+N43dt control lanes UNREAD, lever 20 stays GATED off n=44). READS ALL HITLESS: Rorqual
+20052847-895 = the full 09-01 pass-3 (49 lanes: R44i125..5725 s200 quarter-points 26-53M/
+lane + R44Ai/R44Di 125..4625 s500 13.8-34M) consumed OVERNIGHT under RAC + 19921447-454 =
+R44Ai pass-1 tail finally read (13.8-25.1M, crowd-out resolved); Fir 57238023-26/28 =
+front-stack reads ((3,13,0,0) deep windows cum 415-428M, (5,9,6,6) cum 215.6M); Fir
+57454076 + 57456358-396 = F41regr rep 1 + the 39-lane pass-1 sweep — RE-SHOWS of Daniel's
+08-31 session reads (their exclusions were never written to checker_cmd.txt; now in the
+live regex, +96 total). 19838963 STILL unread. F41regr control: rep 2 RUNNING (57650091,
+~6.5h in), rep 3 PD dependency (57650092) — canon-failure verdict fires only after rep 3
+reads hitless. Fir queue healthy (9 R + 24 PD RAC sweep lanes). rung_status EXHAUSTED as
+always (SA rail closed; lever-19 sweep is the escalation). ACTION: Rorqual pending <8
+(=0) => pass-3/4 advance per lever19 rules = remaining quarter-point inventory, 63 lanes:
+R44i k=3075..5675 s200 (14) + k=175..5775 s200 (29) + R44Ai/R44Di k=375..4875 s500 (10+10),
+verbatim env, ORBIT_CANON=1, one rep each, rrg-ikotsire_cpu. (Rorqual Slurm maintenance
+today 12:00 — submits queue and start after; that is the point.) Job IDs appended below
+after submit echoes.**
 
 **⚡ 2026-09-01 (Daniel session, late) — DUO-NAG BUG FIXED: the hourly re-pusher kept
 sending "tap to approve" for Fir all afternoon while Fir was in a listed Slurm-upgrade
