@@ -21,8 +21,11 @@ always (SA rail closed; lever-19 sweep is the escalation). ACTION: Rorqual pendi
 (=0) => pass-3/4 advance per lever19 rules = remaining quarter-point inventory, 63 lanes:
 R44i k=3075..5675 s200 (14) + k=175..5775 s200 (29) + R44Ai/R44Di k=375..4875 s500 (10+10),
 verbatim env, ORBIT_CANON=1, one rep each, rrg-ikotsire_cpu. (Rorqual Slurm maintenance
-today 12:00 — submits queue and start after; that is the point.) Job IDs appended below
-after submit echoes.**
+today 12:00 — submits queue and start after; that is the point.) SUBMITS: Rorqual 63/63
+echoed, QUEUE_COUNT=63 — 20120262-275 = R44i3075..5675 s200 (14), 20120276-304 =
+R44i175..5775 s200 (29), 20120305-314 = R44Ai375..4875 s500 (10), 20120315-324 =
+R44Di375..4875 s500 (10). Workhorse quarter-point family now COMPLETE (25/75/125/175 mod
+200 all assigned); A/D quarter-points complete (125+375 mod 500).**
 
 **⚡ 2026-09-01 (Daniel session, late) — DUO-NAG BUG FIXED: the hourly re-pusher kept
 sending "tap to approve" for Fir all afternoon while Fir was in a listed Slurm-upgrade

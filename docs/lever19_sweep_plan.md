@@ -61,9 +61,14 @@ Account=...`. Fallback: def-ikotsire.
   k=125..4625 step 500 (10, R44Ai$k) + (5,5,8,8) k=125..4625 step 500 (10, R44Di$k),
   --account=rrg-ikotsire_cpu
 - Nibi (submitted 09-01): workhorse k=75..2875 step 200 (15, N44i$k), rrg-ikotsire_cpu
-- Remaining pass-3 inventory: workhorse k=3075..5675 step 200 (14) + k=175..5775
-  step 200 (29); (1,7,8,8)/(5,5,8,8) k=375..4875 step 500 (10 each); (3,3,4,12)
-  k=125..4625 + 375..4875 step 500 (Fir, after its pass-2 lands)
+- Rorqual (submitted 09-02 by the loop, queue was empty again): workhorse k=3075..5675
+  step 200 (14, 20120262-275) + k=175..5775 step 200 (29, 20120276-304); (1,7,8,8)
+  k=375..4875 step 500 (10, 20120305-314); (5,5,8,8) k=375..4875 step 500 (10,
+  20120315-324), rrg-ikotsire_cpu. Workhorse quarter-points (25/75/125/175 mod 200)
+  now fully assigned; A/D quarter-points (125/375 mod 500) fully assigned.
+- Remaining pass-3 inventory: (3,3,4,12) k=125..4625 + 375..4875 step 500 (Fir, after
+  its pass-2 lands). After that: pass 4 = eighth-points (workhorse k ≡ 12/37/62/87/...
+  mod 100 — define stride table before submitting).
 
 ## F41regr control status (2026-08-31)
 Rep 1 HITLESS: 38.0M tested (vs 12.9M for the original hit job), arms at
