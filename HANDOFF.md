@@ -4,6 +4,21 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-03 (Daniel session: "do whatever needs to be done to find bs45") — DECISION
++ PASS F LAUNCHED FLEET-WIDE. Rule collision resolved: CANON STAYS ON (soundness verified
+by LOCATE_CANON; F41regr failure = relocation depth of that one solution's kept cell; in
+expectation canon-on is never worse per lane-day and the n=43 capped control re-found
+ours with canon on) and LEVER 20 (K=50000) is applied to all n=44 lanes. Canon-disable
+rule RETIRED; F41nc/F41dt/F41dtnc discriminator stays running (informational). PASS F =
+front tile: capped lanes every 8 windows (an arm advances ~8 cells/rep), class order
+workhorse -> A(5,9,6,6) -> B(5,7,2,10) -> C/D/E/G/H -> I/J -> K/L, ledger + loop rule in
+docs/lever19_sweep_plan.md (commit 048109b). TRANCHE 1 via duo_run (4 taps, all echoed):
+Rorqual lever-20 self-deployed + R44f0..472 s8 (60, RAC; 85 PD total); Fir F44f480..792
+s8 (40, RAC; discriminator 3 PD); Nibi N44f800..1112 s8 (40, RAC; 80 PD incl. band
+phase 3); Trillium lever-20 self-deployed + T44Af0..248 s8 (32, def; 63 PD, deep enough
+for the Sept 8-10 outage). Workhorse tiled k=0..1112 tonight (~19% of its 5836 windows);
+the loop advances the ledger as queues drain.**
+
 **⚡ 2026-09-03 (daily loop) — TWO PRE-REGISTERED VERDICTS FIRED, THEY COLLIDE =>
 NEEDS_HUMAN on n=44 fleet config. (1) ★ LEVER-20 GATE PASS: Nibi capped control lane
 21001113 (N43dt set, K=50000, ORBIT_CANON=1) RE-FOUND the banked n=43 champion —
