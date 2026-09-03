@@ -362,3 +362,12 @@ standard 12 h lanes — success = a known n=43 solution (WZ or ours) re-found by
 capped lane at >=3x the cells/lane-day; also F41regr-style at n=41 skip-8 with
 K=50000 (original hit was rank 1429 in-cell / idx 500000). Deploy needs a tar-pipe
 of src/solver/wz_match.cpp + cluster/deploy/cluster_firsthit_probe.sh per cluster.
+
+### Lever-20 pre-registered test — VERDICT (2026-09-03): PASS
+Nibi capped control lane 21001113 (N43dt, K=50000, canon-on) re-found the banked n=43
+champion (byte-identical quad, GLOBAL FIRST idx=500000 rank=58505 score=130, 5.26M
+tested, ~4.9h; verify_npaf.py re-PASS). Throughput: capped lanes cells_done_sum
+144-161/lane vs 0-26 uncapped ≈ 10x ≥ the 3x success line. Both prongs met => lever
+20 UNGATED for n=44. Caveat (same-day collision): the F41regr canon rule also fired
+(3 hitless reps, cum 116.6M) — n=44 capped-fleet canon policy is with Daniel; the
+F41nc/F41dt/F41dtnc discriminator on Fir separates canon relocation from cap effects.

@@ -1,8 +1,41 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-02 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-03 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-03 (daily loop) — TWO PRE-REGISTERED VERDICTS FIRED, THEY COLLIDE =>
+NEEDS_HUMAN on n=44 fleet config. (1) ★ LEVER-20 GATE PASS: Nibi capped control lane
+21001113 (N43dt set, K=50000, ORBIT_CANON=1) RE-FOUND the banked n=43 champion —
+byte-identical quad to champion_firsthit_bs44_43.txt, same GLOBAL FIRST fingerprint
+(idx=500000 rank=58505 score=130), tested 5.26M, ~4.9h, verify_npaf.py re-PASS this
+run; throughput prong also met: capped lanes cells_done_sum 144-161/lane vs 0-26
+uncapped = ~10x >= the 3x line. NOT banked (re-find of an already-banked solution,
+not news). Lever 20 is now UNGATED for n=44 per the loop rule. (2) CANON REGRESSION
+FAILURE fired: F41regr rep 2 (57650091, 43.1M, cum 81.1M) + rep 3 (57650092, 35.4M,
+cum 116.6M >= ~115M line) BOTH hitless => pre-registered rule says disable
+WZ_FH_ORBIT_CANON fleet-wide pending investigation. COLLISION: the disable rule fired
+off n=41 geometry (canon keeps a different orbit cell, hit depth ~500k), yet the
+config it disables (canon-on) is exactly what found AND re-found n=43 today, and
+canon-off costs 3.8-28.9x dedup (28.9x on the n=44 workhorse — canon-off sweep would
+be a throughput catastrophe). Rule-vs-rule = Daniel's call; discriminator submitted
+(below). REST OF READS ALL HITLESS: Nibi N44i pass-3 read complete (20990489/490 +
+20990501-513, 15 lanes); N43dt band set 21001114-1153 hitless (21001134 unread);
+Rorqual 20120262-299 = 38 of the 63 quarter-point lanes already consumed overnight
+post-maintenance, 20120300-324 (25) still PD => pending >=8, no action; Trillium 31
+PD healthy, no action (compute offline Sept 8-10, queue deep enough through it); Fir
+08-31 batch fully read (57650093-123 = F44i3750-5750 + F44Bi250-4750) + crowd-out
+stragglers 57086727-32/57238027-33/57273915-19/57437183; 19838963 STILL unread.
+FIR+NIBI QUEUES EMPTY => submitted: Fir = 3-lane canon/cap DISCRIMINATOR at n=41
+skip-8 (F41nc = uncapped canon-OFF, replica of original hit conditions, in-cell rank
+1429 => should re-find in ~1 rep if canon relocation is the cause; F41dt = K=50000
+canon-ON, the pre-registered lever-20 F41 control, geometry predicts NO find; F41dtnc
+= K=50000 canon-OFF => should re-find AND measures capped n=41 throughput) after
+self-deploy of pinned b4547cd lever-20 source via GitHub curl; Nibi = Track-B band
+PHASE 3 (pre-registered offsets +4: N43dt k=259..571 step 8, 40 lanes, K=50000,
+canon-on = the exact config that passed its control today), rrg-ikotsire_cpu both.
+rung_status EXHAUSTED as always (SA rail closed). SUBMITS: <pending — filled below
+after duo_run echoes>.**
 
 **⚡ 2026-09-02 (daily loop) — NO HITS; FIR BACK from Slurm-upgrade outage (reached, ~35
 lanes read), Rorqual reached + queue EMPTY again, Trillium reached (31 PD healthy, no

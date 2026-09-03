@@ -84,3 +84,23 @@ WZ_FH_ORBIT_CANON fleet-wide pending investigation.
 - N43dt257..567 step 8 (40 lanes): band phase-2 offsets, K=50000 — hunts WZ-43 / new
   n=43 while measuring cells/lane-day under the cap (compare cells_done vs the
   phase-1 uncapped lanes: 0-11 cells/lane).
+
+## Lever-20 / canon verdicts + phase-3 submission (2026-09-03, daily loop)
+- LEVER-20 CONTROL PASS: Nibi 21001113 (N43dt, K=50000, canon-on) re-found the banked
+  n=43 champion byte-identically (verify_npaf re-PASS); capped cells_done_sum 144-161
+  vs 0-26 uncapped ≈ 10x ≥ the pre-registered 3x line. Lever 20 UNGATED for n=44.
+- CANON REGRESSION FAILURE (F41regr): rep 2 = 57650091 hitless 43.1M (cum 81.1M),
+  rep 3 = 57650092 hitless 35.4M (cum 116.6M ≥ ~115M line) => rule fires: disable
+  WZ_FH_ORBIT_CANON fleet-wide pending investigation. COLLIDES with the lever-20 pass
+  (canon-on capped config validated same day; canon-off costs 3.8-28.9x dedup).
+  n=44 fleet config => NEEDS_HUMAN; discriminator below resolves the mechanism.
+- Fir discriminator (submitted 09-03): n=41 (0,2,9,9) flat skip-8, one rep each —
+  F41nc (uncapped, canon-OFF: replica of original hit conditions, rank 1429 => expect
+  FOUND), F41dt (K=50000, canon-ON: pre-registered lever-20 F41 control, geometry
+  predicts no find), F41dtnc (K=50000, canon-OFF: expect FOUND + capped throughput).
+  Read rule: F41nc FOUND + F41dt hitless => canon relocation confirmed as the F41regr
+  cause AND capped canon-off re-finds shallow hits => recommend capped canon-off for
+  shallow-front sweeps, canon-on where dedup dominates — Daniel decides fleet-wide.
+- Nibi Track-B PHASE 3 (submitted 09-03): N43dt k=259..571 step 8 (40 lanes),
+  K=50000, canon-on, ORDER=1, rrg-ikotsire_cpu — pre-registered +4 offsets, capped
+  config = the one validated by today's control pass.
