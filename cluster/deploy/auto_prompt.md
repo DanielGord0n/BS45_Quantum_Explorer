@@ -108,6 +108,16 @@ Do not re-run the checker.
      the association exists (`sacctmgr -n show assoc user=dangord account=rrg-ikotsire`
      non-empty; Nibi may need `rrg-ikotsire_cpu`), else def-ikotsire. Pending jobs can be
      moved with `scontrol update job <id> Account=rrg-ikotsire`.
+     **PASS F IS THE PROGRAM (2026-09-03, Daniel's decision):** canon stays ON and lever 20
+     (`WZ_FH_DRAIN_TOP=50000`) is fleet-wide on n=44. Follow the PASS F section + ledger
+     in `docs/lever19_sweep_plan.md`: when a cluster's pending < 8, submit the next
+     unassigned k-range (step 8) for the current class, verbatim env
+     (`WZ_FH_PROF_ORDER=1,WZ_FH_ORBIT_CANON=1,WZ_FH_DRAIN_TOP=50000,WZ_FH_AB_BUDGET=50000000,
+     FH_NARMS=178`), `-J <name> -d singleton`, RAC account where it exists; self-deploy the
+     lever-20 source first if `WZ_FH_DRAIN_TOP` is missing on that cluster. The canon
+     "disable fleet-wide" rule is RETIRED (soundness verified; failure = relocation depth).
+     Report the F41 discriminator outcomes (F41nc/F41dt/F41dtnc) when read; they are
+     informational. Uncapped passes 1-3 are retired — do not resubmit them.
      **LEVER 19 SWEEP RULES (2026-08-29, supersede stack-depth for sweep lanes):** read
      `docs/lever19_sweep_plan.md`. Sweep lanes (names F44i*/F44Bi*/R44i*/R44Ai*/R44Di*/
      T43b*/N43b*) are ONE rep each — never restack the same k. Do NOT top up the deep

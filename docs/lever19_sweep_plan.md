@@ -104,3 +104,27 @@ WZ_FH_ORBIT_CANON fleet-wide pending investigation.
 - Nibi Track-B PHASE 3 (submitted 09-03): N43dt k=259..571 step 8 (40 lanes),
   K=50000, canon-on, ORDER=1, rrg-ikotsire_cpu — pre-registered +4 offsets, capped
   config = the one validated by today's control pass.
+
+## DECISION 2026-09-03 (Daniel: "do whatever needs to be done") — canon ON + lever 20 fleet-wide
+Rule collision resolved: canon soundness is verified independently (LOCATE_CANON: all 5
+known solutions keep a cell), so the F41regr failure is relocation DEPTH (the kept
+orbit cell's stream puts that solution past its first buffer), not unsoundness. In
+expectation canon-on is never worse per lane-day (covers ~29x more orbits on the
+workhorse; canon-off = 29 tickets on the same orbit at 29x cost), and the n=43 capped
+control re-found ours with canon on. Discriminator lanes (F41nc/F41dt/F41dtnc) keep
+running for the record; they do not change the n=44 config.
+
+## PASS F — FRONT TILE (K=50000, ORBIT_CANON=1, flat ORDER=1, one rep each)
+A capped arm advances ~8 cells per rep, so a lane at offset k fronts windows k..k+7.
+Tile each class with offsets k = 0, 8, 16, ... < windows. Names: <C>44f<k> (workhorse),
+<C>44Af<k> (5,9,6,6), <C>44Bf<k> (5,7,2,10), <C>44Cf<k> (1,7,8,8), <C>44Df<k> (5,5,8,8),
+<C>44Ef<k> (5,11,4,4), <C>44Gf<k> (9,9,0,4), <C>44Hf<k> (3,5,0,12), <C>44If<k> (3,3,4,12),
+<C>44Jf<k> (7,7,4,8), <C>44Kf<k> (7,11,2,2), <C>44Lf<k> (1,13,2,2). Class order = that
+list (workhorse 5836 w = 730 lanes; A/B 2788/2718 w = ~345 each; C/D/E/G/H ~5450-5660 w
+= ~690 each; I/J ~5180-5550; K/L 2820). LOOP RULE: when a cluster's pending < 8, submit
+the next unassigned k-range for the current class (RAC clusters ~40-60 lanes, Trillium
+~30), append the range here. Never re-submit an assigned k. Uncapped passes 1-3 are
+complete and retired.
+### Pass F ledger
+- 2026-09-03 tranche 1: Rorqual workhorse k=0..472 s8 (60); Fir workhorse k=480..792 s8
+  (40); Nibi workhorse k=800..1112 s8 (40); Trillium (5,9,6,6) k=0..248 s8 (32).
