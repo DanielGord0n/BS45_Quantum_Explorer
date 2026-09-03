@@ -34,8 +34,11 @@ canon-ON, the pre-registered lever-20 F41 control, geometry predicts NO find; F4
 self-deploy of pinned b4547cd lever-20 source via GitHub curl; Nibi = Track-B band
 PHASE 3 (pre-registered offsets +4: N43dt k=259..571 step 8, 40 lanes, K=50000,
 canon-on = the exact config that passed its control today), rrg-ikotsire_cpu both.
-rung_status EXHAUSTED as always (SA rail closed). SUBMITS: <pending — filled below
-after duo_run echoes>.**
+rung_status EXHAUSTED as always (SA rail closed). SUBMITS: Fir 3/3 echoed —
+57971034 = F41nc, 57971036 = F41dt, 57971038 = F41dtnc (lever-20 source b4547cd
+self-deployed via GitHub curl, DEPLOYED_LEVER20 + grep-verified); Nibi 40/40 echoed,
+SUBMIT_COUNT=40 — 21084695-726 + 21084728-735 = N43dt259..571 step 8, all PD
+Priority at submit.**
 
 **⚡ 2026-09-02 (daily loop) — NO HITS; FIR BACK from Slurm-upgrade outage (reached, ~35
 lanes read), Rorqual reached + queue EMPTY again, Trillium reached (31 PD healthy, no
