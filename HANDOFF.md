@@ -31,7 +31,8 @@ Pass F = 2252640-671 + 24 T44i + T43 stack), deep through the Sept 8-10 outage, 
 rung_status EXHAUSTED as always (SA rail closed; Pass F is the program). Checker exclusions
 +25 (discriminator 3 + Fir tranche-1 reads 21 + 20990490 fix). ACTION: Fir pending 0 < 8 =>
 Pass F ledger advance: resubmit F44f648..792 s8 (19 dead lanes, verbatim) + tranche 2
-F44f1120..1432 s8 (40 new lanes), workhorse class, RAC. SUBMITS: see IDs below.**
+F44f1120..1432 s8 (40 new lanes), workhorse class, RAC. SUBMITS: Fir 59/59 echoed,
+SUBMIT_COUNT=59 — 58093614-632 = F44f648..792 resubmits, 58093633-672 = F44f1120..1432.**
 
 **⚡ 2026-09-03 (Daniel session: "do whatever needs to be done to find bs45") — DECISION
 + PASS F LAUNCHED FLEET-WIDE. Rule collision resolved: CANON STAYS ON (soundness verified

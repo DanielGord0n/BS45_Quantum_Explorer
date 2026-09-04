@@ -128,3 +128,8 @@ complete and retired.
 ### Pass F ledger
 - 2026-09-03 tranche 1: Rorqual workhorse k=0..472 s8 (60); Fir workhorse k=480..792 s8
   (40); Nibi workhorse k=800..1112 s8 (40); Trillium (5,9,6,6) k=0..248 s8 (32).
+- 2026-09-04 (supplementary loop): Fir k=648..792 s8 RESUBMITTED (19 — tranche-1 jobs
+  57972726-744 died header-only/no data with an empty queue; CKDIR resume + singleton
+  names, so this is coverage repair, not a re-assignment) + tranche 2: Fir workhorse
+  k=1120..1432 s8 (40). Jobs 58093614-632 (resubmits) + 58093633-672 (tranche 2).
+  Workhorse tiled k=0..1432; next unassigned workhorse k = 1440.
