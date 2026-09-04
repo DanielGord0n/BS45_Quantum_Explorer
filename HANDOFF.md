@@ -1,8 +1,37 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-03 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-04 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-04 (daily loop, supplementary re-check — the 1pm main run left no entry/summary
+and made no commits, so this covers the whole fleet; fir+nibi Duo missed at 1pm, all four
+reached on the hourly retry ~14:21) — ★ CANON/CAP DISCRIMINATOR RESOLVED, canon-relocation
+CONFIRMED as the F41regr root cause. Fir 57971034 = F41nc (uncapped canon-OFF, replica of
+original hit conditions): *** BS(42,41) FOUND *** in ONE rep — byte-identical quad to banked
+champion_firsthit_bs42_41.txt, same fingerprint (idx=500000 profile_rank=1429 score=124),
+elapsed 4.6h, tested 12.8M. Fir 57971038 = F41dtnc (K=50000 canon-OFF): ALSO FOUND, same
+quad/fingerprint, elapsed 4.6h, tested 9.4M, cells_done_sum=136 => the cap does NOT lose
+the n=41 hit and capped throughput re-finds it. Fir 57971036 = F41dt (K=50000 canon-ON):
+hitless 178/178 tested 21.2M — exactly as geometry predicted (canon keeps a different orbit
+cell). All three verdicts match the relocation hypothesis; canon soundness NOT in question;
+the 09-03 canon-ON + lever-20 decision stands validated. Re-finds NOT banked (expected
+re-find of a banked champion, quad verified identical locally). REST ALL HITLESS: Fir Pass F
+tranche-1 F44f480..640 = 57972705-725 (21 lanes) read hitless, tested 27.6-29.4M/lane,
+cells_done_sum ~500-535/lane (front tile advancing as designed); ⚠️ 57972726-744 = F44f648..792
+(19 lanes, started 15:06-17:05 PDT 09-03) are HEADER-ONLY with an EMPTY Fir queue past
+walltime = died without summaries (precedent: 18724004-009 rebalance-scancel "header-only,
+no data") — their windows were never searched; left visible in the checker (not excluded)
+in case any is a zombie, resubmitted below (CKDIR resume + singleton names = collision-proof
+either way). Nibi: 20990490 re-show only (exclusion regex slip `2099048[90]` doesn't match
+20990490 — fixed), 80 PD healthy (40 N43dt phase-3 + 40 N44f800..1112 = 21085447-480+482-487),
+no action. Rorqual: 5 R (R44i4975..5775 quarter-point tail) + ~80 PD (60 R44f Pass F =
+20161582-641 now visible + 20 A/D maintenance-held), no action. Trillium: ~63 PD (32 T44Af
+Pass F = 2252640-671 + 24 T44i + T43 stack), deep through the Sept 8-10 outage, no action.
+rung_status EXHAUSTED as always (SA rail closed; Pass F is the program). Checker exclusions
++25 (discriminator 3 + Fir tranche-1 reads 21 + 20990490 fix). ACTION: Fir pending 0 < 8 =>
+Pass F ledger advance: resubmit F44f648..792 s8 (19 dead lanes, verbatim) + tranche 2
+F44f1120..1432 s8 (40 new lanes), workhorse class, RAC. SUBMITS: see IDs below.**
 
 **⚡ 2026-09-03 (Daniel session: "do whatever needs to be done to find bs45") — DECISION
 + PASS F LAUNCHED FLEET-WIDE. Rule collision resolved: CANON STAYS ON (soundness verified
