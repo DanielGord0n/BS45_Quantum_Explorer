@@ -1,8 +1,31 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-04 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-05 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-05 (supplementary re-check ~16:30 — all four clusters reached: Fir+Trillium
+on the first push, Rorqual retry round 1, Nibi retry round 3; NOTE no 09-05 main-run
+HANDOFF entry exists and last_summary.txt was empty at start, so this is the day's only
+written record) — NO HITS. Fir: 42 of the 09-04's 59 Pass F lanes read hitless —
+58093633+58093635-671 = F44f1120..1424 (minus 1128) tranche 2 tested ~24-28M/lane,
+cells_done_sum ~430-525/lane, dedup 28.92x live; 58093618/623/624/625 = F44f680/720/728/
+736 resubmits read hitless with tested_cum 48-53M ≈ 2x tested => the first (header-only)
+runs' CKDIR progress SURVIVED and resumed — header-only deaths cost the rep, not the
+coverage. ⚠️ 17 lanes DIED HEADER-ONLY AGAIN (empty queue past walltime): 58093614-617/
+619-622/626-632 = 15 of the 19 F44f648..792 resubmits (2nd death for those windows) +
+58093634 = F44f1128 + 58093672 = F44f1432; left visible in checker, resubmitted below
+(3rd rep for the 15; CKDIR+singleton collision-proof). 57972743 re-show => 57972726-744
+now excluded (superseded twice over). Rorqual: 20120300-302 = R44i4975/5175/5375 hitless
+30-32M + 20120305-314 = R44Ai375..4875 s500 hitless 13-27M (quarter-point family now
+fully read except:) 20120303/304 = R44i5575/5775 HEADER-ONLY dead (not requeued — noted,
+not resubmitted; sweep lanes, pending ≥8); queue = 60 R44f Pass F PD (20161582-641) + 10
+R44Di maintenance-held => no action. Nibi: 80 PD healthy (40 N43dt + 40 N44f) => no
+action. Trillium: 63 PD deep through the Sept 8-10 outage => no action. rung_status
+EXHAUSTED as always (Pass F is the program). Checker exclusions +74 (42 Fir reads + 19
+superseded + 13 Rorqual reads). ACTION: Fir pending 0 < 8 => resubmit the 17 dead lanes
+(verbatim env, CKDIR resume, singleton names) + Pass F tranche 3 = F44f1440..1752 s8
+(40 new workhorse lanes), RAC. SUBMITS: [pending — IDs recorded below after echo].**
 
 **⚡ 2026-09-04 (daily loop, supplementary re-check — the 1pm main run left no entry/summary
 and made no commits, so this covers the whole fleet; fir+nibi Duo missed at 1pm, all four
