@@ -138,4 +138,5 @@ complete and retired.
   712,744,752,760,768,776,784,792 + 1128 + 1432; 3rd rep for the 648..792 subset — but
   the 4 that completed this round showed tested_cum ≈ 2x = CKDIRs survive the deaths,
   so this is coverage repair) + tranche 3: Fir workhorse k=1440..1752 s8 (40).
+  Jobs 58243093-109 (resubmits) + 58243110-149 (tranche 3), 57/57 echoed all PD.
   Workhorse tiled k=0..1752; next unassigned workhorse k = 1760.

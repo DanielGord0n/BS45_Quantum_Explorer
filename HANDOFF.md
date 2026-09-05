@@ -25,7 +25,9 @@ action. Trillium: 63 PD deep through the Sept 8-10 outage => no action. rung_sta
 EXHAUSTED as always (Pass F is the program). Checker exclusions +74 (42 Fir reads + 19
 superseded + 13 Rorqual reads). ACTION: Fir pending 0 < 8 => resubmit the 17 dead lanes
 (verbatim env, CKDIR resume, singleton names) + Pass F tranche 3 = F44f1440..1752 s8
-(40 new workhorse lanes), RAC. SUBMITS: [pending — IDs recorded below after echo].**
+(40 new workhorse lanes), RAC. SUBMITS: Fir 57/57 echoed, SUBMIT_COUNT=57 — 58243093-109
+= the 17 dead-lane resubmits (F44f648..792 subset + F44f1128 + F44f1432), 58243110-149 =
+F44f1440..1752; all PD at submit.**
 
 **⚡ 2026-09-04 (daily loop, supplementary re-check — the 1pm main run left no entry/summary
 and made no commits, so this covers the whole fleet; fir+nibi Duo missed at 1pm, all four
