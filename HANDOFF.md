@@ -4,6 +4,18 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-06 (supplementary re-check ~14:10 — Fir only, reached on Duo retry round 1;
+main run above handled the rest) — NO HITS, bookkeeping only. First 6 of the 09-05
+dead-lane resubmits finished: 58243093-095/097/098 = F44f648/656/664/688/696 read HITLESS,
+tested ~22-24M this rep, tested_cum 72-77M ≈ 3x tested => the two prior header-only reps'
+CKDIR coverage SURVIVED and resumed (deaths cost reps, not coverage). ⚠️ 58243096 =
+F44f672 died HEADER-ONLY AGAIN (3rd rep death for that window; header Sep 5 19:00, gone
+from queue, no summary) — left visible in checker, NOT resubmitted (Fir pending 51 >= 8,
+same call as Rorqual 20120303/304; window k=672 tracked here as unsearched-this-rep).
+Queue healthy: 30 R (58243099-128 = F44f704..792 subset + 1128/1432 + tranche-3 through
+k=1584) + 21 PD (58243129-149 = F44f1592..1752). No submits, ledger unchanged. Checker
+exclusions +5.**
+
 **⚡ 2026-09-06 (daily loop 1pm) — NO HITS, bookkeeping-only cycle. Fir Duo MISSED (no
 approval in 180s) => not reached; yesterday's 57 Pass F submits (58243093-149) unread,
 expect them next check. Nibi reached: 80 PD healthy (40 N43dt259..571 + 40 N44f800..1112,
