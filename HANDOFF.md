@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-06 (daily loop 1pm) — NO HITS, bookkeeping-only cycle. Fir Duo MISSED (no
+approval in 180s) => not reached; yesterday's 57 Pass F submits (58243093-149) unread,
+expect them next check. Nibi reached: 80 PD healthy (40 N43dt259..571 + 40 N44f800..1112,
+all Priority) => no action. Rorqual reached: 20120315 = R44Di375 RUNNING (header 02:58 EDT,
+~1:55 elapsed at check — leave visible for its read), 60 R44f Pass F PD (20161582-641) +
+R44Di875 PD + 8 R44Di maintenance-held => pending >=8, no action; 20120303/304 =
+R44i5575/5775 known header-only dead re-showed => NOW EXCLUDED (regex 201203(0[0-2]|0[5-9]|
+1[0-4]) widened to 201203(0[0-9]|1[0-4]); 09-05 decision stands: not resubmitted, windows
+k=5575/5775 remain unsearched — tracked here). Trillium reached: 63 PD (T43 stack 6 + 24
+T44i + 32 T44Af0..248), deep through the Sept 8-10 outage => no action. No new FOUND
+banners, no new completed reads on any reached cluster. No submits, ledger unchanged
+(workhorse still tiled to k=1752). Checker exclusions +2.**
+
 **⚡ 2026-09-05 (supplementary re-check ~16:30 — all four clusters reached: Fir+Trillium
 on the first push, Rorqual retry round 1, Nibi retry round 3; NOTE no 09-05 main-run
 HANDOFF entry exists and last_summary.txt was empty at start, so this is the day's only
