@@ -1,8 +1,22 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-05 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-07 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-07 (daily loop 1pm) — NO HITS, bookkeeping-only cycle. Fir + Nibi Duo MISSED
+(no approval in 180s) => not reached; Fir's queue (was 30 R + 21 PD Pass F on 09-06, incl.
+the 57 Pass F lanes 58243093-149 in flight) and Nibi's 80 PD presumed intact — expect
+their reads next check. Rorqual reached: 14 new hitless reads — 20161582-585 = FIRST
+Rorqual Pass F workhorse reads (R44f0/8/16/24, sig (3,13,0,0), tested 20.9-24.6M/lane,
+cells_done_sum 382-454, dedup 28.92x live) + 20120315-324 = R44Di quarter-point family
+COMPLETE (sig (5,5,8,8) s500 = R44Di375..4875, tested 13.3-29.8M/lane, cells_done_sum
+0-15, aborts 65-1308 telemetry only); queue = 56 R44f PD (20161586-641) => pending >= 8,
+no action. Trillium reached: T43 stack (2192781, 2222591-95) + 24 T44i (2225668-91) +
+T44Af0..72 (2252640-49) all RUNNING with in-progress headers (header-only + R in queue =
+normal, leave visible for their finished reads) + 22 T44Af PD (2252650-71) + T43sC dep
+=> no action. No FOUND banners anywhere. No submits, ledger unchanged (workhorse tiled
+to k=1752). Checker exclusions +14.**
 
 **⚡ 2026-09-06 (supplementary re-check ~14:10 — Fir only, reached on Duo retry round 1;
 main run above handled the rest) — NO HITS, bookkeeping only. First 6 of the 09-05
