@@ -1,8 +1,40 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-07 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-09 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-09 (daily loop 1pm — fir+nibi+rorqual reached; Trillium in its listed
+Sept 8-10 outage, no push sent) — NO HITS; FIR QUEUE EMPTY => Pass F restack (only
+action). Fir: 38 of the remaining 51 Pass F lanes read HITLESS — 58243100/101/104/108
+= F44f712/744/768/1128 (tested ~21-24M this rep; 712 tested_cum 71.4M ≈ 3x and 1128
+cum 48.6M ≈ 2x => dead-rep CKDIR coverage survived again) + 58243113-115/119-149 =
+F44f1464..1752 subset first reps (tested ~20.7-25.5M/lane, cells_done_sum 357-481,
+dedup 28.92x live). ⚠️ 13 lanes DIED HEADER-ONLY (headers Sep 6 00:38-02:36, empty
+queue past walltime): 58243099/102/103/105/106/107/109-112/116-118 = F44f704/752*/
+760*/776/784/792/1432/1440/1448/1456/1488/1496/1504 (*752/760 note: 101=744 and
+104=768 read, so the dead set is 704,752,760,776,784,792 in the resubmit block +
+1432 + 5 tranche-3 windows) — 4th death for k=672 (58243096 re-showed, still dead).
+Fir pending 0 < 8 => ACTION: resubmit the 14 dead windows (672,704,752,760,776,784,
+792,1432,1440,1448,1456,1488,1496,1504 — verbatim env, CKDIR resume, singleton
+names) + Pass F tranche 4 = F44f1760..2072 s8 (40 new workhorse lanes), RAC
+(rrg-ikotsire_cpu). Rorqual: 6 Pass F reads HITLESS — 20161586-588/593/596/608 =
+R44f32/40/48/88/112/208 (tested 22.9-25.5M/lane, cells_done_sum 422-460); ⚠️ 23
+lanes died HEADER-ONLY (headers Sep 7 20:55 - Sep 8 19:35, none in queue, past
+walltime): 20161589-592/594/595/597-607/609-614 = R44f56/64/72/80/96/104/120..256
+step 8 (minus the 6 read) — left visible, NOT resubmitted (Rorqual pending 27 >= 8,
+same call as prior header-only deaths; windows tracked here as unsearched-this-rep).
+Queue = 27 R44f PD (20161615-641 = R44f264..472) => no other action. Nibi: 13 N43dt
+phase-3 reads HITLESS — 21084700/701/703/705-714 = N43dt299/307/323/339..411 (minus
+315/331; tested 9.1-11.7M/lane, aborted 16-179 telemetry only, 162-163/178
+summarized); ⚠️ 21084702/704 = N43dt315/331 died HEADER-ONLY (headers Sep 7 06:26,
+gone from queue) — left visible, NOT resubmitted (Nibi pending 60 >= 8); 21084697 =
+N43dt275 re-showed => NOW EXCLUDED (windows 275/315/331 remain unsearched — tracked
+here). Nibi queue = 20 N43dt PD (419..571, note 21084727 absent from queue) + 40
+N44f PD (800..1112) => no action. No FOUND banners anywhere. rung_status EXHAUSTED
+as always (SA rail closed; Pass F is the program). Checker exclusions +57 reads +
+21084697 + 58093614-672 superseded-block cleanup. SUBMITS: see next paragraph
+(appended after Duo echo).**
 
 **⚡ 2026-09-09 (supplementary re-check ~05:18 EDT — the Duo retry chain for the missed
 fir+nibi from the cycle above; Nibi reached on retry round 1, Fir NEVER reached — gave up
