@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-09 (supplementary re-check ~05:18 EDT — the Duo retry chain for the missed
+fir+nibi from the cycle above; Nibi reached on retry round 1, Fir NEVER reached — gave up
+after 10 hourly rounds) — NO HITS, bookkeeping only. Nibi: first 5 of the 40 N43dt phase-3
+lanes finished — 21084695/696/698/699 = N43dt259/267/283/291 read HITLESS, tested
+10.1-11.5M/lane, cells_done_sum 128-165, aborted 81-250 telemetry only, 162/178 arms
+summarized (walltime rep, normal), dedup 3.81x live. ⚠️ 21084697 = N43dt275 died
+HEADER-ONLY (header Sep 7 02:11, gone from queue, no summary) — left visible in checker,
+NOT resubmitted (Nibi pending 61 >= 8, same call as R44i5575/5775 + F44f672; window 275
+tracked here as unsearched-this-rep). Queue healthy: 14 N43dt R (299..403, 1-3h elapsed
+at check) + 21 N43dt PD (411..571) + 40 N44f PD (800..1112) => no action. Fir: 57 Pass F
+lanes (58243093-149) still unread, queue presumed intact — expect next check. No FOUND
+banners, no submits, ledger unchanged. Checker exclusions +4.**
+
 **⚡ 2026-09-07 (daily loop 1pm) — NO HITS, bookkeeping-only cycle. Fir + Nibi Duo MISSED
 (no approval in 180s) => not reached; Fir's queue (was 30 R + 21 PD Pass F on 09-06, incl.
 the 57 Pass F lanes 58243093-149 in flight) and Nibi's 80 PD presumed intact — expect
