@@ -2,12 +2,17 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=192
+#SBATCH --mem=0
 #SBATCH --time=12:00:00
 #SBATCH --job-name=FIRSTHIT
 #SBATCH --output=firsthit_output_%j.txt
 #SBATCH --account=def-ikotsire
 #SBATCH --mail-type=END,FAIL
 
+# 2026-09-10: --mem=0 (all node memory). Without it Slurm's 48 GB default applied on
+# Fir/Rorqual/Nibi and ~36 of 178 arms were OOM-killed at launch on EVERY lane (startup
+# peak ~257 MB/arm x 178 = ~46 GB); lever-20 lanes then died outright. Trillium allocates
+# whole nodes (178/178 always) — that was the tell.
 # First-hit probe (Gate B + Gate C, work order 2026-07-16): stream the Thm-2.2
 # C,D pair stream in deterministic order, backtrack A,B per candidate under
 # Def 1.1 + Thm 2.2 (mirror-pair DFS), stop at the first NPAF==0 hit.
