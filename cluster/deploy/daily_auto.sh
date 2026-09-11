@@ -54,7 +54,9 @@ mkdir -p "$REPO/results"
 log() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
 ntfy_push() {
   [ -z "$NTFY_URL" ] && return 0
-  curl -s -m 15 -H "Title: ${1}" -H "Priority: ${3:-default}" -H "Tags: ${4:-satellite}" \
+  local act=()
+  [ -n "${NTFY_CONTROL_URL:-}" ] && act=(-H "Actions: http, Run check now, ${NTFY_CONTROL_URL}, method=POST, body=check ${NTFY_CONTROL_TOKEN:-}, clear=true")
+  curl -s -m 15 -H "Title: ${1}" -H "Priority: ${3:-default}" -H "Tags: ${4:-satellite}" "${act[@]}" \
        -d "${2}" "$NTFY_URL" >/dev/null 2>&1
 }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.dangord.bs45listener</string>
+  <key>ProgramArguments</key><array><string>/bin/bash</string><string>/Users/danielgordon/Projects/BS45_Quantum_Explorer/cluster/deploy/ntfy_listener.sh</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/danielgordon/Projects/BS45_Quantum_Explorer/results/ntfy_listener.out</string>
+  <key>StandardErrorPath</key><string>/Users/danielgordon/Projects/BS45_Quantum_Explorer/results/ntfy_listener.err</string>
+  <key>EnvironmentVariables</key><dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+</dict></plist>

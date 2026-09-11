@@ -34,3 +34,6 @@ results/launchd.out
 results/launchd.err
 results/daily_check.log
 cluster/deploy/AUTOPILOT_OFF
+results/ntfy_listener.log
+results/ntfy_listener.out
+results/ntfy_listener.err
