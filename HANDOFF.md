@@ -1,8 +1,28 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-09 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-11 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-11 (daily loop 1pm — nibi+rorqual+trillium reached; Fir Duo MISSED) — NO
+HITS, bookkeeping-only cycle. Trillium big read: 2225668-91 = ALL 24 T44i (3,13,0,0)
+quarter-point lanes hitless, tested 39-64M/lane, 178/178 arms (full-node memory as
+always), cells_done_sum 0-26, aborted 0-10 telemetry only; T43 stack COMPLETE hitless —
+2222591/92/94 (8,-2,5,9) 22.2/27.4/22.2M + 2222593 (6,8,5,7) 23.8M + 2222595 (8,10,1,3)
+37.2M + 2192781 (0,2,1,13) 19.9M, all 178/178; queue = 33 T44Af PD (2285217-44 re-arm
+resubmits + 2252668-71) + T43sC dep => pending >= 8, no action; 2252640-67 = outage-dead
+T44Af originals now excluded as superseded by the 2285217-44 resubmits. Rorqual: 3 new
+R44f reads hitless — 20161625/633/635 = R44f344/408/424 tested 21.6/22.0/21.7M,
+cells_done_sum 393/393/381, arms_summarized 142/178 = the pre-fix 48G OOM signature
+(these reps ran before the --mem=0 re-arm; coverage banked in CKDIRs, windows re-covered
+by the 700G resubmits); queue = 3 R (20161638-640 = R44f448/456/464, headers Sep 11) +
+~44 PD (20161641 + 20887506-557 at 700G) => pending >= 8, no action. Nibi: NO new reads
+(21084702/704 old dead headers re-showed => excluded as superseded by 21705841/842);
+queue = 72 PD healthy (20 N43dt 419..571 + 50 N44f 800..1112 + N43dt315/331 resubmits +
+21707091 N43b2e6) => no action. LEVER-21 CONTROLS: Nibi N43b2e6 21707091 still PD (no
+verdict); Fir F41b2e6 59193560 unknown (Fir unreached) — budget stays 5e7 fleet-wide
+until BOTH controls read. No FOUND banners, no submits, ledger unchanged. Checker
+exclusions +33 reads, +30 superseded.**
 
 **⚡ 2026-09-10 (Daniel session, late: "out of the box") — LEVER 21 = BUDGET CUT: the
 per-candidate AB node budget is 5e7 while the three hits needed 213k/87k/89k nodes and
