@@ -150,3 +150,19 @@ complete and retired.
   50.3G, 36 oom_kill events/lane). Driver now `#SBATCH --mem=0` (c792cbf); every submit
   also passes `--mem=0`; pending pre-fix jobs get `scontrol update MinMemoryNode=700000`.
   Uncapped lanes had ALSO been losing ~36/178 arms at launch since July.
+
+## AUDIT 2026-09-11 — what Pass F can and cannot catch (against the 3 known solutions)
+| hit | stream idx | in-cell flatness pct | buffer | caught by Pass F (buffer 1, top 50k = 10%)? |
+|---|---|---|---|---|
+| n=41 ours | 500,000 | 0.9% | 1 | yes |
+| n=42 ours | 1,000,000 | 31.9% | 2 | NO |
+| n=43 ours | 500,000 | 2.7% | 1 | yes |
+Pass F is the fastest broad sweep (~10x cells/lane-day) and would have found two of the
+three known solutions; it is blind to n=42-like solutions (second buffer, ~32nd
+percentile). COMPLEMENT = PASS F2 (deeper front): same offsets, TWO buffers per cell,
+top-175k (35%) of each => ~5-6x slower per cell than F, catches all three known cases.
+Needs a small solver addition (WZ_FH_DRAIN_BATCHES=2, part of CFGSIG; CKDIR suffix
+_dt175000b2). Schedule: F2 starts on the workhorse once its F tile completes (~1 week),
+while F continues on the remaining classes; then F2 follows F class by class. The two
+passes are complementary, not redundant (F2 re-tests F's top-50k of buffer 1 — ~29%
+overlap — accepted for simplicity).
