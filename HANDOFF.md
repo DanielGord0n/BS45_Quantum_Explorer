@@ -19,7 +19,10 @@ wait (FH_STOP_GRACE=300 s) then SIGKILL stragglers and aggregate anyway; (3) loo
 header-only-at-walltime = a completed rep with lost telemetry, checkpoints intact,
 resubmit-by-name resumes — never "dead". The 11 windows' work is banked in CKDIRs; the
 ledger's "dead windows" language is retired. One-tap button confirmed working (Daniel's
-13:11 and 14:07 checks). Mem fix confirmed 4x at 178/178. Lever-21 controls still PD.**
+13:11 and 14:07 checks). Mem fix confirmed 4x at 178/178. Lever-21 controls still PD. FIX DEPLOYED 5de899c on ALL FOUR (4 taps, grep-verified
+solver + driver): Fir 24 R + 14 PD, Rorqual 1 R + 42 PD, Trillium 33 PD, Nibi 63 PD.
+Pending lanes compile the fixed source at start (SIGTERM honored); their captured
+driver copy still has the bare wait, which now returns promptly because arms exit.**
 
 **⚡ 2026-09-11 (supplementary #2, Fir-only re-check ~14:07 — Duo retry) — NO HITS,
 bookkeeping only. ONE new read since 13:11: 59191102 = F44f1768 (tranche-4 fresh
