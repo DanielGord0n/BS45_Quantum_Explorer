@@ -16,7 +16,14 @@ COST: the unconditional ".dt" CFGSIG field (09-01) invalidated every pre-09-03 c
 sA/sB reps) — bounded (sweep lanes are 1-rep) but real; HANDOFF cum figures for those
 lanes are stale from 09-03. NEW RULE: new CFGSIG fields append only when non-default
 (".db" only if B>1) — verified B=1 signature byte-identical to deployed lanes. Not yet
-deployed (F2 needs it; loop self-deploys, grep token WZ_FH_DRAIN_BATCHES).**
+deployed (F2 needs it; loop self-deploys, grep token WZ_FH_DRAIN_BATCHES). CONFIRMED ON
+TRILLIUM (arm logs): "[firsthit ckpt] STALE/MISMATCHED checkpoint IGNORED (...oc1 !=
+...oc1.dt0) — starting fresh" on T43f6 2222591 and T43r6 2222592 (09-04): the n=43
+published deep lanes RESTARTED at position 0 (per-arm tested_cum ~200k vs prior lane cum
+149-327M); old ckpts overwritten, positions unrecoverable. Every lane with a pre-09-03
+CKDIR that resumed after the deploy did the same (Fir F44sA/sB reps incl.). Sweep/Pass-F
+lanes (fresh CKDIRs) unaffected. All cum figures for pre-09-03 lanes are now "since
+09-04". Rule in force: never change CFGSIG for existing lanes (conditional fields).**
 
 **⚡ 2026-09-11 (Daniel session) — THE "NON-MEMORY DEATH MODE" SOLVED: NOT A DEATH. The 11
 Fir resubmits ran the FULL 12 h (sacct TIMEOUT 12:00:xx, 178 arms, arm logs show 1M
