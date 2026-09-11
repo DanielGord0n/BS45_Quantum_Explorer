@@ -140,3 +140,13 @@ complete and retired.
   so this is coverage repair) + tranche 3: Fir workhorse k=1440..1752 s8 (40).
   Jobs 58243093-109 (resubmits) + 58243110-149 (tranche 3), 57/57 echoed all PD.
   Workhorse tiled k=0..1752; next unassigned workhorse k = 1760.
+
+### 2026-09-10 correction + memory fix
+- The 09-09 "tranche 4" (Fir F44f1760..2072) never went in (agent backgrounded the
+  submit); SUBMITTED 09-10 by hand with --mem=0, plus Fir's 14 dead windows, Rorqual's
+  42, Trillium's 28 (T44Af, killed by the Sept 8-10 outage), Nibi's 2 — all under their
+  original names, so surviving arms resume from CKDIRs.
+- ROOT CAUSE of "header-only" deaths: Slurm's 48 GB default memory (ReqMem 48G, MaxRSS
+  50.3G, 36 oom_kill events/lane). Driver now `#SBATCH --mem=0` (c792cbf); every submit
+  also passes `--mem=0`; pending pre-fix jobs get `scontrol update MinMemoryNode=700000`.
+  Uncapped lanes had ALSO been losing ~36/178 arms at launch since July.
