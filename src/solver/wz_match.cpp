@@ -1473,6 +1473,12 @@ int main(int argc, char **argv) {
     // remainder is simply unsearched. Part of CFGSIG (changes cell skipping).
     long long fh_drain_top = 0;
     if (const char *e = getenv("WZ_FH_DRAIN_TOP")) fh_drain_top = atoll(e);
+    // WZ_FH_DRAIN_BATCHES=B (2026-09-11, Pass F2): apply the top-K cap to the first B
+    // sorted buffers of each cell instead of only the first (B=1 = original lever 20).
+    // Audit: our n=42 solution sat in its cell's SECOND buffer at the ~32nd flatness
+    // percentile, invisible to B=1/K=50k; F2 = B=2, K=175k catches all three known hits.
+    long long fh_drain_batches = 1;
+    if (const char *e = getenv("WZ_FH_DRAIN_BATCHES")) fh_drain_batches = max(1LL, atoll(e));
     long long cells_capped = 0;
     string fh_ckpt_path;            // empty = checkpointing off (local runs)
     if (const char *e = getenv("WZ_FH_CKPT_DIR"))
@@ -1493,6 +1499,14 @@ int main(int argc, char **argv) {
              prof_order, fh_m, cell_order ? 1 : 0, ab_prof ? 1 : 0, score_max,
              fh_buf_cap, fh_skip, G_THM211B ? 1 : 0, G_THM212 ? 1 : 0,
              orbit_canon ? 1 : 0, fh_drain_top);
+    // Signature-compatibility rule (2026-09-11): a NEW config field is appended ONLY
+    // when it is non-default, so every checkpoint written before the field existed
+    // stays valid. (Adding ".dt" unconditionally on 09-01 silently fresh-started every
+    // lane that resumed after the 09-03 deploy.)
+    if (fh_drain_batches > 1) {
+      size_t L0 = strlen(fh_sigbuf);
+      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".db%lld", fh_drain_batches);
+    }
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;
     long long fh_res_pi = 0, fh_res_batch = 0, fh_res_k = 0, fh_tested_base = 0;
@@ -1739,8 +1753,8 @@ int main(int argc, char **argv) {
         stable_sort(cellbuf.begin(), cellbuf.end(),
                     [](const CellCand &a, const CellCand &b){ return a.sc < b.sc; });
         size_t stop_at = cellbuf.size();
-        if (fh_drain_top > 0 && cur_batch == 0)
-          stop_at = min(cellbuf.size(), (size_t)fh_drain_top);  // front-only: top-K of batch 0
+        if (fh_drain_top > 0 && cur_batch < fh_drain_batches)
+          stop_at = min(cellbuf.size(), (size_t)fh_drain_top);  // front-only: top-K of the first B batches
         for (size_t ci = start; ci < stop_at; ci++) {
           if (g_found.load() || g_fh_sigterm) break;  // hits/SIGTERM abort;
           int Ci[64], Di[64];                         // max_cand still drains
@@ -1754,7 +1768,7 @@ int main(int argc, char **argv) {
           cur_batch++;
           ck_batch = cur_batch;
           ck_k = 0;
-          if (fh_drain_top > 0) { cell_stop.store(true); cells_capped++; }  // abandon rest of cell
+          if (fh_drain_top > 0 && cur_batch >= fh_drain_batches) { cell_stop.store(true); cells_capped++; }  // abandon rest of cell after B batches
         }
         cellbuf.clear();
       };
@@ -1841,7 +1855,7 @@ int main(int argc, char **argv) {
          << "  cells_prof_dead=" << cells_prof_dead
          << "  cells_prof_uncap=" << cells_prof_uncap
          << "  cells_orbit_dup=" << cells_orbit_dup
-         << "  cells_capped=" << cells_capped << " (drain_top=" << fh_drain_top << ")"
+         << "  cells_capped=" << cells_capped << " (drain_top=" << fh_drain_top << " batches=" << fh_drain_batches << ")"
          << "  tested_cum=" << (fh_tested_base + completed_tested)
          << "  resume_pi=" << ck_pi << "  resume_batch=" << ck_batch
          << "  resume_k=" << ck_k << "\n"

@@ -166,3 +166,11 @@ _dt175000b2). Schedule: F2 starts on the workhorse once its F tile completes (~1
 while F continues on the remaining classes; then F2 follows F class by class. The two
 passes are complementary, not redundant (F2 re-tests F's top-50k of buffer 1 — ~29%
 overlap — accepted for simplicity).
+
+### F2 mechanics (built 2026-09-11, validated locally)
+`WZ_FH_DRAIN_BATCHES=B` caps the first B sorted buffers per cell at top-K each (B=1 =
+original lever 20; validated B=2 halves cells/rep as expected). Signature gains `.db<B>`
+ONLY when B>1, so existing checkpoints stay valid. Driver CKDIR suffix `_dt<K>b<B>`.
+KNOWN COST already paid: the unconditional `.dt` signature field (09-01) fresh-started
+every lane that resumed after the 09-03 deploy (T43 stack, Fir sA/sB reps) — recorded,
+not repeatable under the new rule.

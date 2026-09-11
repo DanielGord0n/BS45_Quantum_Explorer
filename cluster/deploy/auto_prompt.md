@@ -92,6 +92,14 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **PASS F2 (2026-09-11, deeper complement — see plan AUDIT):** when the workhorse's Pass F
+     tile is complete, start F2 on it: same offsets (k step 8), `WZ_FH_DRAIN_TOP=175000,
+     WZ_FH_DRAIN_BATCHES=2` (CKDIR suffix `_dt175000b2`, fresh lanes). F2 needs source with
+     `WZ_FH_DRAIN_BATCHES` (self-deploy a sha that has it, grep-verified) — NEVER deploy a
+     sha older than the cluster's current one. CHECKPOINT-SIGNATURE RULE: a deploy must not
+     change CFGSIG for existing lanes (look for "[ckpt] CFGSIG mismatch" / "fresh start" in
+     new outputs after any deploy and report it loudly — that means resume positions were
+     lost).
      **LEVER 21 CONTROLS (2026-09-10):** Fir F41b2e6 (n=41, canon-off, uncapped, budget 2e6,
      fresh) and Nibi N43b2e6 (n=43 window 327, canon-on, K=50000, budget 2e6, fresh) are
      pre-registered controls (docs/n44_search_narrowing_research.md, lever 21). Report

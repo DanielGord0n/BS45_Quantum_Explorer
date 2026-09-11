@@ -4,6 +4,20 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-11 (Daniel session, "double check your work") — AUDIT RESULTS. Soundness: SIGTERM
+handler wired (g_fh_stop_ptr=&fh_stop), interrupted cell NOT counted done (resume_pi stays
+on it), buffered-path interrupt writes its ckpt (resume_k=30) and resume re-engages it —
+verified locally on the M6 path the clusters use. STRATEGY: Pass F (buffer 1, top 10%)
+would have caught n=41 (0.9%, buf 1) and n=43 (2.7%, buf 1) but NOT n=42 (buf 2, 31.9%)
+=> built PASS F2 (WZ_FH_DRAIN_BATCHES=2, K=175k; CKDIR _dt175000b2; validated B=2 halves
+cells/rep) as the deeper complement, scheduled after the workhorse F tile. FOUND A PAST
+COST: the unconditional ".dt" CFGSIG field (09-01) invalidated every pre-09-03 checkpoint
+=> lanes that resumed after the 09-03 deploy fresh-started (T43 stack cum 149-327M, Fir
+sA/sB reps) — bounded (sweep lanes are 1-rep) but real; HANDOFF cum figures for those
+lanes are stale from 09-03. NEW RULE: new CFGSIG fields append only when non-default
+(".db" only if B>1) — verified B=1 signature byte-identical to deployed lanes. Not yet
+deployed (F2 needs it; loop self-deploys, grep token WZ_FH_DRAIN_BATCHES).**
+
 **⚡ 2026-09-11 (Daniel session) — THE "NON-MEMORY DEATH MODE" SOLVED: NOT A DEATH. The 11
 Fir resubmits ran the FULL 12 h (sacct TIMEOUT 12:00:xx, 178 arms, arm logs show 1M
 streamed / 50k-capped completions / checkpoints written 30 min before the end); only the
