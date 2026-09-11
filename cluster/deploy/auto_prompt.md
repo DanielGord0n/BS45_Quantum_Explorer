@@ -92,6 +92,13 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **LEVER 21 CONTROLS (2026-09-10):** Fir F41b2e6 (n=41, canon-off, uncapped, budget 2e6,
+     fresh) and Nibi N43b2e6 (n=43 window 327, canon-on, K=50000, budget 2e6, fresh) are
+     pre-registered controls (docs/n44_search_narrowing_research.md, lever 21). Report
+     each loudly when read: FOUND + elapsed vs baselines (4.6 h / 4.9 h at 5e7). If BOTH
+     re-find, switch every subsequent submit to `WZ_FH_AB_BUDGET=2000000` (same CKDIRs —
+     budget is outside CFGSIG) and say so; if either fails, keep 5e7 and say so. Their
+     re-finds are NOT new results — never write RESULT_BANKED for them.
      **MEMORY (2026-09-10, hard rule):** every lane must run with all node memory. The
      driver now has `#SBATCH --mem=0`; if a cluster's `./cluster_firsthit_probe.sh` lacks
      `--mem=0`, self-deploy it (pinned sha >= c792cbf) BEFORE any submit; always pass
