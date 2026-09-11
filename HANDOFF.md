@@ -4,6 +4,26 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-10 (Daniel session, back after a week) — 🔥 ROOT CAUSE OF THE "HEADER-ONLY"
+DEATHS = OUT OF MEMORY FROM SLURM'S 48 GB DEFAULT, AND IT HAS BEEN TAXING EVERY LANE
+SINCE JULY. Rorqual sacct: R44f lanes = OUT_OF_MEMORY (ReqMem 48G, batch MaxRSS 50.3G)
+or TIMEOUT with "36 oom_kill events"; arm processes "Killed"; arms_summarized 142/178.
+Local measurement: an arm peaks ~257 MB during startup (cell enumeration + canon + sort)
+then runs at ~55-60 MB; 178 x 257 MB = ~46 GB = the cap => ~36 arms/lane OOM-killed at
+launch on Fir/Rorqual/Nibi ON EVERY LANE (the long-standing 142-171/178 "interrupted"
+counts were OOM, not walltime). Trillium schedules whole nodes with all memory =>
+178/178 always (the tell). Capped (lever-20) lanes cycle cells and died outright.
+FIX: driver `#SBATCH --mem=0` (commit c792cbf); deploy via GitHub curl per cluster;
+pending pre-fix jobs get `scontrol update MinMemoryNode=700000`; dead lanes resubmitted
+under the SAME names (surviving arms resume from CKDIRs). Lever 20 stays: the one capped
+lane that survived (R44f344, 20161625) covered 393 cells in one rep. Also today: full
+4-cluster read NO HITS; Fir queue was EMPTY (09-09 PARTIAL run backgrounded its submit a
+3rd time => new PreToolUse hook .claude/hooks/no_background_duo.py DENIES backgrounded
+duo_run/sbatch/ssh); one-tap "Run check now" shipped (ntfy action button on every
+notification -> private control topic -> launchd listener com.dangord.bs45listener runs
+a supplementary check immediately; tested dry-run; installed). Discriminator verdict
+(loop, 09-04): F41nc + F41dtnc FOUND, F41dt not => canon relocation depth confirmed.**
+
 **⚡ 2026-09-09 (daily loop 1pm — fir+nibi+rorqual reached; Trillium in its listed
 Sept 8-10 outage, no push sent) — NO HITS; FIR QUEUE EMPTY => Pass F restack (only
 action). Fir: 38 of the remaining 51 Pass F lanes read HITLESS — 58243100/101/104/108

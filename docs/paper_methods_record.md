@@ -212,3 +212,11 @@ by these measured figures.)
   Rapids; minor); n=43 solution and its provenance if found before submission.
   Hardware models and the exact compute total are otherwise COMPLETE as of
   2026-08-12 (see section 5).
+
+### Note added 2026-09-10 (compute accounting correction)
+Until 2026-09-10 the SLURM driver did not request memory, so Fir/Rorqual/Nibi jobs ran
+under a 48 GB default; ~36 of 178 arms per job were OOM-killed at launch (startup peak
+~257 MB/arm), i.e. effective parallelism was ~142/178 (~80%) on three of four clusters.
+Trillium allocates whole nodes (all memory) and always ran 178/178. Fixed with
+`--mem=0`. Core-hour totals in section 5 are as billed (whole node); effective search
+throughput before the fix should be scaled by ~0.8 on those three clusters.

@@ -92,6 +92,12 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **MEMORY (2026-09-10, hard rule):** every lane must run with all node memory. The
+     driver now has `#SBATCH --mem=0`; if a cluster's `./cluster_firsthit_probe.sh` lacks
+     `--mem=0`, self-deploy it (pinned sha >= c792cbf) BEFORE any submit; always pass
+     `--mem=0` on the sbatch line too. Pending jobs submitted before the fix: `scontrol
+     update JobId=<id> MinMemoryNode=700000` (not on Trillium). arms_summarized < 178 with
+     "oom_kill" in the output = memory, not walltime — report it.
      **SELF-DEPLOY FROM GITHUB (2026-09-01):** the repo is public. If a cluster's
      `$SCRATCH/bs45/src/solver/wz_match.cpp` or `./cluster_firsthit_probe.sh` lacks
      `WZ_FH_DRAIN_TOP`, deploy the pinned files via duo_run:
