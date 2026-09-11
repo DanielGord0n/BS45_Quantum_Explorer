@@ -371,3 +371,25 @@ tested, ~4.9h; verify_npaf.py re-PASS). Throughput: capped lanes cells_done_sum
 20 UNGATED for n=44. Caveat (same-day collision): the F41regr canon rule also fired
 (3 hitless reps, cum 116.6M) — n=44 capped-fleet canon policy is with Daniel; the
 F41nc/F41dt/F41dtnc discriminator on Fir separates canon relocation from cap effects.
+
+
+## Lever 21 (2026-09-10): PER-CANDIDATE NODE BUDGET CUT (env only, no code)
+Evidence: the three hits completed in 212,872 / 86,976 / 88,616 AB nodes; the budget is
+5e7 (235x the largest). Lanes average ~450k nodes per tested candidate (AB_nodes/tested,
+e.g. Fir 1.2e13/2.7e7), so a heavy tail of deep-but-failing candidates dominates arm
+time. WZ_FH_AB_BUDGET is EXCLUDED from CFGSIG by design, so it can change per rep on
+existing CKDIRs. PRE-REGISTERED CONTROLS (submitted 09-10): Fir F41b2e6 = n=41 (0,2,9,9)
+skip-8, canon-off, uncapped, budget 2e6, WZ_FH_RESUME=0 (fresh; the canon-off lane
+F41nc found in 4.6 h at 5e7); Nibi N43b2e6 = n=43 (8,-2,5,9) window 327, canon-on,
+K=50000, budget 2e6, RESUME=0 (the capped control found in 4.9 h at 5e7). PASS = both
+re-find with time-to-hit <= baseline and budget_aborted telemetry stays interpretable
+=> apply WZ_FH_AB_BUDGET=2000000 fleet-wide at the next restack (same CKDIRs). FAIL
+(either not re-found) => keep 5e7; consider 1e7.
+
+## Lever 22 (2026-09-10, to build): REVERSED IN-CELL STREAM ORDER
+The F41 discriminator showed canon relocation puts a solution's image past its kept
+cell's first buffer in forward DFS order. Reversing the branch order inside
+count_pairs22 (env flag, part of CFGSIG) gives every cell a SECOND independent "front";
+front-only lanes at the same offsets in reverse in-cell order double front coverage per
+orbit. Test: F41dt-rev (canon-on, K=50000, reverse in-cell) should re-find n=41 where
+F41dt did not, with ~50% prior. Build after lever 21's verdict.
