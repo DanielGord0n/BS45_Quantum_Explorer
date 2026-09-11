@@ -4,6 +4,26 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-11 (supplementary re-check ~13:11 — all four reached, Fir's missed Duo
+recovered) — NO HITS, bookkeeping only. Fir (the news): 3 of the 14 resubmitted F44f
+window lanes read HITLESS with **178/178 arms_summarized — first confirmation the
+--mem=0/750G fix works on Fir** — 59191092/59191093/59191098, tested 25.0-26.3M this
+rep, tested_cum 93.6-102.9M (CKDIR coverage carried), cells_done_sum 506-533, aborted=0,
+dedup 28.92x. ⚠️ The other 11 resubmits (59191085-091/094-097) ended HEADER-ONLY again
+despite 750G (headers Sep 10 19:05-21:22 PDT, past walltime, gone from queue) — left
+visible, NOT resubmitted (Fir pending 19 >= 8); if they re-show header-only next check
+that is a non-memory death mode => investigate. Fir queue = 22 R + 18 PD tranche-4
+(F44f1936..2072) + F41b2e6 PD. LEVER-21 CONTROLS: Fir F41b2e6 59193560 PD and Nibi
+N43b2e6 21707091 PD — still no verdict, budget stays 5e7 fleet-wide. Rorqual: no new
+summaries (20161636/637 = R44f432/440 finished header-only minutes-to-hours before the
+check — summaries may land next read, left visible); queue 3 R + 44 PD => no action.
+Nibi: no new reads, 65 PD healthy => no action. Trillium: no new outputs, 34 PD
+(33 T44Af + T43sC) => no action. No FOUND banners, no submits, ledger unchanged.
+Checker exclusions: +3 Fir reads (5919109[238]), +13 Fir dead originals
+(58243096/099/102/103/105-107/109-112/116-118, superseded by the 59191085-098
+resubmits), +36 Rorqual dead originals (20161589-624/626-632/634 = R44f56..416,
+superseded by the 20887506-557 700G resubmits; 636/637 kept visible).**
+
 **⚡ 2026-09-11 (daily loop 1pm — nibi+rorqual+trillium reached; Fir Duo MISSED) — NO
 HITS, bookkeeping-only cycle. Trillium big read: 2225668-91 = ALL 24 T44i (3,13,0,0)
 quarter-point lanes hitless, tested 39-64M/lane, 178/178 arms (full-node memory as
