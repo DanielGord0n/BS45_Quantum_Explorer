@@ -4,6 +4,20 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-11 (supplementary #2, Fir-only re-check ~14:07 — Duo retry) — NO HITS,
+bookkeeping only. ONE new read since 13:11: 59191102 = F44f1768 (tranche-4 fresh
+window) hitless, 178/178 arms_summarized (4th mem-fix confirmation), tested 24.4M =
+tested_cum (fresh CKDIR), cells_done_sum 416, aborted=0. NOT added to checker
+exclusions — squeue still lists 59191102 with 53 min walltime left (summary landed
+early), so it stays visible; tomorrow's loop should treat its re-show as already
+bookkept here. 59191092/093/098 summaries re-showed despite the 13:11 exclusions
+(no new info). The 11 header-only resubmits (59191085-091/094-097) unchanged — only
+~1h since 13:11, so this does NOT count as the "re-show next check" trigger; the
+non-memory-death-mode investigation waits for the next daily check. Queue = 27 R
+(F44f1760..1968) + 13 PD (F44f1976..2072) + F41b2e6 59193560 PD — pending >= 8, no
+restack. LEVER-21: F41b2e6 still PD, no verdict, budget stays 5e7. No submits,
+ledger unchanged.**
+
 **⚡ 2026-09-11 (supplementary re-check ~13:11 — all four reached, Fir's missed Duo
 recovered) — NO HITS, bookkeeping only. Fir (the news): 3 of the 14 resubmitted F44f
 window lanes read HITLESS with **178/178 arms_summarized — first confirmation the
