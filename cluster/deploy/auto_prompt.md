@@ -99,6 +99,13 @@ Do not re-run the checker.
      re-find, switch every subsequent submit to `WZ_FH_AB_BUDGET=2000000` (same CKDIRs —
      budget is outside CFGSIG) and say so; if either fails, keep 5e7 and say so. Their
      re-finds are NOT new results — never write RESULT_BANKED for them.
+     **HEADER-ONLY = NOT DEAD (2026-09-11):** a lane whose output has the header + "[driver]
+     deadline — stopping" but no GATEB ran its FULL 12 h; only the summary was lost (an arm
+     ignored SIGTERM and the driver's wait hung to walltime — fixed in source + driver on
+     2026-09-11, deploy sha >= the fix). Its checkpoints are intact: resubmitting the same
+     name RESUMES, nothing is re-done. Never call such windows "dead" or "unsearched"; count
+     them as one rep of unknown tested-count and move on. True deaths show FAILED/OOM in
+     sacct or an elapsed time far below walltime.
      **MEMORY (2026-09-10, hard rule):** every lane must run with all node memory. The
      driver now has `#SBATCH --mem=0`; if a cluster's `./cluster_firsthit_probe.sh` lacks
      `--mem=0`, self-deploy it (pinned sha >= c792cbf) BEFORE any submit; always pass

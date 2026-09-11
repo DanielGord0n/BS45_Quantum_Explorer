@@ -116,6 +116,23 @@ while :; do
   fi
   sleep 30
 done
+# Bounded shutdown (2026-09-11): a stream-walled arm can ignore SIGTERM for a long
+# time; a bare `wait` then hangs past walltime and the summary is never written
+# (11 Fir lanes lost their telemetry this way). Wait up to STOP_GRACE s after the
+# SIGTERM, then SIGKILL stragglers (their checkpoints are already on disk) and
+# aggregate what finished.
+STOP_GRACE=${FH_STOP_GRACE:-300}
+t_stop=$(date +%s)
+while :; do
+  alive=0
+  for p in "${pids[@]}"; do kill -0 "$p" 2>/dev/null && alive=$((alive+1)); done
+  [ "$alive" = 0 ] && break
+  if [ $(( $(date +%s) - t_stop )) -ge "$STOP_GRACE" ]; then
+    echo "[driver] $alive arm(s) ignored SIGTERM for ${STOP_GRACE}s — SIGKILL, aggregating what finished"
+    kill -9 "${pids[@]}" 2>/dev/null; break
+  fi
+  sleep 5
+done
 wait 2>/dev/null
 
 echo ""

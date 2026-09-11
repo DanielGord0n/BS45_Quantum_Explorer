@@ -518,6 +518,12 @@ static void init_p22() {
 // hardcoded to 3. INVARIANT: for the SAME underlying profile set, the resulting
 // stream (`ok`) must be identical at m=3 and m=6 — finer profiles only regroup the
 // same sequences, they never add or drop any. That invariant is the regression test.
+// SIGTERM flag (set by fh_on_sigterm below). Defined here so count_pairs22's DFS can
+// honor it directly: lever 20 (2026-09-01) passes a per-CELL stop flag into the
+// streamer, which silently disconnected the arm-level SIGTERM stop from the DFS — a
+// stream-walled arm then ignored SIGTERM, the driver's wait hung past walltime and 11
+// lanes lost their summaries ("header-only", 2026-09-11).
+static volatile sig_atomic_t g_fh_sigterm = 0;
 static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
                           bool abSide, bool pinX, bool pinY,
                           long long &leaves, long long &ok,
@@ -536,7 +542,7 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
   vector<int> X(L, 0), Y(L, 0);
   int px[8] = {0}, py[8] = {0}, placed[8] = {0};
   function<void(int)> rec = [&](int d) {
-    if (stop && stop->load(memory_order_relaxed)) return;
+    if (g_fh_sigterm || (stop && stop->load(memory_order_relaxed))) return;
     for (int c = 0; c < m; c++) {
       int rem = total_in_class[c] - placed[c];
       int dx = tx[c] - px[c], dy = ty[c] - py[c];
@@ -691,7 +697,6 @@ static atomic<bool> g_found{false};
 // unwinds at its next stop-flag check and the true summary prints, flagged
 // INTERRUPTED (its counts are lower bounds, the stream was NOT exhausted).
 static atomic<bool> *g_fh_stop_ptr = nullptr;
-static volatile sig_atomic_t g_fh_sigterm = 0;
 static void fh_on_sigterm(int) {
   g_fh_sigterm = 1;
   if (g_fh_stop_ptr) g_fh_stop_ptr->store(true);

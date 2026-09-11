@@ -4,6 +4,23 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-11 (Daniel session) — THE "NON-MEMORY DEATH MODE" SOLVED: NOT A DEATH. The 11
+Fir resubmits ran the FULL 12 h (sacct TIMEOUT 12:00:xx, 178 arms, arm logs show 1M
+streamed / 50k-capped completions / checkpoints written 30 min before the end); only the
+SUMMARY was lost: "[driver] deadline — stopping 178 arms" then Slurm's walltime kill.
+Cause: a lever-20 regression — count_pairs22 was given the per-CELL stop flag instead of
+the arm flag that the SIGTERM handler sets (g_fh_stop_ptr), so an arm inside a stream
+wall (silent for hours: no candidates => no progress lines => no probe() => no stop
+check) ignored SIGTERM; 1-4 such arms per lane hung the driver's bare `wait` past
+walltime. Uncapped arms never left their first cell so it never showed. FIXES: (1)
+solver: g_fh_sigterm defined above count_pairs22 and checked in rec() alongside `stop`
+(local test: exit 0.0 s after SIGTERM with summary); (2) driver: bounded post-SIGTERM
+wait (FH_STOP_GRACE=300 s) then SIGKILL stragglers and aggregate anyway; (3) loop rule:
+header-only-at-walltime = a completed rep with lost telemetry, checkpoints intact,
+resubmit-by-name resumes — never "dead". The 11 windows' work is banked in CKDIRs; the
+ledger's "dead windows" language is retired. One-tap button confirmed working (Daniel's
+13:11 and 14:07 checks). Mem fix confirmed 4x at 178/178. Lever-21 controls still PD.**
+
 **⚡ 2026-09-11 (supplementary #2, Fir-only re-check ~14:07 — Duo retry) — NO HITS,
 bookkeeping only. ONE new read since 13:11: 59191102 = F44f1768 (tranche-4 fresh
 window) hitless, 178/178 arms_summarized (4th mem-fix confirmation), tested 24.4M =
