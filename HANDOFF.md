@@ -4,6 +4,18 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-10 (Daniel session, late: "out of the box") — LEVER 21 = BUDGET CUT: the
+per-candidate AB node budget is 5e7 while the three hits needed 213k/87k/89k nodes and
+lanes average ~450k nodes/candidate (heavy tail of deep failures eats arm time). Budget
+is outside CFGSIG => changeable per rep on existing CKDIRs, no code. CONTROLS SUBMITTED
+(2 taps): Fir 59193560 F41b2e6 (n=41 skip-8, canon-off, uncapped, budget 2e6, RESUME=0;
+baseline F41nc found in 4.6 h at 5e7) and Nibi 21707091 N43b2e6 (n=43 window 327,
+canon-on, K=50000, budget 2e6, RESUME=0; baseline 4.9 h). PASS = both re-find, not
+slower => fleet-wide WZ_FH_AB_BUDGET=2000000 at next restack (loop rule added). LEVER 22
+designed (reversed in-cell DFS order = a second independent "front" per cell, part of
+CFGSIG; test = F41dt-rev re-finding n=41 where F41dt did not) — build after lever 21.
+Levers ledger: 22 priced/opened; 8 shipped; 12 dead; 2 in test.**
+
 **⚡ 2026-09-10 (Daniel session, back after a week) — 🔥 ROOT CAUSE OF THE "HEADER-ONLY"
 DEATHS = OUT OF MEMORY FROM SLURM'S 48 GB DEFAULT, AND IT HAS BEEN TAXING EVERY LANE
 SINCE JULY. Rorqual sacct: R44f lanes = OUT_OF_MEMORY (ReqMem 48G, batch MaxRSS 50.3G)
