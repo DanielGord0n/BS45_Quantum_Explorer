@@ -22,7 +22,13 @@ lane that survived (R44f344, 20161625) covered 393 cells in one rep. Also today:
 duo_run/sbatch/ssh); one-tap "Run check now" shipped (ntfy action button on every
 notification -> private control topic -> launchd listener com.dangord.bs45listener runs
 a supplementary check immediately; tested dry-run; installed). Discriminator verdict
-(loop, 09-04): F41nc + F41dtnc FOUND, F41dt not => canon relocation depth confirmed.**
+(loop, 09-04): F41nc + F41dtnc FOUND, F41dt not => canon relocation depth confirmed.
+RE-ARM EXECUTED (4 taps): driver c792cbf deployed on ALL FOUR via GitHub curl; Fir 14
+dead lanes resubmitted + tranche 4 F44f1760..2072 (40) => 54 PD on RAC, new ReqMem 750G;
+Rorqual 42 dead resubmitted + 5 queued raised to 700G => 47 PD + 4 R; Trillium 28 dead
+(T44Af, outage-killed) resubmitted => 33 PD; Nibi 2 dead resubmitted + 60 queued raised
+to 700G => 62 PD (ReqMem 700000M confirmed). Every lane now runs with full node memory
+=> 178/178 arms for the first time on Fir/Rorqual/Nibi.**
 
 **⚡ 2026-09-09 (daily loop 1pm — fir+nibi+rorqual reached; Trillium in its listed
 Sept 8-10 outage, no push sent) — NO HITS; FIR QUEUE EMPTY => Pass F restack (only
