@@ -4,6 +4,31 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-12 (daily loop 1pm — ALL FOUR reached) — ★ LEVER-21 FIR CONTROL PASS, no new
+results. 59193560 = F41b2e6 (n=41, canon-off, uncapped, WZ_FH_AB_BUDGET=2e6) *** BS(42,41)
+FOUND *** — same fingerprint as the banked champion (idx=500000 profile_rank=1429 score=124
+= the known solution re-found), elapsed 11023.6s ≈ 3.1 h vs 4.6 h baseline at 5e7, tested
+9.17M, aborted=1,575,142 (budget-abort tail cut as designed), verify_npaf.py PASS locally.
+NOT banked, NOT news (pre-registered control). Nibi twin N43b2e6 21707091 still PD =>
+BUDGET STAYS 5e7 FLEET-WIDE until it reads; if it also re-finds, switch every subsequent
+submit to WZ_FH_AB_BUDGET=2000000 (same CKDIRs, budget outside CFGSIG). Fir reads: 25
+tranche-4/resubmit F44f lanes summarized HITLESS (~23-26M tested/lane, 178/178, aborted=0,
+cells_done_sum 408-422, dedup 28.92x, no CFGSIG-mismatch lines); 26 lanes HEADER-ONLY =
+completed reps with lost telemetry per the 09-11 rule (11 = the F44f704..1504 resubmit set
+again — pre-fix source, ran full walltime, CKDIRs intact — + 15 tranche-4: 59191101/104/
+105/107/112-115/119/120/122/124-126/128), counted one rep each, NOT resubmitted (sweep =
+one rep); unseen (expect next check): 59191099/100/118/137/141-145/147. FIR QUEUE EMPTY =>
+ACTION: Pass F tranche 5 = F44f2080..2392 s8 (40 new workhorse lanes), verbatim env,
+rrg-ikotsire_cpu, --mem=0 (job IDs appended below after Duo echo). Rorqual: 14 summarized
+HITLESS — 20887508-513/524-528 = 700G resubmits (tested ~24-25M this rep, tested_cum
+~46-47M = CKDIR coverage carried, 178/178 FIRST TIME on these windows, cells_done_sum
+466-493) + 20161638/640/641 = R44f448/456/464 (25.4-26.1M, 178/178); 3 HEADER-ONLY
+completed-rep 20161636/637/639 bookkept + excluded; 20887514-523 unseen, expect next
+check; queue ~30 PD => no action. Nibi: N43dt419 R (7:21h), ~63 PD healthy => no action;
+N43b2e6 still PD. Trillium: 33 PD (T44Af re-arms + T43sC), no new outputs => no action.
+rung_status EXHAUSTED as always (Pass F is the program). Checker exclusions: +26 Fir reads
++ 59193560 + 26 Fir header-only + Rorqual 14 reads + 3 header-only.**
+
 **⚡ 2026-09-11 (Daniel session, "double check your work") — AUDIT RESULTS. Soundness: SIGTERM
 handler wired (g_fh_stop_ptr=&fh_stop), interrupted cell NOT counted done (resume_pi stays
 on it), buffered-path interrupt writes its ckpt (resume_k=30) and resume re-engages it —
