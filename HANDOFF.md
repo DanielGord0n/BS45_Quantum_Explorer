@@ -19,7 +19,8 @@ again — pre-fix source, ran full walltime, CKDIRs intact — + 15 tranche-4: 5
 105/107/112-115/119/120/122/124-126/128), counted one rep each, NOT resubmitted (sweep =
 one rep); unseen (expect next check): 59191099/100/118/137/141-145/147. FIR QUEUE EMPTY =>
 ACTION: Pass F tranche 5 = F44f2080..2392 s8 (40 new workhorse lanes), verbatim env,
-rrg-ikotsire_cpu, --mem=0 (job IDs appended below after Duo echo). Rorqual: 14 summarized
+rrg-ikotsire_cpu, --mem=0. SUBMITS: 40/40 echoed, 59466759-798 = F44f2080..2392 all PD
+(squeue confirmed queue = exactly these 40). Rorqual: 14 summarized
 HITLESS — 20887508-513/524-528 = 700G resubmits (tested ~24-25M this rep, tested_cum
 ~46-47M = CKDIR coverage carried, 178/178 FIRST TIME on these windows, cells_done_sum
 466-493) + 20161638/640/641 = R44f448/456/464 (25.4-26.1M, 178/178); 3 HEADER-ONLY

@@ -144,7 +144,7 @@ complete and retired.
 - 2026-09-12 (daily loop): Fir queue EMPTY => tranche 5: Fir workhorse k=2080..2392 s8
   (40), verbatim env + --mem=0, rrg-ikotsire_cpu. Header-only tranche-4/resubmit lanes
   NOT resubmitted (09-11 rule: completed reps, CKDIRs intact). Workhorse tiled
-  k=0..2392; next unassigned workhorse k = 2400. Job IDs: see HANDOFF 09-12 entry.
+  k=0..2392; next unassigned workhorse k = 2400. Jobs 59466759-798, 40/40 echoed, all PD.
 
 ### 2026-09-10 correction + memory fix
 - The 09-09 "tranche 4" (Fir F44f1760..2072) never went in (agent backgrounded the
