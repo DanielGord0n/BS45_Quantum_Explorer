@@ -4,6 +4,20 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-12 (Daniel session) — LEVER 21 APPLIED + LEVER 22 BUILT. Lever 21: Fir control
+F41b2e6 PASSED (n=41 re-found in 3.1 h at budget 2e6 vs 4.6 h at 5e7, verify PASS; the
+deepest known hit needs 213k nodes = 10x under the cap) => applied fleet-wide without
+waiting for Nibi's queued twin: Fir 40 pending tranche-5 lanes + Rorqual 23 pending lanes
+cancelled and resubmitted by name at 2e6 (same CKDIRs), loop rule updated (all submits
+2e6; watch budget_aborted). Lever 22 (WZ_FH_STREAM_REV=1: reversed DFS branch order in
+count_pairs22 = a second independent first-buffer per cell; CFGSIG ".sr1" only when set;
+CKDIR _sr1): VALIDATED at n=19 on 3 classes — forward and reversed both FOUND with
+identical stream totals at the cell boundary (same candidate set, different order).
+Defined PASS FR (F offsets with SR=1) for after each class's F tile; order F -> FR -> F2.
+Not deployed yet (loop self-deploys when FR starts). Board: Fir 40 PD (2e6), Rorqual 8 R
++ 23 PD (2e6), Trillium 33 PD, Nibi 63 PD. Workhorse F tile 41% (k<=2392). Levers
+ledger: 22 opened; 10 shipped; 12 dead.**
+
 **⚡ 2026-09-12 (daily loop 1pm — ALL FOUR reached) — ★ LEVER-21 FIR CONTROL PASS, no new
 results. 59193560 = F41b2e6 (n=41, canon-off, uncapped, WZ_FH_AB_BUDGET=2e6) *** BS(42,41)
 FOUND *** — same fingerprint as the banked champion (idx=500000 profile_rank=1429 score=124

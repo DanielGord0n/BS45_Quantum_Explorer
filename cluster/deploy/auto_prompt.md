@@ -92,6 +92,12 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **PASS FR (2026-09-12, lever 22 — built, validated locally, NOT yet deployed):** after the
+     workhorse's Pass F tile completes, run the SAME offsets with `WZ_FH_STREAM_REV=1`
+     (reversed in-cell enumeration = a second independent front per cell; CKDIR suffix
+     `_sr1`, fresh lanes, K=50000, budget 2e6). FR needs source with `WZ_FH_STREAM_REV`
+     (self-deploy a sha that has it; grep-verify; never deploy older than the cluster's).
+     Class order: F tile -> FR tile -> F2 (deeper) per class.
      **PASS F2 (2026-09-11, deeper complement — see plan AUDIT):** when the workhorse's Pass F
      tile is complete, start F2 on it: same offsets (k step 8), `WZ_FH_DRAIN_TOP=175000,
      WZ_FH_DRAIN_BATCHES=2` (CKDIR suffix `_dt175000b2`, fresh lanes). F2 needs source with
@@ -100,20 +106,11 @@ Do not re-run the checker.
      change CFGSIG for existing lanes (look for "[ckpt] CFGSIG mismatch" / "fresh start" in
      new outputs after any deploy and report it loudly — that means resume positions were
      lost).
-     **LEVER 21 CONTROLS (2026-09-10):** Fir F41b2e6 (n=41, canon-off, uncapped, budget 2e6,
-     fresh) and Nibi N43b2e6 (n=43 window 327, canon-on, K=50000, budget 2e6, fresh) are
-     pre-registered controls (docs/n44_search_narrowing_research.md, lever 21). Report
-     each loudly when read: FOUND + elapsed vs baselines (4.6 h / 4.9 h at 5e7). If BOTH
-     re-find, switch every subsequent submit to `WZ_FH_AB_BUDGET=2000000` (same CKDIRs —
-     budget is outside CFGSIG) and say so; if either fails, keep 5e7 and say so. Their
-     re-finds are NOT new results — never write RESULT_BANKED for them.
-     **HEADER-ONLY = NOT DEAD (2026-09-11):** a lane whose output has the header + "[driver]
-     deadline — stopping" but no GATEB ran its FULL 12 h; only the summary was lost (an arm
-     ignored SIGTERM and the driver's wait hung to walltime — fixed in source + driver on
-     2026-09-11, deploy sha >= the fix). Its checkpoints are intact: resubmitting the same
-     name RESUMES, nothing is re-done. Never call such windows "dead" or "unsearched"; count
-     them as one rep of unknown tested-count and move on. True deaths show FAILED/OOM in
-     sacct or an elapsed time far below walltime.
+     **LEVER 21 APPLIED (2026-09-12, Daniel's session):** the Fir control PASSED (F41b2e6 re-found
+     n=41 in 3.1 h at budget 2e6 vs 4.6 h at 5e7) — Daniel's session applied it fleet-wide
+     without waiting for Nibi's twin. ALL submits now carry `WZ_FH_AB_BUDGET=2000000` (same
+     CKDIRs; budget is outside CFGSIG). Report Nibi N43b2e6 when it reads (informational).
+     Watch `budget_aborted` in GATEB: if aborts exceed ~5% of tested on a class, report it.
      **MEMORY (2026-09-10, hard rule):** every lane must run with all node memory. The
      driver now has `#SBATCH --mem=0`; if a cluster's `./cluster_firsthit_probe.sh` lacks
      `--mem=0`, self-deploy it (pinned sha >= c792cbf) BEFORE any submit; always pass

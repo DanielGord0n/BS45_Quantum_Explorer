@@ -46,7 +46,7 @@ mkdir -p "$DIR"
 # the same lane auto-resumes every arm at its exact stopping candidate. One job
 # per lane at a time (concurrent same-lane jobs would overwrite each other's
 # checkpoints: no gaps, but wasted overlap). WZ_FH_RESUME=0 = fresh start.
-CKDIR=fh_ckpt/${N}_${A}_${B}_${C}_${D}_${NARMS}_ord${WZ_FH_PROF_ORDER:-0}_skip${WZ_FH_PROF_SKIP:-0}_oc${WZ_FH_ORBIT_CANON:-0}$( [ -n "${WZ_FH_DRAIN_TOP:-}" ] && [ "${WZ_FH_DRAIN_TOP}" != 0 ] && echo "_dt${WZ_FH_DRAIN_TOP}" )$( [ -n "${WZ_FH_DRAIN_BATCHES:-}" ] && [ "${WZ_FH_DRAIN_BATCHES}" != 1 ] && echo "b${WZ_FH_DRAIN_BATCHES}" )
+CKDIR=fh_ckpt/${N}_${A}_${B}_${C}_${D}_${NARMS}_ord${WZ_FH_PROF_ORDER:-0}_skip${WZ_FH_PROF_SKIP:-0}_oc${WZ_FH_ORBIT_CANON:-0}$( [ -n "${WZ_FH_DRAIN_TOP:-}" ] && [ "${WZ_FH_DRAIN_TOP}" != 0 ] && echo "_dt${WZ_FH_DRAIN_TOP}" )$( [ -n "${WZ_FH_DRAIN_BATCHES:-}" ] && [ "${WZ_FH_DRAIN_BATCHES}" != 1 ] && echo "b${WZ_FH_DRAIN_BATCHES}" )$( [ "${WZ_FH_STREAM_REV:-0}" != 0 ] && echo "_sr1" )
 mkdir -p "$CKDIR"
 export WZ_FH_CKPT_DIR=$CKDIR
 echo "[driver] checkpoint lane: $CKDIR (resume=${WZ_FH_RESUME:-1})"
@@ -67,6 +67,7 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_ORBIT_CANON" ]  && export WZ_FH_ORBIT_CANON
 [ -n "$WZ_FH_DRAIN_TOP" ]    && export WZ_FH_DRAIN_TOP
 [ -n "$WZ_FH_DRAIN_BATCHES" ] && export WZ_FH_DRAIN_BATCHES
+[ -n "$WZ_FH_STREAM_REV" ]   && export WZ_FH_STREAM_REV
 
 # FH_SCORE_TIERS="t1,t2" (optional): first quarter of arms complete only
 # candidates with flatness score <= t1, second quarter <= t2, rest ungated.

@@ -524,6 +524,7 @@ static void init_p22() {
 // stream-walled arm then ignored SIGTERM, the driver's wait hung past walltime and 11
 // lanes lost their summaries ("header-only", 2026-09-11).
 static volatile sig_atomic_t g_fh_sigterm = 0;
+static bool G_STREAM_REV = false;  // lever 22: reversed DFS branch order in count_pairs22
 static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
                           bool abSide, bool pinX, bool pinY,
                           long long &leaves, long long &ok,
@@ -580,7 +581,8 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
     bool d0free = (d == 0 && !abSide);
     const int (*S)[4] = (d == 0) ? (abSide ? P22_NEG : P22_16) : P22_POS;
     int ns = d0free ? 16 : 8;
-    for (int k = 0; k < ns; k++) {
+    for (int kk = 0; kk < ns; kk++) {
+      int k = G_STREAM_REV ? (ns - 1 - kk) : kk;
       if (d == 0 && pinX && S[k][0] != 1) continue;
       if (d == 0 && pinY && S[k][1] != 1) continue;
       X[i1] = S[k][0]; Y[i1] = S[k][1]; X[i2] = S[k][2]; Y[i2] = S[k][3];
@@ -1479,6 +1481,12 @@ int main(int argc, char **argv) {
     // percentile, invisible to B=1/K=50k; F2 = B=2, K=175k catches all three known hits.
     long long fh_drain_batches = 1;
     if (const char *e = getenv("WZ_FH_DRAIN_BATCHES")) fh_drain_batches = max(1LL, atoll(e));
+    // WZ_FH_STREAM_REV=1 (2026-09-12, lever 22): enumerate each cell's candidates in
+    // REVERSED DFS branch order. Same candidate set per cell, different order => a second
+    // independent "first buffer" per cell for front-only lanes (canon relocation can put a
+    // solution past the forward first buffer; the F41 discriminator showed exactly that).
+    // Part of CFGSIG (".sr1", appended only when set) and of the driver CKDIR (_sr1).
+    if (const char *e = getenv("WZ_FH_STREAM_REV")) G_STREAM_REV = atoi(e) != 0;
     long long cells_capped = 0;
     string fh_ckpt_path;            // empty = checkpointing off (local runs)
     if (const char *e = getenv("WZ_FH_CKPT_DIR"))
@@ -1506,6 +1514,10 @@ int main(int argc, char **argv) {
     if (fh_drain_batches > 1) {
       size_t L0 = strlen(fh_sigbuf);
       snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".db%lld", fh_drain_batches);
+    }
+    if (G_STREAM_REV) {
+      size_t L0 = strlen(fh_sigbuf);
+      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".sr1");
     }
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;

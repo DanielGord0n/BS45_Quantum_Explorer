@@ -179,3 +179,11 @@ ONLY when B>1, so existing checkpoints stay valid. Driver CKDIR suffix `_dt<K>b<
 KNOWN COST already paid: the unconditional `.dt` signature field (09-01) fresh-started
 every lane that resumed after the 09-03 deploy (T43 stack, Fir sA/sB reps) — recorded,
 not repeatable under the new rule.
+
+### 2026-09-12: lever 21 applied; Pass FR defined
+- Lever 21 PASS on Fir (n=41 re-found 3.1 h at 2e6 vs 4.6 h at 5e7). Applied fleet-wide:
+  Fir's 40 pending tranche-5 lanes and Rorqual's pending lanes resubmitted at 2e6; all
+  new submits use 2e6. Nibi twin control still queued (informational).
+- PASS FR = Pass F offsets with WZ_FH_STREAM_REV=1 (lever 22): each cell's SECOND
+  independent front (reversed enumeration), same K=50000, fresh CKDIRs (_sr1). Order per
+  class: F -> FR -> F2. Workhorse F tile at k=2392/5836 (41%).
