@@ -110,7 +110,7 @@ Do not re-run the checker.
      n=41 in 3.1 h at budget 2e6 vs 4.6 h at 5e7) — Daniel's session applied it fleet-wide
      without waiting for Nibi's twin. ALL submits now carry `WZ_FH_AB_BUDGET=2000000` (same
      CKDIRs; budget is outside CFGSIG). Report Nibi N43b2e6 when it reads (informational).
-     Watch `budget_aborted` in GATEB: if aborts exceed ~5% of tested on a class, report it.
+     Budget 2e6 aborts ~21% of tested candidates on the workhorse (measured 09-13: 6.6M of 31.8M) — EXPECTED, not an alarm; those are deep failures (all 3 known solutions needed <=213k nodes). Report the abort fraction; escalate only if it exceeds ~35%. PRE-REGISTERED measurement: at the next Fir restack submit TWO extra workhorse lanes at the next free offsets with `WZ_FH_AB_BUDGET=5000000` (-J F44f<k>_b5e6 is NOT allowed — keep the plain name so the CKDIR matches; note the k's in HANDOFF) and compare cells_done + aborted against their 2e6 neighbours; if 5e6 gives >=90% of the cells with <=5% aborts, switch the fleet to 5e6.
      **MEMORY (2026-09-10, hard rule):** every lane must run with all node memory. The
      driver now has `#SBATCH --mem=0`; if a cluster's `./cluster_firsthit_probe.sh` lacks
      `--mem=0`, self-deploy it (pinned sha >= c792cbf) BEFORE any submit; always pass

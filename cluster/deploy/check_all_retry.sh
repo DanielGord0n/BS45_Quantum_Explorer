@@ -110,6 +110,15 @@ check_one() {  # $1 = cluster -> 0 if its output was captured, 1 if the push was
   return 1
 }
 
+# Per-day reached ledger (2026-09-13): every successful read appends "<epoch> <cluster>"
+# so the one-tap button can run ONLY the clusters still unread today, and the hourly
+# re-pusher can drop a cluster that another run (e.g. the button) has read meanwhile.
+LEDGER="$REPO_ROOT/results/reached_$(date +%F).txt"
+RUN_START=$(date +%s)
+note_reached() { echo "$(date +%s) $1" >> "$LEDGER"; }
+read_elsewhere() {  # $1 = cluster -> 0 if the ledger shows it read AFTER this run started
+  [ -f "$LEDGER" ] && awk -v c="$1" -v t="$RUN_START" '$2==c && $1>=t {f=1} END{exit f?0:1}' "$LEDGER"
+}
 reached=""
 missed=""
 for c in $CLUSTERS; do
@@ -121,7 +130,7 @@ for c in $CLUSTERS; do
     missed="$missed $c"
     continue
   fi
-  if check_one "$c"; then reached="$reached $c"; else missed="$missed $c"; fi
+  if check_one "$c"; then reached="$reached $c"; note_reached "$c"; else missed="$missed $c"; fi
 done
 
 # --- hourly re-push for missed clusters (2026-08-24) ------------------------
@@ -135,6 +144,10 @@ while [ -n "$missed" ] && [ "$round" -lt "$RETRY_MAX" ]; do
   sleep "$RETRY_INTERVAL"
   still=""
   for c in $missed; do
+    if read_elsewhere "$c"; then
+      echo ">> [$c] read by another run (button) since this run started — dropping it from retries" | tee -a "$OUT"
+      reached="$reached $c"; continue
+    fi
     if o="$(cluster_outage "$c")"; then
       echo ">> [$c] still in a listed outage (${o:-maintenance}) — no push this round" | tee -a "$OUT"
       noted "$c" || ntfy_push "BS45: $c is down for maintenance" "status.alliancecan.ca lists $c in an outage (${o:-maintenance}). No Duo push sent; re-checking quietly each hour." "low" "construction"
@@ -153,7 +166,7 @@ while [ -n "$missed" ] && [ "$round" -lt "$RETRY_MAX" ]; do
         "You missed the $c push earlier — a fresh one arrives in ${RETRY_NUDGE}s. Tap to approve (open Duo Mobile if no banner shows)." "high" "bell"
     fi
     sleep "$RETRY_NUDGE"
-    if check_one "$c"; then reached="$reached $c"; else still="$still $c"; fi
+    if check_one "$c"; then reached="$reached $c"; note_reached "$c"; else still="$still $c"; fi
   done
   missed="$still"
 done

@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-13 (Daniel session) — FIR READ (Daniel missed the Duo twice; I ran it): NO HITS.
+First three budget-2e6 lanes 59584257-259 (F44f tranche-5): 31.5-31.8M tested, 178/178
+arms, cells_done 571-574/lane (vs 382-454 at 5e7 = +30% cells/rep) BUT budget_aborted
+~6.6M = ~21% of tested (at 5e7 aborts were ~0). Interpretation: the cap drops the deep
+failing tail (known solutions need <=213k nodes); net coverage of "cheap" candidates up
+~30%/rep; recorded, kept at 2e6, a 5e6 middle-point measurement pre-registered for the
+next Fir restack. Fir queue 11 R + 26 PD (2e6) — no restack needed. BUTTON UPGRADE
+(Daniel's ask): the checker now keeps results/reached_<date>.txt; the one-tap button runs
+ONLY the clusters not yet read today (all four if none missing); the hourly re-pusher drops
+a cluster once another run has read it. Old re-pusher killed for today.**
+
 **⚡ 2026-09-13 (supplementary re-check ~13:10 — only Trillium answered) — NO HITS, nothing
 new. Fir Duo missed AGAIN (checker auto-retry armed, round 1/10 hourly — the 40 tranche-5
 lanes 59466759-798 + the 09-12 unseen reads still roll forward); Rorqual missed this
