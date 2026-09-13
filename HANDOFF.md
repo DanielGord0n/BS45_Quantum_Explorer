@@ -4,6 +4,15 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-13 (supplementary re-check ~13:10 — only Trillium answered) — NO HITS, nothing
+new. Fir Duo missed AGAIN (checker auto-retry armed, round 1/10 hourly — the 40 tranche-5
+lanes 59466759-798 + the 09-12 unseen reads still roll forward); Rorqual missed this
+attempt too (harmless — fully read in today's main run). Trillium: same board as main —
+2252668-71 (T44Af224/232/240/248) R with header-only outputs stamped 13:01-13:02 = just
+started, orbitcanon dedup 7.97872x live on all four; 29 PD (2285217-44 + T43sC 2222596)
+=> pending >= 8, no action. Nibi absent from this check (main run covered it). No FOUND
+banners, no submits, no exclusion changes, ledger unchanged.**
+
 **⚡ 2026-09-13 (daily loop 1pm — Nibi/Rorqual/Trillium reached, Fir Duo missed) — NO HITS,
 bookkeeping only, no submits. Nibi: ONE new read 21084715 = N43dt419 HITLESS (10.4M tested,
 178/178 arms_summarized, aborted=160 = 0.0015% of tested — well under the 5% budget_aborted
