@@ -1,8 +1,25 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-11 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-13 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-13 (daily loop 1pm — Nibi/Rorqual/Trillium reached, Fir Duo missed) — NO HITS,
+bookkeeping only, no submits. Nibi: ONE new read 21084715 = N43dt419 HITLESS (10.4M tested,
+178/178 arms_summarized, aborted=160 = 0.0015% of tested — well under the 5% budget_aborted
+watch line, cells_done_sum 140); queue ~63 PD healthy (N43dt lanes + N44f800..1112 +
+N43dt315/331 resubmits); N43b2e6 21707091 STILL PD — no lever-21 twin verdict (informational
+only; 2e6 already applied fleet-wide 09-12). Rorqual: 8 more 700G-resubmit window lanes read
+HITLESS — 20887529-536, sig (3,13,0,0), ~24-25M tested this rep, tested_cum ~46-47M (CKDIR
+coverage carried), 178/178, aborted=0, cells_done_sum 464-490, dedup 28.92x; ⚠️ 20887514-523
+STILL unseen (flagged "expect next check" on 09-12 — if absent again next check, ask sacct);
+queue = the 24 2e6 resubmits 20995014-37 all PD => pending >= 8, no action. Trillium:
+4 T44Af lanes (2252668-71 = T44Af224/232/240/248) went R ~13:01, headers only = just
+started, NOT dead; 29 PD (2285217-44 resubmits + T43sC 2222596) => no action. Fir: Duo
+missed — 40 tranche-5 lanes 59466759-798 + the 09-12 "unseen" reads
+(59191099/100/118/137/141-145/147) roll to next check. rung_status EXHAUSTED as always
+(Pass F is the program). Checker exclusions: +21084715 (210847 group -> 1[0-5]),
++20887529-536 (208875 group -> 2[4-9]|3[0-6]). No FOUND banners, ledger unchanged.**
 
 **⚡ 2026-09-12 (Daniel session) — LEVER 21 APPLIED + LEVER 22 BUILT. Lever 21: Fir control
 F41b2e6 PASSED (n=41 re-found in 3.1 h at budget 2e6 vs 4.6 h at 5e7, verify PASS; the
