@@ -25,7 +25,7 @@ N43b2e6 21707091 STILL PD (informational only — 2e6 already fleet-wide) => no 
 rung_status EXHAUSTED as always (Pass F is the program). Fir unseen set 59191099/100/118/137/
 141-145/147 absent again (3rd check) — grep asked in Fir's duo_run. Checker exclusions:
 +595842(5[7-9]|6[0-9]|7[0-9]|80), +209950(1[4-9]|2[0-6]|2[89]), +2285217-44, +2252668-71,
-+2222596. LIVE ROUND job IDs appended below after each cluster's submits echo.**
++2222596. LIVE ROUND job IDs appended below after each cluster's submits echo. FIR SUBMITS: 42/42 echoed — 59818926-965 = F44f2400..2712 s8 @2e6, 59818966/967 = F44f2720/2728 @5e6 (pre-registered pair); Fir queue 57 lines post-submit. Fir unseen set VERDICT: all 10 files have NO arms_with_hits/GATEB lines = header-only lost-telemetry reps (09-11 rule: completed, CKDIRs intact, one rep counted, not resubmitted); one-shot FOUND grep added to checker to close the banner gap.**
 
 **⚡ 2026-09-13 (Daniel session) — FIR READ (Daniel missed the Duo twice; I ran it): NO HITS.
 First three budget-2e6 lanes 59584257-259 (F44f tranche-5): 31.5-31.8M tested, 178/178
