@@ -1,8 +1,31 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-13 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-14 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-14 (daily loop 1pm — ALL FOUR reached) — NO HITS; Fir + Rorqual + Trillium
+restacked per Pass F ledger. Fir: 21 NEW tranche-5 2e6 reads 59584260-280 HITLESS (~31.3-32.1M
+tested/lane, 178/178, aborted ~6.3-6.7M = ~20-21% of tested — expected under the 09-13 rule,
+well below the 35% escalation line; cells_done_sum 569-590 = the +30% cells/rep confirmed
+across the full tranche); 16 lanes 59584281-300 R (header-only = current rep in progress);
+0 PD => tranche 6 F44f2400..2712 s8 (40 @2e6) + PRE-REGISTERED 5e6 pair F44f2720+F44f2728
+(plain names, WZ_FH_AB_BUDGET=5000000, compare cells_done+aborted vs 2e6 neighbours; if 5e6
+gives >=90% of cells with <=5% aborts, fleet switches to 5e6). Rorqual: 15 2e6-resubmit reads
+20995014-26/28/29 HITLESS (~27.6-28.8M this rep, cum ~50-54M, aborted 1.8-3.2M = ~6-11% —
+lower than Fir's because these windows carry CKDIR coverage; 178/178, cells_done_sum 547-573);
+20995027 finished-unread (expect next check); 8 R 20995030-37, 0 PD => next workhorse range
+R44f2736..3208 s8 (60 @2e6); ⚠️ 20887514-523 absent a THIRD check — sacct asked in this
+round's duo_run. Trillium: FULL T44Af (5,9,6,6) read — 2285217-44 (28 lanes, 10.6-16.7M this
+rep, cum ~18-35M, aborted 1-105 = 5e7-budget lanes, informational) + 2252668-71 first reps
+(17.6-18.8M) + 2222596 T43sC (26.7M, cum 46.6M) ALL HITLESS; queue EMPTY => next A range
+T44Af256..488 s8 (30 @2e6, def-ikotsire). Nibi: NO new reads (21084716-35 N43dt427..571 +
+21085447-50 N44f800-824 all started ~09:23 today, headers only), 24 R + ~39 PD healthy,
+N43b2e6 21707091 STILL PD (informational only — 2e6 already fleet-wide) => no action.
+rung_status EXHAUSTED as always (Pass F is the program). Fir unseen set 59191099/100/118/137/
+141-145/147 absent again (3rd check) — grep asked in Fir's duo_run. Checker exclusions:
++595842(5[7-9]|6[0-9]|7[0-9]|80), +209950(1[4-9]|2[0-6]|2[89]), +2285217-44, +2252668-71,
++2222596. LIVE ROUND job IDs appended below after each cluster's submits echo.**
 
 **⚡ 2026-09-13 (Daniel session) — FIR READ (Daniel missed the Duo twice; I ran it): NO HITS.
 First three budget-2e6 lanes 59584257-259 (F44f tranche-5): 31.5-31.8M tested, 178/178
