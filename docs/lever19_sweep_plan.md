@@ -146,6 +146,14 @@ complete and retired.
   NOT resubmitted (09-11 rule: completed reps, CKDIRs intact). Workhorse tiled
   k=0..2392; next unassigned workhorse k = 2400. Jobs 59466759-798, 40/40 echoed, all PD.
 
+- 2026-09-14 (daily loop): Fir 0 PD => tranche 6: Fir workhorse k=2400..2712 s8 (40 @2e6)
+  + PRE-REGISTERED 5e6 pair k=2720/2728 (plain names F44f2720/F44f2728,
+  WZ_FH_AB_BUDGET=5000000). Jobs 59818926-965 + 59818966/967, 42/42 echoed.
+  Rorqual 0 PD => workhorse k=2736..3208 s8 (60 @2e6). Jobs 21071921-980, 60/60 echoed.
+  Workhorse tiled k=0..3208; next unassigned workhorse k = 3216.
+  Trillium queue EMPTY => (5,9,6,6) k=256..488 s8 (30 @2e6). Jobs 2309932-62, 30/30
+  echoed. Class A tiled k=0..488; next unassigned A k = 496.
+
 ### 2026-09-10 correction + memory fix
 - The 09-09 "tranche 4" (Fir F44f1760..2072) never went in (agent backgrounded the
   submit); SUBMITTED 09-10 by hand with --mem=0, plus Fir's 14 dead windows, Rorqual's
