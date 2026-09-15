@@ -525,6 +525,17 @@ static void init_p22() {
 // lanes lost their summaries ("header-only", 2026-09-11).
 static volatile sig_atomic_t g_fh_sigterm = 0;
 static bool G_STREAM_REV = false;  // lever 22: reversed DFS branch order in count_pairs22
+// Lever 23 (2026-09-15): STREAM-WALL TIMEOUT. A cell whose DFS yields no candidate for
+// WZ_FH_WALL_SEC seconds is abandoned (its partial buffer is still drained) and the arm
+// moves on. Evidence: arms silent 2-3 h inside one cell at walltime; (9,9,0,4) streamed
+// zero candidates in 12 h. Off by default; part of CFGSIG (".ws<N>") when set.
+static long long G_WALL_SEC = 0;
+static long long G_LAST_CAND_SEC = 0;   // steady-clock seconds at the last streamed candidate
+static bool G_WALL_HIT = false;         // set inside the DFS when the wall timeout trips
+static unsigned long long G_REC_CALLS = 0;
+static long long wall_now_sec() {
+  return chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now().time_since_epoch()).count();
+}
 static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
                           bool abSide, bool pinX, bool pinY,
                           long long &leaves, long long &ok,
@@ -544,6 +555,10 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
   int px[8] = {0}, py[8] = {0}, placed[8] = {0};
   function<void(int)> rec = [&](int d) {
     if (g_fh_sigterm || (stop && stop->load(memory_order_relaxed))) return;
+    if (G_WALL_SEC > 0) {
+      if (G_WALL_HIT) return;
+      if ((++G_REC_CALLS & 4095ULL) == 0 && wall_now_sec() - G_LAST_CAND_SEC > G_WALL_SEC) { G_WALL_HIT = true; return; }
+    }
     for (int c = 0; c < m; c++) {
       int rem = total_in_class[c] - placed[c];
       int dx = tx[c] - px[c], dy = ty[c] - py[c];
@@ -1487,6 +1502,8 @@ int main(int argc, char **argv) {
     // solution past the forward first buffer; the F41 discriminator showed exactly that).
     // Part of CFGSIG (".sr1", appended only when set) and of the driver CKDIR (_sr1).
     if (const char *e = getenv("WZ_FH_STREAM_REV")) G_STREAM_REV = atoi(e) != 0;
+    if (const char *e = getenv("WZ_FH_WALL_SEC")) G_WALL_SEC = max(0LL, atoll(e));
+    long long cells_walled = 0;
     long long cells_capped = 0;
     string fh_ckpt_path;            // empty = checkpointing off (local runs)
     if (const char *e = getenv("WZ_FH_CKPT_DIR"))
@@ -1518,6 +1535,10 @@ int main(int argc, char **argv) {
     if (G_STREAM_REV) {
       size_t L0 = strlen(fh_sigbuf);
       snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".sr1");
+    }
+    if (G_WALL_SEC > 0) {
+      size_t L0 = strlen(fh_sigbuf);
+      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".ws%lld", G_WALL_SEC);
     }
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;
@@ -1789,6 +1810,7 @@ int main(int argc, char **argv) {
         if (fh_stop.load()) { cell_stop.store(true); return; }
         if (cell_stop.load()) return;
         cand++;
+        if (G_WALL_SEC > 0 && (cand & 255) == 0) G_LAST_CAND_SEC = wall_now_sec();
         // Progress is TIME-based and carries the exact tokens the driver
         // aggregates: the old every-200k-cands line never printed at n>=41
         // rates (~5-20 cand/s => <200k per 11.5h shard), so killed arms left
@@ -1839,9 +1861,11 @@ int main(int argc, char **argv) {
         fh_maybe_ckpt();
         if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
       };
+      G_WALL_HIT = false; G_LAST_CAND_SEC = wall_now_sec();
       count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
                     lv, okc, &probe, fh_m, &cell_stop);
-      if (cell_order && !cellbuf.empty() && !cell_stop.load()) drain();  // finish the cell in order
+      if (G_WALL_HIT) cells_walled++;  // abandoned by the stream-wall timeout: drain what it streamed, then it counts as done
+      if (cell_order && !cellbuf.empty() && (!cell_stop.load() || G_WALL_HIT)) drain();  // finish the cell in order
       // (front-only: a cell abandoned by cell_stop falls through to the
       //  "cell fully done" bookkeeping below unless the ARM was stopped)
       if (!fh_stop.load()) {
@@ -1868,6 +1892,7 @@ int main(int argc, char **argv) {
          << "  cells_prof_uncap=" << cells_prof_uncap
          << "  cells_orbit_dup=" << cells_orbit_dup
          << "  cells_capped=" << cells_capped << " (drain_top=" << fh_drain_top << " batches=" << fh_drain_batches << ")"
+         << "  cells_walled=" << cells_walled << " (wall_sec=" << G_WALL_SEC << ")"
          << "  tested_cum=" << (fh_tested_base + completed_tested)
          << "  resume_pi=" << ck_pi << "  resume_batch=" << ck_batch
          << "  resume_k=" << ck_k << "\n"

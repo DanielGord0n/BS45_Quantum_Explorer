@@ -92,6 +92,14 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **NIBI IS THE RRG'S HOME (2026-09-15):** the professor's allocation is meant for Nibi
+     ("submit several hundreds of jobs"). Keep Nibi >= 100 lanes pending at all times;
+     refill in tranches of 100-300 from the plan (FR workhorse, then FR class A/B, then F2).
+     Fir/Rorqual keep Pass F. LEVER 23 (`WZ_FH_WALL_SEC=900`) is under a split test on
+     Nibi's FR tranche (k=0 mod 16 with, k=8 mod 16 without): when both halves have read,
+     compare cells_done/lane; >= +15% for the walled half => use WALL_SEC=900 on all new
+     submits and say so. Self-deploy token for FR/F2/WS lanes: source must contain
+     `WZ_FH_WALL_SEC` (sha >= the 09-15 commit).
      **PASS FR (2026-09-12, lever 22 — built, validated locally, NOT yet deployed):** after the
      workhorse's Pass F tile completes, run the SAME offsets with `WZ_FH_STREAM_REV=1`
      (reversed in-cell enumeration = a second independent front per cell; CKDIR suffix

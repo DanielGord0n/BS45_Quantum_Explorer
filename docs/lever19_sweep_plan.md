@@ -200,3 +200,10 @@ not repeatable under the new rule.
 - PASS FR = Pass F offsets with WZ_FH_STREAM_REV=1 (lever 22): each cell's SECOND
   independent front (reversed enumeration), same K=50000, fresh CKDIRs (_sr1). Order per
   class: F -> FR -> F2. Workhorse F tile at k=2392/5836 (41%).
+
+### 2026-09-15: Nibi = the RRG's home => load it. PASS FR tranche 1 on Nibi
+Prof. Kotsireas: the RRG is meant for Nibi, several hundred CPU-years, "submit several
+hundreds of jobs". Nibi tranche (submitted 09-15): workhorse PASS FR k=0..2392 step 8
+(300 lanes, WZ_FH_STREAM_REV=1, K=50000, budget 2e6; lever-23 split: k=0 mod 16 with
+WALL_SEC=900, k=8 mod 16 without). Names N44fr<k>. Loop rule: keep Nibi >= 100 pending;
+next Nibi tranches = FR k=2400.. then FR on class A/B, then F2 on the workhorse.

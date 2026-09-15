@@ -393,3 +393,15 @@ count_pairs22 (env flag, part of CFGSIG) gives every cell a SECOND independent "
 front-only lanes at the same offsets in reverse in-cell order double front coverage per
 orbit. Test: F41dt-rev (canon-on, K=50000, reverse in-cell) should re-find n=41 where
 F41dt did not, with ~50% prior. Build after lever 21's verdict.
+
+
+## Lever 23 (2026-09-15): STREAM-WALL TIMEOUT (`WZ_FH_WALL_SEC=N`)
+A cell whose DFS yields no candidate for N seconds is abandoned (partial buffer drained
+first, cell counted done; telemetry cells_walled=). Evidence: arms silent 2-3 h in one
+cell at walltime (09-11 forensics); (9,9,0,4) streamed zero candidates in 12 h. Validated
+locally: n=29 (no walls) byte-identical; n=44 workhorse skip-300 arm abandons its silent
+first cell after 30 s and advances; (9,9,0,4) walls 6 cells in 4 min. CFGSIG ".ws<N>"
+only when set; CKDIR suffix _ws<N>. PRE-REGISTERED FIELD TEST (Nibi FR tranche, 09-15):
+half the lanes (k = 0 mod 16) run WALL_SEC=900, half (k = 8 mod 16) without; compare
+cells_done and backtracks per lane after one rep. PASS = walled lanes >= +15% cells with
+no loss in backtracks per cell-front => WALL_SEC=900 fleet-wide.
