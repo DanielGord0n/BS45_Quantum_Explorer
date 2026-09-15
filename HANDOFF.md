@@ -1,8 +1,32 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-14 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-15 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-15 (daily loop 1pm — ALL FOUR reached) — NO HITS; Rorqual restack is the
+round's action. Fir: 20 NEW hitless 2e6 reads — tranche-5 tail 59584281-285/289-298/300
+(16 lanes, ~31.1-32.9M tested/lane, 178/178, aborted ~6.2-7.1M = ~19-22% of tested,
+expected under the 09-13 rule) + FIRST 4 tranche-6 reads 59818926-929 = F44f2400..2424
+(~30.9-31.6M, aborts ~22-23%, cells_done_sum 578-588); queue 38 PD 0 R (59818930-965 +
+5e6 pair 59818966/967 still PD — pre-registered 5e6-vs-2e6 verdict rolls forward);
+UNSEEN, expect next check: 59584286/287/288/299 (not in reads, not in queue — 09-11
+header-only rule if absent again). ONE-SHOT unseen-set FOUND grep came back clean on all
+four clusters => no banner in the 09-12 header-only set, flag CLOSED, one-shot removed
+from checker. Nibi: 23 NEW hitless reads — 19 N43dt 21084716-726/728-735 (~9.7-11.6M
+this rep, 178/178, aborted 9-239 = tiny) + 4 N44f800..824 21085447-450 (~20.8-22.6M,
+aborted ~0 = pre-lever-21 5e7 lanes, informational); 21084727 unseen, expect next check;
+queue ~39 PD healthy (N44f832..1112 + N43dt315/331 resubs); N43b2e6 21707091 STILL PD
+(informational only — 2e6 already fleet-wide). Rorqual: NO new summaries — all 60 lanes
+21071921-980 (R44f2736..3208) R at ~8.6-9.5h, headers only; queue 0 PD => PASS F RULE
+FIRES (pending < 8): submit next workhorse range R44f3216..3688 s8 (60 @2e6,
+rrg-ikotsire_cpu, --mem=0). Trillium: NO new summaries — 2309932-937 R (2:22-8:27h,
+headers only), 24 PD => pending >= 8, no action. rung_status EXHAUSTED as always (Pass F
+is the program). Checker exclusions: +595842(8[1-5]|89|9[0-8])+59584300+5981892[6-9],
++210847(1[6-9]|2[0-6]|2[89]|3[0-5])+2108544[7-9]+21085450. Watch next reads: 5e6 pair
+F44f2720/2728 vs 2e6 neighbours (fleet -> 5e6 iff >=90% cells with <=5% aborts), Fir
+unseen 59584286/287/288/299 + Nibi 21084727, N43b2e6. RORQUAL SUBMITS: appended below
+after echo.**
 
 **⚡ 2026-09-14 (daily loop 1pm — ALL FOUR reached) — NO HITS; Fir + Rorqual + Trillium
 restacked per Pass F ledger. Fir: 21 NEW tranche-5 2e6 reads 59584260-280 HITLESS (~31.3-32.1M
