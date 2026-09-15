@@ -25,8 +25,11 @@ headers only), 24 PD => pending >= 8, no action. rung_status EXHAUSTED as always
 is the program). Checker exclusions: +595842(8[1-5]|89|9[0-8])+59584300+5981892[6-9],
 +210847(1[6-9]|2[0-6]|2[89]|3[0-5])+2108544[7-9]+21085450. Watch next reads: 5e6 pair
 F44f2720/2728 vs 2e6 neighbours (fleet -> 5e6 iff >=90% cells with <=5% aborts), Fir
-unseen 59584286/287/288/299 + Nibi 21084727, N43b2e6. RORQUAL SUBMITS: appended below
-after echo.**
+unseen 59584286/287/288/299 + Nibi 21084727, N43b2e6. RORQUAL SUBMITS: 60/60 echoed —
+21122818-877 = R44f3216..3688 s8 @2e6 (Duo attempt 2 after one 180s miss); QUEUE_COUNT
+120 post-submit (60 R + 60 PD). ROUND VERDICT: no hits, no verified solutions; 60 new
+lanes queued (Rorqual only — Fir/Nibi/Trillium pending >= 8, no action); workhorse F
+tile now assigned to k=3688 (63% of 5836); next unassigned: workhorse k=3696, A k=496.**
 
 **⚡ 2026-09-14 (daily loop 1pm — ALL FOUR reached) — NO HITS; Fir + Rorqual + Trillium
 restacked per Pass F ledger. Fir: 21 NEW tranche-5 2e6 reads 59584260-280 HITLESS (~31.3-32.1M

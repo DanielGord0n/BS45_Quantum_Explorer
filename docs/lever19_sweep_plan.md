@@ -154,6 +154,11 @@ complete and retired.
   Trillium queue EMPTY => (5,9,6,6) k=256..488 s8 (30 @2e6). Jobs 2309932-62, 30/30
   echoed. Class A tiled k=0..488; next unassigned A k = 496.
 
+- 2026-09-15 (daily loop): Rorqual 0 PD (60 R at ~9h) => workhorse k=3216..3688 s8
+  (60 @2e6, rrg-ikotsire_cpu, --mem=0). Jobs 21122818-877, 60/60 echoed, QUEUE_COUNT
+  120 post-submit. Workhorse tiled k=0..3688 (63% of 5836); next unassigned workhorse
+  k = 3696.
+
 ### 2026-09-10 correction + memory fix
 - The 09-09 "tranche 4" (Fir F44f1760..2072) never went in (agent backgrounded the
   submit); SUBMITTED 09-10 by hand with --mem=0, plus Fir's 14 dead windows, Rorqual's
