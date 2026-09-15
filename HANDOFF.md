@@ -4,6 +4,21 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-15 (Daniel session) — NIBI LOADED + LEVER 23 SHIPPED. Prof (09-04 email): the RRG
+is for NIBI, hundreds of CPU-years, "submit several hundreds of jobs" => Nibi is now the
+RRG home (loop rule: keep >= 100 pending). LEVER 23 = stream-wall timeout (WZ_FH_WALL_SEC:
+abandon a cell after N s without a candidate, drain its partial buffer, move on; CFGSIG
+".ws<N>" only when set; CKDIR _ws<N>) — validated: n=29 byte-identical off/on (no walls),
+n=44 workhorse skip-300 arm abandons its silent first cell after 30 s and advances,
+(9,9,0,4) (the zero-candidate class) walls 6 cells in 4 min. DEPLOYED 218df6d to Nibi
+(grep-verified) and SUBMITTED PASS FR TRANCHE 1: 300 lanes N44fr0..2392 step 8 (workhorse,
+WZ_FH_STREAM_REV=1 = reversed fronts, K=50000, budget 2e6, --mem=0, RAC), SPLIT TEST:
+k=0 mod 16 with WALL_SEC=900, k=8 mod 16 without — compare cells_done/lane when read
+(>= +15% => WALL_SEC=900 fleet-wide). 300/300 echoed, Nibi 339 PD. Other clusters
+untouched today (Fir 38 PD incl. the 5e6 pair, Rorqual 120, Trillium 30); they
+self-deploy the new source when they need FR/F2/WS lanes (token WZ_FH_WALL_SEC).
+Levers ledger: 23 opened; 11 shipped; 12 dead; in test: 5e6 budget pair, WS split.**
+
 **⚡ 2026-09-15 (daily loop 1pm — ALL FOUR reached) — NO HITS; Rorqual restack is the
 round's action. Fir: 20 NEW hitless 2e6 reads — tranche-5 tail 59584281-285/289-298/300
 (16 lanes, ~31.1-32.9M tested/lane, 178/178, aborted ~6.2-7.1M = ~19-22% of tested,
