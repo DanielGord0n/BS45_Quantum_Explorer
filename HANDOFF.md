@@ -4,6 +4,29 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-16 (daily loop 1pm — ALL FOUR reached) — NO HITS; Trillium held-lane repair is
+the round's action. Rorqual: FULL 60-lane read 21071921-980 = R44f2736..3208 HITLESS
+(~25.3-28.4M tested/lane, 178/178, aborted 16.9-25.9% of tested — expected under the
+09-13 rule, under the 35% line; cells_done_sum 468-539); queue 60 PD (21122818-877 =
+R44f3216..3688) => pending >= 8, no action. Trillium: 6 NEW class-A 2e6 reads
+2309932-937 = T44Af256..296 HITLESS (~24.8-26.0M tested, 178/178, aborted ~24-27% —
+the class-A 2e6 baseline, above the workhorse's ~21% but under the line); 15 R
+(started 02:16-03:28 EDT); ⚠️ 9 lanes PD-HELD "user env retrieval failed requeued held"
+(2309938/939/943/945-949/954 = T44Af304/312/344/360/368/376/384/392/424) — held jobs
+never start on their own => ACTION: duo_run scontrol release, fallback cancel +
+verbatim-resubmit by name (outcome appended below). Fir: NO new summaries — 17 R
+59818930-946 (7.2-8.4h) + 21 PD incl. the 5e6 pair 59818966/967 still PD
+(pre-registered 5e6-vs-2e6 verdict rolls forward); unseen set 59584286/287/288/299
+absent a SECOND check => 09-11 header-only rule fires: completed reps with lost
+telemetry, CKDIRs intact, one rep counted each, NOT resubmitted, flag CLOSED. Nibi:
+0 R + 339 PD healthy (300 FR N44fr0..2392 complete + 36 N44f832..1112 + N43dt315/331 +
+N43b2e6 still PD) — nothing has started yet (RRG scheduling wait), >= 100 rule
+satisfied, WS split test has no data yet; 21084727 absent a second check => header-only
+rule, CLOSED. rung_status EXHAUSTED as always (Pass F is the program). Checker
+exclusions: +210719(2[1-9]|[3-7][0-9]|80), +230993[2-7]. Watch next reads: 5e6 pair
+F44f2720/2728 vs 2e6 neighbours, first Fir tranche-6 tail + Nibi FR reads (WS split
+cells_done/lane comparison when both halves read), N43b2e6.**
+
 **⚡ 2026-09-15 (Daniel session) — NIBI LOADED + LEVER 23 SHIPPED. Prof (09-04 email): the RRG
 is for NIBI, hundreds of CPU-years, "submit several hundreds of jobs" => Nibi is now the
 RRG home (loop rule: keep >= 100 pending). LEVER 23 = stream-wall timeout (WZ_FH_WALL_SEC:
