@@ -159,6 +159,11 @@ complete and retired.
   120 post-submit. Workhorse tiled k=0..3688 (63% of 5836); next unassigned workhorse
   k = 3696.
 
+- 2026-09-16 (daily loop): no new k-ranges (all four pending >= 8). Trillium repair:
+  9 T44Af lanes (304/312/344/360/368/376/384/392/424, jobs 2309938/939/943/945-949/954)
+  were PD-HELD "user env retrieval failed requeued held"; scontrol release cleared all
+  9 (reason None, original IDs/CKDIRs kept, no resubmit needed); queue 24 = 15 R + 9 PD.
+
 ### 2026-09-10 correction + memory fix
 - The 09-09 "tranche 4" (Fir F44f1760..2072) never went in (agent backgrounded the
   submit); SUBMITTED 09-10 by hand with --mem=0, plus Fir's 14 dead windows, Rorqual's

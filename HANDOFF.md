@@ -25,7 +25,13 @@ satisfied, WS split test has no data yet; 21084727 absent a second check => head
 rule, CLOSED. rung_status EXHAUSTED as always (Pass F is the program). Checker
 exclusions: +210719(2[1-9]|[3-7][0-9]|80), +230993[2-7]. Watch next reads: 5e6 pair
 F44f2720/2728 vs 2e6 neighbours, first Fir tranche-6 tail + Nibi FR reads (WS split
-cells_done/lane comparison when both halves read), N43b2e6.**
+cells_done/lane comparison when both halves read), N43b2e6. TRILLIUM REPAIR VERDICT:
+scontrol release CLEARED all 9 holds (post-release reason None, no cancel/resubmit
+needed, fallback loop found nothing held); final queue exactly 24 = 15 R + 9 PD
+(released) — the full unread T44Af set intact under original job IDs/CKDIRs. ROUND
+VERDICT: no hits, no verified solutions; no new lanes submitted (all four clusters
+pending >= 8 after the repair); workhorse F tile unchanged at k=3688 (63%), class A at
+k=488; next unassigned: workhorse k=3696, A k=496.**
 
 **⚡ 2026-09-15 (Daniel session) — NIBI LOADED + LEVER 23 SHIPPED. Prof (09-04 email): the RRG
 is for NIBI, hundreds of CPU-years, "submit several hundreds of jobs" => Nibi is now the
