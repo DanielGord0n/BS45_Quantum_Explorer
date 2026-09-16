@@ -92,6 +92,14 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
+     **LEVER 24 BACKFILL TEST (2026-09-16):** on Nibi, N44fr0..472 (60 lanes) run at
+     `--time=3:00:00`; N44fr480..2392 (240) at 12 h = control. After 24-48 h compare the
+     STARTED fraction per group (`sacct -X -o JobName,State,Start`). PASS (3 h group starts
+     >= 3x the 12 h rate) => resubmit Nibi's remaining 12 h lanes as 3 h (cancel + same
+     name/env + `--time=3:00:00`, 3 singleton reps each) and say so; apply the same to any
+     cluster whose lanes wait > 2 days. A 3 h lane that finished is NOT done — restack it
+     (singleton) until its cells_done stops growing. Driver >= 09-16 reads the real
+     TimeLimit (token: `end grace`).
      **NIBI IS THE RRG'S HOME (2026-09-15):** the professor's allocation is meant for Nibi
      ("submit several hundreds of jobs"). Keep Nibi >= 100 lanes pending at all times;
      refill in tranches of 100-300 from the plan (FR workhorse, then FR class A/B, then F2).

@@ -405,3 +405,19 @@ only when set; CKDIR suffix _ws<N>. PRE-REGISTERED FIELD TEST (Nibi FR tranche, 
 half the lanes (k = 0 mod 16) run WALL_SEC=900, half (k = 8 mod 16) without; compare
 cells_done and backtracks per lane after one rep. PASS = walled lanes >= +15% cells with
 no loss in backtracks per cell-front => WALL_SEC=900 fleet-wide.
+
+
+## Lever 24 (2026-09-16): SHORT-WALLTIME BACKFILL LANES on saturated clusters
+Nibi diagnosis: 339 lanes pending on Priority; cluster 680/699 nodes allocated, 0 idle;
+jobs ahead carry priority 6.0M vs our 1.35M; user-level LevelFS 0.34; our last Nibi
+lanes waited 13 days (submitted 09-01, started 09-14) even under the RRG. On a saturated
+cluster the scheduler admits work mainly by BACKFILL, which favours short jobs. Lanes
+checkpoint every few minutes, so a 3 h job loses nothing (end grace 12 min vs 30 =>
+~93% vs ~96% compute efficiency). Driver now derives its deadline from the job's real
+TimeLimit (was hardcoded 11.5 h). PRE-REGISTERED TEST (Nibi, 09-16): the first 60 FR
+lanes (N44fr0..472, WS split preserved) cancelled and resubmitted with --time=3:00:00
+(same names/CKDIRs); the other 240 stay at 12 h as control. READ after 24-48 h: fraction
+of each group that has STARTED (sacct). PASS = 3 h group starts >= 3x the 12 h group's
+rate => convert Nibi's queue (and any cluster showing multi-day waits) to 3 h lanes;
+each 3 h rep covers ~1/4 of a 12 h rep, so lanes re-queue themselves via singleton
+restacks (loop: keep 3 depth on 3 h lanes).

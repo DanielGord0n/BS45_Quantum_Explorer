@@ -100,7 +100,24 @@ echo "[driver] $NARMS arms launched $(date)"
 
 # Poll: first FOUND starts the grace clock; 11.5h is the hard aggregation
 # deadline (30 min before slurm walltime kill).
-DEADLINE=$(( $(date +%s) + 11*3600 + 1800 ))
+# Deadline from the job's REAL time limit (2026-09-16): short backfill jobs (--time=3:00:00)
+# on saturated clusters need the driver to stop and aggregate before Slurm kills them.
+# TimeLimit formats: HH:MM:SS, D-HH:MM:SS, MM:SS. Fallback 12 h. End grace: 12 min for
+# jobs <= 4 h (arms exit on SIGTERM instantly since 5de899c; aggregation takes ~1 min),
+# 30 min otherwise (unchanged behaviour for 12 h lanes).
+WALL_SEC=43200
+tl=$(scontrol show job "$SLURM_JOB_ID" 2>/dev/null | grep -oE "TimeLimit=[0-9:-]+" | head -1 | cut -d= -f2)
+if [ -n "$tl" ]; then
+  d=0; hms=$tl
+  case "$tl" in *-*) d=${tl%%-*}; hms=${tl#*-};; esac
+  IFS=: read -r p1 p2 p3 <<< "$hms"
+  if [ -z "$p3" ]; then p3=$p2; p2=$p1; p1=0; fi          # MM:SS
+  WALL_SEC=$(( d*86400 + 10#$p1*3600 + 10#$p2*60 + 10#${p3:-0} ))
+  [ "$WALL_SEC" -lt 1800 ] && WALL_SEC=43200                 # nonsense => fallback
+fi
+END_GRACE=1800; [ "$WALL_SEC" -le 14400 ] && END_GRACE=720
+echo "[driver] walltime ${WALL_SEC}s (TimeLimit=${tl:-unknown}), end grace ${END_GRACE}s"
+DEADLINE=$(( $(date +%s) + WALL_SEC - END_GRACE ))
 FOUND_AT=0
 while :; do
   alive=0
