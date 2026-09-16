@@ -4,6 +4,21 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-16 (Daniel session) — NIBI DIAGNOSED + LEVER 24 LIVE. All 339 Nibi lanes
+pending on Priority: cluster 680/699 nodes allocated (0 idle), competing jobs at priority
+6.0M vs ours 1.35M, user-level LevelFS 0.34; last Nibi lanes waited 13 DAYS (submitted
+09-01, started 09-14) even under the RRG => Nibi is the slowest cluster for us, not the
+fastest; nothing broken (jobs valid: 192 CPU, mem=0, bynode_b2+backfill partitions). FIX
+DIRECTION = backfill: driver now derives its deadline from the job's real TimeLimit
+(4d453d1; parser tested on HH:MM:SS / D-HH:MM:SS / MM:SS; end grace 12 min for <= 4 h
+jobs); deployed to Nibi. LEVER 24 TEST LIVE: N44fr0..472 (60 lanes, WS split preserved)
+cancelled and resubmitted at --time=3:00:00 (same names/CKDIRs; partition auto =
+cpubase_bynode_b1+backfill); N44fr480..2392 (240) stay 12 h as control. Pre-registered
+read after 24-48 h: started-fraction per group; PASS (>= 3x) => convert Nibi (and any
+cluster with multi-day waits) to 3 h lanes with 3 singleton reps. Fir 38 PD, Rorqual 120
+PD, Trillium 24 (9 held lanes released by the loop) — no other action. Levers ledger: 24
+opened; 12 shipped; 12 dead; in test: 5e6 pair, WS split, 3 h backfill.**
+
 **⚡ 2026-09-16 (daily loop 1pm — ALL FOUR reached) — NO HITS; Trillium held-lane repair is
 the round's action. Rorqual: FULL 60-lane read 21071921-980 = R44f2736..3208 HITLESS
 (~25.3-28.4M tested/lane, 178/178, aborted 16.9-25.9% of tested — expected under the
