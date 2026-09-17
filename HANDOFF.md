@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-17 (Daniel session) — RORQUAL SLOWED TOO (0 R / 59 PD on Priority; cluster
+673/678 nodes allocated; account LevelFS 0.29, user 0.33 = our RAC fairshare is depleted
+after two weeks of heavy use — same picture as Nibi). LEVER 24 EXTENDED TO RORQUAL for
+a faster verdict: driver 4d453d1 (TimeLimit-aware deadline) deployed; alternating
+pending R44f lanes (30) cancelled and resubmitted at --time=3:00:00 (same names/CKDIRs,
+2e6), 29 stay 12 h. Read rule: started fraction per group (Rorqual admits work in hours,
+so this discriminates within a day; Nibi's split showed 0/0 at 24 h). Fir is now the
+only fast cluster (tranche 7 queued, F tile 69%); Trillium class-A aborts 24-31% (under
+the line; 5e6 pair verdict reads tomorrow). No hits. In test: 5e6 pair (Fir), WS split
+(Nibi FR), 3 h backfill (Nibi 60/240 + Rorqual 30/29).**
+
 **⚡ 2026-09-17 (supplementary — Rorqual re-check after the 1pm Duo miss) — NO HITS,
 bookkeeping only. 9 NEW hitless reads: 21122818 = R44f3216 FIRST read of the 09-15
 tranche (~25.9M tested, 178/178, aborted 6.51M = ~25% of tested — under the 35% line;

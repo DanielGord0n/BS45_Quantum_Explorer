@@ -217,3 +217,10 @@ hundreds of jobs". Nibi tranche (submitted 09-15): workhorse PASS FR k=0..2392 s
 (300 lanes, WZ_FH_STREAM_REV=1, K=50000, budget 2e6; lever-23 split: k=0 mod 16 with
 WALL_SEC=900, k=8 mod 16 without). Names N44fr<k>. Loop rule: keep Nibi >= 100 pending;
 next Nibi tranches = FR k=2400.. then FR on class A/B, then F2 on the workhorse.
+
+### 2026-09-17: fairshare depletion is fleet-wide on RAC clusters
+Rorqual LevelFS 0.29/0.33 (0 running, 59 pending), Nibi 0.34: two weeks of RAC-priority
+consumption spent the account's fairshare; priority now decays back over ~2 weeks. Fir is
+the only cluster still admitting within hours. Responses: lever 24 (3 h backfill lanes)
+on Nibi 60/240 and Rorqual 30/29; keep every queue deep (fairshare recovers by itself,
+idle queues waste the recovery); Fir carries the F tile meanwhile.

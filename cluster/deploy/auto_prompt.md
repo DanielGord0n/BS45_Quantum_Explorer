@@ -92,8 +92,9 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
-     **LEVER 24 BACKFILL TEST (2026-09-16):** on Nibi, N44fr0..472 (60 lanes) run at
-     `--time=3:00:00`; N44fr480..2392 (240) at 12 h = control. After 24-48 h compare the
+     **LEVER 24 BACKFILL TEST (2026-09-16/17):** on Nibi, N44fr0..472 (60 lanes) run at
+     `--time=3:00:00`; N44fr480..2392 (240) at 12 h = control. On Rorqual (09-17) the 59
+     pending R44f lanes are split 30 at 3 h / 29 at 12 h (driver 4d453d1 deployed there). After 24-48 h compare the
      STARTED fraction per group (`sacct -X -o JobName,State,Start`). PASS (3 h group starts
      >= 3x the 12 h rate) => resubmit Nibi's remaining 12 h lanes as 3 h (cancel + same
      name/env + `--time=3:00:00`, 3 singleton reps each) and say so; apply the same to any
