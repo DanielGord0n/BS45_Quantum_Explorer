@@ -24,7 +24,11 @@ its 60 PD restack 21122818-877 unobserved this round. rung_status EXHAUSTED as a
 +230994[0-24]+23099(5[023]|5[5-9]|6[0-2]). Watch next reads: 5e6 pair F44f2720/2728 vs
 2e6 neighbours, lever-24 started fractions at 48h (PASS => convert Nibi 12h lanes to
 3h x3 singleton reps), WS split cells_done/lane when Nibi FR reads, N43b2e6, Rorqual
-R44f3216..3688 first reads. FIR SUBMITS: appended below after the echoes.**
+R44f3216..3688 first reads. FIR SUBMITS: 40/40 echoed — 60191241-280 = F44f3696..4008
+s8 @2e6 (rrg-ikotsire_cpu, --mem=0, singleton), QUEUE_COUNT 53 post-submit. Workhorse
+F tile now assigned to k=4008 (69% of 5836); next unassigned: workhorse k=4016, A
+k=496. ROUND VERDICT: no hits, no verified solutions; 40 new lanes queued (Fir only —
+Trillium/Nibi pending >= 8, Rorqual unreached).**
 
 **⚡ 2026-09-16 (Daniel session) — NIBI DIAGNOSED + LEVER 24 LIVE. All 339 Nibi lanes
 pending on Priority: cluster 680/699 nodes allocated (0 idle), competing jobs at priority

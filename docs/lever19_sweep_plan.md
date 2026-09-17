@@ -159,6 +159,11 @@ complete and retired.
   120 post-submit. Workhorse tiled k=0..3688 (63% of 5836); next unassigned workhorse
   k = 3696.
 
+- 2026-09-17 (daily loop): Fir 1 PD (12 R) => tranche 7: Fir workhorse k=3696..4008 s8
+  (40 @2e6, rrg-ikotsire_cpu, --mem=0). Jobs 60191241-280, 40/40 echoed, QUEUE_COUNT 53
+  post-submit. Workhorse tiled k=0..4008 (69% of 5836); next unassigned workhorse
+  k = 4016. Trillium 9 PD / Nibi 339 PD => no action; Rorqual Duo missed.
+
 - 2026-09-16 (daily loop): no new k-ranges (all four pending >= 8). Trillium repair:
   9 T44Af lanes (304/312/344/360/368/376/384/392/424, jobs 2309938/939/943/945-949/954)
   were PD-HELD "user env retrieval failed requeued held"; scontrol release cleared all
