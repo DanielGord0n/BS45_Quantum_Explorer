@@ -4,6 +4,16 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-17 (Daniel session, later) — PROF: fast-track RRG renewal, "run as many jobs
+as you can handle, essential to spend/overspend the allocation" => Nibi consumption is
+now an objective (renewal evidence). Supply is not the bottleneck (339 lanes queued, 0
+admitted in 48 h); ADMISSION is => LEVER 25 TEST LIVE: N44fr480/488 resubmitted as 12
+split-lane jobs (30 cores, 3 h, --mem=12G, FH_SHARD_LO/HI ranges, names N44fr<k>s0..5,
+partition auto = cpubase_bycore_b1+backfill). Read at 24 h vs the whole-node 3 h (60)
+and 12 h (275) groups; PASS => convert Nibi to split-lane small jobs, keep >= 300-1000
+queued. Loop rules updated (allocation burn; sum 6 shard outputs per lane). Reply to
+the professor drafted (thanks + jobs queued + short-job testing).**
+
 **⚡ 2026-09-17 (Daniel session) — RORQUAL SLOWED TOO (0 R / 59 PD on Priority; cluster
 673/678 nodes allocated; account LevelFS 0.29, user 0.33 = our RAC fairshare is depleted
 after two weeks of heavy use — same picture as Nibi). LEVER 24 EXTENDED TO RORQUAL for

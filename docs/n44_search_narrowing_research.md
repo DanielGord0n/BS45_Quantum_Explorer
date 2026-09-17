@@ -421,3 +421,19 @@ of each group that has STARTED (sacct). PASS = 3 h group starts >= 3x the 12 h g
 rate => convert Nibi's queue (and any cluster showing multi-day waits) to 3 h lanes;
 each 3 h rep covers ~1/4 of a 12 h rep, so lanes re-queue themselves via singleton
 restacks (loop: keep 3 depth on 3 h lanes).
+
+
+## Lever 25 (2026-09-17): SPLIT-LANE SMALL JOBS for saturated clusters (+ allocation burn)
+Prof (09-17): fast-track RRG renewal, "run as many jobs as you can handle, essential to
+spend/overspend the allocation" => on Nibi, consumption is now an objective in itself.
+Supply is not the limit (339 whole-node lanes queued, 0 admitted in 48 h); admission is.
+Partial-node jobs backfill onto a saturated cluster far more readily than 192-core ones.
+The driver already runs an arm range per job (FH_SHARD_LO/HI, 08-07), per-arm CKDIR
+files never collide, so a lane = 6 jobs x 30 arms with distinct names (N44fr<k>s0..5,
+each singleton). TEST LIVE (Nibi 09-17): lanes N44fr480/488 (from the 12 h control
+group) cancelled and resubmitted as 12 x (30 cores, 3 h, --mem=12G, bycore_b1+backfill).
+Read after 24 h: started fraction of the 12 split jobs vs the whole-node 3 h and 12 h
+groups. PASS (split jobs start while whole-node lanes wait) => convert Nibi's queue to
+split-lane small jobs (6 per lane, 3 h, 3 singleton reps each) and keep >= 1000 jobs
+queued there; the checker's GATEB per job then reports arms_summarized=30/178 — the loop
+must sum the 6 shard outputs per lane.
