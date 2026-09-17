@@ -4,6 +4,28 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-17 (daily loop 1pm — Fir/Nibi/Trillium reached, Rorqual Duo MISSED) — NO
+HITS; Fir Pass F refill is the round's action. Fir: 25 NEW tranche-6 2e6 reads
+59818930-954 = F44f2432..2624 HITLESS (~31.2-35.0M tested/lane, 178/178, aborted
+~5.6-7.5M = ~17-23% of tested — expected under the 09-13 rule, under the 35% line;
+cells_done_sum 566-657); queue 13 = 12 R (59818955-966 = F44f2632..2720, incl the 5e6
+pair lead F44f2720 started overnight) + 1 PD (59818967 = F44f2728 5e6) => pending < 8,
+PASS F RULE FIRES: tranche 7 = F44f3696..4008 s8 (40 @2e6, rrg-ikotsire_cpu, --mem=0);
+5e6-vs-2e6 pre-registered verdict rolls forward (neither 5e6 lane read yet). Trillium:
+15 NEW class-A 2e6 reads 2309940-942/944/950/952/953/955-962 = T44Af320..488 subset
+HITLESS (~23.9-27.1M tested, 178/178, aborted ~6.2-8.2M = ~24-31% of tested — the
+class-A baseline creeping up but under the 35% line); queue 9 PD = the 9 released
+repair lanes (2309938/939/943/945-949/954, healthy Priority, empty output files
+pre-start) => pending >= 8, no action. Nibi: NO reads, 0 R + 339 PD healthy; LEVER 24
+READ AT ~24h: 3h group 0/60 started, 12h group 0/240 started — no discrimination yet,
+verdict rolls to the 48h window. Rorqual: Duo missed (no approval in 180s), no data —
+its 60 PD restack 21122818-877 unobserved this round. rung_status EXHAUSTED as always
+(Pass F is the program). Checker exclusions: +598189(3[0-9]|4[0-9]|5[0-4]),
++230994[0-24]+23099(5[023]|5[5-9]|6[0-2]). Watch next reads: 5e6 pair F44f2720/2728 vs
+2e6 neighbours, lever-24 started fractions at 48h (PASS => convert Nibi 12h lanes to
+3h x3 singleton reps), WS split cells_done/lane when Nibi FR reads, N43b2e6, Rorqual
+R44f3216..3688 first reads. FIR SUBMITS: appended below after the echoes.**
+
 **⚡ 2026-09-16 (Daniel session) — NIBI DIAGNOSED + LEVER 24 LIVE. All 339 Nibi lanes
 pending on Priority: cluster 680/699 nodes allocated (0 idle), competing jobs at priority
 6.0M vs ours 1.35M, user-level LevelFS 0.34; last Nibi lanes waited 13 DAYS (submitted
