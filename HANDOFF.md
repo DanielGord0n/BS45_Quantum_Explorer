@@ -4,6 +4,16 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-17 (supplementary — Rorqual re-check after the 1pm Duo miss) — NO HITS,
+bookkeeping only. 9 NEW hitless reads: 21122818 = R44f3216 FIRST read of the 09-15
+tranche (~25.9M tested, 178/178, aborted 6.51M = ~25% of tested — under the 35% line;
+cells_done_sum 511) + 20995030-37 = the 2e6-resubmit window lanes' SECOND reps
+(~27.7-28.7M this rep, cum ~51.1-51.6M, 178/178, aborted ~2.4-3.1M = ~9-11%, dedup
+28.92x headers healthy). Queue 59 PD (21122819-877 = R44f3224..3688, Priority, 0 R)
+=> pending >= 8, PASS F rule does NOT fire, no submits. Checker exclusions: +21122818,
++209950(3[0-7]). SUPPLEMENTARY VERDICT: no hits, no verified solutions, no new lanes;
+Rorqual restack 21122818-877 now observed and healthy.**
+
 **⚡ 2026-09-17 (daily loop 1pm — Fir/Nibi/Trillium reached, Rorqual Duo MISSED) — NO
 HITS; Fir Pass F refill is the round's action. Fir: 25 NEW tranche-6 2e6 reads
 59818930-954 = F44f2432..2624 HITLESS (~31.2-35.0M tested/lane, 178/178, aborted
