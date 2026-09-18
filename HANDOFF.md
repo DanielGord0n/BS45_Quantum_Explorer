@@ -4,6 +4,30 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-18 (daily loop 1pm — ALL FOUR reached) — NO HITS, bookkeeping only, no
+submits (every cluster pending >= 8). Fir: 12 NEW hitless reads 59818955-966 —
+F44f2632..2712 @2e6 (~32.0-32.7M tested/lane, 178/178, aborted ~6.65-6.98M = ~21%,
+cells_done_sum 602-612) + ★ FIRST 5e6-PAIR READ 59818966 = F44f2720: 26.2M tested,
+aborted 1.15M = 4.4% (PASSES the <=5% bar) BUT cells_done_sum 491 = 81% of its 2e6
+neighbours' ~607 (BELOW the 90% line) => provisional KEEP 2e6; pre-registered pair
+verdict is FINAL only when 59818967 = F44f2728 (still PD) reads. Fir queue 41 PD 0 R
+(tranche 7 60191241-280 + the 5e6 PD lane). Rorqual: 5 NEW hitless reads 21122820/822/
+824/826/828 (12h group, ~25.6-25.9M, 178/178, aborts ~25% — under the 35% line);
+LEVER 24 RORQUAL ~24h READ: 12h control 10/29 started (5 read + 21122818 yesterday +
+4 R now: 21122830/832/834/836), 3h resubmits 21275347-379 0/30 started => NOT PASS,
+trending AGAINST 3h there (confound noted: resubmission reset queue-age priority);
+formal 48h verdict tomorrow — if still 0/30 vs 12h progress, lever 24 FAILS on Rorqual
+and the 3h lanes should be left to drain, not extended. Queue 4 R + 55 PD. Nibi: NO
+reads, 0 R, ~349 PD (29 N44f + ~238 FR 12h + 60 FR 3h 22096724-787 + 12 split-lane
+22154359-70 + N43dt/N43b) — lever 24 AND lever 25 both 0 starts in EVERY group at
+~24-48h, verdicts roll to the 48h/next read; >= 300 queued rule satisfied, no action.
+Trillium: no new reads, 9 PD (released repair lanes, empty pre-start outputs) =>
+pending >= 8, no action. rung_status EXHAUSTED as always (Pass F is the program).
+Checker exclusions: +598189(5[5-9]|6[0-6]), +2112282[02468]. Watch next reads: 5e6
+pair verdict (59818967), Rorqual lever-24 48h fractions, Nibi any first start,
+N43b2e6, Rorqual R44f3224..3688 3h lanes. ROUND VERDICT: no hits, no verified
+solutions, no new lanes queued.**
+
 **⚡ 2026-09-17 (Daniel session, later) — PROF: fast-track RRG renewal, "run as many jobs
 as you can handle, essential to spend/overspend the allocation" => Nibi consumption is
 now an objective (renewal evidence). Supply is not the bottleneck (339 lanes queued, 0
