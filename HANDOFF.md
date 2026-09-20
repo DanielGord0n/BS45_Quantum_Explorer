@@ -4,6 +4,26 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-20 (Daniel session) — BUTTON FLOW WORKED (1pm missed Fir -> "fir unread" note ->
+Daniel's tap ran ONLY Fir -> read captured), but the Fir agent hit the new 90-min cap
+with ZERO output. ROOT CAUSE FOUND + PROVEN: `claude -p` blocks until stdin EOF (25 s
+with an open pipe vs 2 s with </dev/null); the listener launched daily_auto inside its
+`curl | while read` stream, so every button-run agent inherited the hour-long stream as
+stdin and idled until it ended (explains the 3-6 h supplementary runs on 09-19 too).
+FIXES: listener launches with </dev/null + nohup env; daily_auto runs the agent with
+</dev/null; rc=124 now says "time cap" (not "API dropped"); results/interim_summary.txt
+untracked (its rm by the loop faked "agent acted" => bogus PARTIAL commits); NEW
+summarize_check.py = deterministic digest (FOUND count outside the exclusion header,
+per-cluster R/PD, new reads with tested/abort/cell ranges, REFILL flag) sent to the
+phone right after EVERY check ("BS45 check: numbers") and used as the fallback text when
+the agent fails; reminders: the 1pm run's remind_unread.sh was killed by launchd on job
+exit => spawn_detached.py (new session) + AbandonProcessGroup=true on bs45check.plist
+(verified: detached child survives its parent's group kill). READS: Fir 14 new tranche-7
+lanes hitless (60191248-261, 31-33M, 23-26% aborts, cells 601-621); Fir pending 3 => Pass
+F tranche 8 SUBMITTED (F44f4016..4328, 40 @2e6; Fir 14 R + 40 PD; F tile 74%). Nibi:
+24 FR lanes finally RUNNING (first admissions in ~2 weeks) — first FR reads + lever-23
+split verdict tomorrow. Rorqual 16 R + 33 PD, Trillium 9 PD. Both daemons reloaded.**
+
 **⚡ 2026-09-20 (daily loop 1pm — Nibi/Rorqual/Trillium reached, Fir Duo MISSED) — NO HITS;
 ★ NIBI FINALLY ADMITTED: 24 FR lanes RUNNING (21997843-866 = N44fr528..712, started ~06:00
 EDT, 7-8h elapsed at check) — the FIRST FR starts after ~2 weeks of zero admissions,

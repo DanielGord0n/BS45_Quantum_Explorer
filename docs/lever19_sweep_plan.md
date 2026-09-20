@@ -224,3 +224,5 @@ consumption spent the account's fairshare; priority now decays back over ~2 week
 the only cluster still admitting within hours. Responses: lever 24 (3 h backfill lanes)
 on Nibi 60/240 and Rorqual 30/29; keep every queue deep (fairshare recovers by itself,
 idle queues waste the recovery); Fir carries the F tile meanwhile.
+
+- 2026-09-20 tranche 8 (Daniel session): Fir workhorse k=4016..4328 s8 (40, 2e6). Next unassigned: workhorse k=4336 (74% assigned).

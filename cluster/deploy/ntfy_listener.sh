@@ -54,7 +54,10 @@ except Exception: print("")')"
       log "button tap -> supplementary check on: $todo"
       ntfy "BS45: check starting now" "$n Duo push(es) coming one at a time ($todo). Tap each." "high" "bell"
     fi
-    ( cd "$REPO" && SUPPLEMENTARY=1 CLUSTERS="$todo" RETRY_MAX=0 LOCK_WAIT_SEC=7200 BUTTON=1 ./cluster/deploy/daily_auto.sh >> "$LOG" 2>&1 ) &
+    # stdin MUST be detached (2026-09-20): `claude -p` blocks until stdin EOF, and a child
+    # launched inside this `curl | while read` loop inherits the hour-long stream as stdin —
+    # every button-run agent sat idle until the stream ended (3-6 h runs, 09-19/20).
+    ( cd "$REPO" && exec nohup env SUPPLEMENTARY=1 CLUSTERS="$todo" RETRY_MAX=0 LOCK_WAIT_SEC=7200 BUTTON=1 ./cluster/deploy/daily_auto.sh </dev/null >> "$LOG" 2>&1 ) &
   done
   log "subscription dropped — reconnecting in 15s"; sleep 15
 done

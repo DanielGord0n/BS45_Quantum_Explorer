@@ -108,6 +108,14 @@ else
   log "Running checker (first pass, no waiting on missed taps)…"
   RETRY_MAX=0 "$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"
 fi
+# Deterministic digest to the phone within a minute of the check (2026-09-20) — numbers
+# first, narrative later; also the fallback text if the agent fails.
+MECH="$(python3 "$DIR/summarize_check.py" "$CHECK_OUTPUT" 2>/dev/null)"
+if [ -n "$MECH" ]; then
+  log "digest: $MECH"
+  if grep -q "FOUND banners: [1-9]" <<<"$MECH"; then ntfy_push "🚨 BS45 check: FOUND banner" "$MECH" "urgent" "rotating_light"
+  else ntfy_push "BS45 check: numbers" "$MECH" "low" "satellite"; fi
+fi
 # Which clusters missed their push? Parsed from the checker's own Summary line.
 MISSED="$(grep -m1 '^Summary:' "$CHECK_OUTPUT" 2>/dev/null | sed -n 's/.*missed:\([^;(]*\).*/\1/p' | xargs)"
 if ! grep -q "NEW FOUND" "$CHECK_OUTPUT" 2>/dev/null; then
@@ -120,7 +128,7 @@ if ! grep -q "NEW FOUND" "$CHECK_OUTPUT" 2>/dev/null; then
   fi
   log "No cluster answered on the first pass — arming hourly reminders (no unattended pushes)."
   ntfy_push "BS45: no Duo taps — nothing read yet" "Tap Run check now when you can; I'll remind you hourly (no pushes until you tap)." "default" "hourglass"
-  nohup "$DIR/remind_unread.sh" ${CLUSTERS:-$ALL_CLUSTERS} >/dev/null 2>&1 &
+  python3 "$DIR/spawn_detached.py" "$DIR/remind_unread.sh" ${CLUSTERS:-$ALL_CLUSTERS} >/dev/null
   exit 0
 fi
 
@@ -189,7 +197,9 @@ while : ; do
   # shellcheck disable=SC2086
   # Hard cap (2026-09-19): normal runs take 20-60 min; 4-6 h runs died on API timeouts.
   MAX_AGENT_SEC="${MAX_AGENT_SEC:-5400}"
-  python3 "$DIR/run_with_timeout.py" "$MAX_AGENT_SEC" "$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" $CLAUDE_ARGS >>"$LOG" 2>&1
+  # </dev/null: claude -p blocks until stdin EOF (verified 2026-09-20: 25 s with an open
+  # pipe vs 2 s with no stdin) — never let it inherit a pipe.
+  python3 "$DIR/run_with_timeout.py" "$MAX_AGENT_SEC" "$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" $CLAUDE_ARGS </dev/null >>"$LOG" 2>&1
   rc=$?
   [ "$rc" -eq 124 ] && log "Agent exceeded ${MAX_AGENT_SEC}s and was killed (rc=124)."
   log "Claude exited rc=$rc"
@@ -245,6 +255,7 @@ while : ; do
     PARTIAL=1
     SUBMITS_THIS_RUN=$(grep -c "Submitted batch job" "$LOG" 2>/dev/null); SUBMITS_THIS_RUN=${SUBMITS_THIS_RUN:-0}
     if limit_hit; then why="Usage limit hit mid-run"
+    elif [ "$rc" -eq 124 ]; then why="Agent hit the ${MAX_AGENT_SEC:-5400}s time cap and was killed"
     elif [ "$rc" -eq 0 ]; then why="Agent exited cleanly (rc=0) but wrote NO summary (ended its turn early — e.g. waiting on a backgrounded duo_run)"
     else why="Agent died mid-run (rc=$rc, e.g. API connection dropped)"; fi
     log "$why after the agent had ALREADY acted (summary/commit/tree change present)."
@@ -280,9 +291,9 @@ elif credits_gone; then
 elif limit_hit; then
   msg="BLOCKED by the Claude usage limit after $attempt attempt(s). Nothing was submitted, nothing changed. Re-run ./cluster/deploy/daily_auto.sh once your limit resets."
 elif [ "${PARTIAL:-0}" = 1 ]; then
-  msg="PARTIAL run (rc=$rc): the agent acted (${SUBMITS_THIS_RUN:-0} submit echo(es) logged) but ended without writing a summary. Its bookkeeping edits were committed as PARTIAL. Review results/auto_${STAMP}.log + squeue; the next loop folds this cycle in."
+  msg="Agent did not finish (${why:-rc=$rc}; ${SUBMITS_THIS_RUN:-0} submit echo(es) logged, edits committed as PARTIAL). The reads still count — numbers: ${MECH:-n/a}. Unprocessed outputs re-show next check."
 else
-  msg="Run finished (rc=$rc) but no summary was written — see results/auto_${STAMP}.log."
+  msg="Agent wrote no summary (rc=$rc). Numbers from the check: ${MECH:-n/a}. Unprocessed outputs re-show next check."
 fi
 
 if grep -qi '^NEEDS_HUMAN' "$SUMMARY" 2>/dev/null; then
@@ -305,6 +316,6 @@ if [ "$SUPPLEMENTARY" != 1 ] && [ -n "$MISSED" ]; then
   log "Missed Duo on: ${MISSED} — arming hourly reminders (pushes only when Daniel taps)."
   ntfy_push "BS45: ${MISSED} unread today" \
     "Missed the Duo push for ${MISSED}. Tap Run check now when you can — it will check only ${MISSED}. I'll remind you hourly." "default" "hourglass"
-  nohup "$DIR/remind_unread.sh" $MISSED >/dev/null 2>&1 &
+  python3 "$DIR/spawn_detached.py" "$DIR/remind_unread.sh" $MISSED >/dev/null
 fi
 log "Done."

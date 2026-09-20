@@ -39,3 +39,4 @@ results/ntfy_listener.out
 results/ntfy_listener.err
 results/reached_*.txt
 results/reminders.log
+results/interim_summary.txt
