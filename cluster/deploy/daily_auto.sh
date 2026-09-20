@@ -40,7 +40,7 @@ RETRY_WAIT="${RETRY_WAIT:-1800}"     # 30 min between attempts
 MAX_RETRY="${MAX_RETRY:-8}"          # 8 x 30min = up to 4h of waiting
 
 STAMP="$(date +%Y-%m-%d)"
-# SUPPLEMENTARY=1 (2026-08-24): a second pass, spawned by the main run, that
+# SUPPLEMENTARY=1 (2026-08-24; since 2026-09-19 launched ONLY by the button): a pass that
 # re-pushes Duo every hour for the cluster(s) missed at 1pm and — once approved —
 # reads/restacks ONLY those. Own log file; never spawns another supplementary.
 SUPPLEMENTARY="${SUPPLEMENTARY:-0}"
@@ -64,6 +64,31 @@ if [ -f "$DIR/AUTOPILOT_OFF" ]; then
   log "AUTOPILOT_OFF present — skipping."
   ntfy_push "BS45 autopilot OFF" "Kill switch on; skipped today's run." "low" "no_entry"
   exit 0
+fi
+# ONE global lock for every run (2026-09-19: three concurrent agents, two died). The
+# cron run waits up to 30 min; a button run waits up to 2 h (queued behind the running
+# check, then re-derives what is still unread today). Released on any exit.
+LOCK_WAIT_SEC="${LOCK_WAIT_SEC:-1800}"
+LOCK_LABEL="$( [ "${BUTTON:-0}" = 1 ] && echo button || { [ "$SUPPLEMENTARY" = 1 ] && echo supplementary || echo 1pm; } )"
+if "$DIR/run_lock.sh" busy; then
+  log "Another run holds the lock ($("$DIR/run_lock.sh" info)) — waiting up to ${LOCK_WAIT_SEC}s."
+fi
+if ! "$DIR/run_lock.sh" acquire "$LOCK_LABEL" "$LOCK_WAIT_SEC"; then
+  log "Lock still held after ${LOCK_WAIT_SEC}s ($("$DIR/run_lock.sh" info)) — giving up this run."
+  ntfy_push "BS45: run skipped (another check still running)" "$("$DIR/run_lock.sh" info). Tap Run check now once it finishes." "low" "hourglass"
+  exit 0
+fi
+trap '"$DIR/run_lock.sh" release' EXIT
+if [ "${BUTTON:-0}" = 1 ]; then
+  # re-derive what is still unread now that we hold the lock (a queued tap may be stale)
+  ledger="$REPO/results/reached_$(date +%F).txt"; todo=""
+  for c in $CLUSTERS; do
+    if [ -f "$ledger" ] && awk -v c="$c" '$2==c{f=1} END{exit f?0:1}' "$ledger"; then continue; fi
+    todo="$todo $c"
+  done
+  todo="$(echo $todo)"
+  if [ -z "$todo" ]; then log "Button run: everything already read today — nothing to do."; ntfy_push "BS45: all clusters already read today" "Nothing left to check. Tap again tomorrow, or after the 1pm run." "low" "satellite"; exit 0; fi
+  CLUSTERS="$todo"; export CLUSTERS
 fi
 if ! command -v "$CLAUDE_BIN" >/dev/null 2>&1; then
   log "ERROR: '$CLAUDE_BIN' not on PATH."
@@ -93,9 +118,10 @@ if ! grep -q "NEW FOUND" "$CHECK_OUTPUT" 2>/dev/null; then
       "default" "warning"
     exit 0
   fi
-  log "No cluster answered on the first pass — switching to hourly Duo re-push for all of them."
-  ntfy_push "BS45: no Duo taps yet" "Nothing was reachable on the first pass. I'll re-push every hour (up to 10 h) — tap when you see it." "default" "hourglass"
-  SUPPLEMENTARY=1 CLUSTERS="${CLUSTERS:-$ALL_CLUSTERS}" exec "$DIR/daily_auto.sh"
+  log "No cluster answered on the first pass — arming hourly reminders (no unattended pushes)."
+  ntfy_push "BS45: no Duo taps — nothing read yet" "Tap Run check now when you can; I'll remind you hourly (no pushes until you tap)." "default" "hourglass"
+  nohup "$DIR/remind_unread.sh" ${CLUSTERS:-$ALL_CLUSTERS} >/dev/null 2>&1 &
+  exit 0
 fi
 
 # --- 2. agent, with session-limit deferral ----------------------------------
@@ -161,8 +187,11 @@ SUBMITS_THIS_RUN=0
 while : ; do
   log "Invoking headless Claude (model=$MODEL, attempt $attempt/$((MAX_RETRY+1)))…"
   # shellcheck disable=SC2086
-  "$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" $CLAUDE_ARGS >>"$LOG" 2>&1
+  # Hard cap (2026-09-19): normal runs take 20-60 min; 4-6 h runs died on API timeouts.
+  MAX_AGENT_SEC="${MAX_AGENT_SEC:-5400}"
+  python3 "$DIR/run_with_timeout.py" "$MAX_AGENT_SEC" "$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" $CLAUDE_ARGS >>"$LOG" 2>&1
   rc=$?
+  [ "$rc" -eq 124 ] && log "Agent exceeded ${MAX_AGENT_SEC}s and was killed (rc=124)."
   log "Claude exited rc=$rc"
 
   # Success: it wrote a summary. Done.
@@ -273,9 +302,9 @@ fi
 # Runs AFTER the main agent pass, so today's read was never delayed. Sequential:
 # the supplementary agent only starts once this pass is completely done.
 if [ "$SUPPLEMENTARY" != 1 ] && [ -n "$MISSED" ]; then
-  log "Missed Duo on: ${MISSED} — starting hourly re-push + supplementary read."
-  ntfy_push "BS45: will retry ${MISSED}" \
-    "You missed the Duo push(es) for ${MISSED}. I'll re-push every hour (up to 10 h) and read/restack as soon as you approve." "default" "hourglass"
-  SUPPLEMENTARY=1 CLUSTERS="$MISSED" "$DIR/daily_auto.sh"
+  log "Missed Duo on: ${MISSED} — arming hourly reminders (pushes only when Daniel taps)."
+  ntfy_push "BS45: ${MISSED} unread today" \
+    "Missed the Duo push for ${MISSED}. Tap Run check now when you can — it will check only ${MISSED}. I'll remind you hourly." "default" "hourglass"
+  nohup "$DIR/remind_unread.sh" $MISSED >/dev/null 2>&1 &
 fi
 log "Done."

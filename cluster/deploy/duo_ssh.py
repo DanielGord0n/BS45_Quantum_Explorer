@@ -19,6 +19,11 @@ if len(sys.argv) != 4:
     sys.exit(64)
 
 host, cmd, timeout = sys.argv[1], sys.argv[2], float(sys.argv[3])
+# Two-phase deadline (2026-09-19): <timeout> covers ONLY the Duo approval. Once the
+# remote command has started (BS45BEGIN seen) the deadline becomes now + CMD_TIMEOUT
+# (env DUO_CMD_TIMEOUT, default 900 s) so a slow tap can never truncate the read
+# mid-stream — that is what cut Fir's 17:29 capture off before any summaries.
+cmd_timeout = float(os.environ.get("DUO_CMD_TIMEOUT", "900"))
 ssh_args = ["ssh", "-o", "ConnectTimeout=30",
             "-o", "StrictHostKeyChecking=accept-new",
             "-o", "NumberOfPasswordPrompts=1", host, cmd]
@@ -34,6 +39,8 @@ status = 2
 deadline = time.time() + timeout
 prompt = re.compile(rb"passcode or option", re.I)
 end_marker = b"===BS45END==="
+begin_marker = b"===BS45BEGIN==="
+started = False
 
 try:
     while True:
@@ -56,6 +63,9 @@ try:
             if not sent and prompt.search(buf):
                 os.write(fd, b"1\n")       # select Duo Push -> fires phone prompt
                 sent = True
+            if not started and begin_marker in buf:
+                started = True
+                deadline = time.time() + cmd_timeout   # approval done: command budget
             if end_marker in buf:
                 status = 0
                 break

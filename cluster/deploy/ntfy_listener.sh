@@ -1,17 +1,34 @@
 #!/bin/bash
-# ntfy_listener.sh — one-tap "Run check now" (2026-09-10).
-# Subscribes to the private control topic; when a message "check <token>" arrives
-# (the button on any BS45 notification publishes it), runs a supplementary
-# daily_auto pass on all four clusters RIGHT NOW (Duo pushes follow within seconds,
-# while Daniel is holding the phone). Guards: token, a lock against concurrent runs,
-# and a 3-minute debounce. Runs under launchd (com.dangord.bs45listener), restarts
-# itself on disconnect. DRY_RUN=1 = log only.
+# ntfy_listener.sh — one-tap "Run check now" (2026-09-10, rewritten 2026-09-19).
+#
+# Subscribes to the private control topic; when "check <token>" arrives (the button
+# on any BS45 notification publishes it) it runs a supplementary daily_auto pass for
+# ONLY the clusters not yet read today (per-day ledger results/reached_<date>.txt).
+# Nothing missing => full re-check of all four.
+#
+# Concurrency (the 09-19 failure: a tap during the 1pm run started a second agent):
+# daily_auto.sh itself holds ONE global lock for every run (cron, button, reminder);
+# a tap while a run is in progress is queued — daily_auto waits for the lock, then
+# recomputes what is still unread. The phone is told either way.
+#
+# Runs under launchd (com.dangord.bs45listener), restarts on disconnect. DRY_RUN=1 = log only.
 set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; REPO="$(cd "$DIR/../.." && pwd)"
 . "$DIR/notify.conf"
-LOG="$REPO/results/ntfy_listener.log"; LOCK="/tmp/bs45_check.lock"
+LOG="$REPO/results/ntfy_listener.log"
 log(){ echo "[$(date '+%F %T')] $*" >> "$LOG"; }
 ntfy(){ curl -s -m 15 -H "Title: $1" -H "Priority: ${3:-default}" -H "Tags: ${4:-satellite}" -d "$2" "$NTFY_URL" >/dev/null 2>&1; }
+
+whats_left() {  # prints the clusters not in today's ledger (all four if none read)
+  local ledger="$REPO/results/reached_$(date +%F).txt" done_today="" todo="" c
+  [ -f "$ledger" ] && done_today="$(awk '{print $2}' "$ledger" | sort -u | tr '\n' ' ')"
+  for c in fir nibi rorqual trillium; do
+    case " $done_today " in *" $c "*) ;; *) todo="$todo $c";; esac
+  done
+  todo="$(echo $todo)"; [ -z "$todo" ] && todo="fir nibi rorqual trillium"
+  echo "$todo"
+}
+
 last_run=0
 log "listener up (topic $(basename "$NTFY_CONTROL_URL"))"
 while :; do
@@ -25,15 +42,19 @@ except Exception: print("")')"
       *) log "ignored message: ${msg:0:40}"; continue;;
     esac
     now=$(date +%s)
-    if [ $((now-last_run)) -lt 180 ]; then log "debounced"; continue; fi
-    if [ -e "$LOCK" ] && kill -0 "$(cat "$LOCK" 2>/dev/null)" 2>/dev/null; then
-      ntfy "BS45: a check is already running" "Tap again when it finishes (its Duo pushes are on the way)." "low" "hourglass"; log "busy"; continue
-    fi
+    if [ $((now-last_run)) -lt 120 ]; then log "debounced"; continue; fi
     last_run=$now
-    if [ "${DRY_RUN:-0}" = 1 ]; then log "DRY_RUN: would start check"; continue; fi
-    log "button tap -> starting supplementary check on all clusters"
-    ntfy "BS45: check starting now" "4 Duo pushes coming one at a time (fir nibi rorqual trillium). Tap each." "high" "bell"
-    ( cd "$REPO" && echo $$ > "$LOCK" && SUPPLEMENTARY=1 CLUSTERS="fir nibi rorqual trillium" RETRY_MAX=0 ./cluster/deploy/daily_auto.sh >> "$LOG" 2>&1; rm -f "$LOCK" ) &
+    todo="$(whats_left)"
+    n=$(echo $todo | wc -w | tr -d ' ')
+    if [ "${DRY_RUN:-0}" = 1 ]; then log "DRY_RUN: would run check on: $todo"; continue; fi
+    if "$DIR/run_lock.sh" busy; then
+      log "button tap -> run in progress ($("$DIR/run_lock.sh" info)); queuing: $todo"
+      ntfy "BS45: check queued" "A check is already running ($("$DIR/run_lock.sh" info)). Yours starts when it finishes, for: $todo" "low" "hourglass"
+    else
+      log "button tap -> supplementary check on: $todo"
+      ntfy "BS45: check starting now" "$n Duo push(es) coming one at a time ($todo). Tap each." "high" "bell"
+    fi
+    ( cd "$REPO" && SUPPLEMENTARY=1 CLUSTERS="$todo" RETRY_MAX=0 LOCK_WAIT_SEC=7200 BUTTON=1 ./cluster/deploy/daily_auto.sh >> "$LOG" 2>&1 ) &
   done
   log "subscription dropped — reconnecting in 15s"; sleep 15
 done

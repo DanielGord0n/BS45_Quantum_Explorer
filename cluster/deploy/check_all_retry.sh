@@ -35,7 +35,7 @@ USER_ID="${CLUSTER_USER:-dangord}"
 # Unset (the daily loop) = all four, unchanged.
 CLUSTERS="${CLUSTERS:-fir nibi rorqual trillium}"
 PUSH_WAIT="${PUSH_WAIT:-180}"     # seconds to wait for you to tap each push
-RETRY_MAX="${RETRY_MAX:-10}"      # hourly re-push rounds for missed clusters (0 = none)
+RETRY_MAX="${RETRY_MAX:-0}"       # hourly re-push rounds (0 = none; since 2026-09-19 pushes only come at 1pm or on a tap)
 RETRY_INTERVAL="${RETRY_INTERVAL:-3600}"
 RETRY_NUDGE="${RETRY_NUDGE:-45}"  # phone nudge lands, then the push follows this many s later
 DUO="${DUO:-$SCRIPT_DIR/duo_ssh.py}"
