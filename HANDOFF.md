@@ -1,8 +1,29 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-15 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-20 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-20 (daily loop 1pm — Nibi/Rorqual/Trillium reached, Fir Duo MISSED) — NO HITS;
+★ NIBI FINALLY ADMITTED: 24 FR lanes RUNNING (21997843-866 = N44fr528..712, started ~06:00
+EDT, 7-8h elapsed at check) — the FIRST FR starts after ~2 weeks of zero admissions,
+vindicating the 09-19 revert to 12h whole-node lanes. Header-only outputs so far; first
+Nibi FR reads expected tomorrow, and they carry the LEVER-23 split verdict (k=0 mod 16
+walled WZ_FH_WALL_SEC=900 vs k=8 mod 16 unwalled — both halves are in the running set;
+compare cells_done/lane, >= +15% => wall fleet-wide). Nibi queue ~265 PD (21997867-877 +
+21997878-21998080 + 22302012-073 = the reverted 12h stack) => >= 100 rule satisfied, no
+action. Rorqual: ONE new read 21122840 = R44f3392 HITLESS (25.4M tested, 178/178, aborted
+6.68M = 26% — under the 35% line, cells_done_sum 457); 16 R (21122842-872 even =
+R44f3408..3648 12h group, 2.5-4h in) + 33 PD (21434125-155 = the reverted-to-12h
+R44f3224..3688 k=8-mod-16 lanes + 21122874/876) => pending >= 8, no submits; the 12h
+group keeps admitting (16 starts today) while the age-reset resubmits wait — consistent
+with the 09-19 lever-24 FAIL, nothing to decide. Trillium: 9 PD repair lanes
+(2309938/939/943/945-949/954, empty pre-start outputs), no reads, pending >= 8, no
+action. Fir: Duo missed — tranche-7 head reads (60191247-252 window) roll forward; queue
+was 6 R + 28 PD on 09-19 evening so no refill is plausible-needed. rung_status EXHAUSTED
+as always (Pass F is the program). Checker exclusions: +21122840. Watch next reads:
+N44fr528..712 first Nibi FR data + lever-23 split verdict, Rorqual R44f3408..3648 group,
+Fir tranche-7. ROUND VERDICT: no hits, no verified solutions, no new lanes queued.**
 
 **⚡ 2026-09-19 (Daniel session, evening) — WHY TODAY BROKE + FIXED; ALL READS PROCESSED.
 Root causes: (1) the 09-13 "button runs only what's left" patch NEVER reached
