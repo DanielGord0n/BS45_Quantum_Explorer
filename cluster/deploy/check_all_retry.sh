@@ -99,11 +99,20 @@ check_one() {  # $1 = cluster -> 0 if its output was captured, 1 if the push was
   echo "════════════════ $c ════════════════" | tee -a "$OUT"
   echo ">> [$c] Duo push sent — approve on your phone (waiting up to ${PUSH_WAIT}s)…"
   raw="$(python3 "$DUO" "${USER_ID}@${c}.alliancecan.ca" "$REMOTE" "$PUSH_WAIT" 2>/dev/null)"
+  duo_rc=$?
   # tr -d '\r': the pty turns every newline into CRLF; strip the CRs or every
   # downstream match (incl. the "(none yet)" filter) silently fails.
   body="$(printf '%s' "$raw" | tr -d '\r' | awk '/===BS45BEGIN===/{f=1;next} /===BS45END===/{f=0} f')"
   if [ -n "$body" ]; then
     printf '%s\n' "$body" | tee -a "$OUT"
+    # 2026-09-19: a non-empty body with duo_rc!=0 means the capture was cut before
+    # ===BS45END=== (fir that day: cut right after the FIRSTHIT header, zero read
+    # summaries). Treating that as "reached" silently loses reads — flag it loudly
+    # and count it as MISSED so the hourly re-push retries the cluster.
+    if [ "$duo_rc" -ne 0 ]; then
+      echo "--- TRUNCATED CAPTURE on $c (duo_ssh rc=$duo_rc, END marker never seen) — output above is INCOMPLETE, do not treat absent reads as absent results; will re-push ---" | tee -a "$OUT"
+      return 1
+    fi
     return 0
   fi
   echo "(no approval within ${PUSH_WAIT}s — skipped this attempt)" | tee -a "$OUT"

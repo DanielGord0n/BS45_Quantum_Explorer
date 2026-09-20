@@ -11,6 +11,13 @@ caused overlapping logins and leaked prompts. One clean ssh per call.
 
 Usage: duo_ssh.py <host> <remote_cmd> <timeout_seconds>
 Exit:  0 = saw ===BS45END=== (success), 2 = timeout/no approval, other = error.
+
+2026-09-19: <timeout> bounds only the pre-auth phase (Duo menu + phone approval).
+Once ===BS45BEGIN=== arrives the remote command is already running, so the clock
+switches to an idle deadline: each output chunk buys DUO_IDLE_GRACE more seconds
+(default 120), under a DUO_HARD_CAP absolute bound from BEGIN (default 900).
+Before this, one deadline spanned approval AND the command — approve late in the
+window and the capture was cut mid-stream (fir, 09-19), silently losing reads.
 """
 import os, sys, pty, select, time, re
 
@@ -33,7 +40,12 @@ sent = False                      # only send "1" once => exactly one push
 status = 2
 deadline = time.time() + timeout
 prompt = re.compile(rb"passcode or option", re.I)
+begin_marker = b"===BS45BEGIN==="
 end_marker = b"===BS45END==="
+idle_grace = float(os.environ.get("DUO_IDLE_GRACE", "120"))
+hard_cap_s = float(os.environ.get("DUO_HARD_CAP", "900"))
+began = False                     # remote command streaming (auth succeeded)
+hard_cap = None
 
 try:
     while True:
@@ -56,6 +68,12 @@ try:
             if not sent and prompt.search(buf):
                 os.write(fd, b"1\n")       # select Duo Push -> fires phone prompt
                 sent = True
+            if not began and begin_marker in buf:
+                began = True
+                hard_cap = time.time() + hard_cap_s
+            if began:
+                # post-auth: each chunk buys idle_grace more time, capped absolutely
+                deadline = min(time.time() + idle_grace, hard_cap)
             if end_marker in buf:
                 status = 0
                 break
