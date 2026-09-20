@@ -4,6 +4,31 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-19 (supplementary, Fir re-check ~17:29 — AND the day's only surviving agent
+run) — THERE IS NO MAIN 09-19 ENTRY: the 1pm main-run agent died on a 4h API "Request
+timed out" (rc=1, commit 16cb5f9 = PARTIAL, only deleted the stale interim file), and the
+13:44 supplementary agent for nibi/rorqual/trillium ALSO died silently (no exit logged, no
+commit). Today's Nibi/Rorqual/Trillium reads were NEVER processed and their check output
+was overwritten — they are NOT excluded, so they re-show as NEW at the next successful
+check (self-healing; tomorrow's watch items: lever-24 Rorqual 48h verdict, lever-25 Nibi
+split-lane 24h read, any Nibi first start). FIR: reached, but the capture was TRUNCATED
+mid-stream right after the ~21.5KB FIRSTHIT header — queue block only, ZERO read
+summaries. Queue 34 = 6 R (60191247-252 = F44f3744..3784) + 28 PD (60191253-280 =
+F44f3792..4008) => pending >= 8, PASS F does not fire, NO submits. 7 lanes left the queue
+since 09-18 and are COMPLETED BUT UNREAD: 60191241-246 = F44f3696..3736 (tranche-7 heads)
++ ★ 59818967 = F44f2728, the SECOND 5e6 pair lane — the pre-registered 5e6-vs-2e6 budget
+verdict STILL rolls forward (not excluded, re-shows next check). No exclusions added this
+round (nothing read). ROOT CAUSE of the truncation (diagnosed from source):
+duo_ssh.py's single deadline spans Duo-approval + remote command, so a late approval
+leaves seconds for the checker to run and the pty capture is cut mid-output; AND
+check_all_retry.sh's check_one() treats any non-empty body as "reached" (it never checks
+duo_ssh's exit status / the END marker), so a truncated capture silently masquerades as a
+complete read. Fix (idle-deadline after auth + loud TRUNCATED banner) committed on branch
+auto/2026-09-19 for Daniel's review — NOT merged, tomorrow runs on the old driver unless
+merged. SUPPLEMENTARY VERDICT: no hits observed (but 7 fir lanes unread), no verified
+solutions, no new lanes queued; day's real story = two agent deaths + a checker-capture
+bug now diagnosed with a review-ready fix.**
+
 **⚡ 2026-09-18 (daily loop 1pm — ALL FOUR reached) — NO HITS, bookkeeping only, no
 submits (every cluster pending >= 8). Fir: 12 NEW hitless reads 59818955-966 —
 F44f2632..2712 @2e6 (~32.0-32.7M tested/lane, 178/178, aborted ~6.65-6.98M = ~21%,
