@@ -92,23 +92,12 @@ Do not re-run the checker.
      submit echoed a `Submitted batch job <id>` before treating it as queued** —
      if `duo_run.sh` exits non-zero, the job did NOT go in. Never advance the
      ledger for a submit that did not echo a job ID.
-     **ALLOCATION BURN + LEVER 25 (2026-09-17):** the professor's RRG renewal depends on
-     spending the allocation, so on Nibi maximize CONSUMPTION too: keep >= 300 jobs queued.
-     Lever-25 test: N44fr480/488 run as 6 split jobs each (N44fr480s0..s5 etc., 30 cores,
-     3 h, --mem=12G, FH_SHARD_LO/HI = 0-30,30-60,...,150-178). Read at 24 h: if the split
-     jobs STARTED while the whole-node 3 h/12 h lanes did not, convert Nibi's queue to
-     split-lane jobs (cancel whole-node PD lane -> 6 shard jobs, same env + FH_SHARD_LO/HI,
-     names <lane>s0..s5, 3 singleton reps each) and say so. A split job's GATEB shows
-     arms_summarized=30/178 by design; sum the 6 outputs per lane before judging it.
-     **LEVER 24 BACKFILL TEST (2026-09-16/17):** on Nibi, N44fr0..472 (60 lanes) run at
-     `--time=3:00:00`; N44fr480..2392 (240) at 12 h = control. On Rorqual (09-17) the 59
-     pending R44f lanes are split 30 at 3 h / 29 at 12 h (driver 4d453d1 deployed there). After 24-48 h compare the
-     STARTED fraction per group (`sacct -X -o JobName,State,Start`). PASS (3 h group starts
-     >= 3x the 12 h rate) => resubmit Nibi's remaining 12 h lanes as 3 h (cancel + same
-     name/env + `--time=3:00:00`, 3 singleton reps each) and say so; apply the same to any
-     cluster whose lanes wait > 2 days. A 3 h lane that finished is NOT done — restack it
-     (singleton) until its cells_done stops growing. Driver >= 09-16 reads the real
-     TimeLimit (token: `end grace`).
+     **JOB SHAPE VERDICTS (2026-09-19):** levers 24/25 (3 h and split-lane jobs) FAILED on
+     Nibi (0 short/small jobs admitted in 72 h while 12 h lanes were) — Nibi admits by
+     priority only. ALL Nibi submits are 12 h whole-node lanes; never reshape jobs there.
+     Keep Nibi >= 300 lanes queued (allocation burn), expect ~13-day waits, no alarms.
+     Budget stays 2e6 fleet-wide (both lever-21 controls passed; the 5e6 lane gave only
+     80% of the cells => failed its rule). The N43b2e6 re-find (21707091) is bookkept.
      **NIBI IS THE RRG'S HOME (2026-09-15):** the professor's allocation is meant for Nibi
      ("submit several hundreds of jobs"). Keep Nibi >= 100 lanes pending at all times;
      refill in tranches of 100-300 from the plan (FR workhorse, then FR class A/B, then F2).

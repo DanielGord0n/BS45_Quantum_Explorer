@@ -437,3 +437,17 @@ groups. PASS (split jobs start while whole-node lanes wait) => convert Nibi's qu
 split-lane small jobs (6 per lane, 3 h, 3 singleton reps each) and keep >= 1000 jobs
 queued there; the checker's GATEB per job then reports arms_summarized=30/178 — the loop
 must sum the 6 shard outputs per lane.
+
+
+## Verdicts 2026-09-19
+- Lever 21 (budget 2e6): Nibi control N43b2e6 (21707091) RE-FOUND the banked n=43 in
+  3.8 h at 2e6 (vs 4.9 h at 5e7) — both controls PASS; 2e6 stays fleet-wide.
+- 5e6 middle point (Fir F44f2728 = 59818967): 483 cells/rep, 5% aborts vs ~600 cells,
+  24% aborts on its 2e6 neighbours => 80% of the cells < the 90% line => FAIL, 2e6 stays
+  (the deep tail is that expensive; capped candidates cost ~4x more than they are worth).
+- Lever 24 (3 h backfill) on NIBI: 0/60 three-hour whole-node lanes and 0/12 split jobs
+  (lever 25) started in 72/48 h while 4/234 twelve-hour lanes did => FAIL on Nibi:
+  admission there is priority-only (0 idle nodes), and cancel/resubmit only lost queue
+  age. Reverted to 12 h whole-node lanes (same names, resumed). Rorqual verdict pending.
+- Standing Nibi policy: keep it deep (>= 300 jobs, allocation burn), expect ~13-day
+  waits, do not reshape jobs there.

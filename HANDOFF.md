@@ -4,6 +4,30 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-19 (Daniel session, evening) — WHY TODAY BROKE + FIXED; ALL READS PROCESSED.
+Root causes: (1) the 09-13 "button runs only what's left" patch NEVER reached
+ntfy_listener.sh (assertion aborted the script before that edit; mtime stayed 09-10) —
+so Daniel's 13:26 tap launched a FULL 4-cluster run while the 1pm agent was mid-flight;
+(2) no lock between the 1pm run, button runs and the auto-spawned supplementary => 3
+agents on one repo, two died after 4-6 h (API timeouts), no reads processed. FIXES
+(ff1a939): run_lock.sh = ONE global lock for every daily_auto (cron waits 30 min,
+button waits 2 h then re-derives what is still unread; taps during a run are queued
+with a phone note); listener rewritten (what's-left for real, BUTTON=1 path); hourly
+REMINDERS (remind_unread.sh, no Duo pushes) replace the unattended re-pusher — pushes
+now come ONLY at 1pm or on a tap; agent hard cap 90 min (run_with_timeout.py, rc 124);
+duo_ssh two-phase deadline (approval budget, then 900 s command budget) so a slow tap
+cannot truncate a read; checker RETRY_MAX default 0. Listener restarted, stray runs
+killed. FULL CHECK RUN BY HAND (4 taps): 56 reads, 55 hitless + 21707091 = N43b2e6
+lever-21 Nibi control RE-FIND of the banked n=43 (3.8 h at 2e6 vs 4.9 h; PASS, not
+news, excluded). VERDICTS: 2e6 stays (5e6 lane 59818967 = 483 cells/5% aborts vs ~600/
+24% => 80% < 90% line, FAIL); LEVER 24 FAIL on Nibi (0/60 3h + 0/12 split started in
+72 h vs 4/234 12h) AND Rorqual (0/30 3h vs 12/29 12h in 48 h) — admission is priority-
+ordered and cancel/resubmit lost queue age; ALL reverted to 12 h whole-node (Nibi 296
+lanes, Rorqual 48 PD + 1 R, same names => resume). Fir 6 R + 28 PD (tranche 7 first
+reads 32M/lane, 24-25% aborts, 574-609 cells), Trillium 9 PD + 9 running. Nibi's 09-03
+Pass F set (21085451-487, 37 lanes at 5e7) finally read: 18-24M/lane, 286-423 cells,
+hitless. Levers ledger: 25 opened; 12 shipped; 15 dead (24, 25, 5e6 added).**
+
 **⚡ 2026-09-19 (supplementary, Fir re-check ~17:29 — AND the day's only surviving agent
 run) — THERE IS NO MAIN 09-19 ENTRY: the 1pm main-run agent died on a 4h API "Request
 timed out" (rc=1, commit 16cb5f9 = PARTIAL, only deleted the stale interim file), and the
