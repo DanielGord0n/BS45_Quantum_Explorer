@@ -226,3 +226,10 @@ on Nibi 60/240 and Rorqual 30/29; keep every queue deep (fairshare recovers by i
 idle queues waste the recovery); Fir carries the F tile meanwhile.
 
 - 2026-09-20 tranche 8 (Daniel session): Fir workhorse k=4016..4328 s8 (40, 2e6). Next unassigned: workhorse k=4336 (74% assigned).
+
+### 2026-09-21: LEVER 23 (WZ_FH_WALL_SEC=900) VERDICT — FAIL, not adopted
+First 60 Nibi FR reads (N44fr720..1192): walled half (k=0 mod 16) 400.0 cells_done/lane
+vs unwalled (k=8 mod 16) 399.5 = +0.1%, pre-registered line was >= +15%. Parity-robust
+(flipping halves: 399.5 vs 400.0). No wall on any future submit; the _ws900 CKDIRs of
+the walled half stay valid (CFGSIG carries .ws only when set — resubmits of those exact
+lanes would need the env; NEW lanes get none).

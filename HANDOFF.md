@@ -4,6 +4,29 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-21 (daily loop 1pm — ALL FOUR reached) — NO HITS, 111 new hitless reads;
+★ LEVER 23 VERDICT: FAIL. Nibi's FIRST 60 FR reads landed (21997867-928 minus 872/894 =
+N44fr720..1192, ~22.3-24.0M tested/lane, 178/178, aborts 17-22%, cells_done_sum 383-427)
+and settle the pre-registered WALL_SEC split: walled half (k=0 mod 16) 400.0 cells/lane
+vs unwalled (k=8 mod 16) 399.5 = +0.1%, needed >= +15% => WZ_FH_WALL_SEC=900 is NOT
+adopted; no wall on any future submit. (Mapping from queue anchor 21997929=N44fr1200 with
+two non-FR ID gaps 872/894; verdict is parity-robust — flipping halves gives 399.5 vs
+400.0. Caveat: a wall that never triggers is indistinguishable from a neutral wall here;
+either way no gain.) The 24 older FR lanes 21997843-866 = N44fr528..712 completed but
+were crowded out of the 60-head cap — surface next check now that these 60 are excluded.
+Nibi queue 12 R (21997929-939 = N44fr1200..1280) + 202 PD < 300 allocation-burn floor
+=> FR tranche 2 submitted this run (see below). Fir: tranche 7 COMPLETE (60191262-280 =
+F44f3864..4008 hitless ~30-31.4M, aborts 26-29% — creeping up from ~21-23%, still under
+the 35% line, watch it) + 16 tranche-8 heads (60671627-642 = F44f4016..4136 hitless
+~30.0-30.7M, aborts 27-29%, cells 597-609); queue 23 R + 1 PD => pending < 8, PASS F
+FIRES => tranche 9 submitted this run (see below). Rorqual: 16 new hitless reads
+(21122842-872 even = R44f3408..3648 12h group, ~24.4-26.5M, aborts 25-28%, cells
+419-490); 32 PD => no action. Trillium: 9 PD repair lanes (empty pre-start outputs), no
+reads, no action. rung_status EXHAUSTED as always (Pass F is the program). Checker
+exclusions: +60191262-280, +60671627-642, +21997867-928 (minus 872/894), +21122842-872
+even. Watch next reads: N44fr528..712 (the crowded-out 24), N44fr1200..1280, Fir
+tranche-8 tail 60671643-665, stray IDs 21997872/894 if they ever show output.**
+
 **⚡ 2026-09-20 (Daniel session) — BUTTON FLOW WORKED (1pm missed Fir -> "fir unread" note ->
 Daniel's tap ran ONLY Fir -> read captured), but the Fir agent hit the new 90-min cap
 with ZERO output. ROOT CAUSE FOUND + PROVEN: `claude -p` blocks until stdin EOF (25 s
