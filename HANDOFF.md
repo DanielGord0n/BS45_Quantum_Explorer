@@ -28,7 +28,14 @@ even. Watch next reads: N44fr528..712 (the crowded-out 24), N44fr1200..1280, Fir
 tranche-8 tail 60671643-665, stray IDs 21997872/894 if they ever show output.
 FIR SUBMITS: 40/40 echoed — 60795778-817 = F44f4336..4648 s8 @2e6 (rrg-ikotsire_cpu,
 --mem=0, singleton, NO wall), QUEUE_COUNT 63 post-submit. Workhorse F tile assigned to
-k=4648 (80% of 5836); next unassigned: workhorse k=4656.**
+k=4648 (80% of 5836); next unassigned: workhorse k=4656.
+NIBI SUBMITS: FR tranche 2, 100/100 echoed — 22411431..22411533 (IDs non-contiguous,
+3 foreign gaps) = N44fr2400..3192 s8 @2e6 (STREAM_REV=1, rrg-ikotsire_cpu, --mem=0,
+singleton, NO wall per the lever-23 FAIL), QUEUE_COUNT 312 post-submit => >= 300
+allocation-burn floor restored. FR tile assigned to k=3192; next FR k=3200 (F pass
+completed through 4136, so FR can extend to ~4136 before waiting on the F tile).
+ROUND VERDICT: no hits, no verified solutions; 140 new lanes queued (Fir 40 + Nibi
+100); lever 23 closed FAIL.**
 
 **⚡ 2026-09-20 (Daniel session) — BUTTON FLOW WORKED (1pm missed Fir -> "fir unread" note ->
 Daniel's tap ran ONLY Fir -> read captured), but the Fir agent hit the new 90-min cap

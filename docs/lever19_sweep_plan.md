@@ -232,6 +232,11 @@ idle queues waste the recovery); Fir carries the F tile meanwhile.
   QUEUE_COUNT 63 post-submit. Workhorse tiled k=0..4648 (80% of 5836); next unassigned
   workhorse k = 4656.
 
+- 2026-09-21 Nibi FR tranche 2 (daily loop): Nibi 202 PD < 300 burn floor => FR
+  workhorse k=2400..3192 s8 (100 @2e6, STREAM_REV=1, rrg-ikotsire_cpu, --mem=0, NO
+  wall). Jobs 22411431..22411533 (100 echoed, IDs non-contiguous), QUEUE_COUNT 312
+  post-submit. FR tiled k=0..3192; next FR k = 3200 (F pass complete through 4136).
+
 ### 2026-09-21: LEVER 23 (WZ_FH_WALL_SEC=900) VERDICT — FAIL, not adopted
 First 60 Nibi FR reads (N44fr720..1192): walled half (k=0 mod 16) 400.0 cells_done/lane
 vs unwalled (k=8 mod 16) 399.5 = +0.1%, pre-registered line was >= +15%. Parity-robust
