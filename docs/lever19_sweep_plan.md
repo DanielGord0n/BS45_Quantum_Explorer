@@ -227,6 +227,11 @@ idle queues waste the recovery); Fir carries the F tile meanwhile.
 
 - 2026-09-20 tranche 8 (Daniel session): Fir workhorse k=4016..4328 s8 (40, 2e6). Next unassigned: workhorse k=4336 (74% assigned).
 
+- 2026-09-21 tranche 9 (daily loop): Fir 1 PD (23 R) => workhorse k=4336..4648 s8
+  (40 @2e6, rrg-ikotsire_cpu, --mem=0, no wall). Jobs 60795778-817, 40/40 echoed,
+  QUEUE_COUNT 63 post-submit. Workhorse tiled k=0..4648 (80% of 5836); next unassigned
+  workhorse k = 4656.
+
 ### 2026-09-21: LEVER 23 (WZ_FH_WALL_SEC=900) VERDICT — FAIL, not adopted
 First 60 Nibi FR reads (N44fr720..1192): walled half (k=0 mod 16) 400.0 cells_done/lane
 vs unwalled (k=8 mod 16) 399.5 = +0.1%, pre-registered line was >= +15%. Parity-robust

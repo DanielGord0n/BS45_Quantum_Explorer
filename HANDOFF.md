@@ -25,7 +25,10 @@ FIRES => tranche 9 submitted this run (see below). Rorqual: 16 new hitless reads
 reads, no action. rung_status EXHAUSTED as always (Pass F is the program). Checker
 exclusions: +60191262-280, +60671627-642, +21997867-928 (minus 872/894), +21122842-872
 even. Watch next reads: N44fr528..712 (the crowded-out 24), N44fr1200..1280, Fir
-tranche-8 tail 60671643-665, stray IDs 21997872/894 if they ever show output.**
+tranche-8 tail 60671643-665, stray IDs 21997872/894 if they ever show output.
+FIR SUBMITS: 40/40 echoed — 60795778-817 = F44f4336..4648 s8 @2e6 (rrg-ikotsire_cpu,
+--mem=0, singleton, NO wall), QUEUE_COUNT 63 post-submit. Workhorse F tile assigned to
+k=4648 (80% of 5836); next unassigned: workhorse k=4656.**
 
 **⚡ 2026-09-20 (Daniel session) — BUTTON FLOW WORKED (1pm missed Fir -> "fir unread" note ->
 Daniel's tap ran ONLY Fir -> read captured), but the Fir agent hit the new 90-min cap
