@@ -451,3 +451,9 @@ must sum the 6 shard outputs per lane.
   age. Reverted to 12 h whole-node lanes (same names, resumed). Rorqual verdict pending.
 - Standing Nibi policy: keep it deep (>= 300 jobs, allocation burn), expect ~13-day
   waits, do not reshape jobs there.
+
+- 2026-09-21: Lever 23 (stream-wall timeout) FAIL — Nibi FR split, 60 lanes: walled half
+  400.0 cells/lane vs unwalled 399.5 (+0.1% vs the +15% bar). Walls are rare on FR
+  lanes; WZ_FH_WALL_SEC retired from all submits (code stays, default off).
+- 2026-09-21: checker file cap raised 60 -> 250 (Nibi now admits 100+ lanes/day; 24
+  finished lanes were crowded out for a day at the old cap).
