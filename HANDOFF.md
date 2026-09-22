@@ -23,7 +23,17 @@ range_done=k/178). NEW PLAN = PASS G (docs/lever19_sweep_plan.md): workhorse fro
 6 forward + 6 reversed lanes of S=1000 windows (~30 lane-reps total) instead of 730
 lanes. Astra's other items (early outer-correlation check 1.4-1.6x, joint
 reachability H-transform, bit-packed scoring, extra symmetry) in the backlog with
-re-find gates; its corrections to our percentile/rank claims accepted.**
+re-find gates; its corrections to our percentile/rank claims accepted. VALIDATED (tests A-C: n=6
+old binary zero candidates vs fixed FOUND; n=29 unaffected class byte-identical, CFGSIG
+unchanged; ownership: RANGE EXHAUSTED at the bound, resume = done, neighbour disjoint,
+no-END unchanged). DEPLOYED 3014b95 ON ALL FOUR + PASS G LAUNCHED (4 taps): Fir 24 jobs
+(workhorse 6 fwd + 6 rev x 2 reps, S=1000; 17 old F44f reps finishing, not restacked),
+Rorqual 76 lanes ((9,9,0,4)+(3,5,0,12), S=300, fwd+rev; 31 stride-8 cancelled), Nibi
+296 lanes ((1,7,8,8),(5,5,8,8),(5,11,4,4) S=300; (3,3,4,12),(7,7,4,8),(5,7,2,10) S=150;
+fwd+rev; 301 workhorse FR lanes cancelled), Trillium 60 lanes ((5,9,6,6),(7,11,2,2),
+(1,13,2,2), S=300, fwd+rev; 9 T44Af cancelled). = the ENTIRE 12-class front tile at
+K=50k, ~456 lane-units, first time at 100% orbit coverage with no repeated work.
+Loop rules: restack a G lane until range_done=178/178, then G2 on finished ranges.**
 
 **⚡ 2026-09-22 (daily loop 1pm — nibi/rorqual/trillium reached; FIR IN A LISTED POWER
 OUTAGE on status.alliancecan.ca, no push sent) — NO HITS, 35 new hitless Nibi FR reads,
