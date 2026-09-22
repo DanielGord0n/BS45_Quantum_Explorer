@@ -1,0 +1,39 @@
+Source SHA256: c91f2dbbc458f20a937c71377433c19e7905bb21044c5f35886be842c7d69646
+k=1: exact=8 old_box_mod4=8 removed=0 PASS
+k=2: exact=33 old_box_mod4=41 removed=8 PASS
+k=3: exact=96 old_box_mod4=128 removed=32 PASS
+k=4: exact=225 old_box_mod4=313 removed=88 PASS
+k=5: exact=456 old_box_mod4=648 removed=192 PASS
+k=6: exact=833 old_box_mod4=1201 removed=368 PASS
+Self-reflected residue component: exhaustive k=1..6 PASS
+Special pinned A,B root + 0..5 ordinary quads: exhaustive PASS
+Known solutions: 42/42 pass NPAF and all 3028 residual profile checks (m=3,6)
+Signature enumeration: 12 classes, [(1, 7, 8, 8), (1, 13, 2, 2), (3, 3, 4, 12), (3, 5, 0, 12), (3, 13, 0, 0), (5, 5, 8, 8), (5, 7, 2, 10), (5, 9, 6, 6), (5, 11, 4, 4), (7, 7, 4, 8), (7, 11, 2, 2), (9, 9, 0, 4)]
+n=44 AB m=6 grouping: (0, 2): 8 quads (root), (1,): 4 quads, (3, 5): 7 quads, (4,): 3 quads; center class 4
+n=44 CD m=6 grouping: (0, 1): 8 quads (root), (2, 5): 7 quads, (3, 4): 7 quads
+stock oc= 0
+VERIFY: max |NPAF[s]| over s=1..6 = 0  (NPAF==0 confirmed)
+candidates_streamed=1  pre_filter_rejected=0  score_rejected=0
+RESULT: FOUND at idx=1
+PASS: NPAF[s]=0 for all s=1..7
+PASS: fits Wang-Zhu pair encoding (comb8_neg for d=0, comb8_pos otherwise)
+stock oc= 1
+candidates_streamed=0  pre_filter_rejected=0  score_rejected=0
+RESULT: NO HIT within probe budget — NOT a proof of absence
+pin_probe oc= 1
+VERIFY: max |NPAF[s]| over s=1..6 = 0  (NPAF==0 confirmed)
+candidates_streamed=1  pre_filter_rejected=0  score_rejected=0
+RESULT: FOUND at idx=1
+PASS: NPAF[s]=0 for all s=1..7
+PASS: fits Wang-Zhu pair encoding (comb8_neg for d=0, comb8_pos otherwise)
+dispatch oc= 0 emitted= 3 orbits= 2
+dispatch oc= 1 emitted= 0 orbits= 0
+dispatch_pin oc= 1 emitted= 2 orbits= 2
+Dispatch skip0 / skip8 / intersection / later-only: 51 49 49 0
+tail_baseline n=11 tested=2000 hits=993 nodes=833063 digest=8678424802728011075 seconds=0.061789
+tail_gate n=11 tested=2000 hits=993 nodes=419708 digest=8678424802728011075 seconds=0.044213
+tail_baseline n=13 tested=2000 hits=818 nodes=2132458 digest=13280889098264197171 seconds=0.114520
+tail_gate n=13 tested=2000 hits=818 nodes=1069344 digest=13280889098264197171 seconds=0.073112
+champion_firsthit_bs43_42.txt retained_cell= -1,3,1,-3,5,-5,|-3,-3,3,3,3,-3, endpoint_pairs= [(1, 1)] survives_pins= True
+wz_table1_bs43_42.txt retained_cell= -1,1,1,-1,-1,1,|-3,-3,1,-1,3,3, endpoint_pairs= [(-1, -1), (-1, -1), (-1, -1), (-1, -1)] survives_pins= False
+All review assertions PASS. No production source modified.

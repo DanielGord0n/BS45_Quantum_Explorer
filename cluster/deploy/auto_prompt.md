@@ -147,16 +147,22 @@ Do not re-run the checker.
      the association exists (`sacctmgr -n show assoc user=dangord account=rrg-ikotsire`
      non-empty; Nibi may need `rrg-ikotsire_cpu`), else def-ikotsire. Pending jobs can be
      moved with `scontrol update job <id> Account=rrg-ikotsire`.
-     **PASS F IS THE PROGRAM (2026-09-03, Daniel's decision):** canon stays ON and lever 20
-     (`WZ_FH_DRAIN_TOP=50000`) is fleet-wide on n=44. Follow the PASS F section + ledger
-     in `docs/lever19_sweep_plan.md`: when a cluster's pending < 8, submit the next
-     unassigned k-range (step 8) for the current class, verbatim env
-     (`WZ_FH_PROF_ORDER=1,WZ_FH_ORBIT_CANON=1,WZ_FH_DRAIN_TOP=50000,WZ_FH_AB_BUDGET=50000000,
-     FH_NARMS=178`), `-J <name> -d singleton`, RAC account where it exists; self-deploy the
-     lever-20 source first if `WZ_FH_DRAIN_TOP` is missing on that cluster. The canon
-     "disable fleet-wide" rule is RETIRED (soundness verified; failure = relocation depth).
-     Report the F41 discriminator outcomes (F41nc/F41dt/F41dtnc) when read; they are
-     informational. Uncapped passes 1-3 are retired — do not resubmit them.
+     **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**
+     two defects fixed (docs/n44_search_narrowing_research.md levers 26-27): endpoint pins
+     were dropping ~75% of workhorse orbits under canon, and lanes had no ownership (~99%
+     repeated work). A Pass G lane owns raw cells [k, k+S) per arm: env
+     `WZ_FH_PROF_SKIP=k,WZ_FH_PROF_END=k+S,WZ_FH_DRAIN_TOP=50000,WZ_FH_AB_BUDGET=2000000,
+     WZ_FH_ORBIT_CANON=1` (+`WZ_FH_STREAM_REV=1` for the reversed-front twin). Names
+     `<C>44g<k>` / `<C>44gr<k>`. S = 1000 (3,13,0,0); 300 for dedup ~8x classes; 150 for
+     dedup ~4x classes (table in docs/lever19_sweep_plan.md). A lane is DONE when GATEB
+     shows `range_done=178/178` (or its output says RANGE EXHAUSTED on every arm):
+     NEVER resubmit it. A lane that is not done gets restacked (singleton, verbatim) until
+     it is. Refill rule: when a cluster's pending < 8, first restack its unfinished G
+     lanes, then start G2 on finished ranges (same k/S, `WZ_FH_DRAIN_TOP=175000,
+     WZ_FH_DRAIN_BATCHES=2`, names `<C>44g2<k>`), workhorse first. Self-deploy token for
+     G lanes: solver must contain `RANGE EXHAUSTED` and driver `range_done` (sha >= the
+     09-22 commit). Reads: report range_done per lane; a "STALE checkpoint IGNORED" line
+     on a pin-affected class ((3,13,0,0),(9,9,0,4),(3,5,0,12)) is EXPECTED once.
      **LEVER 19 SWEEP RULES (2026-08-29, supersede stack-depth for sweep lanes):** read
      `docs/lever19_sweep_plan.md`. Sweep lanes (names F44i*/F44Bi*/R44i*/R44Ai*/R44Di*/
      T43b*/N43b*) are ONE rep each — never restack the same k. Do NOT top up the deep

@@ -457,3 +457,48 @@ must sum the 6 shard outputs per lane.
   lanes; WZ_FH_WALL_SEC retired from all submits (code stays, default off).
 - 2026-09-21: checker file cap raised 60 -> 250 (Nibi now admits 100+ lanes/day; 24
   finished lanes were crowded out for a day at the old cap).
+
+
+## 2026-09-22 — EXTERNAL REVIEW (ChatGPT-6 Astra Ultra) — two confirmed defects, both fixed
+
+### Lever 26 — endpoint pins vs orbit canonicalization (CORRECTNESS BUG, confirmed)
+`pinC=(sumC==0)`, `pinD=(sumD==0)` force C[0]=+1 / D[0]=+1 in count_pairs22 — sound
+only while negation is a free symmetry. Orbit canonicalization keeps ONE cell per
+(C,D) orbit; inside the kept cell the sign of C (resp. D) is fixed by the profile, so a
+pin discards every orbit whose kept representative starts with -1: ~50% per active pin.
+Independently verified: WZ-42's kept-cell representatives all start (-1,-1) => that
+orbit was unreachable under canon+pins; ours-42 survived by luck (+1,+1); n=6 (5,1,0,0)
+with the actual solver: canon on => zero candidates, fixed => FOUND. IMPACT at n=44:
+(3,13,0,0) both pins => ~25% of orbits reachable since canon went live (08-05);
+(9,9,0,4), (3,5,0,12) ~50%. Other classes unaffected (pins inactive). FIX: pins
+disabled under canon; CFGSIG ".np1" only when a pin would have been active (affected
+lanes fresh-start automatically; others resume). Cost: none (the pin gained nothing
+inside a kept cell except on the rare all-zero-profile cell).
+
+### Lever 27 — lane OWNERSHIP ranges (efficiency defect, confirmed from telemetry)
+A lane at skip k ran from raw cell k to the END of the list. Kept-and-live cells are
+~1 per 300-500 raw positions on the workhorse (orbit dups + proven-dead cells skip
+instantly), so one rep advanced an arm 500-1,500 raw windows (Nibi FR lanes: skips
+~720 => resume windows 1,260-2,234) while lanes were placed every 8 windows => Pass
+F/FR on the workhorse was ~99% repeated work (Astra estimated 88-92%). FIX:
+`WZ_FH_PROF_END=E`: an arm owns raw cells [skip,E) and stops with
+"RESULT: RANGE EXHAUSTED" (driver GATEB `range_done=k/178`); lanes [k,k+S) are disjoint
+by construction; not part of CFGSIG. NEW LANE MATH (workhorse, K=50k): S=1000 raw
+windows per lane => 6 forward + 6 reversed lanes cover the ENTIRE front tile in ~2-3
+reps each (~30 lane-reps), versus the 730 lanes planned. Classes with dedup 4-8x: S~300.
+
+### Astra items accepted into the backlog (each with a re-find gate before fleet use)
+- Completer early check: at depth d the outer correlation N(n-d) is fully determined
+  before placement — reject impossible quads with 4 signed products (1.4-1.6x fewer
+  nodes at n=11/13, hit digests preserved). Build next.
+- Joint reachability of mirror-quad profile sums (H-transform: t=Hv/4 integer,
+  ||t||_1<=q, parity) — exact, tighter than the separate capacity bounds; production
+  rejection unmeasured. Test on static profile rows first.
+- Bit-packed autocorrelation (XOR/popcount) for flat_score and the completer's bound
+  scans; CellCand as two 64-bit words (buffer 204 MB -> 12 MB); Kab precompute by depth.
+- Extra C,D symmetry (quad transformation 4<->5) and the A/B swap reduction on
+  equal-|sum| classes — only with joint canonicalization (same pitfall as lever 26).
+- Corrections accepted: profile_rank=1429 is a CELL rank, not an in-buffer candidate
+  rank; the 0.9/31.9/2.7% figures are background-sample percentiles (third was WZ-43);
+  "F catches 2/3" is therefore unproved; F2 overlap is 14.3%; budget 2e6 vs 5e6
+  resolved-candidate counts are ~equal (22.8M vs 22.9M) — keep 2e6 provisionally.

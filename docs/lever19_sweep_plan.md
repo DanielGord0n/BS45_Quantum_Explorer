@@ -243,3 +243,34 @@ vs unwalled (k=8 mod 16) 399.5 = +0.1%, pre-registered line was >= +15%. Parity-
 (flipping halves: 399.5 vs 400.0). No wall on any future submit; the _ws900 CKDIRs of
 the walled half stay valid (CFGSIG carries .ws only when set — resubmits of those exact
 lanes would need the env; NEW lanes get none).
+
+## PASS G (2026-09-22) — SUPERSEDES PASS F/FR/F2 tiling
+Two defects found by external review (docs/n44_search_narrowing_research.md, levers
+26-27): the workhorse was searched at ~25% orbit coverage (endpoint pins under canon)
+and Pass F/FR lanes were ~99% redundant (no ownership). PASS G = front-only lanes with
+explicit OWNERSHIP ranges, pins fixed: env `WZ_FH_PROF_SKIP=k, WZ_FH_PROF_END=k+S,
+WZ_FH_DRAIN_TOP=50000, WZ_FH_AB_BUDGET=2000000, WZ_FH_ORBIT_CANON=1` (+`WZ_FH_STREAM_REV=1`
+for the reversed front). A lane is DONE when GATEB shows range_done=178/178; restack it
+(singleton) until then. Workhorse (3,13,0,0): S=1000 => G lanes k=0,1000,...,5000 (6)
+forward + 6 reversed = 12 lanes. Next classes: S=300 (dedup 4-8x). Then G2 (two
+buffers, K=175000) on the same ranges. Names: <C>44g<k> / <C>44gr<k>.
+Retired: every F/FR/F2 lane on (3,13,0,0), (9,9,0,4), (3,5,0,12) (their checkpoints
+fresh-start under ".np1" anyway) and all stride-8 lanes elsewhere.
+### Pass G ledger
+| class | dedup | windows | S | fwd lanes | cluster |
+|---|---|---|---|---|---|
+| (3,13,0,0) | 28.9x | 5836 | 1000 | 6 | Fir |
+| (9,9,0,4) | 7.6x | 5443 | 300 | 19 | Rorqual |
+| (3,5,0,12) | 7.6x | 5478 | 300 | 19 | Rorqual |
+| (1,7,8,8) | 7.9x | 5492 | 300 | 19 | Nibi |
+| (5,5,8,8) | 7.9x | 5463 | 300 | 19 | Nibi |
+| (5,11,4,4) | 7.9x | 5664 | 300 | 19 | Nibi |
+| (3,3,4,12) | 3.9x | 5177 | 150 | 35 | Nibi |
+| (7,7,4,8) | 3.9x | 5547 | 150 | 37 | Nibi |
+| (5,7,2,10) | 4.0x | 2718 | 150 | 19 | Nibi |
+| (5,9,6,6) | 8.0x | 2788 | 300 | 10 | Trillium |
+| (7,11,2,2) | 8.0x | 2820 | 300 | 10 | Trillium |
+| (1,13,2,2) | 8.0x | 2820 | 300 | 10 | Trillium |
+Each class also gets the reversed-front twin (gr) over the same ranges: ~222 forward +
+~222 reversed lane-units cover the ENTIRE 12-class front tile at K=50k.
+- 2026-09-22 submission: all of the above (see HANDOFF for job IDs).

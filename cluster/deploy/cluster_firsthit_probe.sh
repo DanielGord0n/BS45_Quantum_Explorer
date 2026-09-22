@@ -69,6 +69,7 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_DRAIN_BATCHES" ] && export WZ_FH_DRAIN_BATCHES
 [ -n "$WZ_FH_STREAM_REV" ]   && export WZ_FH_STREAM_REV
 [ -n "$WZ_FH_WALL_SEC" ]     && export WZ_FH_WALL_SEC
+[ -n "$WZ_FH_PROF_END" ]     && export WZ_FH_PROF_END
 
 # FH_SCORE_TIERS="t1,t2" (optional): first quarter of arms complete only
 # candidates with flatness score <= t1, second quarter <= t2, rest ungated.
@@ -210,7 +211,8 @@ done
 # never read as an empty stream again (the 07-22/23 zero-candidate artifact).
 summarized=$(grep -l "FIRSTHIT SUMMARY" "$DIR"/arm_*.log 2>/dev/null | wc -l)
 interrupted=$(grep -l "RESULT: INTERRUPTED" "$DIR"/arm_*.log 2>/dev/null | wc -l)
-echo "GATEB: candidates=$tot_cand tested=$tt_sum tested_min=$tt_min tested_cum=$tc_sum resume_pi_min=$rp_min resume_pi_max=$rp_max orbit_dup=$od_sum aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum"
+range_done=$(grep -l "RANGE EXHAUSTED" "$DIR"/arm_*.log 2>/dev/null | wc -l | tr -d " ")
+echo "GATEB: candidates=$tot_cand tested=$tt_sum tested_min=$tt_min tested_cum=$tc_sum resume_pi_min=$rp_min resume_pi_max=$rp_max orbit_dup=$od_sum aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum range_done=$range_done/$NARMS"
 # Global first hit = min by (profile_rank, idx) across arms
 grep -h "FIRSTHIT:" "$DIR"/arm_*.log 2>/dev/null \
   | sed -E 's/.*idx=([0-9]+) profile_rank=([0-9]+).*/\2 \1 &/' \

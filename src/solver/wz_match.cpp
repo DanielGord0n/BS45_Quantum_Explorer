@@ -1247,6 +1247,17 @@ int main(int argc, char **argv) {
     // wave-13+ driver enables it. Skipped cells counted in the summary.
     bool orbit_canon = false;
     if (const char *e = getenv("WZ_FH_ORBIT_CANON")) orbit_canon = atoi(e) != 0;
+    // BUG FIX 2026-09-22 (found by external review): the zero-sum endpoint pins
+    // (C[0]=+1 when sum C=0, D[0]=+1 when sum D=0) assume negation freedom, but orbit
+    // canonicalization has already spent it by keeping ONE cell per orbit — inside the
+    // kept cell the sign of C (resp. D) is fixed by the cell's profile, so a pin
+    // silently discards every orbit whose kept representative starts with -1 (~50% per
+    // active pin; WZ-42's orbit was unreachable, ours-42 survived by luck; (3,13,0,0)
+    // had BOTH pins active => ~25% of orbits reachable since 08-05). Under canon the
+    // pins are disabled. CFGSIG gains ".np1" only when a pin would have been active,
+    // so lanes on unaffected classes keep their checkpoints.
+    bool pins_dropped = false;
+    if (orbit_canon && (pinC || pinD)) { pinC = false; pinD = false; pins_dropped = true; }
     unordered_set<string> fh_keep;
     long long cells_orbit_dup = 0;
     auto fh_cellkey = [&](const vector<int> &px, const vector<int> &py) {
@@ -1452,6 +1463,16 @@ int main(int argc, char **argv) {
     // idempotent, a gap would be unsound.
     int fh_skip = 0;
     if (const char *e = getenv("WZ_FH_PROF_SKIP")) fh_skip = atoi(e);
+    // WZ_FH_PROF_END=E (2026-09-22): each arm owns raw cells [skip, E) of its list and
+    // STOPS at E (RESULT: RANGE EXHAUSTED). Lanes at [k, k+S) are disjoint by
+    // construction — previously a lane ran from k to the end of the list, and with
+    // kept live cells ~1 per 300-500 raw positions on the workhorse an arm advanced
+    // 500-1,500 raw windows per rep while lanes were placed every 8 => ~99% repeated
+    // work (external review 2026-09-22, confirmed from telemetry). Not part of CFGSIG
+    // (stream order unchanged); 0 = to the end (old behaviour).
+    int fh_end = 0;
+    if (const char *e = getenv("WZ_FH_PROF_END")) fh_end = atoi(e);
+    bool fh_range_done = false;
     bool cell_order = fh_m6;   // flat-first within cells (see below); =0 disables
     if (const char *e = getenv("WZ_FH_CELL_ORDER")) cell_order = atoi(e) != 0;
     // Profile-constrained A,B completion setup (see AbpRow comment block).
@@ -1535,6 +1556,10 @@ int main(int argc, char **argv) {
     if (G_STREAM_REV) {
       size_t L0 = strlen(fh_sigbuf);
       snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".sr1");
+    }
+    if (pins_dropped) {
+      size_t L0 = strlen(fh_sigbuf);
+      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".np1");
     }
     if (G_WALL_SEC > 0) {
       size_t L0 = strlen(fh_sigbuf);
@@ -1660,8 +1685,9 @@ int main(int argc, char **argv) {
     };
     long long fh_test_ct = 0;  // test-hook completion counter
     auto last_prog = T0;
+    int fh_pi_end = (fh_end > 0) ? min((int)fhProfs.size(), fh_shard + fh_end * fh_nshard) : (int)fhProfs.size();
     for (int pi = fh_shard + fh_skip * fh_nshard;
-         pi < (int)fhProfs.size() && !fh_stop.load(); pi += fh_nshard) {
+         pi < fh_pi_end && !fh_stop.load(); pi += fh_nshard) {
       // Resume fast-forward, cell level: cells before the checkpointed cell
       // were fully completed by prior runs — skip them entirely (no streaming).
       if (fh_resuming && pi < fh_res_pi) continue;
@@ -1893,6 +1919,7 @@ int main(int argc, char **argv) {
          << "  cells_orbit_dup=" << cells_orbit_dup
          << "  cells_capped=" << cells_capped << " (drain_top=" << fh_drain_top << " batches=" << fh_drain_batches << ")"
          << "  cells_walled=" << cells_walled << " (wall_sec=" << G_WALL_SEC << ")"
+         << "  range_end=" << fh_end << "  pins_dropped=" << (pins_dropped ? 1 : 0)
          << "  tested_cum=" << (fh_tested_base + completed_tested)
          << "  resume_pi=" << ck_pi << "  resume_batch=" << ck_batch
          << "  resume_k=" << ck_k << "\n"
@@ -1901,8 +1928,10 @@ int main(int argc, char **argv) {
              : (g_fh_sigterm
                 ? string("RESULT: INTERRUPTED (SIGTERM) — counts are LOWER "
                          "BOUNDS, stream NOT exhausted")
-                : string("RESULT: NO HIT within probe budget — NOT a proof "
-                         "of absence")))
+                : (fh_end > 0 && !fh_stop.load()
+                   ? string("RESULT: RANGE EXHAUSTED — this arm completed its owned cells [skip,end)")
+                   : string("RESULT: NO HIT within probe budget — NOT a proof "
+                            "of absence"))))
          << "\nTime: " << t << "s\n" << flush;
     return hit_idx >= 0 ? 0 : 3;
   }

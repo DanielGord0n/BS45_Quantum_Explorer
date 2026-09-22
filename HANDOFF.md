@@ -4,6 +4,27 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-22 (Daniel session) — EXTERNAL REVIEW (Astra) FOUND TWO REAL DEFECTS; BOTH
+VERIFIED HERE AND FIXED IN SOURCE (deploy pending local test C). (1) CORRECTNESS: the
+zero-sum endpoint pins (C[0]=+1 when sum C=0, D[0]=+1 when sum D=0) conflict with orbit
+canonicalization — inside a kept cell the sign of C/D is fixed by the profile, so each
+active pin discards ~50% of orbits. Verified: WZ-42's kept-cell reps all start (-1,-1)
+(unreachable under canon+pins; ours-42 survived by luck); n=6 (5,1,0,0) canon on: OLD
+binary zero candidates, FIXED binary FOUND. IMPACT: (3,13,0,0) both pins active => the
+workhorse has been searched at ~25% orbit coverage since 08-05; (9,9,0,4)/(3,5,0,12)
+~50%; other classes unaffected. FIX: pins off under canon, CFGSIG ".np1" only when a
+pin would have been active (affected lanes fresh-start; n=29 canary byte-identical,
+CFGSIG unchanged). (2) EFFICIENCY: lanes had no ownership — an arm ran from its skip to
+the END of the list; kept live cells are ~1 per 300-500 raw positions on the workhorse,
+so one rep advanced 500-1,500 raw windows (telemetry: Nibi FR skips ~720 -> resume
+windows 1,260-2,234) while lanes were placed every 8 => Pass F/FR ~99% redundant.
+FIX: WZ_FH_PROF_END (owned range [skip,end), RESULT: RANGE EXHAUSTED, GATEB
+range_done=k/178). NEW PLAN = PASS G (docs/lever19_sweep_plan.md): workhorse front =
+6 forward + 6 reversed lanes of S=1000 windows (~30 lane-reps total) instead of 730
+lanes. Astra's other items (early outer-correlation check 1.4-1.6x, joint
+reachability H-transform, bit-packed scoring, extra symmetry) in the backlog with
+re-find gates; its corrections to our percentile/rank claims accepted.**
+
 **⚡ 2026-09-22 (daily loop 1pm — nibi/rorqual/trillium reached; FIR IN A LISTED POWER
 OUTAGE on status.alliancecan.ca, no push sent) — NO HITS, 35 new hitless Nibi FR reads,
 NO submits (all floors satisfied), bookkeeping-only round. NIBI READS: the watch-listed
