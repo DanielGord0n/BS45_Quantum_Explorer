@@ -1,8 +1,32 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-20 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-22 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-22 (daily loop 1pm — nibi/rorqual/trillium reached; FIR IN A LISTED POWER
+OUTAGE on status.alliancecan.ca, no push sent) — NO HITS, 35 new hitless Nibi FR reads,
+NO submits (all floors satisfied), bookkeeping-only round. NIBI READS: the watch-listed
+crowded-out 24 surfaced (21997843-866 = N44fr528..712, 21.6-22.9M tested/lane, 178/178,
+aborts 11-14%, cells 370-400) + 11 newer (21997929-939 = N44fr1200..1280, 22.9-23.4M,
+aborts 16-18%, cells 389-404). Both carry the lever-23 wall split and both CONFIRM the
+FAIL: walled-vs-unwalled cells/lane +1.8% (387.8 vs 380.8) and +0.5% (398.8 vs 396.8),
+far under the +15% line — verdict stays closed, no wall on any submit. NEW FOUND: none
+(the 21707091 = N43b2e6 control banner is correctly excluded). QUEUES: Nibi 0 R + 301 PD
+(>= 300 allocation-burn floor by exactly 1 — the next completions drop it below, expect
+FR tranche 3 next run; next FR k=3200, extendable to ~4136); Rorqual 1 R (21122874 =
+R44f3664, started 12:02 PM, ~1h in — squeue %L is time LEFT, 11:01 shown) + 32 PD;
+Trillium 9 PD repair lanes, empty pre-start outputs, no reads. rung_status EXHAUSTED as
+always (Pass F is the program). CHECKER FIX: the 09-19-session reads (21085451-487,
+21122830-840 even, 21705841/2, 21707091, 21997839-842) were documented in the header
+text but NEVER added to the operative grep -vE — 78 stale files re-showed every check
+and burned the 250-file cap. Added them + today's 35 to the operative pattern
+(regex validated: 23 processed IDs drop, live/future IDs incl. strays 21997872/894
+kept). Checker exclusions: +21997843-866, +21997929-939, +the 09-19 set above.
+WATCH NEXT: Fir post-outage — tranche-8 tail 60671643-665 reads AND confirm the 09-21
+tranche-9 submits 60795778-817 survived the outage (they echoed job IDs pre-outage);
+Rorqual R44f3664 (~midnight); Nibi admissions burst; strays 21997872/894.
+ROUND VERDICT: no hits, no verified solutions, 0 new lanes queued (nothing needed).**
 
 **⚡ 2026-09-21 (daily loop 1pm — ALL FOUR reached) — NO HITS, 111 new hitless reads;
 ★ LEVER 23 VERDICT: FAIL. Nibi's FIRST 60 FR reads landed (21997867-928 minus 872/894 =
