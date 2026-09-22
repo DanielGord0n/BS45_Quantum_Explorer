@@ -528,3 +528,14 @@ SAME nodes_this_cand and lower elapsed => flip the default on and redeploy.
   check.
 - Bookkeeping: the Pass G table = 444 distinct range/direction units; the 456 submissions
   include the workhorse's second reps.
+
+### 2026-09-22 (late): exact alpha/eta accounting shipped; shadow instrument scheduled
+Per the reviewer's spec (docs/reviews/2026-09-22-astra-instrument-spec.md): solver now
+counts `cells_empty` (retained, live, zero eligible candidates) and persists CUMULATIVE
+cell counters in the checkpoint (`cells_done_cum/dup_cum/dead_cum/empty_cum`, loaded as
+bases on resume; old checkpoints read as 0); summary prints cum_*; driver GATEB adds
+cells_empty= and cum_* sums. Validated: rep1+rep2 add exactly, rep3 idempotent, old-format
+checkpoint compatible, no CFGSIG change. With a completed Pass G unit: D = cum_done,
+P = cum_dead, E = cum_empty, O = cum_dup => alpha_front = (D-P-E)/D; with sacct elapsed:
+Q lane-days, v_observed = L/Q. NEXT BUILD: the candidate-sampled shadow instrument for
+joint reachability (p=1/4096, shadow survivor stack, first-cut subtree timing, G=f(s-h)).

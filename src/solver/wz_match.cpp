@@ -1459,6 +1459,13 @@ int main(int argc, char **argv) {
 
     long long cand = 0, pre_rej = 0, score_rej = 0, clean_no = 0, aborted = 0;
     long long cells_done = 0;  // fully-processed profile cells (feeds WZ_FH_PROF_SKIP)
+    // Exact alpha accounting (2026-09-22, review spec): cells_empty = retained, not
+    // prof-dead, completed with ZERO eligible candidates; and CUMULATIVE cell counters
+    // persisted in the checkpoint (per-rep counters reset each job, so a completed
+    // lane's D/P/E/O totals were unknowable). Base values load with the cursor.
+    long long cells_empty = 0;
+    long long cum_done_base = 0, cum_dup_base = 0, cum_dead_base = 0, cum_empty_base = 0;
+    long long *fh_cum_dead_ptr = nullptr;  // -> cells_prof_dead (declared later, same scope)
     long long bt_entered = 0, hit_idx = -1;
     int hit_prof = -1;
     atomic<bool> fh_stop{false};
@@ -1583,18 +1590,23 @@ int main(int argc, char **argv) {
     if (!fh_ckpt_path.empty() && fh_resume_on) {
       if (FILE *cf = fopen(fh_ckpt_path.c_str(), "r")) {
         char sline[300], fsig[260] = {0};
-        long long rpi = -1, rb = -1, rk = -1, tc = 0;
+        long long rpi = -1, rb = -1, rk = -1, tc = 0, cdc = 0, cdu = 0, cde = 0, cem = 0;
         while (fgets(sline, sizeof sline, cf)) {
           if (sscanf(sline, "CFGSIG=%259s", fsig) == 1) continue;
           if (sscanf(sline, "resume_pi=%lld", &rpi) == 1) continue;
           if (sscanf(sline, "resume_batch=%lld", &rb) == 1) continue;
           if (sscanf(sline, "resume_k=%lld", &rk) == 1) continue;
-          sscanf(sline, "tested_cum=%lld", &tc);
+          if (sscanf(sline, "tested_cum=%lld", &tc) == 1) continue;
+          if (sscanf(sline, "cells_done_cum=%lld", &cdc) == 1) continue;
+          if (sscanf(sline, "cells_dup_cum=%lld", &cdu) == 1) continue;
+          if (sscanf(sline, "cells_dead_cum=%lld", &cde) == 1) continue;
+          sscanf(sline, "cells_empty_cum=%lld", &cem);
         }
         fclose(cf);
         if (fh_cfg_sig == fsig && rpi >= 0 && rb >= 0 && rk >= 0) {
           fh_resuming = true;
           fh_res_pi = rpi; fh_res_batch = rb; fh_res_k = rk; fh_tested_base = tc;
+          cum_done_base = cdc; cum_dup_base = cdu; cum_dead_base = cde; cum_empty_base = cem;
           cout << "[firsthit ckpt] RESUME pi=" << rpi << " batch=" << rb
                << " k=" << rk << " tested_cum=" << tc << "\n" << flush;
         } else {
@@ -1667,6 +1679,7 @@ int main(int argc, char **argv) {
     FH_ABP_M = fh_m;   // partial-class bookkeeping modulus (harmless when off)
     for (int c = 0; c < fh_m; c++) FH_ABP_TIC[c] = class_count(G_N1, c, fh_m);
     long long cells_prof_dead = 0, cells_prof_uncap = 0;
+    fh_cum_dead_ptr = &cells_prof_dead;
     // Checkpoint shadow state: ck_* always describes "everything before this
     // position is COMPLETED" — advanced only AFTER a completion returns, so a
     // hard kill (SIGKILL) between writes can only cause bounded RE-testing
@@ -1681,6 +1694,9 @@ int main(int argc, char **argv) {
       fprintf(cf, "CFGSIG=%s\nresume_pi=%lld\nresume_batch=%lld\nresume_k=%lld\ntested_cum=%lld\n",
               fh_cfg_sig.c_str(), ck_pi, ck_batch, ck_k,
               fh_tested_base + clean_no + aborted + (hit_idx >= 0 ? 1LL : 0LL));
+      fprintf(cf, "cells_done_cum=%lld\ncells_dup_cum=%lld\ncells_dead_cum=%lld\ncells_empty_cum=%lld\n",
+              cum_done_base + cells_done, cum_dup_base + cells_orbit_dup,
+              cum_dead_base + (fh_cum_dead_ptr ? *fh_cum_dead_ptr : 0LL), cum_empty_base + cells_empty);
       fclose(cf);
       rename(tmp.c_str(), fh_ckpt_path.c_str());  // atomic on same filesystem
     };
@@ -1900,6 +1916,7 @@ int main(int argc, char **argv) {
         if (max_cand > 0 && cand >= max_cand) fh_stop.store(true);
       };
       G_WALL_HIT = false; G_LAST_CAND_SEC = wall_now_sec();
+      long long cand_at_cell_start = cand;
       count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
                     lv, okc, &probe, fh_m, &cell_stop);
       if (G_WALL_HIT) cells_walled++;  // abandoned by the stream-wall timeout: drain what it streamed, then it counts as done
@@ -1908,6 +1925,7 @@ int main(int argc, char **argv) {
       //  "cell fully done" bookkeeping below unless the ARM was stopped)
       if (!fh_stop.load()) {
         cells_done++;  // only cells processed to completion
+        if (cand == cand_at_cell_start) cells_empty++;  // retained, live, yet zero eligible candidates
         ck_pi = pi + fh_nshard;  // cell fully done: resume point = next cell
         ck_batch = 0;
         ck_k = 0;
@@ -1929,6 +1947,9 @@ int main(int argc, char **argv) {
          << "  cells_prof_dead=" << cells_prof_dead
          << "  cells_prof_uncap=" << cells_prof_uncap
          << "  cells_orbit_dup=" << cells_orbit_dup
+         << "  cells_empty=" << cells_empty
+         << "  cum_done=" << (cum_done_base + cells_done) << "  cum_dup=" << (cum_dup_base + cells_orbit_dup)
+         << "  cum_dead=" << (cum_dead_base + cells_prof_dead) << "  cum_empty=" << (cum_empty_base + cells_empty)
          << "  cells_capped=" << cells_capped << " (drain_top=" << fh_drain_top << " batches=" << fh_drain_batches << ")"
          << "  cells_walled=" << cells_walled << " (wall_sec=" << G_WALL_SEC << ")"
          << "  range_end=" << fh_end << "  pins_dropped=" << (pins_dropped ? 1 : 0)

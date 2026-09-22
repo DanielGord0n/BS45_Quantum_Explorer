@@ -4,6 +4,15 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-22 (Daniel session, night) — ASTRA SPEC SAVED (docs/reviews/2026-09-22-astra-
+instrument-spec.md) + ACCOUNTING COUNTERS SHIPPED: cells_empty + cumulative cell counters
+in the checkpoint (backward compatible) + driver GATEB cum_* sums, validated locally
+(python harness — NOTE: two "hung" test rounds today were the zsh `env $E` trap, not the
+solver; memory updated). Not yet deployed: bundle with the lever-28 default flip after
+F41ec/F43ec read (one fleet redeploy). Shadow instrument for joint reachability = next
+build. Pass G lanes running on the 3014b95 build: their per-rep summaries must be summed
+by the loop until the cum build is deployed.**
+
 **⚡ 2026-09-22 (Daniel session, late) — ASTRA FOLLOW-UP: LEVER 28 SHIPPED (gated). Early
 outer-correlation check in the completer (reject a quad from 4 signed products before
 placing; node charging moved before placement => budget semantics identical). Local
