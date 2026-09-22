@@ -2560,18 +2560,17 @@ door to 42+).**
 
 ## 🚀 QUICK REFERENCE — the current system (rewritten 2026-07-30)
 
-**CURRENT PROGRAM (2026-08-29, supersedes the "stack fronts" doctrine below): LEVER 19
-STRATIFIED WINDOW SWEEP — `docs/lever19_sweep_plan.md` is the operating table.** Basis:
-the known-solution window map (five known solutions sit at flat windows 0 / ~8 /
-~255-571 / ~499-842 / far reverse end; cells never exhaust) => sample the whole ordering
-at spaced offsets, one 12 h rep per offset, refine stride per pass. Track A = n=44
-interior (Fir + Rorqual: workhorse every 100 windows + 3 fast classes every 500);
-Track B = n=43 WZ-43 band control (Trillium + Nibi: windows 255-571, stride 8, four
-phases). Controls with known answers: F41regr (n=41 re-find, Fir 57454076) and Track B
-(WZ-43 re-find). Loop rules: sweep lanes are one rep each (never restack the same k);
-no front top-ups while sweep lanes pend; advance the next pass when pending < ~8.
-Solver build verified 08-29 (orbit canon retains all 5 known solutions; LOCATE_CANON).
-Standing human lever: the allocation ask (drafted, unsent).
+**CURRENT PROGRAM (2026-09-22): PASS F / FR / F2 front-only tiling, budget 2e6, canon ON —
+`docs/lever19_sweep_plan.md` is the operating table; `docs/external_review_brief.md` is
+the one-page state of the art for outsiders.** Workhorse (3,13,0,0) forward tile 80%
+assigned (lanes every 8 windows, K=50000), reversed-front tile (FR) running on Nibi, F2
+(two buffers, top 35%) next, then the 11 other classes. Every submit: 12 h whole-node,
+`--mem=0`, `WZ_FH_ORBIT_CANON=1`, `WZ_FH_DRAIN_TOP=50000`, `WZ_FH_AB_BUDGET=2000000`,
+RAC account where it exists (rrg-ikotsire_cpu on Fir/Rorqual/Nibi; Nibi is the RRG home,
+keep >= 300 queued). Loop: 1pm cron + one-tap button (only what is unread), one global
+lock, hourly reminders (no unattended pushes), numbers digest after every check, agent
+cap 90 min. Levers ledger: 25 priced, 12 shipped, 13 dead, 0 open. Older doctrine below
+is history.
 
 
 **Active solver: `src/solver/wz_match.cpp` in `WZ_FIRSTHIT` mode** — streams the

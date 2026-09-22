@@ -53,6 +53,18 @@ repo root (scp does NOT expand $SCRATCH): `tar -cf - <files> | ssh ... 'cd $SCRA
 - **OOM ~20–30 s after "[profiles] ..."** in wz_match = the count-phase materialization wall,
   NOT the hash. Use `WZ_COUNT_ONLY=1` (streaming, cannot OOM) for any feasibility question.
 
+## Levers ledger 2026-07-30 → 2026-09-22 (full numbers: docs/n44_search_narrowing_research.md)
+
+SHIPPED (keep): 2.11b+2.12 stream filters (8.7x) · profile-constrained completion
+(5.2-6.6x) · flat-first ordering (7-10x) · dual canon · ORBIT canonicalization (3.8-29x)
+· checkpointed lanes · stratified window sweep (found n=43 in 24 h) · front-only top-K
+K=50000 (~10x cells/day; control re-found n=43) · budget 2e6 (+24-30% cells; both
+controls PASS; 5e6 FAIL) · reversed in-cell order (second front, Pass FR).
+DEAD (measured): compression filter (0-0.6%) · SAT/CaDiCaL (>=3000x slower) · GPU
+(5.9x / 24x < 60x bar) · stabilizer dedup (<=1.1x) · symmetry lanes (0/31) · PLACE-V2
+(-4%) · L2/PSD/max-shift orderings · stream-wall timeout (+0.1%) · 3 h backfill and
+split-lane jobs (0 admissions on saturated clusters).
+
 ## Measured-dead — do NOT rebuild or re-run (asking "can't we just...?" costs a round)
 
 - **Exhaustive/complete search at n≥36**: 6–15 orders of magnitude short (proven 2026-06-27).
