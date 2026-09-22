@@ -4,6 +4,18 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-22 (Daniel session, late) — ASTRA FOLLOW-UP: LEVER 28 SHIPPED (gated). Early
+outer-correlation check in the completer (reject a quad from 4 signed products before
+placing; node charging moved before placement => budget semantics identical). Local
+differential: 5 fixtures (n=19, budgets 50/300/5e7) verdicts, hit idx, backtracks,
+aborts, charged nodes IDENTICAL on/off. Deployed 9b6d117 to Fir with the check DEFAULT
+OFF; controls submitted: F41ec (n=41 skip-8 canon-off 2e6, expect nodes_this_cand
+212872, < 3.1 h) and F43ec (n=43 w327 K=50k 2e6, expect 88616, < 3.8 h). PASS => flip
+default on, redeploy fleet-wide. Also recorded: Astra's expected-time model (alpha/
+Lambda unidentified — no calendar ETA), joint-reachability measurement plan (backlog),
+full-group equivalence invariant (our 3 solutions inequivalent to WZ's under all 4,096
+transformations), Pass G = 444 units (+12 workhorse second reps).**
+
 **⚡ 2026-09-22 (Daniel session) — EXTERNAL REVIEW (Astra) FOUND TWO REAL DEFECTS; BOTH
 VERIFIED HERE AND FIXED IN SOURCE (deploy pending local test C). (1) CORRECTNESS: the
 zero-sum endpoint pins (C[0]=+1 when sum C=0, D[0]=+1 when sum D=0) conflict with orbit
