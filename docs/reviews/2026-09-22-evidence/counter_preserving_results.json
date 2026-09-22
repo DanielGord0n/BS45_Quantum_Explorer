@@ -1,0 +1,128 @@
+[
+  {
+    "n": 11,
+    "budget": 0,
+    "hits": "993",
+    "nodes": "833063",
+    "digest": "16913745213365801059",
+    "baseline_seconds": "0.043564",
+    "new_seconds": "0.029725"
+  },
+  {
+    "n": 11,
+    "budget": 1,
+    "hits": "0",
+    "nodes": "6000",
+    "digest": "2107423965529764531",
+    "baseline_seconds": "0.010411",
+    "new_seconds": "0.010401"
+  },
+  {
+    "n": 11,
+    "budget": 2,
+    "hits": "0",
+    "nodes": "9073",
+    "digest": "1963239099141251664",
+    "baseline_seconds": "0.010628",
+    "new_seconds": "0.010383"
+  },
+  {
+    "n": 11,
+    "budget": 10,
+    "hits": "0",
+    "nodes": "30926",
+    "digest": "7891677760201048473",
+    "baseline_seconds": "0.011490",
+    "new_seconds": "0.010831"
+  },
+  {
+    "n": 11,
+    "budget": 100,
+    "hits": "247",
+    "nodes": "197304",
+    "digest": "15611176733025965131",
+    "baseline_seconds": "0.018164",
+    "new_seconds": "0.014547"
+  },
+  {
+    "n": 11,
+    "budget": 1000,
+    "hits": "993",
+    "nodes": "833063",
+    "digest": "11602631207708367936",
+    "baseline_seconds": "0.044177",
+    "new_seconds": "0.029596"
+  },
+  {
+    "n": 11,
+    "budget": 2000000,
+    "hits": "993",
+    "nodes": "833063",
+    "digest": "11602631207708367936",
+    "baseline_seconds": "0.043997",
+    "new_seconds": "0.029284"
+  },
+  {
+    "n": 13,
+    "budget": 0,
+    "hits": "818",
+    "nodes": "2132458",
+    "digest": "920417051851347123",
+    "baseline_seconds": "0.115571",
+    "new_seconds": "0.072882"
+  },
+  {
+    "n": 13,
+    "budget": 1,
+    "hits": "0",
+    "nodes": "6000",
+    "digest": "2107423965529764531",
+    "baseline_seconds": "0.016966",
+    "new_seconds": "0.016963"
+  },
+  {
+    "n": 13,
+    "budget": 2,
+    "hits": "0",
+    "nodes": "8904",
+    "digest": "8447299364993151341",
+    "baseline_seconds": "0.017158",
+    "new_seconds": "0.016972"
+  },
+  {
+    "n": 13,
+    "budget": 10,
+    "hits": "0",
+    "nodes": "31016",
+    "digest": "9165328786228812243",
+    "baseline_seconds": "0.018209",
+    "new_seconds": "0.017571"
+  },
+  {
+    "n": 13,
+    "budget": 100,
+    "hits": "98",
+    "nodes": "204047",
+    "digest": "3619033346504187870",
+    "baseline_seconds": "0.026627",
+    "new_seconds": "0.022318"
+  },
+  {
+    "n": 13,
+    "budget": 1000,
+    "hits": "623",
+    "nodes": "1527645",
+    "digest": "4214791321045990444",
+    "baseline_seconds": "0.087763",
+    "new_seconds": "0.057170"
+  },
+  {
+    "n": 13,
+    "budget": 2000000,
+    "hits": "818",
+    "nodes": "2132458",
+    "digest": "14576074773602656093",
+    "baseline_seconds": "0.115733",
+    "new_seconds": "0.072354"
+  }
+]

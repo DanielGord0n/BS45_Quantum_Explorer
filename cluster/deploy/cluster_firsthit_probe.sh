@@ -70,6 +70,7 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_STREAM_REV" ]   && export WZ_FH_STREAM_REV
 [ -n "$WZ_FH_WALL_SEC" ]     && export WZ_FH_WALL_SEC
 [ -n "$WZ_FH_PROF_END" ]     && export WZ_FH_PROF_END
+[ -n "$WZ_FH_EARLY_CHECK" ]  && export WZ_FH_EARLY_CHECK
 
 # FH_SCORE_TIERS="t1,t2" (optional): first quarter of arms complete only
 # candidates with flatness score <= t1, second quarter <= t2, rest ungated.

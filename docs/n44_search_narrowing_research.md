@@ -502,3 +502,29 @@ reps each (~30 lane-reps), versus the 730 lanes planned. Classes with dedup 4-8x
   rank; the 0.9/31.9/2.7% figures are background-sample percentiles (third was WZ-43);
   "F catches 2/3" is therefore unproved; F2 overlap is 14.3%; budget 2e6 vs 5e6
   resolved-candidate counts are ~equal (22.8M vs 22.9M) — keep 2e6 provisionally.
+
+### Lever 28 (2026-09-22, from the review): EARLY OUTER-CORRELATION CHECK in the completer
+At depth d the shift L-1-d is fully determined once positions d and L-1-d are chosen; the
+new terms are A[0]*a2 + a1*A[L-1] (+B). Test before placing: reject impossible quads with
+four signed products instead of place/undo/bound-scan. Node charging moved BEFORE
+placement so budget semantics are unchanged. Verified locally on 5 fixtures (n=19, budgets
+50/300/5e7): verdicts, hit idx, backtracks, aborts and charged nodes IDENTICAL on/off.
+Astra: 1.5-1.6x fewer completer nodes at n=11/13 with identical counters. Gate: Fir controls
+F41ec (n=41 skip-8, canon-off, 2e6; baseline 3.1 h, hit nodes 212,872) and F43ec (n=43
+window 327, K=50k, 2e6; hit nodes 88,616) with WZ_FH_EARLY_CHECK=1 must re-find with the
+SAME nodes_this_cand and lower elapsed => flip the default on and redeploy.
+
+### Review follow-up notes (2026-09-22)
+- Expected-time model (Astra): sweep cost S = (29.7-45.9)*alpha/eta lane-days for one
+  workhorse direction (alpha = fraction of retained cells that are live, unknown; count
+  distinct live cells from GATEB range telemetry); P(hit by D) = 1-exp(-Lambda*min(D/S,1))
+  with Lambda unidentified — no calendar ETA is defensible. Cost scales ~ B*(g+(1-g)K/50k).
+- Joint reachability (H-transform): insertion point fh_abp_filter after the capacity loop;
+  needs production measurement (rows rejected, last-witness removals, CPU overhead);
+  acceptance = total CPU saving f*(s-h) >= 20%. Backlog after lever 28.
+- Equivalence: the full group has order 4,096 (adds global alternation + the C,D quad
+  transformation); L(C,D)=sum|N_C+N_D| is invariant under all of it — our 124/150/130 vs
+  WZ 140/142/134 prove inequivalence under the full group. Equal scores would need a full
+  check.
+- Bookkeeping: the Pass G table = 444 distinct range/direction units; the 456 submissions
+  include the workhorse's second reps.

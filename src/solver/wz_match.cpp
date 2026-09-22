@@ -923,15 +923,27 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
         }
       }
     }
-    fh_place(i1, a1, b1, A, B, Dab, Kab, L);
-    fh_place(i2, a2, b2, A, B, Dab, Kab, L);
+    // Charge the node BEFORE placing (2026-09-22, external review): identical charges
+    // to the old order for every branch that reaches here, so budget semantics are
+    // unchanged; an early-rejected quad is charged exactly as it was before.
     fh_nodes_total++;
     if (FH_BUDGET > 0 && ++fh_cur > FH_BUDGET) {
       fh_aborted = true;
-      fh_unplace(i2, A, B, Dab, Kab, L);
-      fh_unplace(i1, A, B, Dab, Kab, L);
-      return false;
+      return false;  // nothing placed: no undo
     }
+    // EARLY OUTER-CORRELATION CHECK (2026-09-22): placing positions d and L-1-d fully
+    // determines shift L-1-d (its remaining terms are A[0]*a2 + a1*A[L-1] and the same
+    // for B; every other pair of that shift was placed at a smaller depth). Reject
+    // before the two placements, the undo, and the full bound scan. Verified locally:
+    // identical verdicts, hit indices, backtracks and charged nodes to the old order.
+    // WZ_FH_EARLY_CHECK=1 enables (default off until the cluster re-find gate passes).
+    static const bool fh_early = getenv("WZ_FH_EARLY_CHECK") && atoi(getenv("WZ_FH_EARLY_CHECK")) != 0;  // default OFF until the cluster re-find controls pass
+    if (fh_early && d > 0) {
+      int s = L - 1 - d;
+      if (A[0] * a2 + B[0] * b2 + A[L - 1] * a1 + B[L - 1] * b1 != FH_CD_target[s] - Dab[s]) continue;
+    }
+    fh_place(i1, a1, b1, A, B, Dab, Kab, L);
+    fh_place(i2, a2, b2, A, B, Dab, Kab, L);
     int nsA = sumA + a1 + a2, nsB = sumB + b1 + b2;
     int rem = L - 2 * (d + 1);
     bool sum_ok = ((abs(FH_ABS_A - nsA) <= rem) || (abs(-FH_ABS_A - nsA) <= rem))
