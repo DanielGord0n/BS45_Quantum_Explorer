@@ -1,8 +1,59 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-22 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-23 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-23 (daily loop 1pm — ALL FOUR reached) — ★ LEVER 28 CONTROLS PASS →
+NEEDS_HUMAN for the pre-declared bundled fleet redeploy. No hits, no records; bookkeeping +
+0 submits.** Fir's two lever-28 controls READ and BOTH PASSED the pre-registered correctness
+gate: 60980457 = F41ec BS(42,41) FOUND with nodes_this_cand=212872 EXACT (expected 212872) and
+60980458 = F43ec BS(44,43) FOUND with 88616 EXACT (expected 88616). Identical node counts =>
+the early-outer-correlation check reproduces the search byte-for-byte (correctness-preserving);
+both banners are EXPECTED re-finds of banked rungs (sig (0,2,9,9) score 124 / (8,-2,5,9) score
+130), NOT news, not banked. Elapsed 8299.7s / 7574.86s are on different nodes => informational
+only, establish NO speedup (doctrine: speed needs a paired same-node run). ACTION per the loop's
+lever-28 rule: since no sha with `EARLY_CHECK default on` exists yet (Daniel's session flips it),
+I set the flag on NOTHING and deployed nothing. This PASS is the exact trigger Daniel pre-declared
+for the bundled "one fleet redeploy" (HANDOFF 09-22 night: accounting counters cum_*/cells_empty +
+lever-28 default flip) — a code deploy = human step. **NEEDS_HUMAN: flip WZ_FH_EARLY_CHECK default
+ON, bundle the cum accounting build, redeploy fleet-wide (checkpoint-compatible; CFGSIG unchanged).**
+NEW FOUND: none on all four. PER-CLUSTER: Fir 7 R + 5 PD Pass-G (3,13,0,0) S=1000 — 12 first reps
+read ALL HITLESS, range_done=0/178, cells_done_sum 180-700, tested 10-38M/lane, aborts ~15-30%
+(second reps 60978552/555/557/559/561/563/565 R + 567/569/571/573/615 PD still live); Rorqual 1 R
+(21608253 = R44Gg1500) + 65 PD Pass-G ((9,9,0,4)=R44G, (3,5,0,12)=R44H, S=300) — 10 first reps
+21608243-252 HITLESS range_done=0/178 tested 5-27M/lane + 21122874 = R44f3664 drain hitless; Nibi
+296 PD (0 R, no reads — ≥100 RRG floor satisfied, ~13d waits expected, no alarm); Trillium 60 PD
+Pass-G (classes A/K/L, workhorse-first) 0 R, no reads (2309938-954 = 9 dead T44Af header-only,
+cancelled at the Pass-G launch). NO G LANE IS DONE (all range_done=0/178) => nothing to promote to
+G2, nothing to "never resubmit"; workhorse S=1000 windows are deep, restack-until-done as designed.
+5e6 PAIR VERDICT CLOSED: 59818967 = F44f2728 (5e6) 483 cells vs ~607 for its 2e6 neighbours ≈ 80%,
+below the 90% switch line => KEEP 2e6 fleet-wide (aborts 4.5% pass the ≤5% half, but throughput
+fails; confirms the ledger's "5e6 FAIL"). NO SUBMITS: no cluster idle (Fir 12 / Rorqual 66 / Nibi
+296 / Trillium 60 queued); Fir pending 5<8 but the bundled fleet redeploy above is imminent and
+Daniel's, will relaunch Fir Pass-G on the new binary — restacking now would risk a CFGSIG mismatch
+and be superseded; daily loop reconvenes tomorrow with ~1.5-2d Fir runway remaining. CHECKER
+EXCLUSIONS updated (operative regex + annotation both, validated 34 excl / 0 keeper-false-match):
++60980457/458, +Fir G first reps (551/553/556/558/560/562/564/566/568/570/572/574),
++59818967, +60191241-261, +60671643-666, +60795778-810, +21608243-252, +21122874, +2309938-954.
+ROUND VERDICT: no hits, no verified solutions, 0 new lanes queued; lever 28 PASS => NEEDS_HUMAN
+for the bundled fleet redeploy (early-check default ON + cum accounting).**
+
+**⚡ 2026-09-23 (Codex, instrumentation for Claude review; NOT DEPLOYED):** Implemented
+opt-in `WZ_FH_TELEMETRY=1|64` phase timers, charged-depth histogram and ten rank-cost
+buckets, terminal `FH_TELEM` JSON plus validated `GATEB_TELEM` aggregation. No search
+policy/default/checkpoint changes. 63 baseline/off/full/sampled n<=13 comparisons and
+two interrupt/resume pairs matched streams, verdicts, counts and checkpoint bytes;
+8 aggregator tests passed. Local 41-pair timing screen ~0.4% median overhead, NOT a
+production claim. **n29 gate OPEN:** unmodified baseline timed out at 180s before the
+new binary was compared; no local timeout extension. No deployment until Claude review,
+n29 validation and representative same-node overhead gate. Branch `codex/n44-telemetry`;
+details/results: `docs/reviews/2026-09-23-telemetry-implementation.md`. Loop now uses last
+complete cum_* endpoint per unit (never sums jobs); old units lack historical cells_empty
+and cannot yield exact alpha_front. Lever-28 controls remain unread here; corrected the
+loop to treat them as correctness gates, with speed judged by paired same-node runs.
+No SSH, queued-job changes or n44 local profiling. Measurement-first supersedes the
+earlier shadow-instrument priority; direct joint-prune A/B is deferred until profiling.**
 
 **⚡ 2026-09-22 (Daniel session, night) — ASTRA SPEC SAVED (docs/reviews/2026-09-22-astra-
 instrument-spec.md) + ACCOUNTING COUNTERS SHIPPED: cells_empty + cumulative cell counters
