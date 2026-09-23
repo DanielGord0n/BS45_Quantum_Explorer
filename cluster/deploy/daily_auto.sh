@@ -29,10 +29,26 @@ cd "$REPO"
 
 [ -f "$DIR/notify.conf" ] && . "$DIR/notify.conf"
 NTFY_URL="${NTFY_URL:-}"
-CLAUDE_BIN="${CLAUDE_BIN:-claude}"
+# Newest Claude Code CLI available (2026-09-23): the Homebrew cask does not self-update
+# (it sat at 2.1.187, which rejects Fable 5.1 / Opus 5.5 and maps its aliases to older
+# models), while the VS Code extension's bundled CLI auto-updates. Pick whichever
+# candidate reports the highest version on every run. Override with CLAUDE_BIN=...
+pick_claude() {
+  local best="" bestv="" c v
+  for c in /opt/homebrew/bin/claude /usr/local/bin/claude "$HOME/.local/bin/claude" "$HOME/.claude/local/claude" \
+           $(ls -d "$HOME"/.vscode/extensions/anthropic.claude-code-*/resources/native-binary/claude \
+                   "$HOME"/.cursor/extensions/anthropic.claude-code-*/resources/native-binary/claude 2>/dev/null); do
+    [ -x "$c" ] || continue
+    v="$("$c" --version 2>/dev/null | awk '{print $1}')"
+    [ -z "$v" ] && continue
+    if [ -z "$bestv" ] || [ "$(printf '%s\n%s\n' "$bestv" "$v" | sort -V | tail -1)" = "$v" ] && [ "$v" != "$bestv" ]; then best="$c"; bestv="$v"; fi
+  done
+  echo "${best:-claude}"
+}
+CLAUDE_BIN="${CLAUDE_BIN:-$(pick_claude)}"
 
-MODEL_PRIMARY="${MODEL_PRIMARY:-claude-fable-5}"
-MODEL_FALLBACK="${MODEL_FALLBACK:-claude-opus-4-8}"
+MODEL_PRIMARY="${MODEL_PRIMARY:-fable}"   # CLI alias -> newest Fable the CLI knows (5.1 on 2.1.280)
+MODEL_FALLBACK="${MODEL_FALLBACK:-opus}"  # CLI alias -> newest Opus (5.5 on 2.1.280); aliases advance with CLI updates
 CLAUDE_ARGS="${CLAUDE_ARGS:---dangerously-skip-permissions}"
 
 # Session-limit retry policy (portable: fixed backoff, no fragile date parsing).
@@ -193,7 +209,7 @@ rc=1
 PARTIAL=0
 SUBMITS_THIS_RUN=0
 while : ; do
-  log "Invoking headless Claude (model=$MODEL, attempt $attempt/$((MAX_RETRY+1)))…"
+  log "Invoking headless Claude (model=$MODEL, cli=$("$CLAUDE_BIN" --version 2>/dev/null | awk '{print $1}') at $CLAUDE_BIN, attempt $attempt/$((MAX_RETRY+1)))…"
   # shellcheck disable=SC2086
   # Hard cap (2026-09-19): normal runs take 20-60 min; 4-6 h runs died on API timeouts.
   MAX_AGENT_SEC="${MAX_AGENT_SEC:-5400}"
@@ -214,7 +230,7 @@ while : ; do
   # running on the fallback. Any primary-model blocker (unavailable OR out of
   # credits/limit) now falls back, as long as the agent provably did nothing yet.
   if [ "$MODEL" = "$MODEL_PRIMARY" ] && did_nothing \
-     && { limit_hit || tail -25 "$LOG" | grep -qiE "model.*(not found|unavailable|invalid|unknown)"; }; then
+     && { limit_hit || tail -25 "$LOG" | grep -qiE "model.*(not found|unavailable|invalid|unknown)|does not support this model"; }; then
     log "Primary '$MODEL_PRIMARY' blocked ($(limit_reset_note 2>/dev/null || echo 'unavailable')) — falling back to '$MODEL_FALLBACK'."
     ntfy_push "BS45 — falling back to $MODEL_FALLBACK" \
       "$MODEL_PRIMARY blocked ($(limit_reset_note)). Running on $MODEL_FALLBACK instead." "low" "arrows_counterclockwise"
