@@ -30,9 +30,11 @@ G2, nothing to "never resubmit"; workhorse S=1000 windows are deep, restack-unti
 5e6 PAIR VERDICT CLOSED: 59818967 = F44f2728 (5e6) 483 cells vs ~607 for its 2e6 neighbours ≈ 80%,
 below the 90% switch line => KEEP 2e6 fleet-wide (aborts 4.5% pass the ≤5% half, but throughput
 fails; confirms the ledger's "5e6 FAIL"). NO SUBMITS: no cluster idle (Fir 12 / Rorqual 66 / Nibi
-296 / Trillium 60 queued); Fir pending 5<8 but the bundled fleet redeploy above is imminent and
-Daniel's, will relaunch Fir Pass-G on the new binary — restacking now would risk a CFGSIG mismatch
-and be superseded; daily loop reconvenes tomorrow with ~1.5-2d Fir runway remaining. CHECKER
+296 / Trillium 60 queued); Fir pending 5<8 but Fir has ~1.5-2d runway (not idle) and Daniel's
+imminent bundled redeploy will refresh the fleet binary (checkpoint-compatible, CFGSIG unchanged) —
+I HELD the Fir restack so its next reps carry the new cum-accounting build, rather than restacking
+verbatim today with a CFGSIG-mismatch risk (did not retrieve the exact prior G submit command);
+tomorrow's loop restacks Fir if Daniel hasn't refilled it by then. CHECKER
 EXCLUSIONS updated (operative regex + annotation both, validated 34 excl / 0 keeper-false-match):
 +60980457/458, +Fir G first reps (551/553/556/558/560/562/564/566/568/570/572/574),
 +59818967, +60191241-261, +60671643-666, +60795778-810, +21608243-252, +21122874, +2309938-954.
