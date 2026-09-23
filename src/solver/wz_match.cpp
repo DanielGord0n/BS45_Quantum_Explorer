@@ -726,6 +726,53 @@ static void fh_on_sigterm(int) {
 // candidate (FH_BUDGET): 0 = exact; >0 aborts monster dead trees (probe mode —
 // NOT exhaustive per candidate; track aborts to bound what might be missed).
 static long long FH_BUDGET = 0, fh_cur = 0, fh_nodes_total = 0;
+
+// Opt-in, per-process diagnostics; NEVER persisted or included in CFGSIG.
+// 1 = exact timing/counts, 64 = sample score timers and whole-candidate depth
+// histograms at probability 1/64. Completion/rank totals and phase timers stay exact.
+// Sampled DFS is a separate template instantiation: no per-node sampling branch.
+struct FhTelemetry {
+  int stride = 0;
+  bool hist_active = false;
+  long long cell_ns = 0, score_ns_est = 0, sort_ns = 0, complete_ns = 0;
+  long long score_calls = 0, score_samples = 0, completions = 0;
+  long long hist_candidates = 0, hist_nodes = 0, total_nodes = 0;
+  long long unranked_nodes = 0, unranked_count = 0, unranked_ns = 0;
+  long long cells_live_done = 0, cells_partial = 0;
+  vector<long long> depth_nodes;
+  array<long long, 10> rank_nodes{}, rank_count{}, rank_ns{}, rank_aborts{};
+  static long long ns(Clock::time_point start) {
+    return chrono::duration_cast<chrono::nanoseconds>(Clock::now() - start).count();
+  }
+  bool selected(uint64_t ordinal) const {
+    // Deterministic mix avoids periodic aliasing with eight-way DFS/buffer sizes.
+    uint64_t x = ordinal + 0x9e3779b97f4a7c15ULL;
+    x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+    x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+    return ((x ^ (x >> 31)) & (stride - 1)) == 0;
+  }
+  void emit(int n, long long worker_ns) const {
+    if (!stride) return;
+    cout << "FH_TELEM {\"version\":1,\"n\":" << n << ",\"stride\":" << stride
+         << ",\"worker_ns\":" << worker_ns;
+#define FH_TM_FIELD(name) cout << ",\"" #name "\":" << name
+    FH_TM_FIELD(cell_ns); FH_TM_FIELD(score_ns_est); FH_TM_FIELD(sort_ns);
+    FH_TM_FIELD(complete_ns); FH_TM_FIELD(score_calls); FH_TM_FIELD(score_samples);
+    FH_TM_FIELD(completions); FH_TM_FIELD(hist_candidates); FH_TM_FIELD(hist_nodes);
+    FH_TM_FIELD(total_nodes); FH_TM_FIELD(unranked_nodes); FH_TM_FIELD(unranked_count);
+    FH_TM_FIELD(unranked_ns); FH_TM_FIELD(cells_live_done); FH_TM_FIELD(cells_partial);
+#undef FH_TM_FIELD
+    auto arr = [&](const char *key, const auto &v) {
+      cout << ",\"" << key << "\":[";
+      for (size_t i = 0; i < v.size(); ++i) cout << (i ? "," : "") << v[i];
+      cout << "]";
+    };
+    arr("depth_nodes", depth_nodes); arr("rank_nodes", rank_nodes);
+    arr("rank_count", rank_count); arr("rank_ns", rank_ns); arr("rank_aborts", rank_aborts);
+    cout << "}\n" << flush;
+  }
+};
+static FhTelemetry FH_TM;
 static bool fh_aborted = false;
 static int FH_CD_target[256];
 static int FH_ABS_A = 0, FH_ABS_B = 0;
@@ -866,6 +913,7 @@ static inline void fh_unplace(int p, int *A, int *B, int *Dab, int *Kab, int L) 
 // negation-canonical form start with +1 — composes with the A[0]=B[0]=+1 root
 // canon, which this REQUIRES). Tracked incrementally: while the prefix ties,
 // the first strict difference must take A[d]=+1. WZ_FH_NO_CANON disables both.
+template<bool collect_depth = false>
 static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
                          int sumA, int sumB,
                          int a_tied, int a_cmp, int b_tied, int b_cmp) {
@@ -886,6 +934,7 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
         int av = P22_4[k][0], bv = P22_4[k][1];
         fh_place(mid, av, bv, A, B, Dab, Kab, L);
         fh_nodes_total++;
+        if constexpr (collect_depth) FH_TM.depth_nodes[d]++;
         bool ok = final_ok(sumA + av, sumB + bv);
         if (!ok) fh_unplace(mid, A, B, Dab, Kab, L);
         if (ok) return true;
@@ -927,6 +976,7 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
     // to the old order for every branch that reaches here, so budget semantics are
     // unchanged; an early-rejected quad is charged exactly as it was before.
     fh_nodes_total++;
+    if constexpr (collect_depth) FH_TM.depth_nodes[d]++;
     if (FH_BUDGET > 0 && ++fh_cur > FH_BUDGET) {
       fh_aborted = true;
       return false;  // nothing placed: no undo
@@ -957,7 +1007,7 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
     // recursion below consumes. Runs LAST — the cheap prunes go first.
     if (!prune && FH_ABP && !fh_abp_filter(d)) prune = true;
     if (!prune) {
-      if (fh_ab_search(d + 1, A, B, Dab, Kab, nsA, nsB,
+      if (fh_ab_search<collect_depth>(d + 1, A, B, Dab, Kab, nsA, nsB,
                        na_tied, na_cmp, nb_tied, nb_cmp))
         return true;
     }
@@ -994,7 +1044,10 @@ static int fh_complete_ab(const int *C, const int *D) {
   memset(FH_PLACED, 0, sizeof(FH_PLACED));
   fh_cur = 0;
   fh_aborted = false;
-  if (!fh_ab_search(0, A, B, Dab, Kab, 0, 0, 1, 0, 1, 0))
+  bool found = FH_TM.hist_active
+    ? fh_ab_search<true>(0, A, B, Dab, Kab, 0, 0, 1, 0, 1, 0)
+    : fh_ab_search<false>(0, A, B, Dab, Kab, 0, 0, 1, 0, 1, 0);
+  if (!found)
     return fh_aborted ? 3 : 2;
   for (int s = 1; s <= n; s++)
     if (npaf_at(A, B, n1, C, D, n, s) != 0) return 2;
@@ -1190,6 +1243,14 @@ int main(int argc, char **argv) {
   //      Exit 0 = FOUND (banner at find time). Exit 3 = budget/stream ended,
   //      NO hit — NOT a proof of absence (aborted candidates are unknowns).
   if (getenv("WZ_FIRSTHIT")) {
+    if (const char *e = getenv("WZ_FH_TELEMETRY")) {
+      if (strcmp(e, "0") && strcmp(e, "1") && strcmp(e, "64")) {
+        cerr << "WZ_FH_TELEMETRY must be 0, 1 or 64\n";
+        return 2;
+      }
+      FH_TM.stride = atoi(e);
+    }
+    if (FH_TM.stride) FH_TM.depth_nodes.assign(G_N1 / 2 + 1, 0);
     init_p22();
     // Stream source modulus. Mod-3 profiles are WALLTIME ATOMS at n>=36 — one
     // profile's DFS exceeds 12h (measured twice: the 07-15 P22 gate death, and
@@ -1754,6 +1815,8 @@ int main(int argc, char **argv) {
         }
       }
       long long lv = 0, okc = 0;
+      auto telemetry_cell_start = FH_TM.stride ? Clock::now() : Clock::time_point{};
+      int telemetry_rank = -1;  // unbuffered candidates have no sorted rank
       long long cur_batch = 0;    // drain-batch counter within this cell
       long long cell_done_ct = 0; // completions in this cell (non-buffered path)
       atomic<bool> cell_stop{false}; // front-only: abandon THIS cell, keep the arm
@@ -1769,17 +1832,41 @@ int main(int argc, char **argv) {
       struct CellCand { long long sc; vector<int> C, D; };
       vector<CellCand> cellbuf;
       auto flat_score = [&](const int *Ci, const int *Di) {
+        bool sample = FH_TM.stride && FH_TM.selected(FH_TM.score_calls++);
+        auto started = sample ? Clock::now() : Clock::time_point{};
         long long sc = 0;
         for (int s = 1; s <= n; s++) {
           int cd = 0;
           for (int i = 0; i + s < n; i++) cd += Ci[i]*Ci[i+s] + Di[i]*Di[i+s];
           sc += abs(cd);
         }
+        if (sample) {
+          FH_TM.score_ns_est += FhTelemetry::ns(started) * FH_TM.stride;
+          FH_TM.score_samples++;
+        }
         return sc;
       };
       auto complete_one = [&](const int *Ci, const int *Di) {
         long long nodes_before = fh_nodes_total;
+        auto started = FH_TM.stride ? Clock::now() : Clock::time_point{};
+        FH_TM.hist_active = FH_TM.stride && FH_TM.selected(FH_TM.completions);
         int r = fh_complete_ab(Ci, Di);
+        if (FH_TM.stride) {
+          long long elapsed = FhTelemetry::ns(started), nodes = fh_nodes_total - nodes_before;
+          FH_TM.complete_ns += elapsed;
+          FH_TM.completions++;
+          FH_TM.total_nodes += nodes;
+          if (FH_TM.hist_active) { FH_TM.hist_candidates++; FH_TM.hist_nodes += nodes; }
+          if (telemetry_rank >= 0) {
+            FH_TM.rank_count[telemetry_rank]++;
+            FH_TM.rank_nodes[telemetry_rank] += nodes;
+            FH_TM.rank_ns[telemetry_rank] += elapsed;
+            FH_TM.rank_aborts[telemetry_rank] += (r == 3);
+          } else {
+            FH_TM.unranked_count++; FH_TM.unranked_nodes += nodes; FH_TM.unranked_ns += elapsed;
+          }
+        }
+        FH_TM.hist_active = false;
         if (r >= 2) bt_entered++;
         // TEST HOOK: fake a SIGTERM after exactly N completions — exercises the
         // interrupt+checkpoint path deterministically (validation gate 6c).
@@ -1837,8 +1924,10 @@ int main(int argc, char **argv) {
           start = (size_t)min((long long)cellbuf.size(), fh_res_k);
           fh_resuming = false;  // caught up — everything past here is fresh
         }
+        auto sort_start = FH_TM.stride ? Clock::now() : Clock::time_point{};
         stable_sort(cellbuf.begin(), cellbuf.end(),
                     [](const CellCand &a, const CellCand &b){ return a.sc < b.sc; });
+        if (FH_TM.stride) FH_TM.sort_ns += FhTelemetry::ns(sort_start);
         size_t stop_at = cellbuf.size();
         if (fh_drain_top > 0 && cur_batch < fh_drain_batches)
           stop_at = min(cellbuf.size(), (size_t)fh_drain_top);  // front-only: top-K of the first B batches
@@ -1846,6 +1935,9 @@ int main(int argc, char **argv) {
           if (g_found.load() || g_fh_sigterm) break;  // hits/SIGTERM abort;
           int Ci[64], Di[64];                         // max_cand still drains
           for (int i = 0; i < n; i++) { Ci[i] = cellbuf[ci].C[i]; Di[i] = cellbuf[ci].D[i]; }
+          // Deciles of this buffer's eligible drain, using absolute sorted rank
+          // even on resume. Short buffers use their actual eligible length.
+          telemetry_rank = FH_TM.stride ? (int)(10 * ci / stop_at) : -1;
           complete_one(Ci, Di);
           ck_batch = cur_batch;         // completed-through position: first
           ck_k = (long long)ci + 1;     // ci+1 of this sorted batch are DONE
@@ -1931,6 +2023,11 @@ int main(int argc, char **argv) {
         ck_k = 0;
         fh_write_ckpt();  // cheap: live cells complete rarely at deep n
       }
+      if (FH_TM.stride) {
+        FH_TM.cell_ns += FhTelemetry::ns(telemetry_cell_start);
+        if (fh_stop.load()) FH_TM.cells_partial++;
+        else if (cand > cand_at_cell_start) FH_TM.cells_live_done++;
+      }
     }
     double t = chrono::duration<double>(Clock::now() - T0).count();
     long long completed_tested = clean_no + aborted + (hit_idx >= 0 ? 1 : 0);
@@ -1966,6 +2063,7 @@ int main(int argc, char **argv) {
                    : string("RESULT: NO HIT within probe budget — NOT a proof "
                             "of absence"))))
          << "\nTime: " << t << "s\n" << flush;
+    FH_TM.emit(n, FH_TM.stride ? FhTelemetry::ns(G_T0) : 0);
     return hit_idx >= 0 ? 0 : 3;
   }
 
