@@ -509,7 +509,7 @@ new terms are A[0]*a2 + a1*A[L-1] (+B). Test before placing: reject impossible q
 four signed products instead of place/undo/bound-scan. Node charging moved BEFORE
 placement so budget semantics are unchanged. Verified locally on 5 fixtures (n=19, budgets
 50/300/5e7): verdicts, hit idx, backtracks, aborts and charged nodes IDENTICAL on/off.
-Astra: 1.5-1.6x fewer completer nodes at n=11/13 with identical counters. Gate: Fir controls
+Astra: identical CHARGED nodes by construction (counter-preserving); the gain is wall-time per charged node (~1.5-1.6x at n=11/13, laptop). Controls are a correctness gate; take speed from a paired same-node benchmark, not two different jobs. Gate: Fir controls
 F41ec (n=41 skip-8, canon-off, 2e6; baseline 3.1 h, hit nodes 212,872) and F43ec (n=43
 window 327, K=50k, 2e6; hit nodes 88,616) with WZ_FH_EARLY_CHECK=1 must re-find with the
 SAME nodes_this_cand and lower elapsed => flip the default on and redeploy.
