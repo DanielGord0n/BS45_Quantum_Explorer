@@ -147,13 +147,8 @@ Do not re-run the checker.
      the association exists (`sacctmgr -n show assoc user=dangord account=rrg-ikotsire`
      non-empty; Nibi may need `rrg-ikotsire_cpu`), else def-ikotsire. Pending jobs can be
      moved with `scontrol update job <id> Account=rrg-ikotsire`.
-     **LEVER 28 CONTROLS (2026-09-22):** Fir F41ec (n=41 skip-8 canon-off 2e6, WZ_FH_EARLY_CHECK=1)
-     and F43ec (n=43 window 327, K=50k, 2e6, EARLY_CHECK=1). PASS = both FOUND with
-     nodes_this_cand EXACTLY 212872 (F41ec) and 88616 (F43ec). These are correctness
-     controls: elapsed times from different nodes do not establish a speedup; use a
-     paired same-node benchmark for that. On PASS: self-deploy the newest sha whose solver has `EARLY_CHECK default on`
-     (Daniel's session flips it) — until then do not set WZ_FH_EARLY_CHECK on fleet lanes.
-     On FAIL (different node count or no hit): report loudly, keep the default off.
+     **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
+     DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
      **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**
      two defects fixed (docs/n44_search_narrowing_research.md levers 26-27): endpoint pins
      were dropping ~75% of workhorse orbits under canon, and lanes had no ownership (~99%

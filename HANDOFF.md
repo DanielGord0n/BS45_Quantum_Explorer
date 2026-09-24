@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-23 (Claude session, evening) — BUNDLED REDEPLOY PREPARED, NOT YET DEPLOYED.
+(1) Codex's telemetry review fixes committed (664078c) and merged to main (b6340e6):
+resume-replay timing separated (FH_TELEM v2), aggregator per-arm rejection + <=3 missing
+arms, recovered n29 canary config in the harness; validation PASS (63 identity + 8 resume
+pairs, 16 aggregator tests, n29 baseline/0/64 = idx 26694 rank 588 nodes 81320).
+(2) Lever 28 flipped DEFAULT ON (controls passed with exact node counts); n=19 fixtures
+default == on == off on verdicts, hits, backtracks, aborts and charged nodes.
+(3) Loop now uses the newest Claude CLI and aliases fable -> opus (3826a33).
+PENDING HUMAN STEP: one fleet redeploy of the pinned main sha (solver + driver + tools/
+aggregate_firsthit_telemetry.py) to all four clusters — checkpoint-compatible (CFGSIG
+unchanged), brings early check ON + cum accounting; plus refill Fir (pending 5 < 8) and
+substitute ONE pending Fir workhorse G rep with WZ_FH_TELEMETRY=64 (cap: that rep + 1 repeat).**
+
 **⚡ 2026-09-23 (Codex, Claude telemetry review fixes; NOT DEPLOYED):** Schema-v2
 `FH_TELEM` now separates resumed-cell replay, including the saved buffer's re-sort,
 and `GATEB_TELEM` reports inclusive and replay-excluded phase shares. Search flags,

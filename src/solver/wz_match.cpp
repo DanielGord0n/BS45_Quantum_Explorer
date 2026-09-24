@@ -990,8 +990,8 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
     // for B; every other pair of that shift was placed at a smaller depth). Reject
     // before the two placements, the undo, and the full bound scan. Verified locally:
     // identical verdicts, hit indices, backtracks and charged nodes to the old order.
-    // WZ_FH_EARLY_CHECK=1 enables (default off until the cluster re-find gate passes).
-    static const bool fh_early = getenv("WZ_FH_EARLY_CHECK") && atoi(getenv("WZ_FH_EARLY_CHECK")) != 0;  // default OFF until the cluster re-find controls pass
+    // Default ON (2026-09-23 controls passed); WZ_FH_EARLY_CHECK=0 disables.
+    static const bool fh_early = !(getenv("WZ_FH_EARLY_CHECK") && atoi(getenv("WZ_FH_EARLY_CHECK")) == 0);  // default ON since 2026-09-23 (controls F41ec/F43ec PASS, exact node counts); WZ_FH_EARLY_CHECK=0 disables
     if (fh_early && d > 0) {
       int s = L - 1 - d;
       if (A[0] * a2 + B[0] * b2 + A[L - 1] * a1 + B[L - 1] * b1 != FH_CD_target[s] - Dab[s]) continue;
