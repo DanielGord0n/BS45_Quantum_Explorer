@@ -1,8 +1,25 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-23 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-24 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-24 (daily loop 1pm — ALL FOUR reached) — NO HITS, 24 new hitless reads; Fir
+restack in progress (details appended below as submits echo).** NEW FOUND: none on all four.
+FIR (5 R + 6 PD): TELEMETRY PILOT 61213832 = F44g1000 READ — 178/178 summarized, 175
+interrupted, range_done=3/178, cells 742 (cum_done 742 — the unit began on 3014b95, so
+"rate only, not exact alpha"), tested 36.4M, aborts 11.8%. Its GATEB_TELEM line is NOT in
+the checker output (the checker grep lacked the token — FIXED today); fetching it via
+duo_run, verdict below. 61213833 = F44g0 hitless 318 cells, aborts 5.8%. The 12 Pass-G
+SECOND reps (60978552/555/557/559/561/563/565/567/569/571/573/615) all hitless,
+range_done=0/178, cells 224-754, aborts 4-29% (all under the 35% line). No CFGSIG/fresh-start
+signs: tested_cum > tested and resume_pi > 0 on the cbe3859 reps (resumes intact).
+RORQUAL (6 R + 50 PD): 10 R44G (9,9,0,4) reads 21608253-262 hitless; 21608253 range_done=
+10/178, 21608254 6/178, rest 0/178; cells 369-597; aborts 19-35% — 21608262 at 35.0% is the
+single borderline lane (pooled well under), watch, no action. NIBI 296 PD, TRILLIUM 60 PD:
+no reads, floors satisfied, no action. rung_status EXHAUSTED as always (Pass G is the
+program; no SA). CHECKER: +GATEB_TELEM/aggregation-FAILED in the firsthit grep; exclusions
++60978552..615 second reps, +61213832/833, +21608253-262 (regex validated).
 
 **⚡ 2026-09-23 (Claude session, evening) — BUNDLED REDEPLOY PREPARED, NOT YET DEPLOYED.
 (1) Codex's telemetry review fixes committed (664078c) and merged to main (b6340e6):
