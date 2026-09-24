@@ -71,3 +71,32 @@ cap and exhaustiveness wording).
    the orbit's minimum profile score instead? That would be invariant and representative-free.
 3. With Q halving the tile, is there a second profile-level involution of the same kind
    (preserving pair NPAF and both sums) that we are still missing?
+
+## Follow-up (after docs/reviews/2026-09-25-astra-followup.md)
+
+**Item 1, Q-closure prune: implemented default-off as `WZ_FH_ORBIT_QPRUNE=1`, counted, verified.**
+Your contract as implemented: membership tested against the frozen full raw list before
+canon/sharding/ownership; disabled unless mod-6 cells and the list is untruncated (cap not
+hit); only two certified reasons can mark an orbit dead (Q-image not realizable, or C,D-side
+eq 2.12 fails), anything else is UNKNOWN and never removed; all listed members of a dead
+orbit are removed before representatives are chosen; CFGSIG `.qp1`. Evidence:
+`2026-09-24-evidence/qprune_audit_n44.txt`, `qprune_retention_six.txt`.
+- n=44 count (12 classes): 44,534 of 803,724 64-orbits dead (5.5%; per class 1.0% to 10.0%),
+  every certificate `not_realizable`, eq212 = 0, UNKNOWN = 0. With Q: 1,460,098 -> 759,190
+  orbits (48% fewer than the 32-group).
+- Controls: all six keep a witness with Q + prune; every BS(n+1,n) at n=6/8/10 keeps one
+  (6,564 LOCATE runs); dead-orbit set and kept count identical under three list orders.
+- Stronger check: every removed cell at n=8/10/12 streams ZERO candidates (238 cells). This
+  matches the proof: a non-realizable Q-image means no member of the orbit has any
+  quad-positive realization, so these cells are empty at n=44.
+- Cost: dead cells sit late in the flat order (workhorse window quartiles 4245/4860/5380 of
+  5836), which is why current front reps report cells_empty=0. Empty cells have been
+  expensive (one (9,9,0,4) arm streamed zero candidates for 12 h), so the CPU saving can
+  exceed the 5.5% cell share. PRE-REGISTERED prediction on the running CELLSIZE job
+  61315095: every streamed pi in `qprune_prediction_3_13_0_0_w2000-3000.txt` (716 raw cells)
+  shows cand=0; its `sec` gives the per-cell saving.
+
+**Item 2, orbit-minimum ordering:** accepted as the definition for the next fresh ordering;
+to be built with Pass H (same kept set, permutation-only checks), not before.
+
+**Item 3:** recorded "none found"; U-reversal identified as simultaneous reversal of Q.

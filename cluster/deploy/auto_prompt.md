@@ -162,6 +162,9 @@ Do not re-run the checker.
        "^CELLSIZE" fh_arms_61315095/arm_*.log` -> save verbatim to
        docs/reviews/evidence/cellsize_61315095.txt, run `python3 tools/cellsize_summary.py` on it,
        report its VERDICT line (NO-OP/BUILD/KILL/BETWEEN/INSUFFICIENT) and the rate lines.
+       ALSO check the Q-closure-prune prediction: for every CELLSIZE line whose pi appears in
+       docs/reviews/2026-09-24-evidence/qprune_prediction_3_13_0_0_w2000-3000.txt, cand MUST be 0.
+       Report how many matched, their sec values, and LOUDLY any nonzero (= prune unsound).
        61331128: `cd $SCRATCH/bs45_qcanary && cat qcanary_61331128.txt` -> save verbatim to
        docs/reviews/evidence/qcanary_61331128.txt, pipe each FOUND block to tools/verify_npaf.py,
        report both VERDICT lines (PASS/FAIL/INCONCLUSIVE) and whether ours42 hit the predicted idx.

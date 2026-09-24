@@ -5,7 +5,7 @@ Independent ground truth: brute-force EVERY BS(n+1,n) at n = 6, 8, 10 (numpy joi
 C,D pair correlations against all A,B pair correlations). For every solution C,D (one per
 64-element orbit, per signature class) ask the solver's LOCATE instrument whether some
 image of it lies in a cell that the canonicalization KEEPS, for the 32-group (baseline)
-and the 64-group (Q), with mod-3 and mod-6 cells. Soundness requires retained=YES always.
+the 64-group (Q), and Q + the closure prune, with mod-3 and mod-6 cells. Soundness requires retained=YES always.
 """
 import itertools
 import os
@@ -90,9 +90,10 @@ def main():
             print(f'n={n}: {len(sols)} solution C,D pairs, {len(reps)} (class, 64-orbit) representatives', flush=True)
             for (C, D, a, b) in reps.values():
                 c, d = sum(C), sum(D)
-                for m6, q in itertools.product((0, 1), (0, 1)):
+                for m6, q in itertools.product((0, 1), (0, 1, 2)):  # q=2: Q + closure prune
                     env = {**ENV, 'WZ_FIRSTHIT': '1', 'WZ_FH_ORBIT_CANON': '1', 'WZ_FH_M6': str(m6),
-                           'WZ_FH_ORBIT_Q': str(q), 'WZ_FH_LOCATE_C': ','.join(map(str, C)),
+                           'WZ_FH_ORBIT_Q': str(min(q, 1)), 'WZ_FH_ORBIT_QPRUNE': str(int(q == 2)),
+                           'WZ_THM211B': '1', 'WZ_THM212': '1', 'WZ_FH_LOCATE_C': ','.join(map(str, C)),
                            'WZ_FH_LOCATE_D': ','.join(map(str, D))}
                     p = subprocess.run([str(binary), str(n), str(a), str(b), str(c), str(d)], env=env,
                                        text=True, capture_output=True, timeout=120)
@@ -103,7 +104,7 @@ def main():
                     if q:
                         assert ('group=64' in out) == ((c + d) % 4 == 0), (n, c, d)
                     runs += 1
-        print(f'PASS: {runs} LOCATE runs, every solution orbit retained under 32- and 64-group '
+        print(f'PASS: {runs} LOCATE runs, every solution orbit retained under the 32-group, the 64-group and 64-group + Q-closure prune '
               '(mod-3 and mod-6 cells).', flush=True)
 
 

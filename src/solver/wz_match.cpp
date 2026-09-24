@@ -1368,6 +1368,7 @@ int main(int argc, char **argv) {
         cout << "[orbitq] FORCED outside its proven range (test mode only)\n" << flush;
     }
     const int orbit_nvar = orbit_q ? 64 : 32;
+    bool qp_active = false;  // WZ_FH_ORBIT_QPRUNE ran (kept set changed => CFGSIG .qp1)
     auto revp_cell = [&](const vector<int> &p) {
       vector<int> q(fh_m);
       for (int c = 0; c < fh_m; c++) q[((n - 1 - c) % fh_m + fh_m) % fh_m] = p[c];
@@ -1405,8 +1406,68 @@ int main(int argc, char **argv) {
         auto it = orbit_min.find(best);
         if (it == orbit_min.end() || own[i] < it->second) orbit_min[best] = own[i];
       }
+      // WZ_FH_ORBIT_QPRUNE=1 (2026-09-24, Astra follow-up item 1; default OFF; needs Q):
+      // Q-CLOSURE ORBIT ELIMINATION. If a listed cell X has its Q-image QX absent from the
+      // complete raw list S, then X holds no solution (a solution's Q-image is a solution
+      // in QX, and the list is solution-complete), and neither does any listed member of
+      // X's 64-orbit. Only two certified reasons may mark an orbit dead: QX not realizable
+      // by any binary pair (a residue sum out of range / wrong parity), or QX failing the
+      // C,D-side eq 2.12 (necessary; the A,B-side tests are Q-invariant: need, need3 and
+      // the 2.11b tuple). Any other absence = UNKNOWN, never dead. Requires mod-6 cells and
+      // an untruncated list (cap not hit). Membership is tested against the frozen S.
+      unordered_set<string> qp_dead;
+      if (orbit_q && getenv("WZ_FH_ORBIT_QPRUNE") && atoi(getenv("WZ_FH_ORBIT_QPRUNE"))) {
+        if (!fh_m6 || fhProfs.size() >= 20000000) {
+          cout << "[qprune] DISABLED (needs mod-6 cells and an untruncated cell list)\n" << flush;
+        } else {
+          qp_active = true;
+          unordered_set<string> S(own.begin(), own.end());
+          int ccnt[8];
+          for (int c = 0; c < fh_m; c++) ccnt[c] = class_count(n, c, fh_m);
+          auto realizable = [&](const vector<int> &p) {
+            for (int c = 0; c < fh_m; c++)
+              if (abs(p[c]) > ccnt[c] || ((p[c] + ccnt[c]) & 1)) return false;
+            return true;
+          };
+          long long missing = 0, nonreal = 0, eq212 = 0, unknown = 0, nonint = 0;
+          string cert;  // one auditable certificate per reason
+          for (size_t i = 0; i < fhProfs.size(); i++) {
+            vector<int> qx = fhProfs[i].px, qy = fhProfs[i].py;
+            bool integral = true;
+            for (int c = 0; c < fh_m; c++) {
+              int r = ((n - 1 - c) % fh_m + fh_m) % fh_m;
+              if ((qx[c] + qy[c] + qx[r] - qy[r]) & 1) integral = false;
+            }
+            quadq(qx, qy);
+            if (integral && S.count(fh_cellkey(qx, qy))) continue;
+            missing++;
+            const char *why = nullptr;
+            if (!integral) { nonint++; why = "nonintegral"; }
+            else if (!realizable(qx) || !realizable(qy)) { nonreal++; why = "not_realizable"; }
+            else if (G_THM212 && !thm212_ok(qx, qy, fh_m, false)) { eq212++; why = "eq2.12"; }
+            else { unknown++; continue; }
+            if (qp_dead.insert(oid[i]).second && cert.find(why) == string::npos)
+              cert += string(" ") + why + ":" + own[i] + "->" + fh_cellkey(qx, qy);
+          }
+          long long removed = 0;
+          for (size_t i = 0; i < fhProfs.size(); i++) removed += qp_dead.count(oid[i]);
+          // WZ_FH_QPRUNE_DUMP=path: raw list index (= pi in this ordering) of every removed
+          // cell, for joining against CELLSIZE lines (prediction: every one streams 0).
+          if (const char *dp = getenv("WZ_FH_QPRUNE_DUMP")) {
+            if (FILE *df = fopen(dp, "w")) {
+              for (size_t i = 0; i < fhProfs.size(); i++)
+                if (qp_dead.count(oid[i])) fprintf(df, "%zu\n", i);
+              fclose(df);
+            }
+          }
+          cout << "[qprune] missing_Q_images=" << missing << " not_realizable=" << nonreal
+               << " eq212=" << eq212 << " nonintegral=" << nonint << " unknown=" << unknown
+               << " dead_orbits=" << qp_dead.size() << " cells_removed=" << removed
+               << "\n[qprune] certificates:" << cert << "\n" << flush;
+        }
+      }
       for (size_t i = 0; i < fhProfs.size(); i++)
-        if (orbit_min[oid[i]] == own[i]) fh_keep.insert(own[i]);
+        if (orbit_min[oid[i]] == own[i] && !qp_dead.count(oid[i])) fh_keep.insert(own[i]);
       cout << "[orbitcanon]" << (orbit_q ? " group=64" : "") << " cells=" << fhProfs.size() << " kept_orbits="
            << fh_keep.size() << " dedup="
            << (double)fhProfs.size() / max((size_t)1, fh_keep.size()) << "x\n" << flush;
@@ -1795,6 +1856,10 @@ int main(int argc, char **argv) {
     if (orbit_canon && orbit_q) {  // kept-cell set changes => new lane namespace
       size_t L0 = strlen(fh_sigbuf);
       snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".oq1");
+    }
+    if (qp_active) {
+      size_t L0 = strlen(fh_sigbuf);
+      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".qp1");
     }
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;

@@ -4,6 +4,20 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-24 (Claude session, late) — ASTRA FOLLOW-UP: Q-CLOSURE PRUNE BUILT (default off),
+-5.5% MORE ORBITS, ALL PROVABLY EMPTY.** Astra: docs/reviews/2026-09-25-astra-followup.md (prune
+sound under a completeness contract; orbit-min ordering = cleanup for the next fresh ordering; no
+further involution). WZ_FH_ORBIT_QPRUNE=1 (needs Q; mod-6; untruncated list; only not_realizable or
+eq2.12 certificates, else UNKNOWN = kept; CFGSIG .qp1; WZ_FH_QPRUNE_DUMP lists removed raw cells).
+n=44: 44,534/803,724 orbits dead (1.0-10.0% per class), all not_realizable, 0 unknown; Q+prune =
+759,190 orbits vs 1,460,098 today (-48%). Six + all n=6/8/10 solutions retained (6,564 LOCATE
+runs); order-independent; every pruned cell at n=8/10/12 streams 0 candidates (238). Dead cells are
+late in flat order (workhorse window quartiles 4245/4860/5380) => current reps never met them.
+PRE-REGISTERED on CELLSIZE 61315095: every streamed pi listed in docs/reviews/2026-09-24-evidence/
+qprune_prediction_3_13_0_0_w2000-3000.txt must show cand=0 (a nonzero = STOP, prune unsound);
+their sec values = per-cell saving. Pass H plan now = Q + prune + orbit-min ordering, one fresh
+namespace, after the canary PASS and Daniel's go.**
+
 **⚡ 2026-09-24 (Claude session, close) — OPEN ITEMS + LOOP NOW READS BOTH JOBS.** The loop
 (auto_prompt) reads 61315095 (CELLSIZE) and 61331128 (QCANARY) once they leave squeue, saves raw
 output to docs/reviews/evidence/, applies the pre-registered rules and reports; any follow-up is
