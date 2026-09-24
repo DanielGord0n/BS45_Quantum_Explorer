@@ -4,6 +4,31 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-23 (Codex, Claude telemetry review fixes; NOT DEPLOYED):** Schema-v2
+`FH_TELEM` now separates resumed-cell replay, including the saved buffer's re-sort,
+and `GATEB_TELEM` reports inclusive and replay-excluded phase shares. Search flags,
+CFGSIG and checkpoint format are unchanged. The aggregator preserves good arms,
+reports rejected records with reasons, and permits <=3 missing/rejected arms per rep
+with an explicit bias warning. Local validation: 63 identity comparisons, eight
+resume pairs and 16 aggregator tests PASS; corrected n29 rerun pending below.
+**Recovered n29 command (no other WZ_* settings):**
+`WZ_FIRSTHIT=1 WZ_FH_M6=1 OMP_NUM_THREADS=1 ./bin 29 0 6 9 1`.
+Canon off, order 0, budget 200k; expected idx=26694, profile_rank=588,
+nodes_this_cand=81320. The harness now uses this archived stream, separately from
+small-n fixtures. Its counter validator reads the terminal summary, not a periodic
+progress counter. Claude's original n29 gate already passed all telemetry modes.
+**Pilot:** mode 64 only, ONE pending Fir workhorse Pass G rep substituted with the
+same name/env/singleton/CKDIR, plus at most one repeat (one node-day total). Keep the
+>=500-cell, >=25k-completion, >=1e9 sampled-node gate; two incomplete reads stop.
+Same-node overhead gate applies before wider use. No local n44 fallback. Lever-28
+controls were read PASS by today's loop below; record the deployed SHA because a
+shared-tree Fir deploy changes every subsequently compiled queued job. No remote
+deploy, cancellation, submission or early-check default flip done here. Work is
+isolated on `codex/n44-telemetry` at `/tmp/bs45-n44-telemetry`; shared checkout stays
+on `main`. Full handoff: `docs/reviews/2026-09-23-telemetry-review-fixes.md`.
+This entry supersedes the earlier instrumentation entry's open n29/configuration
+and pilot-overhead requirements.**
+
 **⚡ 2026-09-23 (daily loop 1pm — ALL FOUR reached) — ★ LEVER 28 CONTROLS PASS →
 NEEDS_HUMAN for the pre-declared bundled fleet redeploy. No hits, no records; bookkeeping +
 0 submits.** Fir's two lever-28 controls READ and BOTH PASSED the pre-registered correctness

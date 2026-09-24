@@ -71,6 +71,7 @@ export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_WALL_SEC" ]     && export WZ_FH_WALL_SEC
 [ -n "$WZ_FH_PROF_END" ]     && export WZ_FH_PROF_END
 [ -n "$WZ_FH_EARLY_CHECK" ]  && export WZ_FH_EARLY_CHECK
+[ -n "$WZ_FH_TELEMETRY" ]    && export WZ_FH_TELEMETRY
 
 # FH_SCORE_TIERS="t1,t2" (optional): first quarter of arms complete only
 # candidates with flatness score <= t1, second quarter <= t2, rest ungated.
@@ -217,6 +218,11 @@ summarized=$(grep -l "FIRSTHIT SUMMARY" "$DIR"/arm_*.log 2>/dev/null | wc -l)
 interrupted=$(grep -l "RESULT: INTERRUPTED" "$DIR"/arm_*.log 2>/dev/null | wc -l)
 range_done=$(grep -l "RANGE EXHAUSTED" "$DIR"/arm_*.log 2>/dev/null | wc -l | tr -d " ")
 echo "GATEB: candidates=$tot_cand tested=$tt_sum tested_min=$tt_min tested_cum=$tc_sum resume_pi_min=$rp_min resume_pi_max=$rp_max orbit_dup=$od_sum aborted=$tot_abort AB_nodes=$tot_nodes arms_summarized=$(echo $summarized)/$NARMS arms_interrupted=$(echo $interrupted) cells_done_min=$cd_min cells_done_sum=$cd_sum cells_empty=$ce_sum cum_done=$cum_done cum_dup=$cum_dup cum_dead=$cum_dead cum_empty=$cum_empty range_done=$range_done/$NARMS"
+# Telemetry deployment also requires tools/aggregate_firsthit_telemetry.py and python3.
+if [ "${WZ_FH_TELEMETRY:-0}" = 1 ] || [ "${WZ_FH_TELEMETRY:-0}" = 64 ]; then
+  python3 tools/aggregate_firsthit_telemetry.py --expected-arms "$((SHARD_HI-SHARD_LO))" "$DIR"/arm_*.log \
+    || echo "[driver] GATEB_TELEM aggregation FAILED; original GATEB above remains available" >&2
+fi
 # Global first hit = min by (profile_rank, idx) across arms
 grep -h "FIRSTHIT:" "$DIR"/arm_*.log 2>/dev/null \
   | sed -E 's/.*idx=([0-9]+) profile_rank=([0-9]+).*/\2 \1 &/' \

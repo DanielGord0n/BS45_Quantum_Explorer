@@ -1,0 +1,287 @@
+{
+  "fixture": "n13 signature 2,4,3,5; cap1; full stream; K50000",
+  "repeats": 41,
+  "clock": "solver steady_clock Time (not CPU time)",
+  "sha256": {
+    "baseline": "e221c0a6bbf8fd62d47658a8d94fba3acec2b9daf06eeddbacb14e71070d6b3e",
+    "current": "7f9a47a684a9d68d668041ef9b092e3a477e5fa436812fe4428971c30130290d"
+  },
+  "raw_seconds": [
+    {
+      "off": 0.0238667,
+      "full": 0.0242944,
+      "sampled": 0.024293,
+      "baseline": 0.024408
+    },
+    {
+      "full": 0.0242585,
+      "sampled": 0.0242264,
+      "baseline": 0.023617,
+      "off": 0.0241166
+    },
+    {
+      "sampled": 0.0243421,
+      "baseline": 0.0242015,
+      "off": 0.0242833,
+      "full": 0.0249495
+    },
+    {
+      "baseline": 0.0244734,
+      "off": 0.0243533,
+      "full": 0.0242568,
+      "sampled": 0.0246537
+    },
+    {
+      "off": 0.0246255,
+      "full": 0.0242523,
+      "sampled": 0.0243462,
+      "baseline": 0.0243538
+    },
+    {
+      "full": 0.0243777,
+      "sampled": 0.0243235,
+      "baseline": 0.024338,
+      "off": 0.0242214
+    },
+    {
+      "sampled": 0.0249666,
+      "baseline": 0.0250145,
+      "off": 0.0242269,
+      "full": 0.024312
+    },
+    {
+      "baseline": 0.0244635,
+      "off": 0.0242426,
+      "full": 0.0245572,
+      "sampled": 0.024084
+    },
+    {
+      "off": 0.0241777,
+      "full": 0.0245772,
+      "sampled": 0.0242123,
+      "baseline": 0.0247044
+    },
+    {
+      "full": 0.0243715,
+      "sampled": 0.0245145,
+      "baseline": 0.0241064,
+      "off": 0.0243089
+    },
+    {
+      "sampled": 0.0244031,
+      "baseline": 0.0243304,
+      "off": 0.0242485,
+      "full": 0.024097
+    },
+    {
+      "baseline": 0.0243932,
+      "off": 0.0250217,
+      "full": 0.0243145,
+      "sampled": 0.0242704
+    },
+    {
+      "off": 0.024262,
+      "full": 0.0242595,
+      "sampled": 0.0241002,
+      "baseline": 0.0242463
+    },
+    {
+      "full": 0.0242435,
+      "sampled": 0.0241624,
+      "baseline": 0.0245122,
+      "off": 0.0242053
+    },
+    {
+      "sampled": 0.0243796,
+      "baseline": 0.0244079,
+      "off": 0.0246864,
+      "full": 0.0242003
+    },
+    {
+      "baseline": 0.0242398,
+      "off": 0.0242918,
+      "full": 0.0240702,
+      "sampled": 0.0241558
+    },
+    {
+      "off": 0.0242393,
+      "full": 0.0242546,
+      "sampled": 0.023997,
+      "baseline": 0.0242218
+    },
+    {
+      "full": 0.0243271,
+      "sampled": 0.0243295,
+      "baseline": 0.024098,
+      "off": 0.0245525
+    },
+    {
+      "sampled": 0.0236938,
+      "baseline": 0.0242258,
+      "off": 0.0242664,
+      "full": 0.0244674
+    },
+    {
+      "baseline": 0.0242343,
+      "off": 0.0242197,
+      "full": 0.0241447,
+      "sampled": 0.0242148
+    },
+    {
+      "off": 0.0249542,
+      "full": 0.0243085,
+      "sampled": 0.0242367,
+      "baseline": 0.024243
+    },
+    {
+      "full": 0.0249792,
+      "sampled": 0.0250523,
+      "baseline": 0.0248727,
+      "off": 0.024597
+    },
+    {
+      "sampled": 0.0243181,
+      "baseline": 0.0242004,
+      "off": 0.0243679,
+      "full": 0.0243257
+    },
+    {
+      "baseline": 0.0243379,
+      "off": 0.0241615,
+      "full": 0.0243331,
+      "sampled": 0.0241253
+    },
+    {
+      "off": 0.0241947,
+      "full": 0.024371,
+      "sampled": 0.0245259,
+      "baseline": 0.0242761
+    },
+    {
+      "full": 0.0242269,
+      "sampled": 0.0242805,
+      "baseline": 0.024225,
+      "off": 0.0242972
+    },
+    {
+      "sampled": 0.024275,
+      "baseline": 0.0242689,
+      "off": 0.024173,
+      "full": 0.024318
+    },
+    {
+      "baseline": 0.0243262,
+      "off": 0.0241833,
+      "full": 0.0243015,
+      "sampled": 0.0243046
+    },
+    {
+      "off": 0.0243881,
+      "full": 0.0243417,
+      "sampled": 0.024359,
+      "baseline": 0.0242375
+    },
+    {
+      "full": 0.0248601,
+      "sampled": 0.0250396,
+      "baseline": 0.0246498,
+      "off": 0.0247293
+    },
+    {
+      "sampled": 0.0243516,
+      "baseline": 0.0240997,
+      "off": 0.0242212,
+      "full": 0.0242485
+    },
+    {
+      "baseline": 0.0242945,
+      "off": 0.0242192,
+      "full": 0.0243143,
+      "sampled": 0.0244735
+    },
+    {
+      "off": 0.0242382,
+      "full": 0.024622,
+      "sampled": 0.0243778,
+      "baseline": 0.0247506
+    },
+    {
+      "full": 0.0249053,
+      "sampled": 0.0251533,
+      "baseline": 0.024479,
+      "off": 0.0242299
+    },
+    {
+      "sampled": 0.0243595,
+      "baseline": 0.0243497,
+      "off": 0.0242123,
+      "full": 0.0243098
+    },
+    {
+      "baseline": 0.0243285,
+      "off": 0.0243056,
+      "full": 0.0242328,
+      "sampled": 0.0242358
+    },
+    {
+      "off": 0.0241535,
+      "full": 0.0246493,
+      "sampled": 0.0243224,
+      "baseline": 0.0244037
+    },
+    {
+      "full": 0.0243759,
+      "sampled": 0.0243332,
+      "baseline": 0.024287,
+      "off": 0.0242258
+    },
+    {
+      "sampled": 0.0243107,
+      "baseline": 0.024314,
+      "off": 0.0241699,
+      "full": 0.0243107
+    },
+    {
+      "baseline": 0.0242867,
+      "off": 0.0242218,
+      "full": 0.0243298,
+      "sampled": 0.0244093
+    },
+    {
+      "off": 0.0242267,
+      "full": 0.024416,
+      "sampled": 0.024475,
+      "baseline": 0.0242655
+    }
+  ],
+  "overhead": {
+    "off": {
+      "relative_to": "baseline",
+      "median_fraction": -0.002519866595297904,
+      "bootstrap95": [
+        -0.004790862026460618,
+        0.0016758992479093404
+      ],
+      "local_under_2pct_supported": true
+    },
+    "full": {
+      "relative_to": "off",
+      "median_fraction": 0.00402687890039366,
+      "bootstrap95": [
+        0.0006312063467179829,
+        0.005998427998179734
+      ],
+      "local_under_2pct_supported": true
+    },
+    "sampled": {
+      "relative_to": "off",
+      "median_fraction": 0.004219583833202423,
+      "bootstrap95": [
+        -0.0011932048827092423,
+        0.005825427494528412
+      ],
+      "local_under_2pct_supported": true
+    }
+  },
+  "production_gate": "OPEN: small-n timer-heavy fixture is not n44 workload"
+}

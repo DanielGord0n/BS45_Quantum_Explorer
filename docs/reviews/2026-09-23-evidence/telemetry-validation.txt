@@ -1,0 +1,36 @@
+Baseline: c2a3813. Working branch: codex/n44-telemetry.
+
+RED: tools/test_firsthit_telemetry.py failed with
+AssertionError: missing opt-in FH_TELEM record
+before instrumentation was implemented.
+
+Final local identity run:
+$ python3 tools/test_firsthit_telemetry.py
+PASS: 63 baseline/off/full/sampled comparisons + 2 interrupt/resume pairs; identical verdicts, sequences, counters, streams and checkpoint bytes.
+Exit 0. Found outputs independently checked by tools/verify_npaf.py in this run.
+
+$ python3 tools/test_aggregate_firsthit_telemetry.py
+Ran 8 tests in 0.883s
+OK
+Exit 0.
+
+$ bash -n cluster/deploy/cluster_firsthit_probe.sh
+$ git diff --check
+Both exit 0, no output.
+
+CANARY GATE NOT COMPLETE:
+$ python3 tools/test_firsthit_telemetry.py --n29-canary
+Small-n comparisons passed first, then the pre-change baseline n29 invocation
+timed out after 180 seconds. Instrumented n29 variants were NOT run.
+No n29 regression conclusion is available. No timeout extension was attempted.
+
+Overhead: telemetry-overhead.json records 41 same-host paired n13 fixtures,
+binary hashes, raw elapsed durations and bootstrap results. Representative
+n44/x86 production overhead remains UNMEASURED.
+
+Independent read-only code review: no important correctness defects found.
+Limits: elapsed rather than CPU time, residual includes bookkeeping/I/O,
+sample ordinals restart per process; no statistical independence claimed.
+
+No remote read, deployment, queue edit, production checkpoint edit, or n44
+local search was performed.
