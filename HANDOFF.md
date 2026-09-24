@@ -4,6 +4,25 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-24 (Claude session, afternoon) — LOOP FIXES + NEXT-BUILD GATE.
+(1) Phone said "fable blocked ()": the CLI's credit message had no "resets" clause, so
+limit_reset_note was empty; the fallback push now always states a reason (block_reason:
+out of usage credits / usage limit / model unavailable [+ reset]). Tested on the real 09-23
+and 09-24 logs. Fable is out of credits (09-23 note: resets Sep 25 11pm); Opus fallback worked.
+(2) 1pm run started 13:21:43 with the Mac AWAKE (sleep prevented; no pmset sleep since
+09-23 13:13), 16 s after the display woke at 13:21:27; prior days started 13:00:04-05.
+Root cause NOT proven (macOS kept no launchd log; pick_claude measured ~1 s, not it).
+daily_auto.sh now stamps results/loop_starts.log as its very first action: next late
+start shows whether launchd fired late or the script stalled pre-log.
+(3) Loop prompt: telemetry pilot CLOSED (no repeat); raw-evidence rule added (the pilot's
+verbatim GATEB_TELEM line was never saved, only paraphrased below).
+(4) NEXT-BUILD GATE (my derivation from the pilot, approx): 178 arms x 12 h, stream share
+47.6% excl. replay, 742 cells => ~1.4 h of stream per cell for a ~584k prefix. Whole-cell
+top-K multiplies that by (full cell size / prefix). So whole-cell top-K must NOT be built
+before the review's own priority-3 gate: full-cell candidate counts on sampled workhorse
+cells (WZ_COUNT_ONLY, capped). Cheaper stream enumeration (<=1.9x ceiling) helps current
+lanes AND is a prerequisite if cells are large. Pending Daniel's go.**
+
 **⚡ 2026-09-24 (daily loop 1pm — ALL FOUR reached) — NO HITS, 24 new hitless reads; Fir
 restacked 25 (IDs below); TELEMETRY PILOT CLOSED: neither constant-factor build (NEEDS_HUMAN: next build).** NEW FOUND: none on all four.
 FIR (5 R + 6 PD): TELEMETRY PILOT 61213832 = F44g1000 READ — 178/178 summarized, 175
