@@ -147,13 +147,12 @@ Do not re-run the checker.
      the association exists (`sacctmgr -n show assoc user=dangord account=rrg-ikotsire`
      non-empty; Nibi may need `rrg-ikotsire_cpu`), else def-ikotsire. Pending jobs can be
      moved with `scontrol update job <id> Account=rrg-ikotsire`.
-     **TELEMETRY PILOT (2026-09-23):** Fir job 61213832 (lane F44g1000) runs with WZ_FH_TELEMETRY=64.
-     When it reads, report its GATEB_TELEM line (g with and without resume replay, scoring
-     share, completion share, late_share, coverage_acceptable, stats_sufficient) and apply:
-     g >= 30% -> recommend packed flat_score (check scoring share first); completion >= 70%
-     AND late_share >= 25% -> recommend the joint-reachability paired benchmark; neither ->
-     neither. If stats are insufficient, allow ONE repeat telemetry rep on the same lane,
-     then stop. Never enable telemetry on any other job.
+     **TELEMETRY PILOT CLOSED (2026-09-24):** 61213832 read usable; verdict "neither" (HANDOFF
+     09-24). No repeat rep, and never enable WZ_FH_TELEMETRY on any job unless Daniel's session
+     says so. RAW EVIDENCE RULE: whenever a decision rests on a measurement line (GATEB_TELEM,
+     GATEB cum_*, COUNT_ONLY, control nodes_this_cand), save the verbatim line(s) with job ID
+     to docs/reviews/<date>-evidence/<jobid>.txt and commit it; HANDOFF paraphrase alone is
+     not enough (09-24: the pilot's raw line was never saved).
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
      **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**
@@ -180,7 +179,8 @@ Do not re-run the checker.
      Old logs never recorded cells_empty, so exact E cannot be reconstructed merely by
      summing their done/dead/duplicate fields. Do not reset search checkpoints to reset
      accounting. Process-local FH_TELEM is separate: it describes THIS rep, not history.
-     Telemetry pilot: mode 64 ONLY, one Fir workhorse rep plus at most one repeat
+     Telemetry pilot (CLOSED 2026-09-24, no repeat; rules below kept for any future
+     telemetry Daniel's session authorizes): mode 64 ONLY, one Fir workhorse rep plus at most one repeat
      (one allocated node-day total). Same-node overhead validation is required before
      wider/long-running use, not for this bounded measurement. Do not enable it
      fleet-wide or perform the targeted pending-job substitution autonomously.
