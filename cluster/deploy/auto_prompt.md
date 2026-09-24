@@ -153,13 +153,22 @@ Do not re-run the checker.
      GATEB cum_*, COUNT_ONLY, control nodes_this_cand), save the verbatim line(s) with job ID
      to docs/reviews/<date>-evidence/<jobid>.txt and commit it; HANDOFF paraphrase alone is
      not enough (09-24: the pilot's raw line was never saved).
-     **CELLSIZE MEASUREMENT (2026-09-24):** Fir job 61315095 (name CS44g2000) runs from
-     $SCRATCH/bs45_cellsize (NOT $SCRATCH/bs45) with WZ_FH_CELLSIZE: it only counts
-     candidates, cannot find anything, and has no checkpoint lane. It is NOT a search lane:
-     do not count it toward Fir's pending/running refill numbers, do not restack or cancel
-     it, and do not read it; Daniel's session reads it with tools/cellsize_summary.py.
-     Likewise Fir job 61331128 (QCANARY, $SCRATCH/bs45_qcanary): a 2-core Q canary, not a lane;
-     never count, restack, cancel or read it.
+     **TWO MEASUREMENT JOBS ON FIR (2026-09-24) — NOT search lanes:** 61315095 (CS44g2000,
+     $SCRATCH/bs45_cellsize) and 61331128 (QCANARY, $SCRATCH/bs45_qcanary). Never count them
+     toward Fir refill numbers; never restack, cancel or resubmit them. While either is still
+     in squeue, just report its state (PD/R + elapsed). Once one is GONE from squeue and not
+     yet read in HANDOFF, READ it in the same Fir session (no extra tap if possible):
+       61315095: `cd $SCRATCH/bs45_cellsize && tail -3 firsthit_output_61315095.txt && grep -h
+       "^CELLSIZE" fh_arms_61315095/arm_*.log` -> save verbatim to
+       docs/reviews/evidence/cellsize_61315095.txt, run `python3 tools/cellsize_summary.py` on it,
+       report its VERDICT line (NO-OP/BUILD/KILL/BETWEEN/INSUFFICIENT) and the rate lines.
+       61331128: `cd $SCRATCH/bs45_qcanary && cat qcanary_61331128.txt` -> save verbatim to
+       docs/reviews/evidence/qcanary_61331128.txt, pipe each FOUND block to tools/verify_npaf.py,
+       report both VERDICT lines (PASS/FAIL/INCONCLUSIVE) and whether ours42 hit the predicted idx.
+     Both verdicts follow rules pre-registered in HANDOFF 09-24; apply them literally. Any
+     follow-up (build whole-cell top-K, build Pass H, repeat job) is NEEDS_HUMAN: never build,
+     deploy or submit on either result. A canary FOUND is an EXPECTED re-find of a banked n=42
+     solution, not news and not a champion.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
      **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**

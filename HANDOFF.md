@@ -4,6 +4,16 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-24 (Claude session, close) — OPEN ITEMS + LOOP NOW READS BOTH JOBS.** The loop
+(auto_prompt) reads 61315095 (CELLSIZE) and 61331128 (QCANARY) once they leave squeue, saves raw
+output to docs/reviews/evidence/, applies the pre-registered rules and reports; any follow-up is
+NEEDS_HUMAN. Astra follow-up prompt: docs/reviews/astra-followup-prompt.md (3 questions: Q-closure
+prune soundness, orbit-min cell ordering, any further involution). OPEN, in order: (1) Q canary
+verdict -> (2) Pass H build (Q re-tile, .oq1 lanes; driver CKDIR must gain _oq1) on Daniel's go ->
+(3) A,B exchange for the 4 a=b classes -> (4) Q-closure prune if Astra confirms -> (5) whole-cell
+top-K only if CELLSIZE says BUILD; cheaper stream if KILL/BETWEEN. Daniel's own to-do: delete the 3
+stale wildcard allow rules in ~/.claude/settings.json (auto mode blocked me).**
+
 **⚡ 2026-09-24 (Claude session, night) — Q CLUSTER CANARY SUBMITTED: Fir 61331128 (QCANARY,
 2 cores, 12 h, isolated $SCRATCH/bs45_qcanary; sha-checked patch onto Fir's cbe3859: solver
 3c9b9c46.. == fe7485e, script b1ac6c95..).** n=42 class (7,11,0,0), Pass G env + ORBIT_Q=1, one kept
