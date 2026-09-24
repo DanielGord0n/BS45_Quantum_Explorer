@@ -1,0 +1,13 @@
+SIG 3 13 0 0 sec 56 | ORBIT_AUDIT: cells=1038952 orbits=35925 redundancy=28.92x || ORBIT_Q_AUDIT: orbits32=35925 orbits64=21859 reduction=39.1538% q_image_real=1031176/1038952 q_fixed=11448 abkey_mismatch=0
+SIG 9 9 0 4 sec 58 | ORBIT_AUDIT: cells=968858 orbits=127943 redundancy=7.57258x || ORBIT_Q_AUDIT: orbits32=127943 orbits64=66392 reduction=48.1081% q_image_real=959350/968858 q_fixed=13502 abkey_mismatch=0
+SIG 3 5 0 12 sec 53 | ORBIT_AUDIT: cells=975172 orbits=128494 redundancy=7.58924x || ORBIT_Q_AUDIT: orbits32=128494 orbits64=69200 reduction=46.1453% q_image_real=923732/975172 q_fixed=11254 abkey_mismatch=0
+SIG 1 7 8 8 sec 54 | ORBIT_AUDIT: cells=977601 orbits=123994 redundancy=7.88426x || ORBIT_Q_AUDIT: orbits32=123994 orbits64=71760 reduction=42.1262% q_image_real=938617/977601 q_fixed=14415 abkey_mismatch=0
+SIG 5 5 8 8 sec 54 | ORBIT_AUDIT: cells=972489 orbits=123337 redundancy=7.88481x || ORBIT_Q_AUDIT: orbits32=123337 orbits64=71368 reduction=42.1358% q_image_real=934473/972489 q_fixed=14415 abkey_mismatch=0
+SIG 5 11 4 4 sec 55 | ORBIT_AUDIT: cells=1008233 orbits=127876 redundancy=7.88446x || ORBIT_Q_AUDIT: orbits32=127876 orbits64=72257 reduction=43.4945% q_image_real=993713/1008233 q_fixed=14587 abkey_mismatch=0
+SIG 3 3 4 12 sec 55 | ORBIT_AUDIT: cells=921646 orbits=233433 redundancy=3.94822x || ORBIT_Q_AUDIT: orbits32=233433 orbits64=126179 reduction=45.9464% q_image_real=873394/921646 q_fixed=13196 abkey_mismatch=0
+SIG 7 7 4 8 sec 55 | ORBIT_AUDIT: cells=987487 orbits=250079 redundancy=3.9487x || ORBIT_Q_AUDIT: orbits32=250079 orbits64=132137 reduction=47.1619% q_image_real=960613/987487 q_fixed=14501 abkey_mismatch=0
+SIG 5 7 2 10 sec 33 | ORBIT_AUDIT: cells=483840 orbits=120960 redundancy=4x || ORBIT_Q_AUDIT: orbits32=120960 orbits64=65115 reduction=46.1682% q_image_real=470008/483840 q_fixed=11624 abkey_mismatch=0
+SIG 5 9 6 6 sec 33 | ORBIT_AUDIT: cells=496428 orbits=62219 redundancy=7.97872x || ORBIT_Q_AUDIT: orbits32=62219 orbits64=35757 reduction=42.5304% q_image_real=487660/496428 q_fixed=9470 abkey_mismatch=0
+SIG 7 11 2 2 sec 33 | ORBIT_AUDIT: cells=502076 orbits=62919 redundancy=7.97972x || ORBIT_Q_AUDIT: orbits32=62919 orbits64=35850 reduction=43.022% q_image_real=499148/502076 q_fixed=12134 abkey_mismatch=0
+SIG 1 13 2 2 sec 34 | ORBIT_AUDIT: cells=502076 orbits=62919 redundancy=7.97972x || ORBIT_Q_AUDIT: orbits32=62919 orbits64=35850 reduction=43.022% q_image_real=499148/502076 q_fixed=12134 abkey_mismatch=0
+DONE

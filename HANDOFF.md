@@ -4,6 +4,24 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-24 (Claude session, evening) — ASTRA MATH REVIEW VERIFIED; QUAD SWITCH Q = 45%
+FEWER n=44 CELL ORBITS (built default-off, NOT deployed).** Review:
+docs/reviews/2026-09-24-astra-math-review.md; my verification + questions back:
+docs/reviews/2026-09-24-astra-review-claude-response.md; evidence in 2026-09-24-evidence/.
+ITEM 1 (Q(C,D)=(U+RV,U-RV)): holds on all six known solutions (binary, sums, pair NPAF,
+same A,B completes, formula (1), outside the old 32-group). n=44 audit: 1,460,098 -> 803,724
+orbits (-45.0%; per class -39.2% workhorse to -48.1% (9,9,0,4)); A,B key Q-invariant in all
+10.8M cells. Retention: six solutions keep a witness under the 64-group; brute force of ALL
+BS(n+1,n) at n=6/8/10 (1,094 class-orbits) retained in 4,376 LOCATE runs; small-n exact
+verdicts identical Q on/off. Code: WZ_FH_ORBIT_Q=1 (refused unless n even and c+d = 0 mod 4),
+CFGSIG .oq1 (new namespace), audit + LOCATE extended; tests tools/test_orbit_q.py,
+tools/test_orbit_q_retention.py; default-off identity vs c2a3813 still PASS. ITEM 2 (one-sign
+extension): CLOSED, 0 extensions from any seed's 4,096-orbit (criterion == direct NPAF in
+393,216 attempts). ITEM 3 (A,B exchange, 4 equal-a,b classes): confirmed, queued after Q.
+ITEM 4: waits on CELLSIZE 61315095. ITEM 7: brief corrected. NEXT (needs Daniel's go): a
+cluster re-find canary with Q on at n=42, then Pass H = Pass G re-tiled over the 64-group
+kept list (new .oq1 lanes; Pass G is only 0-10/178 per lane, so little is lost).**
+
 **⚡ 2026-09-24 (Claude session, later) — CELLSIZE MEASUREMENT BUILT + PRE-REGISTERED
 (whole-cell top-K gate; Daniel said go).** New default-off mode `WZ_FH_CELLSIZE=cap`: streams
 each live cell in the normal order but only COUNTS candidates (no score/buffer/completion),

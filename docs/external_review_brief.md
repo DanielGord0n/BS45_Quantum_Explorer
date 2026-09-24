@@ -27,12 +27,15 @@ that is 178, with a,b odd and c,d even, giving 12 admissible classes up to sign/
 
 | n | class | found | how |
 |---|---|---|---|
-| 41 | (0,2,9,9) | 2026-07-29 | flat-ordered lane, window skip-8, candidate rank 1429 in its window; 212,872 completion nodes |
+| 41 | (0,2,9,9) | 2026-07-29 | flat-ordered lane, window skip-8, (in-window rank figure superseded: see the research ledger's corrections); 212,872 completion nodes |
 | 42 | (7,11,0,0) | 2026-08-03 | reverse-ordered lanes; found by 3 lanes within hours; 86,976 nodes |
 | 43 | (8,-2,5,9) | 2026-08-30 | window-band sweep aimed by a "window map" (see 6); window 327, first rep, 5.8M tested, 88,616 nodes |
 
-None equals the Wang-Zhu solution of its class under the full 1,024-element equivalence
-group (independent negations/reversals of the four sequences, A-B swap, C-D swap). The
+None equals the Wang-Zhu solution of its class under the 1,024 forms checked at banking
+(independent negations/reversals of the four sequences, A-B swap, C-D swap). The full
+group has order 4,096 (adding global alternation and the C,D quad switch Q); inequivalence
+under it follows from unequal Sum|N_C+N_D|, which every element preserves up to
+lag-dependent sign (Astra review 2026-09-24 item 7; equal values would be inconclusive). The
 professor (I. Kotsireas) has verified them and is writing the paper; the n=44 record is
 the open target.
 
@@ -73,7 +76,7 @@ point gave only 80% of the cells of 2e6 with 5% aborts, so 2e6 stands.
 ## 4. Where hits live: the "window map" and front-only search
 
 A lane at PROF_SKIP=k starts each arm k cells into its list ("window k"). Locating the
-five known solutions (ours 41/42/43 + Wang-Zhu 41/42/43) in our ordering:
+six known solutions (ours 41/42/43 + Wang-Zhu 41/42/43) in our ordering:
 WZ-42 window 0; ours-41 window ~8; WZ-43 windows 255-571; WZ-41 windows 499-842;
 ours-42 at the far reverse end (reverse window 4). So the cell-level flatness prior is
 weak (tie blocks of 4k-61k cells), solutions sit anywhere in the ordering, and cells
@@ -149,3 +152,15 @@ Constraints: CPU clusters only (GPU measured dead), 12 h jobs, 178 arms per node
 deterministic resume must survive; changes to stream order invalidate checkpoints, so
 propose them as new lane types. We validate every idea against re-finding the three
 known solutions before fleet use, with a pre-registered pass/fail rule.
+
+## Corrections (2026-09-24, from Astra's math review item 7)
+
+- Capture/percentile figures above do not show that front-only F captures two of three
+  solutions, and must not be used as a statistical premise for whole-cell top-K.
+- A non-empty compatible A,B profile list shows a necessary relaxation is satisfiable,
+  not that a binary completion exists.
+- The 2e6 node cap is a resource policy that can discard solutions; three successful
+  completion depths do not make it mathematically safe. Disjoint ownership plus full
+  coverage of the twelve class ranges does not make a front-only capped pass exhaustive.
+- Forward and reverse prefixes are deterministic views, not independent samples.
+

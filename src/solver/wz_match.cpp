@@ -1344,12 +1344,45 @@ int main(int argc, char **argv) {
       for (int v : py) { k += to_string(v); k += ','; }
       return k;
     };
+    // WZ_FH_ORBIT_Q=1 (2026-09-24, Astra math review item 1; default OFF): add the quad
+    // switch Q(C,D) = (U+RV, U-RV), U=(C+D)/2, V=(C-D)/2, to the orbit group (32 -> 64).
+    // Q swaps the antisymmetric parts of C and D; it keeps both sums, the pair NPAF and
+    // hence the A,B completion problem (verified on all six known solutions:
+    // docs/reviews/2026-09-24-evidence/astra_checks.py). It maps binary to binary when
+    // every mirror quad has product +1: interior quads come from P22_POS, and at n=44
+    // every class has c+d = 0 mod 4, which forces the free endpoint quad positive too.
+    // Profile action: p' = (p+q+Rp-Rq)/2, q' = (p+q-Rp+Rq)/2 (always integral).
+    // Guard: Q is a symmetry of the stream only when EVERY emitted candidate has all
+    // mirror quads positive: n even (no middle pair) and c+d = 0 mod 4 (forces the free
+    // endpoint quad positive). =1 refuses otherwise; =2 forces it (tests only: at odd n
+    // a solution with a negative endpoint quad could be dropped).
+    bool orbit_q = false;
+    if (const char *e = getenv("WZ_FH_ORBIT_Q")) {
+      int v = atoi(e);
+      bool safe = (n % 2 == 0) && (((G_SIG_C + G_SIG_D) % 4 + 4) % 4 == 0);
+      orbit_q = (v == 2) || (v == 1 && safe);
+      if (v == 1 && !safe)
+        cout << "[orbitq] DISABLED: needs n even and c+d = 0 mod 4 (n=" << n << " c=" << G_SIG_C
+             << " d=" << G_SIG_D << ")\n" << flush;
+      if (v == 2 && !safe)
+        cout << "[orbitq] FORCED outside its proven range (test mode only)\n" << flush;
+    }
+    const int orbit_nvar = orbit_q ? 64 : 32;
+    auto revp_cell = [&](const vector<int> &p) {
+      vector<int> q(fh_m);
+      for (int c = 0; c < fh_m; c++) q[((n - 1 - c) % fh_m + fh_m) % fh_m] = p[c];
+      return q;
+    };
+    auto quadq = [&](vector<int> &px, vector<int> &py) {
+      vector<int> rx = revp_cell(px), ry = revp_cell(py), nx(fh_m), ny(fh_m);
+      for (int c = 0; c < fh_m; c++) {
+        nx[c] = (px[c] + py[c] + rx[c] - ry[c]) / 2;
+        ny[c] = (px[c] + py[c] - rx[c] + ry[c]) / 2;
+      }
+      px.swap(nx); py.swap(ny);
+    };
     if (orbit_canon) {
-      auto revp = [&](vector<int> p) {
-        vector<int> q(fh_m);
-        for (int c = 0; c < fh_m; c++) q[((n - 1 - c) % fh_m + fh_m) % fh_m] = p[c];
-        return q;
-      };
+      auto revp = revp_cell;
       auto negp = [&](vector<int> p) { for (auto &x : p) x = -x; return p; };
       // orbit id = min variant key; keep = the real cell with min OWN key per orbit
       unordered_map<string, string> orbit_min;  // orbit id -> min real-cell key
@@ -1357,8 +1390,9 @@ int main(int argc, char **argv) {
       for (size_t i = 0; i < fhProfs.size(); i++) {
         own[i] = fh_cellkey(fhProfs[i].px, fhProfs[i].py);
         string best;
-        for (int var = 0; var < 32; var++) {
+        for (int var = 0; var < orbit_nvar; var++) {
           vector<int> px = fhProfs[i].px, py = fhProfs[i].py;
+          if (var & 32) quadq(px, py);
           if (var & 1) px = negp(px);
           if (var & 2) py = negp(py);
           if (var & 4) px = revp(px);
@@ -1373,7 +1407,7 @@ int main(int argc, char **argv) {
       }
       for (size_t i = 0; i < fhProfs.size(); i++)
         if (orbit_min[oid[i]] == own[i]) fh_keep.insert(own[i]);
-      cout << "[orbitcanon] cells=" << fhProfs.size() << " kept_orbits="
+      cout << "[orbitcanon]" << (orbit_q ? " group=64" : "") << " cells=" << fhProfs.size() << " kept_orbits="
            << fh_keep.size() << " dedup="
            << (double)fhProfs.size() / max((size_t)1, fh_keep.size()) << "x\n" << flush;
     }
@@ -1442,6 +1476,44 @@ int main(int argc, char **argv) {
       cout << "ORBIT_AUDIT: cells=" << fhProfs.size() << " orbits=" << orbits.size()
            << " redundancy=" << (double)fhProfs.size() / max((size_t)1, orbits.size())
            << "x\n" << flush;
+      if (orbit_q) {
+        // Q audit (Astra item 1): orbit count under the 64-element group, how often a
+        // real cell's Q-image is itself a real cell (closure), and whether the A,B key
+        // (need, pair profile autocorr) is Q-invariant (must be 0 mismatches).
+        unordered_set<string> real, orbits64;
+        for (auto &p : fhProfs) real.insert(keyof(p.px, p.py));
+        long long q_real = 0, q_self = 0, key_mismatch = 0;
+        const int hm = fh_m / 2;
+        auto abkey = [&](const vector<int> &px, const vector<int> &py) {
+          vector<int> T(hm);
+          for (int s = 1; s <= hm; s++) T[s - 1] = -pair_auto(px, py, s);
+          return auto_key(T, 4 * n + 2 - norm_vec(px) - norm_vec(py));
+        };
+        for (auto &p : fhProfs) {
+          vector<int> qx = p.px, qy = p.py;
+          quadq(qx, qy);
+          if (real.count(keyof(qx, qy))) q_real++;
+          if (qx == p.px && qy == p.py) q_self++;
+          if (abkey(qx, qy) != abkey(p.px, p.py)) key_mismatch++;
+          string best;
+          for (int var = 0; var < 64; var++) {
+            vector<int> px = p.px, py = p.py;
+            if (var & 32) quadq(px, py);
+            if (var & 1) px = negp(px);
+            if (var & 2) py = negp(py);
+            if (var & 4) px = revp(px);
+            if (var & 8) py = revp(py);
+            if (var & 16) swap(px, py);
+            string k = keyof(px, py);
+            if (best.empty() || k < best) best = k;
+          }
+          orbits64.insert(best);
+        }
+        cout << "ORBIT_Q_AUDIT: orbits32=" << orbits.size() << " orbits64=" << orbits64.size()
+             << " reduction=" << 100.0 * (1.0 - (double)orbits64.size() / max((size_t)1, orbits.size()))
+             << "% q_image_real=" << q_real << "/" << fhProfs.size() << " q_fixed=" << q_self
+             << " abkey_mismatch=" << key_mismatch << "\n" << flush;
+      }
       return 0;
     }
 
@@ -1468,14 +1540,28 @@ int main(int argc, char **argv) {
       auto neg = [](vector<int> v) { for (auto &x : v) x = -x; return v; };
       long long best_lo = -1, best_ties = 0; int matches = 0; long long best_score = -1;
       int canon_kept = 0;  // 2026-08-29: how many matched orbit cells survive WZ_FH_ORBIT_CANON
-      for (int var = 0; var < 64; var++) {
-        vector<int> C = C0, D = D0;
+      // Under WZ_FH_ORBIT_Q also try every variant of the quad-switched pair Q(C0,D0)
+      // (sequence level; only when it is binary), so retention covers the 64-group.
+      vector<int> QC, QD;
+      if (orbit_q && C0.size() == D0.size()) {
+        size_t L = C0.size();
+        bool bin = true;
+        for (size_t i = 0; i < L; i++) {
+          int u2 = C0[i] + D0[i], v2 = C0[L - 1 - i] - D0[L - 1 - i];  // 2U_i, 2(RV)_i
+          int c2 = (u2 + v2) / 2, d2 = (u2 - v2) / 2;
+          if ((c2 != 1 && c2 != -1) || (d2 != 1 && d2 != -1)) bin = false;
+          QC.push_back(c2); QD.push_back(d2);
+        }
+        if (!bin) { QC.clear(); QD.clear(); cout << "  [locate] Q image not binary\n"; }
+      }
+      for (int var = 0; var < (QC.empty() ? 64 : 128); var++) {
+        vector<int> C = (var & 64) ? QC : C0, D = (var & 64) ? QD : D0;
         if (var & 1) C = rev(C);
         if (var & 2) D = rev(D);
         if (var & 4) C = neg(C);
         if (var & 8) D = neg(D);
         if (var & 16) swap(C, D);
-        if (var & 32) { C = neg(rev(C0)); }  // extra composite; harmless dupes
+        if (var & 32) { C = neg(rev((var & 64) ? QC : C0)); }  // extra composite; harmless dupes
         vector<int> px = classsum(C), py = classsum(D);
         for (size_t pi2 = 0; pi2 < fhProfs.size(); pi2++) {
           if (fhProfs[pi2].px == px && fhProfs[pi2].py == py) {
@@ -1662,6 +1748,10 @@ int main(int argc, char **argv) {
     if (G_WALL_SEC > 0) {
       size_t L0 = strlen(fh_sigbuf);
       snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".ws%lld", G_WALL_SEC);
+    }
+    if (orbit_canon && orbit_q) {  // kept-cell set changes => new lane namespace
+      size_t L0 = strlen(fh_sigbuf);
+      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".oq1");
     }
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;

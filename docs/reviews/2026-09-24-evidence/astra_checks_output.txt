@@ -1,0 +1,19 @@
+== sanity: all six are BS = True
+
+== ITEM 1: quad switch Q
+ours-41: L=41 sig=(0,2,9,9) endpoint quad product=+1 interior negative quads=0 -> binary, sums kept=True, pair NPAF kept=True, same A,B completes=True, formula(1)=True, fixed point=False, outside old 32-group=True
+ours-42: L=42 sig=(-7,11,0,0) endpoint quad product=+1 interior negative quads=0 -> binary, sums kept=True, pair NPAF kept=True, same A,B completes=True, formula(1)=True, fixed point=False, outside old 32-group=True
+ours-43: L=43 sig=(8,-2,5,9) endpoint quad product=+1 interior negative quads=0 -> binary, sums kept=True, pair NPAF kept=True, same A,B completes=True, formula(1)=True, fixed point=False, outside old 32-group=True
+WZ-41: L=41 sig=(-2,0,9,9) endpoint quad product=+1 interior negative quads=0 -> binary, sums kept=True, pair NPAF kept=True, same A,B completes=True, formula(1)=True, fixed point=False, outside old 32-group=True
+WZ-42: L=42 sig=(7,11,0,0) endpoint quad product=+1 interior negative quads=0 -> binary, sums kept=True, pair NPAF kept=True, same A,B completes=True, formula(1)=True, fixed point=False, outside old 32-group=True
+WZ-43: L=43 sig=(8,-2,5,9) endpoint quad product=+1 interior negative quads=0 -> binary, sums kept=True, pair NPAF kept=True, same A,B completes=True, formula(1)=True, fixed point=False, outside old 32-group=True
+
+== ITEM 3: A,B exchange keeps BS (all six) = True
+
+== ITEM 2: one-sign extension over full orbits (all 16 sign vectors)
+ours-41: orbit=4096 distinct BS tuples, attempts=65536, pass eq(4)=0, extensions=0, criterion-vs-direct disagreements=0
+ours-42: orbit=4096 distinct BS tuples, attempts=65536, pass eq(4)=0, extensions=0, criterion-vs-direct disagreements=0
+ours-43: orbit=4096 distinct BS tuples, attempts=65536, pass eq(4)=0, extensions=0, criterion-vs-direct disagreements=0
+WZ-41: orbit=4096 distinct BS tuples, attempts=65536, pass eq(4)=0, extensions=0, criterion-vs-direct disagreements=0
+WZ-42: orbit=4096 distinct BS tuples, attempts=65536, pass eq(4)=8192, extensions=0, criterion-vs-direct disagreements=0
+WZ-43: orbit=4096 distinct BS tuples, attempts=65536, pass eq(4)=0, extensions=0, criterion-vs-direct disagreements=0
