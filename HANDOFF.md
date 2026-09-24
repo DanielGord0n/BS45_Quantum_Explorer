@@ -12,10 +12,16 @@ pairs, 16 aggregator tests, n29 baseline/0/64 = idx 26694 rank 588 nodes 81320).
 (2) Lever 28 flipped DEFAULT ON (controls passed with exact node counts); n=19 fixtures
 default == on == off on verdicts, hits, backtracks, aborts and charged nodes.
 (3) Loop now uses the newest Claude CLI and aliases fable -> opus (3826a33).
-PENDING HUMAN STEP: one fleet redeploy of the pinned main sha (solver + driver + tools/
+DONE (same evening, 4 taps): fleet redeploy of the pinned main sha (solver + driver + tools/
 aggregate_firsthit_telemetry.py) to all four clusters — checkpoint-compatible (CFGSIG
 unchanged), brings early check ON + cum accounting; plus refill Fir (pending 5 < 8) and
-substitute ONE pending Fir workhorse G rep with WZ_FH_TELEMETRY=64 (cap: that rep + 1 repeat).**
+substitute ONE pending Fir workhorse G rep with WZ_FH_TELEMETRY=64 (cap: that rep + 1 repeat).
+RESULT: cbe3859 deployed + grep-verified on Fir, Rorqual, Nibi, Trillium (solver, driver,
+aggregator; Fir python3 3.11.4). Fir queue had drained to 5 R / 0 PD => 13 submitted:
+TELEMETRY JOB 61213832 = F44g1000 (WZ_FH_TELEMETRY=64, first in its lane) + one restack
+rep for each of the 12 workhorse G lanes (F44g/F44gr 0..5000). Queues after: Fir 5 R +
+13 PD, Rorqual 9 R + 56 PD, Nibi 296 PD, Trillium 60 PD. Loop: read GATEB_TELEM for
+61213832 when it lands; apply the pre-registered rules (review 2026-09-22, section 4).**
 
 **⚡ 2026-09-23 (Codex, Claude telemetry review fixes; NOT DEPLOYED):** Schema-v2
 `FH_TELEM` now separates resumed-cell replay, including the saved buffer's re-sort,
