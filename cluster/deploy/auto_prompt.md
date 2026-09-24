@@ -153,7 +153,7 @@ Do not re-run the checker.
      GATEB cum_*, COUNT_ONLY, control nodes_this_cand), save the verbatim line(s) with job ID
      to docs/reviews/<date>-evidence/<jobid>.txt and commit it; HANDOFF paraphrase alone is
      not enough (09-24: the pilot's raw line was never saved).
-     **CELLSIZE MEASUREMENT (2026-09-24):** a Fir job named CS44g2000 runs from
+     **CELLSIZE MEASUREMENT (2026-09-24):** Fir job 61315095 (name CS44g2000) runs from
      $SCRATCH/bs45_cellsize (NOT $SCRATCH/bs45) with WZ_FH_CELLSIZE: it only counts
      candidates, cannot find anything, and has no checkpoint lane. It is NOT a search lane:
      do not count it toward Fir's pending/running refill numbers, do not restack or cancel

@@ -25,7 +25,13 @@ tests before any lane); KILL if P(R>=3) >= 50% or P(R>=8) >= 50% (prefix policy 
 cheaper stream enumeration is the lever); BETWEEN otherwise (cheaper stream first, then
 re-measure); INSUFFICIENT if < 100 live cells (one repeat at k=5000, then stop). Side
 outputs: leaves per candidate (stream-cost anatomy for the cheaper-stream lever) and time
-to stream 500k (checks my ~1.4 h estimate).**
+to stream 500k (checks my ~1.4 h estimate).
+SUBMITTED via duo_run (1 tap): Fir job 61315095 = CS44g2000. Shipped as a 4 KB patch onto
+Fir's own cbe3859 files (sha-checked before: solver c2571d40.. driver d9e8d3f7..; after:
+patched solver d7a36528.. == pushed e88ea2e). READ when done (1 tap):
+`./cluster/deploy/duo_run.sh fir 'cd $SCRATCH/bs45_cellsize && tail -3 firsthit_output_61315095.txt
+&& grep -h "^CELLSIZE" fh_arms_61315095/arm_*.log' > docs/reviews/evidence/cellsize_61315095.txt`
+then `python3 tools/cellsize_summary.py docs/reviews/evidence/cellsize_61315095.txt`.**
 
 **⚡ 2026-09-24 (Claude session, afternoon) — LOOP FIXES + NEXT-BUILD GATE.
 (1) Phone said "fable blocked ()": the CLI's credit message had no "resets" clause, so
