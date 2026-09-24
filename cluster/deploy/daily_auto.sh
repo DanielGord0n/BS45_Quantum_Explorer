@@ -26,6 +26,11 @@ set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$DIR/../.." && pwd)"
 cd "$REPO"
+# Start stamp BEFORE anything that could stall (2026-09-24: the 1pm run's first log line
+# was 13:21:43 with the Mac awake; no record showed whether launchd fired late or the
+# script hung before logging). The gap to the first auto_*.log line answers that.
+mkdir -p "$REPO/results"
+echo "$(date '+%F %T') start pid=$$ ppid=$PPID button=${BUTTON:-0} supp=${SUPPLEMENTARY:-0}" >> "$REPO/results/loop_starts.log"
 
 [ -f "$DIR/notify.conf" ] && . "$DIR/notify.conf"
 NTFY_URL="${NTFY_URL:-}"
@@ -168,6 +173,15 @@ credits_gone() {
 limit_reset_note() {   # pull the "resets ..." text so the phone says something useful
   tail -25 "$LOG" | grep -oiE "resets [^·]*" | head -1
 }
+# Why the primary was skipped, never empty (2026-09-24: the CLI said only "You're out of
+# usage credits. Switch to another model..." with no "resets" clause, so the phone read
+# "fable blocked ()").
+block_reason() {
+  local why="model unavailable" r
+  if credits_gone; then why="out of usage credits"; elif limit_hit; then why="usage limit"; fi
+  r="$(limit_reset_note 2>/dev/null)"
+  echo "${why}${r:+, $r}"
+}
 did_nothing() { # provably safe to retry: no summary, no commit, no working-tree change.
   # The tree check matters: taking seeds (next_seeds.sh) or advancing the rung
   # ledger dirties tracked files WITHOUT moving HEAD — an agent that died mid-run
@@ -231,9 +245,10 @@ while : ; do
   # credits/limit) now falls back, as long as the agent provably did nothing yet.
   if [ "$MODEL" = "$MODEL_PRIMARY" ] && did_nothing \
      && { limit_hit || tail -25 "$LOG" | grep -qiE "model.*(not found|unavailable|invalid|unknown)|does not support this model"; }; then
-    log "Primary '$MODEL_PRIMARY' blocked ($(limit_reset_note 2>/dev/null || echo 'unavailable')) — falling back to '$MODEL_FALLBACK'."
+    WHY="$(block_reason)"
+    log "Primary '$MODEL_PRIMARY' blocked ($WHY) — falling back to '$MODEL_FALLBACK'."
     ntfy_push "BS45 — falling back to $MODEL_FALLBACK" \
-      "$MODEL_PRIMARY blocked ($(limit_reset_note)). Running on $MODEL_FALLBACK instead." "low" "arrows_counterclockwise"
+      "$MODEL_PRIMARY blocked ($WHY). Running on $MODEL_FALLBACK instead." "low" "arrows_counterclockwise"
     MODEL="$MODEL_FALLBACK"
     continue
   fi
