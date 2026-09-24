@@ -1716,6 +1716,49 @@ int main(int argc, char **argv) {
       cout << "[cellsize] MEASUREMENT MODE cap=" << fh_cellsize
            << " (no completions, no checkpoints)\n" << flush;
     }
+    // WZ_FH_TARGET_C/_D (2026-09-24, canary planning; needs WZ_FH_CELLSIZE): the images of
+    // a known C,D under the C,D group (32, plus Q when binary). While counting, report the
+    // first image's in-cell stream index, drain batch and 0-based rank inside that sorted
+    // batch (stable sort by flat score => ties broken by stream order), then stop the cell
+    // once that batch is complete. A canary with DRAIN_TOP=rank+1, DRAIN_BATCHES=batch+1
+    // must then re-find it at exactly this index.
+    unordered_set<string> fh_targets;
+    if (fh_cellsize > 0 && getenv("WZ_FH_TARGET_C") && getenv("WZ_FH_TARGET_D")) {
+      auto parse = [](const char *s) {
+        vector<int> v; int val, cnt;
+        while (sscanf(s, "%d%n", &val, &cnt) == 1) { v.push_back(val); s += cnt; while (*s == ',' || *s == ' ') s++; }
+        return v;
+      };
+      vector<int> C0 = parse(getenv("WZ_FH_TARGET_C")), D0 = parse(getenv("WZ_FH_TARGET_D"));
+      auto key = [](const vector<int> &C, const vector<int> &D) {
+        string k;
+        for (int x : C) k += (x > 0 ? '+' : '-');
+        k += '|';
+        for (int x : D) k += (x > 0 ? '+' : '-');
+        return k;
+      };
+      vector<pair<vector<int>, vector<int>>> bases = {{C0, D0}};
+      size_t L = C0.size();
+      vector<int> QC(L), QD(L);
+      bool bin = C0.size() == D0.size() && (int)L == n;
+      for (size_t i = 0; bin && i < L; i++) {
+        QC[i] = (C0[i] + D0[i] + C0[L - 1 - i] - D0[L - 1 - i]) / 2;
+        QD[i] = (C0[i] + D0[i] - C0[L - 1 - i] + D0[L - 1 - i]) / 2;
+        if (abs(QC[i]) != 1 || abs(QD[i]) != 1) bin = false;
+      }
+      if (bin) bases.push_back({QC, QD});
+      for (auto &b : bases)
+        for (int var = 0; var < 32; var++) {
+          vector<int> C = b.first, D = b.second;
+          if (var & 1) for (auto &x : C) x = -x;
+          if (var & 2) for (auto &x : D) x = -x;
+          if (var & 4) reverse(C.begin(), C.end());
+          if (var & 8) reverse(D.begin(), D.end());
+          if (var & 16) swap(C, D);
+          fh_targets.insert(key(C, D));
+        }
+      cout << "[target] " << fh_targets.size() << " C,D images (Q " << (bin ? "included" : "not binary") << ")\n" << flush;
+    }
     long long fh_test_stop = 0;     // TEST HOOK: fake a SIGTERM after this many
     if (const char *e = getenv("WZ_FH_TEST_STOP_AFTER"))  // completions —
       fh_test_stop = atoll(e);      // exercises the mid-drain interrupt path
@@ -1945,6 +1988,9 @@ int main(int argc, char **argv) {
       const long long cs_start = cand;          // WZ_FH_CELLSIZE bookkeeping
       const auto cs_t0 = Clock::now();
       double cs_sec_at_buf = -1;                // seconds to stream fh_buf_cap candidates
+      long long tg_idx = -1, tg_batch = -1, tg_score = -1, tg_less = 0, tg_eq_before = 0,
+                tg_batch_seen = -1;             // WZ_FH_TARGET bookkeeping
+      unordered_map<long long, long long> tg_hist;        // score histogram of this batch before the target
       ck_pi = pi;
       if (!(fh_resuming && pi == fh_res_pi)) { ck_batch = 0; ck_k = 0; }
       // Flat-first within-cell ordering (WZ_FH_CELL_ORDER=0 disables; default
@@ -2116,6 +2162,22 @@ int main(int argc, char **argv) {
         if (fh_cellsize > 0) {  // measurement: count only
           long long c = cand - cs_start;
           if (c == fh_buf_cap) cs_sec_at_buf = chrono::duration<double>(Clock::now() - cs_t0).count();
+          if (!fh_targets.empty()) {
+            long long b = (c - 1) / fh_buf_cap;           // drain batch of this candidate
+            if (b != tg_batch_seen) { tg_less = tg_eq_before = 0; tg_batch_seen = b; tg_hist.clear(); }
+            long long sc = flat_score(Ci, Di);
+            if (tg_idx < 0) {
+              string k;
+              for (int i = 0; i < n; i++) k += (Ci[i] > 0 ? '+' : '-');
+              k += '|';
+              for (int i = 0; i < n; i++) k += (Di[i] > 0 ? '+' : '-');
+              if (fh_targets.count(k)) {
+                tg_idx = c; tg_batch = b; tg_score = sc;
+                for (auto &h : tg_hist) { if (h.first < sc) tg_less += h.second; else if (h.first == sc) tg_eq_before += h.second; }
+              } else tg_hist[sc]++;
+            } else if (b == tg_batch && sc < tg_score) tg_less++;
+            if (tg_idx >= 0 && (b > tg_batch || c % fh_buf_cap == 0)) { cell_stop.store(true); return; }
+          }
           if (c >= fh_cellsize) cell_stop.store(true);
           return;
         }
@@ -2158,6 +2220,11 @@ int main(int argc, char **argv) {
              << " sec=" << chrono::duration<double>(Clock::now() - cs_t0).count()
              << " sec_at_buf=" << cs_sec_at_buf
              << " leaves=" << lv << " hall_ok=" << okc << "\n" << flush;  // stream-cost anatomy
+        if (tg_idx >= 0)
+          cout << "TARGET pi=" << pi << " idx=" << tg_idx << " batch=" << tg_batch
+               << " rank_in_batch=" << (tg_less + tg_eq_before) << " score=" << tg_score
+               << " strictly_less=" << tg_less << " ties_before=" << tg_eq_before
+               << " batch_complete=" << (cell_stop.load() || !fh_stop.load() ? 1 : 0) << "\n" << flush;
       }
       if (cell_order && !cellbuf.empty() && (!cell_stop.load() || G_WALL_HIT)) drain();  // finish the cell in order
       // (front-only: a cell abandoned by cell_stop falls through to the
