@@ -1616,6 +1616,20 @@ int main(int argc, char **argv) {
     bool fh_resume_on = true;       // WZ_FH_RESUME=0 = kill switch: ignore an
     if (const char *e = getenv("WZ_FH_RESUME"))  // existing file, start fresh
       fh_resume_on = atoi(e) != 0;  // (new checkpoints are still written)
+    // WZ_FH_CELLSIZE=cap (2026-09-24, MEASUREMENT ONLY, default off): stream each live
+    // cell in the normal order but only COUNT its candidates (no score, buffer or
+    // completion), stopping a cell at `cap`; one "CELLSIZE" line per streamed cell.
+    // Answers the whole-cell top-K gate (review 2026-09-22 s.3 item 3): how far past the
+    // 500k prefix do full cells go? Never reads or writes checkpoints, so it cannot
+    // disturb a search lane that shares its CKDIR; it can never report a hit.
+    long long fh_cellsize = 0;
+    if (const char *e = getenv("WZ_FH_CELLSIZE")) fh_cellsize = max(0LL, atoll(e));
+    if (fh_cellsize > 0) {
+      fh_ckpt_path.clear();
+      fh_resume_on = false;
+      cout << "[cellsize] MEASUREMENT MODE cap=" << fh_cellsize
+           << " (no completions, no checkpoints)\n" << flush;
+    }
     long long fh_test_stop = 0;     // TEST HOOK: fake a SIGTERM after this many
     if (const char *e = getenv("WZ_FH_TEST_STOP_AFTER"))  // completions —
       fh_test_stop = atoll(e);      // exercises the mid-drain interrupt path
@@ -1838,6 +1852,9 @@ int main(int argc, char **argv) {
       long long cur_batch = 0;    // drain-batch counter within this cell
       long long cell_done_ct = 0; // completions in this cell (non-buffered path)
       atomic<bool> cell_stop{false}; // front-only: abandon THIS cell, keep the arm
+      const long long cs_start = cand;          // WZ_FH_CELLSIZE bookkeeping
+      const auto cs_t0 = Clock::now();
+      double cs_sec_at_buf = -1;                // seconds to stream fh_buf_cap candidates
       ck_pi = pi;
       if (!(fh_resuming && pi == fh_res_pi)) { ck_batch = 0; ck_k = 0; }
       // Flat-first within-cell ordering (WZ_FH_CELL_ORDER=0 disables; default
@@ -2006,6 +2023,12 @@ int main(int argc, char **argv) {
           for (int i = 0; i < n; i++) fprintf(fh_dump, "%d ", Di[i]);
           fprintf(fh_dump, "\n");
         }
+        if (fh_cellsize > 0) {  // measurement: count only
+          long long c = cand - cs_start;
+          if (c == fh_buf_cap) cs_sec_at_buf = chrono::duration<double>(Clock::now() - cs_t0).count();
+          if (c >= fh_cellsize) cell_stop.store(true);
+          return;
+        }
         long long sc = -1;
         if (score_max > 0 || cell_order) sc = flat_score(Ci, Di);
         if (score_max > 0 && sc > score_max) { score_rej++; return; }
@@ -2037,6 +2060,15 @@ int main(int argc, char **argv) {
       count_pairs22(n, fhProfs[pi].px, fhProfs[pi].py, false, pinC, pinD,
                     lv, okc, &probe, fh_m, &cell_stop);
       if (G_WALL_HIT) cells_walled++;  // abandoned by the stream-wall timeout: drain what it streamed, then it counts as done
+      if (fh_cellsize > 0) {
+        long long c = cand - cs_start;
+        cout << "CELLSIZE pi=" << pi << " cand=" << c
+             << " capped=" << (c >= fh_cellsize ? 1 : 0)
+             << " partial=" << (fh_stop.load() ? 1 : 0)   // SIGTERM mid-cell: cand is a lower bound
+             << " sec=" << chrono::duration<double>(Clock::now() - cs_t0).count()
+             << " sec_at_buf=" << cs_sec_at_buf
+             << " leaves=" << lv << " hall_ok=" << okc << "\n" << flush;  // stream-cost anatomy
+      }
       if (cell_order && !cellbuf.empty() && (!cell_stop.load() || G_WALL_HIT)) drain();  // finish the cell in order
       // (front-only: a cell abandoned by cell_stop falls through to the
       //  "cell fully done" bookkeeping below unless the ARM was stopped)

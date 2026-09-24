@@ -4,6 +4,29 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-24 (Claude session, later) — CELLSIZE MEASUREMENT BUILT + PRE-REGISTERED
+(whole-cell top-K gate; Daniel said go).** New default-off mode `WZ_FH_CELLSIZE=cap`: streams
+each live cell in the normal order but only COUNTS candidates (no score/buffer/completion),
+stops a cell at cap, prints one `CELLSIZE pi= cand= capped= partial= sec= sec_at_buf= leaves=
+hall_ok=` line per streamed cell; never reads/writes checkpoints; cannot report a hit.
+VALIDATION PASS: tools/test_firsthit_cellsize.py (8 fixtures n<=13 incl. rev/order2/shards/
+END/SKIP, 40 runs: stream bytes == normal full-cell run, per-cell counts sum to
+candidates_streamed, every cap = exact per-cell prefix, planted ckpt untouched, none
+written); tools/test_firsthit_telemetry.py default-off identity vs c2a3813 (63 + 8 resume
+pairs) PASS; n29 canary PASS (idx 26694 rank 588 nodes 81320, telemetry 0/64 identical, NPAF verified); tools/test_cellsize_summary.py 11 checks PASS.
+JOB (one Fir node, 12 h, isolated dir $SCRATCH/bs45_cellsize so no production lane, CKDIR
+or queued compile is touched): CS44g2000 = workhorse (3,13,0,0), Pass G env of lane
+F44g2000 (ORDER=1, canon, PROF_SKIP=2000, PROF_END=3000, 178 arms) + WZ_FH_CELLSIZE=4000000
+(8x the 500k prefix). Expected ~1-2 cells/arm (stream ~120 cand/s/arm) => ~180-350 cells.
+PRE-REGISTERED RULE (tools/cellsize_summary.py; R = cell size / 500k, capped/partial =
+lower bounds), over live cells: NO-OP if P(R<1) > 50% (policy already whole-cell for most
+cells: do not build); BUILD if P(R<=1.5) >= 50% and P(R>=4) <= 25% (then known-solution
+tests before any lane); KILL if P(R>=3) >= 50% or P(R>=8) >= 50% (prefix policy stands;
+cheaper stream enumeration is the lever); BETWEEN otherwise (cheaper stream first, then
+re-measure); INSUFFICIENT if < 100 live cells (one repeat at k=5000, then stop). Side
+outputs: leaves per candidate (stream-cost anatomy for the cheaper-stream lever) and time
+to stream 500k (checks my ~1.4 h estimate).**
+
 **⚡ 2026-09-24 (Claude session, afternoon) — LOOP FIXES + NEXT-BUILD GATE.
 (1) Phone said "fable blocked ()": the CLI's credit message had no "resets" clause, so
 limit_reset_note was empty; the fallback push now always states a reason (block_reason:
