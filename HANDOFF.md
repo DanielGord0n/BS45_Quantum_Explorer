@@ -29,7 +29,7 @@ replay 7.9%; other 0.07%; late_share 96.8% (charged nodes almost all at the late
 Rank deciles: completion cost ~flat across in-drain rank (nodes 3.16e12 -> 2.68e12), aborts
 579k in the top decile vs ~390k in the lowest ones. RULES APPLIED: g >= 30% FIRES, but its
 score share is ~0.002% => packed flat_score is NOT worth building (g is ~all stream
-ENUMERATION, ~7.4 us per streamed candidate vs ~0.35 us scoring; 433M streamed to complete
+ENUMERATION, ~7.4 ms of stream work per emitted candidate vs ~0.35 us scoring; 433M streamed to complete
 36.4M = 50k top per cell). Completion 48-52% < 70% => joint-reachability benchmark NOT
 triggered (despite late_share 97%). => NEITHER constant-factor project. The review's
 fallback is selection policy (whole-cell top-K). NEW, not pre-registered: the in-cell
