@@ -158,6 +158,8 @@ Do not re-run the checker.
      candidates, cannot find anything, and has no checkpoint lane. It is NOT a search lane:
      do not count it toward Fir's pending/running refill numbers, do not restack or cancel
      it, and do not read it; Daniel's session reads it with tools/cellsize_summary.py.
+     Likewise Fir job 61331128 (QCANARY, $SCRATCH/bs45_qcanary): a 2-core Q canary, not a lane;
+     never count, restack, cancel or read it.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
      **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**

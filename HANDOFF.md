@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-24 (Claude session, night) — Q CLUSTER CANARY SUBMITTED: Fir 61331128 (QCANARY,
+2 cores, 12 h, isolated $SCRATCH/bs45_qcanary; sha-checked patch onto Fir's cbe3859: solver
+3c9b9c46.. == fe7485e, script b1ac6c95..).** n=42 class (7,11,0,0), Pass G env + ORBIT_Q=1, one kept
+cell per target: ours42 -> cell 582325 (window 3271, arm 87; holds ONLY a Q-image = the real test),
+wz42 -> cell 26105 (window 146, arm 117; old-group images too = secondary). Step 1 WZ_FH_TARGET
+(count-only) gives image idx/batch/rank; step 2 real search with DRAIN_TOP=rank+1, DRAIN_BATCHES=
+batch+1. PRE-REGISTERED: PASS = step-2 FOUND (then verify_npaf locally; exact idx if the hit is the
+target); FAIL = drained set exhausted without FOUND (=> do NOT deploy Q); INCONCLUSIVE = image not
+reached in 12 h or (batch+1)(rank+1) > 300k completions (=> redesign, no deploy). Validated locally:
+tools/test_target_canary.py (120 small-n canaries) + full script rehearsal at n=10 PASS.
+READ (1 tap): ./cluster/deploy/duo_run.sh fir 'cd $SCRATCH/bs45_qcanary && cat qcanary_61331128.txt'
+(then pipe the FOUND block to tools/verify_npaf.py). On PASS: build Pass H (Q re-tile) for Daniel's go.**
+
 **⚡ 2026-09-24 (Claude session, evening) — ASTRA MATH REVIEW VERIFIED; QUAD SWITCH Q = 45%
 FEWER n=44 CELL ORBITS (built default-off, NOT deployed).** Review:
 docs/reviews/2026-09-24-astra-math-review.md; my verification + questions back:
