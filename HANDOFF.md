@@ -5,7 +5,7 @@ system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 �
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
 **⚡ 2026-09-24 (daily loop 1pm — ALL FOUR reached) — NO HITS, 24 new hitless reads; Fir
-restack in progress (details appended below as submits echo).** NEW FOUND: none on all four.
+restacked 25 (IDs below); TELEMETRY PILOT CLOSED: neither constant-factor build (NEEDS_HUMAN: next build).** NEW FOUND: none on all four.
 FIR (5 R + 6 PD): TELEMETRY PILOT 61213832 = F44g1000 READ — 178/178 summarized, 175
 interrupted, range_done=3/178, cells 742 (cum_done 742 — the unit began on 3014b95, so
 "rate only, not exact alpha"), tested 36.4M, aborts 11.8%. Its GATEB_TELEM line is NOT in
@@ -20,6 +20,29 @@ single borderline lane (pooled well under), watch, no action. NIBI 296 PD, TRILL
 no reads, floors satisfied, no action. rung_status EXHAUSTED as always (Pass G is the
 program; no SA). CHECKER: +GATEB_TELEM/aggregation-FAILED in the firsthit grep; exclusions
 +60978552..615 second reps, +61213832/833, +21608253-262 (regex validated).
+★ TELEMETRY PILOT VERDICT (61213832, GATEB_TELEM v2 fetched via duo_run): usable read,
+178/178 arms, 0 missing/rejected, stats_sufficient=true (full mode), coverage_acceptable,
+cells_live_done 742, completions 36.4M, 1/64 histogram 4.4e11 sampled nodes => the pilot is
+COMPLETE, NO repeat rep. Phase shares (inclusive / without resume replay): g = 51.7% / 47.6%;
+scoring (flat_score) 0.0021% / 0.0019%; buffer sort 0.0004%; completion 48.2% / 52.4%;
+replay 7.9%; other 0.07%; late_share 96.8% (charged nodes almost all at the late depths).
+Rank deciles: completion cost ~flat across in-drain rank (nodes 3.16e12 -> 2.68e12), aborts
+579k in the top decile vs ~390k in the lowest ones. RULES APPLIED: g >= 30% FIRES, but its
+score share is ~0.002% => packed flat_score is NOT worth building (g is ~all stream
+ENUMERATION, ~7.4 us per streamed candidate vs ~0.35 us scoring; 433M streamed to complete
+36.4M = 50k top per cell). Completion 48-52% < 70% => joint-reachability benchmark NOT
+triggered (despite late_share 97%). => NEITHER constant-factor project. The review's
+fallback is selection policy (whole-cell top-K). NEW, not pre-registered: the in-cell
+stream enumeration (C,D DFS + 2.11b/2.12 filters) is ~half of worker time, so a cheaper
+stream would be a ~1.9x ceiling lever. NEEDS_HUMAN: Daniel picks the next build.
+FIR RESTACK (pending 6 < 8; all 12 workhorse G lanes unfinished, range_done 0-3/178): 25
+singleton reps, verbatim sacct SubmitLine env (no telemetry), rrg-ikotsire_cpu, --mem=0,
+bringing EVERY lane to 3 queued: F44g0 x3 = 61305503/504/505; F44gr0 61305506, 61305517;
+then x2 each: F44g1000 507/519, F44gr1000 508/520, F44g2000 509/521, F44gr2000 510/522,
+F44g3000 511/523, F44gr3000 512/524, F44g4000 513/525, F44gr4000 514/526, F44g5000 515/527,
+F44gr5000 516/528 (all 613055xx; 61305518 is not ours). Fir now 5 R + 31 PD.
+ROUND VERDICT: no hits, no verified solutions; telemetry pilot closed (neither constant-
+factor build); Fir restacked 25; NEEDS_HUMAN = next-build decision only.
 
 **⚡ 2026-09-23 (Claude session, evening) — BUNDLED REDEPLOY PREPARED, NOT YET DEPLOYED.
 (1) Codex's telemetry review fixes committed (664078c) and merged to main (b6340e6):
