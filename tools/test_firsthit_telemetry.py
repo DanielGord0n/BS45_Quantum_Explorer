@@ -16,6 +16,8 @@ import shutil
 import subprocess
 import tempfile
 
+from aggregate_firsthit_telemetry import validate
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'src/solver/wz_match.cpp'
 ENV = {k: v for k, v in os.environ.items() if not k.startswith(('WZ_', 'FH_'))}
@@ -44,9 +46,15 @@ def run(binary, args, settings, ckdir, timeout=30):
 
 
 def check_record(t, out, stride):
+    validate(t)  # exercise the actual driver/solver telemetry contract
     assert t['version'] == 2 and t['stride'] == stride
-    nodes = int(re.search(r'total_AB_nodes=(\d+)', out)[1])
-    tested = int(re.search(r'backtracks_entered=(\d+)', out)[1])
+    # Progress lines also contain total_AB_nodes; only the terminal summary
+    # accounts for all completions in the FH_TELEM record.
+    summaries = re.findall(r'^backtracks_entered=.*$', out, re.MULTILINE)
+    assert len(summaries) == 1, 'missing or ambiguous terminal summary'
+    summary = summaries[0]
+    nodes = int(re.search(r'total_AB_nodes=(\d+)', summary)[1])
+    tested = int(re.search(r'backtracks_entered=(\d+)', summary)[1])
     assert t['completions'] == tested
     assert sum(t['rank_count']) + t['unranked_count'] == tested
     assert sum(t['rank_nodes']) + t['unranked_nodes'] == nodes
@@ -105,6 +113,9 @@ def main():
                     assert len(current[3]) == (1 if mode else 0), 'missing opt-in FH_TELEM record'
                     if mode:
                         check_record(current[3][0], current[4], mode)
+                        # Long canaries emit progress before the terminal summary.
+                        check_record(current[3][0],
+                                     '[firsthit progress] total_AB_nodes=1\n' + current[4], mode)
                     if 'RESULT: FOUND' in current[4]:
                         verified = subprocess.run(['python3', str(ROOT/'tools/verify_npaf.py')],
                                                   input=current[4], text=True, capture_output=True)
@@ -112,7 +123,7 @@ def main():
                     checks += 1
         # Mid-drain interruption, exact ckpt bytes, then resume with telemetry toggled.
         for reverse, buffered, stop_after in ((0,1,3),(1,1,3),(0,0,3),(1,0,7),(0,1,7),(1,1,10)):
-            config = {**common, 'WZ_FH_AB_BUDGET': 1, 'WZ_FH_TEST_STOP_AFTER': 3,
+            config = {**common, 'WZ_FH_AB_BUDGET': 1,
                       'WZ_FH_STREAM_REV': reverse, 'WZ_FH_CELL_ORDER': buffered,
                       'WZ_FH_TEST_STOP_AFTER': stop_after}
             dirs = [tmp / f'resume-base-{reverse}-{buffered}-{stop_after}',
@@ -129,7 +140,32 @@ def main():
             assert resumed[1][3][0]['resume_replay_ns'] > 0
             if buffered:
                 assert resumed[1][3][0]['resume_replay_sort_ns'] > 0
-        print(f'PASS: {checks} baseline/off/full/sampled comparisons + 6 interrupt/resume pairs; '
+        # Checkpoint at a buffer boundary: discarded prior buffer is replay,
+        # but generation/scoring/sorting of the next, untouched buffer is fresh.
+        # A zero batch/k checkpoint has no replay at all.
+        for boundary in (False, True):
+            config = {**common, 'WZ_FH_AB_BUDGET': 1, 'WZ_FH_BUF_CAP': 2,
+                      'WZ_FH_DRAIN_TOP': 0, 'WZ_FH_TEST_STOP_AFTER': 2}
+            dirs = [tmp/f'boundary-base-{boundary}', tmp/f'boundary-new-{boundary}']
+            for binary, directory in zip(binaries, dirs):
+                first = run(binary, (13,2,4,3,5), config, directory)
+                ck = directory/'arm_0.ckpt'
+                saved = ck.read_text()
+                assert 'resume_batch=0\nresume_k=2\n' in saved
+                saved = saved.replace('resume_batch=0\nresume_k=2\n',
+                                      f'resume_batch={int(boundary)}\nresume_k=0\n')
+                ck.write_text(saved)
+            config.pop('WZ_FH_TEST_STOP_AFTER')
+            resumed = [run(b, (13,2,4,3,5), {**config, 'WZ_FH_TELEMETRY': mode}, d)
+                       for b, mode, d in zip(binaries, (0,1), dirs)]
+            assert resumed[0][:3] == resumed[1][:3]
+            t = resumed[1][3][0]
+            check_record(t, resumed[1][4], 1)
+            assert t['resume_cells'] == int(boundary)
+            assert t['resume_replay_sort_ns'] == 0
+            assert (t['resume_replay_ns'] > 0) == boundary
+            assert (t['resume_replay_score_ns_est'] > 0) == boundary
+        print(f'PASS: {checks} baseline/off/full/sampled comparisons + 8 interrupt/resume pairs; '
               'identical verdicts, sequences, counters, streams and checkpoint bytes.', flush=True)
         if args_cli.n29_canary:
             # Do not inherit common: canon/order/THM flags select a DIFFERENT stream.

@@ -735,6 +735,8 @@ struct FhTelemetry {
   int stride = 0;
   bool hist_active = false;
   long long cell_ns = 0, score_ns_est = 0, sort_ns = 0, complete_ns = 0;
+  long long resume_replay_ns = 0, resume_replay_score_ns_est = 0;
+  long long resume_replay_sort_ns = 0, resume_cells = 0;
   long long score_calls = 0, score_samples = 0, completions = 0;
   long long hist_candidates = 0, hist_nodes = 0, total_nodes = 0;
   long long unranked_nodes = 0, unranked_count = 0, unranked_ns = 0;
@@ -753,10 +755,12 @@ struct FhTelemetry {
   }
   void emit(int n, long long worker_ns) const {
     if (!stride) return;
-    cout << "FH_TELEM {\"version\":1,\"n\":" << n << ",\"stride\":" << stride
+    cout << "FH_TELEM {\"version\":2,\"n\":" << n << ",\"stride\":" << stride
          << ",\"worker_ns\":" << worker_ns;
 #define FH_TM_FIELD(name) cout << ",\"" #name "\":" << name
     FH_TM_FIELD(cell_ns); FH_TM_FIELD(score_ns_est); FH_TM_FIELD(sort_ns);
+    FH_TM_FIELD(resume_replay_ns); FH_TM_FIELD(resume_replay_score_ns_est);
+    FH_TM_FIELD(resume_replay_sort_ns); FH_TM_FIELD(resume_cells);
     FH_TM_FIELD(complete_ns); FH_TM_FIELD(score_calls); FH_TM_FIELD(score_samples);
     FH_TM_FIELD(completions); FH_TM_FIELD(hist_candidates); FH_TM_FIELD(hist_nodes);
     FH_TM_FIELD(total_nodes); FH_TM_FIELD(unranked_nodes); FH_TM_FIELD(unranked_count);
@@ -1816,6 +1820,20 @@ int main(int argc, char **argv) {
       }
       long long lv = 0, okc = 0;
       auto telemetry_cell_start = FH_TM.stride ? Clock::now() : Clock::time_point{};
+      // A zero batch/k checkpoint starts fresh; it needs no replay. Keep this
+      // diagnostic flag separate from fh_resuming, which clears BEFORE the
+      // resume batch is re-sorted. That re-sort is also restart overhead.
+      bool telemetry_replay = FH_TM.stride && fh_resuming && pi == fh_res_pi
+                            && (fh_res_batch > 0 || fh_res_k > 0);
+      if (telemetry_replay) FH_TM.resume_cells++;
+      long long replay_score_before = FH_TM.score_ns_est, replay_sort_before = FH_TM.sort_ns;
+      auto telemetry_end_replay = [&]() {
+        if (!telemetry_replay) return;
+        FH_TM.resume_replay_ns += FhTelemetry::ns(telemetry_cell_start);
+        FH_TM.resume_replay_score_ns_est += FH_TM.score_ns_est - replay_score_before;
+        FH_TM.resume_replay_sort_ns += FH_TM.sort_ns - replay_sort_before;
+        telemetry_replay = false;
+      };
       int telemetry_rank = -1;  // unbuffered candidates have no sorted rank
       long long cur_batch = 0;    // drain-batch counter within this cell
       long long cell_done_ct = 0; // completions in this cell (non-buffered path)
@@ -1917,6 +1935,8 @@ int main(int argc, char **argv) {
         if (fh_resuming && pi == fh_res_pi && cur_batch < fh_res_batch) {
           cur_batch++;
           cellbuf.clear();
+          // At a batch boundary the next buffer is new work, not replay.
+          if (cur_batch == fh_res_batch && fh_res_k == 0) telemetry_end_replay();
           return;
         }
         size_t start = 0;
@@ -1928,6 +1948,7 @@ int main(int argc, char **argv) {
         stable_sort(cellbuf.begin(), cellbuf.end(),
                     [](const CellCand &a, const CellCand &b){ return a.sc < b.sc; });
         if (FH_TM.stride) FH_TM.sort_ns += FhTelemetry::ns(sort_start);
+        if (!fh_resuming) telemetry_end_replay();
         size_t stop_at = cellbuf.size();
         if (fh_drain_top > 0 && cur_batch < fh_drain_batches)
           stop_at = min(cellbuf.size(), (size_t)fh_drain_top);  // front-only: top-K of the first B batches
@@ -1997,7 +2018,11 @@ int main(int argc, char **argv) {
         // Non-buffered path: completion order == eligible-stream order, so the
         // resume position is simply "skip the first k eligible candidates".
         if (fh_resuming && pi == fh_res_pi) {
-          if (cell_done_ct < fh_res_k) { cell_done_ct++; return; }
+          if (cell_done_ct < fh_res_k) {
+            cell_done_ct++;
+            if (cell_done_ct == fh_res_k) telemetry_end_replay();
+            return;
+          }
           fh_resuming = false;
         }
         complete_one(Ci, Di);
@@ -2024,6 +2049,7 @@ int main(int argc, char **argv) {
         fh_write_ckpt();  // cheap: live cells complete rarely at deep n
       }
       if (FH_TM.stride) {
+        telemetry_end_replay();  // includes interruption/empty cell before catch-up
         FH_TM.cell_ns += FhTelemetry::ns(telemetry_cell_start);
         if (fh_stop.load()) FH_TM.cells_partial++;
         else if (cand > cand_at_cell_start) FH_TM.cells_live_done++;

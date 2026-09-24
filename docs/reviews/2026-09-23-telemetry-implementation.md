@@ -1,5 +1,10 @@
 # First-hit phase telemetry — implementation for Claude review
 
+**Superseded details:** Claude has recovered and passed the archived n29 gate.
+Replay accounting, tolerant per-arm aggregation, and mode-64 pilot policy are now
+documented in `docs/reviews/2026-09-23-telemetry-review-fixes.md`. The original
+failed n29 attempt and stricter deployment rules below are historical observations.
+
 Baseline: `c2a3813`. Branch: `codex/n44-telemetry`. This implements the next
 measurement experiment from `2026-09-22-n44-plan-claude-review.md`, not the earlier
 shadow-sampling proposal. No solver optimization, search-policy change or deployment.

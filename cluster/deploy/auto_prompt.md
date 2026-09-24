@@ -178,8 +178,17 @@ Do not re-run the checker.
      Old logs never recorded cells_empty, so exact E cannot be reconstructed merely by
      summing their done/dead/duplicate fields. Do not reset search checkpoints to reset
      accounting. Process-local FH_TELEM is separate: it describes THIS rep, not history.
-     Telemetry is opt-in experimental work awaiting Claude review and overhead validation;
-     never enable it fleet-wide or substitute it into a queued job autonomously.
+     Telemetry pilot: mode 64 ONLY, one Fir workhorse rep plus at most one repeat
+     (one allocated node-day total). Same-node overhead validation is required before
+     wider/long-running use, not for this bounded measurement. Do not enable it
+     fleet-wide or perform the targeted pending-job substitution autonomously.
+     FH_TELEM v2 separates resumed-cell replay: report both inclusive and
+     *_without_replay phase shares; use the latter for fresh-work bottlenecks.
+     Up to 3 missing/rejected arms per rep is acceptable WITH counts/reasons and
+     missing-arm bias disclosed. More is incomplete; never scale missing work up.
+     Pool additive FH_TELEM totals from the allowed repeat for the volume gate;
+     do not average shares or sum GATEB cum_* across reps. Two incomplete reads stop
+     the pilot; no local n44 fallback. Details: docs/reviews/2026-09-23-telemetry-review-fixes.md.
      **LEVER 19 SWEEP RULES (2026-08-29, supersede stack-depth for sweep lanes):** read
      `docs/lever19_sweep_plan.md`. Sweep lanes (names F44i*/F44Bi*/R44i*/R44Ai*/R44Di*/
      T43b*/N43b*) are ONE rep each — never restack the same k. Do NOT top up the deep

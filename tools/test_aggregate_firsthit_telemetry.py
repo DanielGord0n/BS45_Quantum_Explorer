@@ -195,6 +195,39 @@ class AggregateTest(unittest.TestCase):
         r.update(stride=64, resume_replay_ns=25)
         self.assertFalse(self.summary([[r]])['pilot_read_usable'])
 
+    def test_unreadable_paths_are_per_arm_rejections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            valid = Path(tmp)/'valid.log'
+            valid.write_text('FH_TELEM '+json.dumps(record())+'\n')
+            missing = Path(tmp)/'missing.log'
+            p = subprocess.run([sys.executable, str(SCRIPT), '--expected-arms', '3',
+                                str(valid), str(missing), tmp], capture_output=True, text=True)
+            self.assertEqual(p.returncode, 0, p.stderr)
+            s = json.loads(p.stdout.removeprefix('GATEB_TELEM: '))
+            self.assertEqual(s['arms_reported'], 1)
+            self.assertEqual(len(s['rejected_records']), 2)
+            self.assertTrue(s['coverage_acceptable'])
+
+    def test_corrupt_last_record_does_not_fall_back(self):
+        s = self.summary([[record(), 'FH_TELEM {bad'], [record()]])
+        self.assertEqual(s['arms_reported'], 1)
+        self.assertEqual(s['worker_ns'], 100)
+        self.assertEqual(len(s['rejected_records']), 1)
+
+    def test_adjusted_threshold_flags(self):
+        r = record(resume_replay_ns=30, resume_replay_score_ns_est=10)
+        s = self.summary([[r]])
+        self.assertTrue(s['g_ge_30'])
+        self.assertFalse(s['g_ge_30_without_replay'])
+        self.assertFalse(s['complete_ge_70'])
+        self.assertTrue(s['complete_ge_70_without_replay'])
+        r = record(worker_ns=100, cell_ns=100, complete_ns=0, rank_ns=[0]*10,
+                   resume_replay_ns=100, resume_replay_sort_ns=10,
+                   resume_replay_score_ns_est=10)
+        s = self.summary([[r]])
+        self.assertIsNone(s['g_ge_30_without_replay'])
+        self.assertIsNone(s['complete_ge_70_without_replay'])
+
     def test_extra_fields_ignored(self):
         self.assertEqual(self.summary([[record(future_field='ignored')]])['completions'], 2)
 
