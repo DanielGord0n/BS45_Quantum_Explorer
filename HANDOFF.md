@@ -4,6 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-26 (Claude session) — ASTRA RED-TEAM VERIFIED; 1 REAL DEFECT FIXED (not yet deployed).**
+Review: docs/reviews/2026-09-26-astra-redteam.md; my item-by-item verification:
+docs/reviews/2026-09-26-astra-redteam-claude-response.md. No mathematical filter error found.
+FIXED: front-only resume at batch == DRAIN_BATCHES completed a whole extra buffer (reproduced with a
+forged checkpoint; tools/test_resume_boundary.py). HARDENED: refuse truncated cell lists; loud
+FH_INTERNAL_ERROR if the completer's FOUND fails NPAF; advancement also checks SIGTERM; per-orbit prune
+certificates. CERTIFIED: Hall roundoff (<1e-9 vs 0.5 margin), SIGTERM flag consistency. BUILT default
+off: WZ_FH_MID_SOLVE (identical results, -1.8% nodes). All suites + n29 canary PASS. These production
+fixes ship with the next redeploy (bundle with Pass H). Pass H plan rewritten as v3, now includes the
+80/20 breadth hedge (Daniel's call at launch) and tile-cost class allocation.**
+
 **⚡ 2026-09-25 (Claude session, evening) — REPO REORGANIZED (nothing deleted).** docs/ now has
 plans/ research/ briefs/ reviews/{prompts,evidence}/ archive/ with an index (docs/README.md); 39 paths
 git-mv'd, references rewritten in 34 files, 0 dangling live references; HANDOFF trimmed 3,021 -> ~760

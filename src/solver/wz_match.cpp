@@ -976,8 +976,14 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
     };
     if (L % 2 == 1) {  // odd L: free middle element
       int mid = half;
+      // WZ_FH_MID_SOLVE=1 (2026-09-26, Astra red-team item 3; default off): a middle pair
+      // whose final |sums| are wrong fails final_ok anyway, so skip it BEFORE placing. Same
+      // first accepted pair in the same order => identical completions, hits and budget
+      // aborts (middle trials do not charge fh_cur); only total_AB_nodes drops.
+      static const bool mid_solve = getenv("WZ_FH_MID_SOLVE") && atoi(getenv("WZ_FH_MID_SOLVE"));
       for (int k = 0; k < 4; k++) {
         int av = P22_4[k][0], bv = P22_4[k][1];
+        if (mid_solve && (abs(sumA + av) != FH_ABS_A || abs(sumB + bv) != FH_ABS_B)) continue;
         fh_place(mid, av, bv, A, B, Dab, Kab, L);
         fh_nodes_total++;
         if constexpr (collect_depth) FH_TM.depth_nodes[d]++;
@@ -1096,7 +1102,12 @@ static int fh_complete_ab(const int *C, const int *D) {
   if (!found)
     return fh_aborted ? 3 : 2;
   for (int s = 1; s <= n; s++)
-    if (npaf_at(A, B, n1, C, D, n, s) != 0) return 2;
+    if (npaf_at(A, B, n1, C, D, n, s) != 0) {
+      // Must never happen (Astra red-team 2026-09-26): the DFS claimed a completion that the
+      // independent NPAF check rejects. Never let it pass as an ordinary "no completion".
+      cout << "FH_INTERNAL_ERROR: completer FOUND but NPAF[" << s << "] != 0\n" << flush;
+      return 2;
+    }
   memcpy(g_solA, A, n1 * sizeof(int));
   memcpy(g_solB, B, n1 * sizeof(int));
   memcpy(g_solC, C, n * sizeof(int));
@@ -1339,6 +1350,10 @@ int main(int argc, char **argv) {
                                   G_THM211B ? &ab6a : nullptr);
       cout << "[firsthit] mod-6 stream source: " << fhProfs.size()
            << " C,D profile cells (mod-3 atoms exceed walltime at this n)\n" << flush;
+      if (fhProfs.size() >= 20000000) {  // cap hit: the list is a PREFIX, not the class
+        cout << "RESULT: CELL LIST TRUNCATED at the 20M cap — refusing to search an incomplete tile\n" << flush;
+        return 2;
+      }
     } else {
       fhProfs = cdProfs;
     }
@@ -1473,7 +1488,8 @@ int main(int argc, char **argv) {
             return true;
           };
           long long missing = 0, nonreal = 0, eq212 = 0, unknown = 0, nonint = 0;
-          string cert;  // one auditable certificate per reason
+          string cert;  // one sample certificate per reason (printed)
+          vector<string> qp_certs;  // one certificate per dead orbit: orbit_id X Q(X) reason
           for (size_t i = 0; i < fhProfs.size(); i++) {
             vector<int> qx = fhProfs[i].px, qy = fhProfs[i].py;
             bool integral = true;
@@ -1489,8 +1505,11 @@ int main(int argc, char **argv) {
             else if (!realizable(qx) || !realizable(qy)) { nonreal++; why = "not_realizable"; }
             else if (G_THM212 && !thm212_ok(qx, qy, fh_m, false)) { eq212++; why = "eq2.12"; }
             else { unknown++; continue; }
-            if (qp_dead.insert(oid[i]).second && cert.find(why) == string::npos)
-              cert += string(" ") + why + ":" + own[i] + "->" + fh_cellkey(qx, qy);
+            if (qp_dead.insert(oid[i]).second) {
+              qp_certs.push_back(oid[i] + " " + own[i] + " " + fh_cellkey(qx, qy) + " " + why);
+              if (cert.find(why) == string::npos)
+                cert += string(" ") + why + ":" + own[i] + "->" + fh_cellkey(qx, qy);
+            }
           }
           long long removed = 0;
           for (size_t i = 0; i < fhProfs.size(); i++) removed += qp_dead.count(oid[i]);
@@ -1501,6 +1520,10 @@ int main(int argc, char **argv) {
               for (size_t i = 0; i < fhProfs.size(); i++)
                 if (qp_dead.count(oid[i])) fprintf(df, "%zu\n", i);
               fclose(df);
+            }
+            if (FILE *cf = fopen((string(dp) + ".certs").c_str(), "w")) {
+              for (auto &c : qp_certs) fprintf(cf, "%s\n", c.c_str());
+              fclose(cf);
             }
           }
           cout << "[qprune] missing_Q_images=" << missing << " not_realizable=" << nonreal
@@ -2201,6 +2224,18 @@ int main(int argc, char **argv) {
           if (cur_batch == fh_res_batch && fh_res_k == 0) telemetry_end_replay();
           return;
         }
+        // Front-only resume boundary (2026-09-26, found by Astra's red-team, reproduced with a
+        // forged checkpoint): a checkpoint written after the last selected batch but before the
+        // cell advanced resumes at batch == DRAIN_BATCHES, k=0. That batch is outside the
+        // front policy; completing it (stop_at = whole buffer) did a full extra buffer of
+        // completions. The front is already complete: abandon the rest of the cell.
+        if (fh_drain_top > 0 && cur_batch >= fh_drain_batches) {
+          fh_resuming = false;
+          telemetry_end_replay();
+          cellbuf.clear();
+          if (!cell_stop.load()) { cell_stop.store(true); cells_capped++; }
+          return;
+        }
         size_t start = 0;
         if (fh_resuming && pi == fh_res_pi && cur_batch == fh_res_batch) {
           start = (size_t)min((long long)cellbuf.size(), fh_res_k);
@@ -2339,7 +2374,7 @@ int main(int argc, char **argv) {
       if (cell_order && !cellbuf.empty() && (!cell_stop.load() || G_WALL_HIT)) drain();  // finish the cell in order
       // (front-only: a cell abandoned by cell_stop falls through to the
       //  "cell fully done" bookkeeping below unless the ARM was stopped)
-      if (!fh_stop.load()) {
+      if (!fh_stop.load() && !g_fh_sigterm) {
         cells_done++;  // only cells processed to completion
         if (cand == cand_at_cell_start) cells_empty++;  // retained, live, yet zero eligible candidates
         ck_pi = pi + fh_nshard;  // cell fully done: resume point = next cell
