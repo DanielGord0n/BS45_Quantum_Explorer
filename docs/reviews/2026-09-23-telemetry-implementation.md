@@ -112,7 +112,7 @@ equate its timeout with an instrumentation regression or claim the n29 gate pass
 No timeout extension or further large local search was run. Reproduce the archived
 environment or run the paired gate on a cluster before deployment.
 
-Local overhead evidence: `docs/reviews/2026-09-23-evidence/telemetry-overhead.json`.
+Local overhead evidence: `docs/reviews/evidence/2026-09-23/telemetry-overhead.json`.
 41 balanced same-host pairs, n13 complete stream with cap1; medians versus new
 binary telemetry-off were approximately +0.40% full and +0.42% sampled. The upper
 bootstrap bounds for this fixture were below 0.6%. New-binary off versus baseline

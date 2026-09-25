@@ -23,9 +23,11 @@ and the verification discipline.
 5. **Honest framing:** ladder finds are solver-capability results, not records. n≤40 is
    known; 41–43 are Wang-Zhu's; n=44 is the open record and needs new mathematics.
 
-## Layout (post-2026-06-29 reorg)
+## Layout (reorganized 2026-09-25)
 
-`src/{solver,verifier}/` C++ solvers (active: `wz_sa_v8.cpp`; probe: `wz_match.cpp`) ·
-`cluster/deploy/` active SLURM scripts · `tools/verify_npaf.py` independent checker ·
-`results/champions/` banked solutions · `docs/` incl. `kotsireas_brief.md` · `sarukhanian/`
-separate sub-project. HANDOFF sections older than 2026-06-29 use pre-reorg paths.
+`src/solver/` C++ solvers (active: `wz_match.cpp`, WZ_FIRSTHIT) · `cluster/deploy/` live SLURM
+scripts + the daily loop · `tools/` verifier (`verify_npaf.py`), job read-out tools, regression
+tests · `results/champions/` banked solutions, `results/reference/` Wang-Zhu controls · `docs/`
+(index: `docs/README.md`): `plans/`, `research/`, `briefs/`, `reviews/` (+ `prompts/`, `evidence/`)
+· `*/archive/` superseded material (never deleted; old HANDOFF entries in `docs/archive/handoff/`)
+· `sarukhanian/` separate sub-project. New files go in the matching folder, not the repo root.

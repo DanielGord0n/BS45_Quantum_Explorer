@@ -20,14 +20,19 @@ BS(43,42) is a known but extremely difficult benchmark. **BS(45,44) has never be
 |---|---|---|
 | BS(7,6) | Reproduced | 23ms |
 | BS(28,27) | RETRACTED 2026-07-16 — banked file fails independent NPAF (9 nonzero shifts); see `results/quarantine/` | — |
-| BS(43,42) | Actively searching | Signature (7,11,0,0) |
-| BS(45,44) | Target | World record |
+| BS(42,41) | Found by this solver 2026-07-30, a new solution inequivalent to Wang-Zhu's; independently verified | first-hit search |
+| BS(43,42) | Found 2026-08-04, inequivalent to Wang-Zhu's; independently verified | first-hit search |
+| BS(44,43) | Found 2026-08-30, inequivalent to Wang-Zhu's; independently verified | first-hit search |
+| BS(45,44) | Open problem; active search across all 12 signature classes | — |
+
+Sequences up to n=40 are known in the literature and Wang-Zhu (2025) constructed n=41-43, so these finds
+are solver-capability results; n=44 is the open case.
 
 ---
 
 ## Architecture
 
-The solver went through two major phases:
+The solver went through three major phases:
 
 ### Phase 1: Simulated Annealing (wz_sa_v8.cpp)
 Initial approach used Block Coordinate Descent on a coupled objective function, alternating between freezing A/B to optimize C/D and vice versa, with stall-kick perturbation and adaptive heating. Despite sophisticated heuristics, SA consistently plateaued near but not at NPAF=0 for BS(43,42). True zero-autocorrelation at this density requires guaranteed coverage, not approximation.
@@ -46,6 +51,12 @@ A Discrete Fourier Transform filter applied to candidates to reject sequences th
 
 **Wang-Zhu Pair Encoding**
 Sequences generated using strict mirror-pair constraints (comb16, comb8_pos, comb8_neg) that reduce the raw search space from 2^(4n) to approximately 8^(n/2).
+
+### Phase 3 (current): First-Hit Search (wz_match.cpp, WZ_FIRSTHIT)
+Streams C,D candidates per mod-6 profile cell (mirror-quad DFS with Wang-Zhu Thm 2.2/2.3 filters and
+spectral checks), keeps the flattest candidates of each cell, and completes A,B by a budgeted
+backtracker. Cells are deduplicated under the C,D symmetry group, and checkpointed lanes own disjoint
+cell ranges across the four clusters. This path found n=41, 42 and 43.
 
 ---
 
@@ -106,26 +117,39 @@ Discovered that batched position updates were traversing intervals bidirectional
 ## Running Locally
 
 ```bash
-# Compile
-g++ -O3 -std=c++17 -o wz_exact_t23 src/solver/wz_exact_t23.cpp
+# Independent verifier for any solution (reads solver output from stdin)
+python3 tools/verify_npaf.py < solver_output.txt
 
-# Reproduce BS(7,6) — completes in 23ms
-./wz_exact_t23 6 5 1 0 0
+# First-hit solver: compile and find a small base sequence, e.g. BS(11,10)
+g++ -O3 -std=c++17 -o wz_match src/solver/wz_match.cpp
+WZ_FIRSTHIT=1 WZ_FH_M6=1 ./wz_match 10 5 1 4 0
+
+# Regression gates (small n only; each compiles its own copy)
+python3 tools/test_firsthit_telemetry.py && python3 tools/test_orbit_q.py && python3 tools/test_cd_prune.py
 ```
 
-## HPC Deployment
+Heavy runs happen only on the clusters (see `cluster/deploy/` and HANDOFF.md's QUICK REFERENCE).
 
-```bash
-# Deploy and submit via SSH tar-pipe (handles Duo MFA timeout constraints)
-tar -cf - src/solver/wz_exact_t23.cpp fir_bs43_exact_t23.sh | \
-  ssh user@fir.alliancecan.ca 'cd $SCRATCH/bs45 && tar -xvf - && sbatch fir_bs43_exact_t23.sh'
-```
+## Repository Layout
 
----
+| Path | What lives there |
+|---|---|
+| `HANDOFF.md` | Live project state: newest entries first, QUICK REFERENCE at the bottom |
+| `CLAUDE.md`, `AGENTS.md` | Instructions for the AI agents working on the project |
+| `src/solver/` | C++ solvers (`wz_match.cpp` is active) |
+| `tools/` | Verifier, read-out tools for cluster jobs, regression tests |
+| `cluster/deploy/` | Live SLURM scripts and the daily automation loop |
+| `results/champions/` | Banked, independently verified solutions with provenance |
+| `results/reference/` | Wang-Zhu's published solutions (controls) |
+| `docs/` | Plans, research ledger, briefs and reviews; see `docs/README.md` |
+| `*/archive/` | Superseded material, kept for history |
+| `sarukhanian/` | Separate sub-project |
 
 ## Current Status
 
-Actively searching BS(43,42) with signature (7,11,0,0) across all four clusters. BS(45,44) search will begin upon confirmation of BS(43,42). The solver architecture is fully validated against known benchmarks and ready to scale.
+Searching BS(45,44) on all four clusters (Fir, Rorqual, Nibi, Trillium): every one of the 12 signature
+classes is tiled into disjoint checkpointed lanes. Next step (under validation): a larger symmetry group
+for the cell list that cuts the cells to search by about 48%.
 
 ---
 

@@ -592,7 +592,7 @@ cluster/deploy/                      active SLURM + automation
   daily_auto.sh           207 LOC    the autonomous 1pm loop
   check_all_retry.sh, duo_ssh.py, guard_git_push.py, gpu_spike.sh,
   AUTOMATION.md, auto_prompt.md, com.dangord.bs45check.plist
-cluster/jobs/                        per-cluster job scripts (fir/nibi/rorqual/trillium)
+cluster/archive/jobs/                        per-cluster job scripts (fir/nibi/rorqual/trillium)
 results/champions/                   37 verified banked solutions with provenance
 results/quarantine/                  RETRACTED artifacts + written explanation
 results/reference/                   Wang-Zhu Table-1 sequences for n=41/42/43
@@ -604,7 +604,7 @@ docs/
   RESULTS.md, hpc_interview_prep.md, wz_firsthit_plan.md
 sarukhanian/                         the CP468 sub-project (papers, reports, Maple, Z3)
 HANDOFF.md               682 lines   canonical living project state
-HANDOFF_ARCHIVE.md     3,100 lines   full history
+docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md     3,100 lines   full history
 ```
 
 ---

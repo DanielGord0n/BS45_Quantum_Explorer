@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Review-only probes. Builds temporary source copies; searches only n=6,11,13.
 
-Run from any directory: python3 docs/reviews/2026-09-22-evidence/reproduce.py
+Run from any directory: python3 docs/reviews/evidence/2026-09-22/reproduce.py
 No cluster access, production source changes, or production checkpoints.
 """
 import hashlib
@@ -14,7 +14,7 @@ import subprocess
 import tempfile
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[2]
+ROOT = HERE.parents[3]
 SOURCE = ROOT / "src/solver/wz_match.cpp"
 BASE = SOURCE.read_text()
 ENV = {k: v for k, v in os.environ.items() if not k.startswith("WZ_")}

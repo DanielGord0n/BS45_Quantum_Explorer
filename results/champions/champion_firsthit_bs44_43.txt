@@ -9,7 +9,7 @@
 #   by direct search in their signature class (8,-2,5,9) — the THIRD and FINAL rung of
 #   the WZ trio (41 ★ 07-30, 42 ★ 08-04, 43 ★ this file). The WZ trio is now COMPLETE.
 # Found by: Trillium job 2223007, lane T43b327 — a lever-19 Track B control lane at
-#   flat window 327, submitted 08-29 (docs/lever19_sweep_plan.md), ONE rep, fresh
+#   flat window 327, submitted 08-29 (docs/plans/lever19_sweep_plan.md), ONE rep, fresh
 #   skip-keyed CKDIR, WZ_FH_ORBIT_CANON=1, FH_NARMS=178. Job start Sun Aug 30
 #   03:22:30 EDT, hit at elapsed=14441.1s (~4.0h, ~07:23 EDT).
 #   GLOBAL FIRST: idx=500000 profile_rank=58505 nodes_this_cand=88616 score=130.

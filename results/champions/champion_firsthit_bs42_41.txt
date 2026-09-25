@@ -8,7 +8,7 @@
 # THE CAMPAIGN'S TARGET EVENT: our solver hitting the published Wang-Zhu n=41 signature
 #   class (0,2,9,9) by direct search — the first hit at n>=38, first ever at n=41.
 # Found by the WZ_FIRSTHIT probe on the FIRST CHECKPOINTED lane (per-arm candidate resume
-#   build, spec docs/superpowers/specs/2026-07-28-per-arm-candidate-resume-design.md).
+#   build, spec docs/research/2026-07-28-per-arm-candidate-resume-design.md).
 # Provenance: fir job 51517707, cluster_firsthit_probe.sh + wz_match.cpp (wave-6 build),
 #   WZ_N=41, sig (0,2,9,9), WZ_FH_PROF_ORDER=1 (flat), WZ_FH_PROF_SKIP=8 (window selector),
 #   FH_NARMS=178, WZ_FH_AB_BUDGET=50000000. Node fc20544-group, started 2026-07-29 ~21:07 PDT,

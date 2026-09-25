@@ -1,7 +1,7 @@
 # Work order for Fable — the first-hit rebuild, aimed at reproducing WZ's n=41
 
 *Written 2026-07-16 (evening) by Opus, after the JOIN22 canary PASSED. Read `HANDOFF.md`
-newest TOP OF MIND + `docs/wz_paper_reconstruction.md` + `docs/wz_firsthit_plan.md`
+newest TOP OF MIND + `docs/research/wz_paper_reconstruction.md` + `docs/plans/wz_firsthit_plan.md`
 (your own, 2026-07-07) first, then invoke the `bs45-campaign` skill.*
 
 ---
@@ -37,7 +37,7 @@ then **Gate A′** — both of which measure **STREAM SIZE**, read against "≤1
 ≥1e12 KILL".
 
 **Stream size is the wrong gate for a first-hit architecture, because first-hit never
-enumerates the stream.** `docs/wz_paper_reconstruction.md` already flags this (§ "Validation",
+enumerates the stream.** `docs/research/wz_paper_reconstruction.md` already flags this (§ "Validation",
 point 4): *"the ≤1e9-at-n=36 rule measures stream size, but WZ's Step 5 is FIRST-HIT — it never
 enumerates the stream… the right gate may be density × ordering, not size."*
 
@@ -140,6 +140,6 @@ kills it or n≈36-38 walls it; a real minority chance of 42-43; n=44 only via m
 insight this pipeline might enable but cannot brute-force."* n=44 (BS(45,44)) is open for the
 entire field — NS(44) and NN(44) are empty and everyone is stopped there.
 
-And: `docs/kotsireas_brief.md` is READY TO SEND and is now **stronger** than it was this
+And: `docs/briefs/kotsireas_brief.md` is READY TO SEND and is now **stronger** than it was this
 morning — we have a correct, verified, complete solver with a measured frontier and an honest
 ceiling. The methods ask is the door to 42+. Compute is not.

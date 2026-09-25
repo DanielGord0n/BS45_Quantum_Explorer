@@ -5,7 +5,7 @@ Streams the Thm-2.2-constrained C,D PAIR stream in deterministic DFS order
 (profiles sequential, single thread ⇒ exact candidate index), completes A,B per
 candidate by backtracking under Definition 1.1 + Theorem 2.2 (mirror-pair DFS,
 8 combos/pair, NPAF bound pruning, per-candidate node budget), stops at the
-first NPAF==0 hit. Work order: `docs/fable_workorder_firsthit_n41.md`.
+first NPAF==0 hit. Work order: `docs/archive/fable_workorder_firsthit_n41.md`.
 Pre-registered rules (set before numbers were seen): Gate C PASS = hit within
 ~10⁻³ of the stream under some ordering and no degradation n=29→31; Gate B
 PASS = ≤~10 ms/candidate at n=31 single-core.*
@@ -141,7 +141,7 @@ then 42–85 min wall each) and **cleared BOTH rungs**:
 
 All 12 hit banners (6+5+1) NPAF-verified independently 07-18
 (`tools/verify_npaf.py` PASS on every one; full banners archived in
-`results/firsthit_hits_2026-07-18.txt`). Banked: `champion_firsthit_bs33_32_a`
+`results/archive/firsthit_hits_2026-07-18.txt`). Banked: `champion_firsthit_bs33_32_a`
 (global first of 16632433), `champion_firsthit_bs33_32_b` (of 16632434),
 `champion_firsthit_bs34_33` (**new banked best, n=33**). Context: SA burned 22
 twelve-hour 8-node arrays at n=32 with the floor pinned at 8 and never hit;
@@ -178,7 +178,7 @@ at n=35 on Rorqual, 190 arms × 1 core each, budget 200k nodes/cand, first wave
 on the NEW binary: canon cut + eq 2.12 + score tiers, WZ_THM212=1) went
 **15 for 15 — every sig class at both rungs hit**, 47 banners total, all 47
 independently NPAF-verified 2026-07-20 (`tools/verify_npaf.py` PASS on every
-one; archive `results/firsthit_hits_2026-07-20.txt`). **New banked best n=35**
+one; archive `results/archive/firsthit_hits_2026-07-20.txt`). **New banked best n=35**
 (`champion_firsthit_bs35_34_a..j`, `champion_firsthit_bs36_35_a..e`).
 
 | job | n | sig class | arms hit | candidates | aborted% | AB_nodes | density | s/cand | first-hit wall |

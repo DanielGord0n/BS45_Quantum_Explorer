@@ -98,7 +98,7 @@ git diff --check
 ```
 
 Final observed results are recorded in
-`docs/reviews/2026-09-23-evidence/telemetry-review-fixes-validation.txt`.
+`docs/reviews/evidence/2026-09-23/telemetry-review-fixes-validation.txt`.
 
 ## One-rep pilot, not fleet-wide instrumentation
 

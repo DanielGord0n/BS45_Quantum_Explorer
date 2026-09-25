@@ -1,6 +1,6 @@
 # Lever 19 — stratified window sweep (opened 2026-08-29)
 
-Basis: the known-solution window map (docs/n44_search_narrowing_research.md, 08-29):
+Basis: the known-solution window map (docs/research/n44_search_narrowing_research.md, 08-29):
 solutions sit at flat windows 0 / ~8 / ~255-571 / ~499-842 / far reverse end. Cell
 streams are effectively bottomless (cells_done ~0), so depth in a few windows is a
 bet on a few windows. Sample the whole ordering at spaced offsets instead; each lane
@@ -245,7 +245,7 @@ the walled half stay valid (CFGSIG carries .ws only when set — resubmits of th
 lanes would need the env; NEW lanes get none).
 
 ## PASS G (2026-09-22) — SUPERSEDES PASS F/FR/F2 tiling
-Two defects found by external review (docs/n44_search_narrowing_research.md, levers
+Two defects found by external review (docs/research/n44_search_narrowing_research.md, levers
 26-27): the workhorse was searched at ~25% orbit coverage (endpoint pins under canon)
 and Pass F/FR lanes were ~99% redundant (no ownership). PASS G = front-only lanes with
 explicit OWNERSHIP ranges, pins fixed: env `WZ_FH_PROF_SKIP=k, WZ_FH_PROF_END=k+S,

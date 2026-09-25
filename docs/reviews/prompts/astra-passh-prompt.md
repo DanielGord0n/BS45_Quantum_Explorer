@@ -8,7 +8,7 @@ Mathematics and design review for the BS(45,44) search. Same limits as your earl
 reviews: reasoning only; no code edits, runs, builds, tests, worktrees or commits.
 
 Read ONLY:
-1. docs/pass_h_plan.md (the next fleet-wide change: Q + closure prune + orbit-min ordering)
+1. docs/plans/pass_h_plan.md (the next fleet-wide change: Q + closure prune + orbit-min ordering)
 2. docs/reviews/2026-09-24-astra-review-claude-response.md (what was verified and measured)
 3. src/solver/wz_match.cpp ONLY by targeted search for `count_pairs22` if item 2 needs it
 

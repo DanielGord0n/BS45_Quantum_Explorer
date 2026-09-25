@@ -50,10 +50,15 @@ repo root (scp does NOT expand $SCRATCH): `tar -cf - <files> | ssh ... 'cd $SCRA
 - **Odd bestAB values (e.g. 9) under WZ_PSD_BIAS** = the logged cost includes the bias term
   (true penalty is always even). Reported floors under bias are inflated by 0–3; only
   bestAB=0/FOUND is exact.
+- **Cell indices are NOT portable across toolchains (2026-09-25).** Cells tied on profile
+  score are ordered by `std::sort`'s unspecified tie behaviour: an index/window/arm computed
+  on macOS (libc++) is a different cell on the clusters (libstdc++). Proven: libc++ tie
+  randomization moved one cell 582325 -> 549054; QCANARY v1 hit an orbit duplicate. Compute
+  cell addresses ON THE CLUSTER (in-job LOCATE); rank RANGES from LOCATE are portable.
 - **OOM ~20–30 s after "[profiles] ..."** in wz_match = the count-phase materialization wall,
   NOT the hash. Use `WZ_COUNT_ONLY=1` (streaming, cannot OOM) for any feasibility question.
 
-## Levers ledger 2026-07-30 → 2026-09-22 (full numbers: docs/n44_search_narrowing_research.md)
+## Levers ledger 2026-07-30 → 2026-09-22 (full numbers: docs/research/n44_search_narrowing_research.md)
 
 SHIPPED (keep): 2.11b+2.12 stream filters (8.7x) · profile-constrained completion
 (5.2-6.6x) · flat-first ordering (7-10x) · dual canon · ORBIT canonicalization (3.8-29x)
@@ -112,10 +117,10 @@ Nibi — the "unreliable" cluster — 41 minutes into a run). Buy tickets everyw
 ## Escalation ladder (when the current rung stalls)
 
 1. **Now:** SA blitz at the current rung, fresh seeds each round (this is the engine).
-2. **Ready:** the Kotsireas methods conversation — brief at `docs/kotsireas_brief.md`
+2. **Ready:** the Kotsireas methods conversation — brief at `docs/briefs/kotsireas_brief.md`
    (results + measured frontier + the filter-gap question). A methods ask, NOT a compute ask.
 3. **Research-grade gamble (weeks, uncertain, decide explicitly):** the Wang-Zhu first-hit
-   architecture. **Full executable plan: `docs/wz_firsthit_plan.md`** — start with its
+   architecture. **Full executable plan: `docs/plans/wz_firsthit_plan.md`** — start with its
    Phase-0 measurement gates (days, cheap, pre-registered pass/KILL criteria); do NOT start
    Phase 1+ builds before the gates pass and Daniel explicitly opts in.
 4. **Not a lever:** more compute on current methods above the SA ceiling (~n≈33–35).

@@ -29,7 +29,7 @@ groups per-job for this reason).
 
 **Pre-registered rule (do NOT move the line now that the number is visible):**
 - **<= ~1e9 → PASS** ⇒ Thm-2.2 route to n=41-43 is alive; resume Phase 1 (joint-pair generation,
-  `docs/wz_firsthit_plan.md`). Building Phase 1 is Daniel's explicit call, not the loop's.
+  `docs/plans/wz_firsthit_plan.md`). Building Phase 1 is Daniel's explicit call, not the loop's.
 - **>= 1e12 → KILL** ⇒ the Thm-2.2 lift is not the lever either.
 - **in between → run Gate B** (per-candidate A,B completion cost) before judging.
 

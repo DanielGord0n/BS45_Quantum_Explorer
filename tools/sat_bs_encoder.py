@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """SAT encoding of BS(n+1,n) base sequences — the SAT+CAS lever's canary.
 
-Lever 2 of docs/n44_search_narrowing_research.md (MathCheck-style, after
+Lever 2 of docs/research/n44_search_narrowing_research.md (MathCheck-style, after
 Bright-Kotsireas-Ganesh's Williamson-to-70 result). Encodes NPAF[s]=0 for
 s=1..n as exact-cardinality constraints over XNOR product variables, plus the
 signature sums (WLOG nonnegative: each sequence may be independently negated

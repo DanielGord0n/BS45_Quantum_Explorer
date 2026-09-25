@@ -1,7 +1,7 @@
 # Work order for Fable — shard JOIN22 phase 2 (the only thing blocking n=31+)
 
 *Written 2026-07-16 by Opus. Read `HANDOFF.md` newest TOP OF MIND +
-`docs/wz_paper_reconstruction.md` first, then invoke the `bs45-campaign` skill.*
+`docs/research/wz_paper_reconstruction.md` first, then invoke the `bs45-campaign` skill.*
 
 ## Why this is the task
 

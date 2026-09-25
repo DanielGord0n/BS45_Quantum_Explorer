@@ -41,7 +41,7 @@ Wang-Zhu's pipeline (they reached 41-43); it falsifies the reading of their "ext
 modulus 6" as class-sum norm-identity filtering — whatever prunes their stream ~10³× is a
 DIFFERENT constraint (per-sequence PSD during construction? something in their "compatible
 (P,Q) sets" richer than sums?). The plan is PAUSED at Phase 0, pending exactly one input: the
-answer to the sharpened question now in `docs/kotsireas_brief.md`. If a genuinely tighter
+answer to the sharpened question now in `docs/briefs/kotsireas_brief.md`. If a genuinely tighter
 per-sequence constraint is identified, re-run Gate A with it (`WZ_COUNT_MOD6` machinery
 generalizes; baselines above are banked) before any build. Until then: SA blitz only.
 
@@ -102,7 +102,7 @@ Only after all four: point at n=33-36 (sig sweep), then 42.
 
 Even full success = **replication** of Wang-Zhu's 41-43, not a record. Its record value:
 (1) it is the only architecture with measured headroom past the SA ceiling (~n≈33-35);
-(2) a working pipeline + the Kotsireas conversation (docs/kotsireas_brief.md — send it!) is
+(2) a working pipeline + the Kotsireas conversation (docs/briefs/kotsireas_brief.md — send it!) is
 the only credible approach vector to n=44, which otherwise needs new mathematics (NS(44) and
 NN(44) empty; the whole field is stopped there). Expected outcome distribution, honestly:
 most likely Gate C kills it or n≈36-38 walls it; a real minority chance of 42-43; n=44 only

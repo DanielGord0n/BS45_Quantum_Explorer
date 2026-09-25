@@ -1,7 +1,7 @@
 # Astra follow-up (2026-09-22): shadow instrument for joint reachability; exact alpha/eta accounting
 
 (Verbatim spec received from the external reviewer; implementation status tracked in
-docs/n44_search_narrowing_research.md.)
+docs/research/n44_search_narrowing_research.md.)
 
 ## 1. Minimal shadow instrument (joint-reachability go/no-go from one lane)
 - Sample whole candidates with p=1/4096, deterministic hash(seed, class, canonical_cell_key,

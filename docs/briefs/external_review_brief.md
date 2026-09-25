@@ -3,9 +3,9 @@
 Self-contained context for an outside reviewer (mathematician / algorithms / HPC) asked to
 find anything we are missing. Everything below is measured unless marked otherwise.
 Public repo: https://github.com/DanielGord0n/BS45_Quantum_Explorer (main). Key files:
-`src/solver/wz_match.cpp` (the solver, ~2,300 lines), `docs/n44_search_narrowing_research.md`
-(the lever ledger with numbers), `docs/lever19_sweep_plan.md` (current program),
-`docs/paper_methods_record.md` (methods + provenance), `HANDOFF.md` (daily log, newest
+`src/solver/wz_match.cpp` (the solver, ~2,300 lines), `docs/research/n44_search_narrowing_research.md`
+(the lever ledger with numbers), `docs/plans/lever19_sweep_plan.md` (current program),
+`docs/briefs/paper_methods_record.md` (methods + provenance), `HANDOFF.md` (daily log, newest
 first), `results/champions/*.txt` (banked solutions), `tools/verify_npaf.py`.
 
 ## 1. The problem

@@ -78,9 +78,9 @@ measurements the SA lever caps around n≈33-35 — more tickets here is NOT a l
 DO NOT refill SA at this rung. Escalate instead:
   1. Finish the JOIN22 / Theorem-2.2 canary (n=29). It has NEVER passed — until it
      does, no negative from that path means anything. Needs a ~15h slot (Trillium 24h).
-  2. Run the Phase-0 measurement gates in docs/wz_firsthit_plan.md (cheap, decisive,
+  2. Run the Phase-0 measurement gates in docs/plans/wz_firsthit_plan.md (cheap, decisive,
      pre-registered pass/KILL criteria).
-  3. Tell Daniel to send docs/kotsireas_brief.md — it is READY TO SEND and is a
+  3. Tell Daniel to send docs/briefs/kotsireas_brief.md — it is READY TO SEND and is a
      METHODS ask, not a compute ask. That is the door to 42+.
 EOF
       exit 3

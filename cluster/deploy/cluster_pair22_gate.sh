@@ -23,7 +23,7 @@
 # Sharding is EXACT: validated at n=10 (sum over a 3-way partition == unsharded
 # total, 92+125+87 = 304).
 #
-# THE PRE-REGISTERED RULE (docs/wz_firsthit_plan.md — do not move the line after
+# THE PRE-REGISTERED RULE (docs/plans/wz_firsthit_plan.md — do not move the line after
 # seeing the number):
 #     C,D stream <= ~1e9 at n=36  -> PASS  -> build Phase 1 (joint-pair generation)
 #     C,D stream >= 1e12 at n=36  -> KILL  -> the Thm-2.2 lift is not the lever

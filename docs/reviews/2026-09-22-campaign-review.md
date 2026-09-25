@@ -7,7 +7,7 @@ The main finding is a **proved interaction bug between zero-sum endpoint pinning
 Reproduce the local evidence from the repository root:
 
 ```sh
-python3 docs/reviews/2026-09-22-evidence/reproduce.py
+python3 docs/reviews/evidence/2026-09-22/reproduce.py
 ```
 
 The script compiles temporary copies, checks the pinning counterexample and dispatch overlap, benchmarks the proposed tail check at n=11/13, and exhaustively checks the profile formula on small quads. Results are saved in [the evidence log](2026-09-22-evidence/results.txt). Larger known sequences are only verified or inspected, never searched.

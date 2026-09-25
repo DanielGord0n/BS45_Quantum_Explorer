@@ -65,11 +65,11 @@ Useful source anchors at the baseline:
   `fh_complete_ab` (~973), configuration/checkpoint handling (~1515 onwards),
   `CellCand`/`flat_score` (~1769), `drain` (~1824).
 - `cluster/deploy/cluster_firsthit_probe.sh`: build (~56), GATEB accounting (~218).
-- `docs/n44_search_narrowing_research.md`: levers 18–28 and review corrections.
-- `docs/lever19_sweep_plan.md`: current range ownership and next-pass policy.
-- `HANDOFF_ARCHIVE.md`: older failed bitset feasibility and SA experiments.
+- `docs/research/n44_search_narrowing_research.md`: levers 18–28 and review corrections.
+- `docs/plans/lever19_sweep_plan.md`: current range ownership and next-pass policy.
+- `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`: older failed bitset feasibility and SA experiments.
 - `docs/reviews/2026-09-22-campaign-review.md`: correctness evidence and original proposals.
-- `docs/reviews/2026-09-22-evidence/`: mathematical and differential evidence.
+- `docs/reviews/evidence/2026-09-22/`: mathematical and differential evidence.
 
 ## Stage 0 — independent review and frozen experiment manifest
 

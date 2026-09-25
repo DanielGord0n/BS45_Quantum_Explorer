@@ -1,5 +1,5 @@
 // fh_gpu_spike.cu — GPU feasibility spike for the A,B completer (lever 3 of
-// docs/n44_search_narrowing_research.md). MEASURE-FIRST: this is an instrument,
+// docs/research/n44_search_narrowing_research.md). MEASURE-FIRST: this is an instrument,
 // not the production solver. It ports the fh_complete_ab mirror-pair DFS
 // (root canon A[0]=B[0]=+1, reversal-canon tie tracking, sum bounds, Dab/Kab
 // incremental pruning, node budget) to an ITERATIVE form that runs

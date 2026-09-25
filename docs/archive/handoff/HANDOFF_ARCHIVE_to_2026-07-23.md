@@ -110,8 +110,8 @@ wave landed overnight: **7 of 9 n=36 classes hit on Fir** (`49706278/79/80/83/84
 **4 of 4 completed n=37 classes hit on Rorqual** (`16809931/33/35/39`; the other 7 n=37 + all
 11 n=42 still R at fetch, ~3 h left — the 07-22 loop reads them). All 14 banner instances
 fetched (two duo_runs) and **all 14 independently verify_npaf PASS**; banked 11 champions
-(`bs37_36_a-g`, `bs38_37_a-d`), archive `results/firsthit_hits_2026-07-21.txt`, full table in
-`docs/gate_bc_firsthit_results.md`. Densities n=36 1/360k-1/1.52M, n=37 1/443k-1/2.95M —
+(`bs37_36_a-g`, `bs38_37_a-d`), archive `results/archive/firsthit_hits_2026-07-21.txt`, full table in
+`docs/archive/gate_bc_firsthit_results.md`. Densities n=36 1/360k-1/1.52M, n=37 1/443k-1/2.95M —
 thinning ~2-3×/rung, NO collapse, but the deepest n=36 hit took 10.3 h of the 12 h walltime:
 the wall region (36-39) is now eating the clock. Ledger promoted ×2 → n=38/budget-0;
 `next_seeds.sh set-n 38`; checker exclusions updated (`head -12`→`head -30` — 12 was
@@ -152,8 +152,8 @@ with the n≥38 wave), GPU feasibility spike, Kotsireas send (Daniel-only, STILL
 n=35.** All 10 Fir n=34 probes (`49628809-18`) AND all 5 Rorqual n=35 probes (`16737512-6`)
 hit — 47 banners fetched 07-20, **all 47 independently verify_npaf PASS**; banked
 `champion_firsthit_bs35_34_a..j` + `champion_firsthit_bs36_35_a..e` (one per sig class, the
-GLOBAL FIRST arm each); full archive `results/firsthit_hits_2026-07-20.txt`; Gate B/C table
-appended to `docs/gate_bc_firsthit_results.md` (densities n=34 1/36k–1/599k, n=35
+GLOBAL FIRST arm each); full archive `results/archive/firsthit_hits_2026-07-20.txt`; Gate B/C table
+appended to `docs/archive/gate_bc_firsthit_results.md` (densities n=34 1/36k–1/599k, n=35
 1/201k–1/750k — thinning ~2–4×/rung but NO collapse; cost 0.9–11.4 s/cand, aborts down to
 93–97% with canon+2.12+tiers vs 98–99% pre-canon). ⚠️ Checker trap fixed: the FIRSTHIT
 section's `head -5` HID 5 of the 10 Fir outputs — raised to `head -12`. Ledger promoted ×2
@@ -163,7 +163,7 @@ section's `head -5` HID 5 of the 10 Fir outputs — raised to `head -12`. Ledger
 recipe as 07-19); (2) Task 3 proper is still Daniel's call, now with three waves of PASS
 data; (3) the WZ replication attempts are the live experiment: Nibi `18017139/40/41`
 (n=41/42/43) R since 07-20 ~12:20 EDT, Trillium `1926730/31` still PD behind maintenance;
-(4) `docs/kotsireas_brief.md` READY TO SEND — now with two-full-rungs-in-one-wave attached.
+(4) `docs/briefs/kotsireas_brief.md` READY TO SEND — now with two-full-rungs-in-one-wave attached.
 
 **⚡ 2026-07-19 — THE FULL-RUNG WAVE (answers the 07-19 loop's standing call #1):** the ENTIRE
 admissible frontier at n=34/35 is only **15 signature classes** (10 at n=34, 5 at n=35; parity
@@ -186,7 +186,7 @@ campaign's target result, escalate loud). Standing call #2
 recommendation ON RECORD: **retire the SA ladder** (22 arrays × 8 nodes × 12h at n=32 = zero
 hits; the probe cleared n=32 in 42 min on one node — SA's measured ceiling ~33-35 is now BELOW
 the probe frontier); ledger stays parked at budget 0 unless Daniel overrules. Call #3
-(send `docs/kotsireas_brief.md`) remains Daniel-only.
+(send `docs/briefs/kotsireas_brief.md`) remains Daniel-only.
 **Student**: Daniel Gordon (dangord on Alliance clusters)
 **Supervisor account**: def-ikotsire (Nibi: `def-ikotsire_cpu`)
 **Goal**: Find the highest-n BS(n+1,n) δ-code we can. **BS(38,37) (n=37) banked 2026-07-21 — the wide wave cleared 7/9 n=36 classes AND 4/4 completed n=37 classes overnight, 14/14 banners NPAF-verified; the remaining 7 n=37 + 11 n=42 old-source jobs lapsed candidates=0 on 07-22 (zero-candidate stream wall, NOT negatives — fixed-source wave live)** (ladder history: 29 ×2 → 30 → 31 → 32 ×2 → 33 → 34 ×10 → 35 ×5 → 36 ×7 → 37 ×4; n=31 was SA's last rung, 2026-07-06). SA rung ledger parked at n=38 / BUDGET=0 — SA retired de facto; next rung needs the n=38/39 enumeration + the zero-candidate anomaly diagnosed + Daniel's greenlight.
@@ -214,10 +214,10 @@ OOM: JOIN22 v2 streams instead of materializing, and the C,D key table dedups 5.
 keys (n=29 table ≈ 2.4 GB, not 34 GB). The old verdict below was measured on the PRE-Thm-2.2,
 PRE-JOIN22-v2 code and is stale in every particular: it caps neither at n=18-20 nor at n=34, and the
 "~10^3× looser filter" gap is closed (Thm 2.2 comb8 + Thm 2.3 eq 2.11a/2.11b are implemented; see
-`docs/wz_paper_reconstruction.md`). **The join is the active path above n=31**, because it is the only
+`docs/research/wz_paper_reconstruction.md`). **The join is the active path above n=31**, because it is the only
 method here that can also PROVE ABSENCE for a signature. SA cannot, ever.
 The binding constraint is **walltime, not memory and not feasibility** → shard phase 2
-(`docs/fable_workorder_join_sharding.md`).
+(`docs/archive/fable_workorder_join_sharding.md`).
 
 <details><summary>RETRACTED (2026-06-27 verdict, kept for the audit trail — do not act on it)</summary>
 
@@ -226,7 +226,7 @@ BUT it materializes the whole residue/spectral-filtered candidate set, which gro
 **confirmed OOM-killed at n=36 (Fir) AND n=42 (Rorqual) on 2026-06-25**, even after the compact-key +
 dedup memory fix. So it caps ~n=18-20 in RAM. Retained for **small-n verification only**; our filter is
 ~10^3× looser than Wang-Zhu's (that gap = the research route to n=42; under investigation). Deploy
-via `cluster/deploy/cluster_wz_match.sh`.
+via `cluster/archive/deploy/cluster_wz_match.sh`.
 </details>
 
 Lineage (all in `src/solver/`): `wz_sa_v8.cpp` (SA — **ACTIVE**, found BS(28,27)) ·
@@ -240,7 +240,7 @@ src/{solver,verifier}/   C++ solvers (wz_sa_v8, wz_exact_t23, wz_match, wz_gener
                          t23_filter, enum_m3_tuples) + verify_bs43.cpp
 cluster/deploy/          ACTIVE deploy + helpers: cluster_sa_ladder.sh, cluster_wz_match.sh,
                          cluster_bs_sa.sh, check_all.sh
-cluster/jobs/            30 per-cluster SLURM scripts (mostly the RETIRED exhaustive campaign)
+cluster/archive/jobs/            30 per-cluster SLURM scripts (mostly the RETIRED exhaustive campaign)
 tools/                   verify_npaf.py, find_combo_index.py   (independent NPAF checker)
 docs/                    RESULTS.md, deploy_v8.md, hpc_interview_prep.md, solver_README.md
 results/champions/       champion_v3_n7/n11.txt + champion_sa_bs30_29_a/b, bs31_30, bs32_31
@@ -296,7 +296,7 @@ validated per R1 and pushed to `auto/2026-07-23` — NOT deployed (tar-pipe is D
 block in the 07-23 entry). NEEDS_HUMAN: (1) tar-pipe the obs-fix branch to all four
 clusters (Trillium time-boxed by maintenance-end); (2) resubmit call for the 16
 hitless-blind n=41/42 classes (picks up reversal canon + telemetry); (3) n=38/39 wave
-greenlight; (4) Task 3 call; (5) kotsireas send (`docs/kotsireas_brief.md` READY — a
+greenlight; (4) Task 3 call; (5) kotsireas send (`docs/briefs/kotsireas_brief.md` READY — a
 methods ask, the door to 42+).
 
 **PREVIOUS ROUND (2026-07-21, loop run 13) — 🚨🚨 NEEDS_HUMAN: NEW BANKED BEST n=37 — the 07-20
@@ -306,8 +306,8 @@ fetches pulled ALL outputs (checker `head -12` had hidden 8 of Fir's 20 files �
 n=36 hits were invisible; raised to `head -30`). **All 14 banner instances PASS
 tools/verify_npaf.py independently** (sig sums 146/150 ✓); banked 11 champions
 (`champion_firsthit_bs37_36_a-g` + `champion_firsthit_bs38_37_a-d`, GLOBAL FIRST arm per
-class), archived `results/firsthit_hits_2026-07-21.txt`, Gate B/C table + anomaly notes
-appended to `docs/gate_bc_firsthit_results.md`. Ledger promoted ×2 → n=38 BUDGET=0;
+class), archived `results/archive/firsthit_hits_2026-07-21.txt`, Gate B/C table + anomaly notes
+appended to `docs/archive/gate_bc_firsthit_results.md`. Ledger promoted ×2 → n=38 BUDGET=0;
 `next_seeds.sh set-n 38`; checker exclusions now cover 49706278-97, 16809931/33/35/39,
 17871088-92. Cluster state: **Fir idle** (all 20 wave jobs done); **Rorqual NOT idle** — 7
 n=37 classes + 11 n=42 classes still R (~3 h left at fetch) → untouched, the 07-22 loop
@@ -318,7 +318,7 @@ all 9 Fir n=41 classes, ~11.5 h each, candidates=0 — stream wall or bug, NOT s
 negatives) and the score-tier driver logging both tiers as <=110.** No SA refills (rung
 n=38 budget 0, deliberate). **NEEDS_HUMAN: (1) diagnose the zero-candidate stream wall +
 tier-2 bug before greenlighting the n=38/39 wave; (2) Task 3 architecture call — four
-straight waves of PASS data; (3) send `docs/kotsireas_brief.md` — attachment now reads
+straight waves of PASS data; (3) send `docs/briefs/kotsireas_brief.md` — attachment now reads
 "n=32 through n=37 in five days".**
 
 **PREVIOUS ROUND (2026-07-20, loop run 12) — 🚨🚨 NEEDS_HUMAN: 15/15 PROBES HIT — n=34 AND n=35
@@ -328,8 +328,8 @@ classes, 2–9 arms hit each; Rorqual `16737512-6` = all 5 n=35 classes, 1–4 a
 checker's `head -5` had hidden half the Fir wave — fixed to `head -12`). **All 47 banners
 PASS tools/verify_npaf.py independently** (sig sums 138/142 ✓, WZ pair encoding ✓ on every
 one). Banked 15 champions (`bs35_34_a..j`, `bs36_35_a..e`), archived
-`results/firsthit_hits_2026-07-20.txt`, appended the full Gate B/C table to
-`docs/gate_bc_firsthit_results.md`. Ledger: promote ×2 → n=36 BUDGET=0; `next_seeds.sh
+`results/archive/firsthit_hits_2026-07-20.txt`, appended the full Gate B/C table to
+`docs/archive/gate_bc_firsthit_results.md`. Ledger: promote ×2 → n=36 BUDGET=0; `next_seeds.sh
 set-n 36`; checker exclusions + labels updated. Nibi: `17871088/90` (n=32, 9+12 arms)
 recorded as density data, not banked; `17871091/92` (n=33) + `18017139/40/41` (n=41/42/43
 WZ replication) still R — untouched. Trillium `1926730/31` still PD (maintenance) —
@@ -338,7 +338,7 @@ deliberate) and the escalations are complete, so NO submissions this round — t
 needs sig enumeration + validation (the 07-19 recipe) and is **Daniel's call**.
 **NEEDS_HUMAN: (1) greenlight + prep the n=36 full-rung probe wave (Fir is idle for it);
 (2) Task 3 architecture decision, now with three straight waves of PASS data; (3) send
-`docs/kotsireas_brief.md` — the attachment is now "the entire n=34+35 frontier in one
+`docs/briefs/kotsireas_brief.md` — the attachment is now "the entire n=34+35 frontier in one
 day".**
 
 **PREVIOUS ROUND (2026-07-19, loop run 11) — HOLDING PATTERN: everything live is
@@ -359,7 +359,7 @@ unverified banners, no code changes, checker unchanged (globs still current).
 **NEEDS_HUMAN (standing, unchanged from 07-18): (1) n≥34 probe fan-out — sig
 enumeration/validation for n=34/35 + tar-pipe of the canon+eq2.12+tiers binary
 (Fir is idle and waiting for exactly this); (2) re-arm an SA budget at n=34 or
-retire the ladder; (3) send `docs/kotsireas_brief.md` — READY TO SEND, now
+retire the ladder; (3) send `docs/briefs/kotsireas_brief.md` — READY TO SEND, now
 with two-rungs-in-one-morning attached.**
 
 **PREVIOUS ROUND (2026-07-18, loop run 10) — 🚨🚨 NEEDS_HUMAN: THE PROBE IS A
@@ -371,8 +371,8 @@ greenlight) all hit on their first morning: `16632433` n=32 sig (7,9,0,0) →
 canon/eq2.12/tiers). All 12 hit banners fetched (one duo_run) and **all 12
 PASS tools/verify_npaf.py independently** — banked
 `champion_firsthit_bs33_32_a`/`_b` + `champion_firsthit_bs34_33` (new best);
-full banners archived in `results/firsthit_hits_2026-07-18.txt`; Gate B/C
-trend continuation in `docs/gate_bc_firsthit_results.md` (density holds
+full banners archived in `results/archive/firsthit_hits_2026-07-18.txt`; Gate B/C
+trend continuation in `docs/archive/gate_bc_firsthit_results.md` (density holds
 ~1/40k-1/140k cands; cost still 200k-budget-pinned, ~1.4-10 s/cand). Rung
 ledger: floor 12 recorded (no improvement), then promoted ×2 → **n=34 with
 BUDGET=0 DELIBERATE** (SA spent 22 arrays at n=32 with floor stuck at 8 and
@@ -390,7 +390,7 @@ redundant as solvers, still useful Gate-replication data) all PD → untouched.
 Trillium `1926730`/`1926731` (n=41/42, WZ Table-1 sigs) still PD behind
 maintenance → THE target-rung measurement, untouched. **Daniel's calls: (1)
 n≥34 probe fan-out (sigs + new-binary tar-pipe), (2) any SA budget at n=34 or
-retire the ladder, (3) send `docs/kotsireas_brief.md` — now with
+retire the ladder, (3) send `docs/briefs/kotsireas_brief.md` — now with
 two-rungs-in-one-morning attached.**
 
 **PREVIOUS ROUND (2026-07-17, loop run 9) — 🚨 THE FIRSTHIT GATES LANDED: Gate C
@@ -406,7 +406,7 @@ PASS line — but NOT a clean KILL: nodes/cand is pinned at the 200k budget on
 every rung (97.9/97.2/99.1% aborted), and eq 2.12 / Thm 2.4 cascade / budget
 tuning / score-gate ordering (35× at n=19) are all unexploited. Full numbers +
 idx-semantics caveat (hit_idx is within-arm; density is the operative Gate C
-read) in `docs/gate_bc_firsthit_results.md`. GATEB totals: cands
+read) in `docs/archive/gate_bc_firsthit_results.md`. GATEB totals: cands
 1,181,629/847,478/403,990, AB_nodes 2.34e11/1.67e11/8.05e10; GLOBAL FIRST
 idx=17551@rank4 / 77760@rank8 / 15027@rank2. All probe FOUNDs are expected
 re-finds of banked rungs — NOT banked, not news. **Task 3 (build the full
@@ -422,7 +422,7 @@ Trillium's old gate `1921290` + canary `1921309` are gone from its queue
 nothing to collect. Rorqual's dead P22_GATE `16007398` (0/20 shards) left per
 the 07-15 supersession. No banks; no unverified FOUND claims; checker
 unchanged (new sa_ladder jobs auto-covered by globs). Reminder:
-`docs/kotsireas_brief.md` is READY TO SEND — and Gate C's PASS + the Table-1
+`docs/briefs/kotsireas_brief.md` is READY TO SEND — and Gate C's PASS + the Table-1
 validation make the methods conversation sharper, not weaker.**
 
 **PREVIOUS ROUND (2026-07-16, loop run 8) — n=32 blitz, round 11 opened on Fir:
@@ -443,7 +443,7 @@ canary is `16243606`), i.e. an old known-solution FOUND, NOT news → added
 `45549585` to the exclusion list in `checker_cmd.txt`. Rung ledger: 20/27
 arrays at n=32, floor 8 (round-10 floor 12 recorded, no improvement), ACTIVE
 (`rung_status.sh check` passed before AND after the refill). No new banks; no
-unverified FOUND banners. Reminder: `docs/kotsireas_brief.md` is READY TO SEND
+unverified FOUND banners. Reminder: `docs/briefs/kotsireas_brief.md` is READY TO SEND
 (the methods ask is the door to 42+; compute is not). ⚠️ PUSH STRANDED (not the
 guard): `git push origin main` hung twice (2-3 min, zero output) in this
 headless run while `git ls-remote` answered in 0.25s and every outgoing file is
@@ -464,7 +464,7 @@ CANARY `1921309` both still PD behind the maintenance reservation →
 untouched (they outrank everything post-maintenance). Rung ledger: 19/27
 arrays at n=32, floor 8, ACTIVE (`rung_status.sh check` passed before AND
 after the refill). No new banks; no unverified FOUND banners; checker
-unchanged. Reminder: `docs/kotsireas_brief.md` is READY TO SEND (the methods
+unchanged. Reminder: `docs/briefs/kotsireas_brief.md` is READY TO SEND (the methods
 ask is the door to 42+; compute is not).**
 
 **PREVIOUS ROUND (2026-07-14, loop run 6) — n=32 blitz, round 9 opened on Fir: `48786968`
@@ -526,9 +526,9 @@ the Kotsireas brief in parallel (expert answer beats re-derivation).**
 **PROJECT SCAFFOLDING ADDED 2026-07-07 (Fable handover day):** repo `CLAUDE.md` (session entry
 point — routes every future model to HANDOFF + skill) · `.claude/skills/bs45-campaign/SKILL.md`
 (THE campaign playbook: daily loop, output-reading traps, measured-dead list with numbers,
-verification discipline, decision doctrine, escalation ladder) · `docs/kotsireas_brief.md`
+verification discipline, decision doctrine, escalation ladder) · `docs/briefs/kotsireas_brief.md`
 (one-page results + measured-frontier brief for the methods conversation — READY TO SEND) ·
-`docs/wz_firsthit_plan.md` (**the executable build plan for the Wang-Zhu first-hit
+`docs/plans/wz_firsthit_plan.md` (**the executable build plan for the Wang-Zhu first-hit
 architecture** — the only credible route toward n=42-43: Phase-0 measurement gates with
 pre-registered pass/KILL criteria BEFORE any build; start there, cheap and decisive).
 
@@ -752,8 +752,8 @@ The numbers that matter: SA spent **22 × 12h × 8-node arrays at n=32, floor pi
 zero hits**; the probe cleared that rung twice in **42-85 min on one 190-arm node**, and
 n=33 fell the same morning. Champions: `champion_firsthit_bs33_32_a`/`_b` +
 `champion_firsthit_bs34_33` (all three re-verified from the banked files, NPAF=0); all 12
-raw banners in `results/firsthit_hits_2026-07-18.txt`; Gate B/C trend continuation written
-into `docs/gate_bc_firsthit_results.md` (hit density holds at ~1e-5 order; cost still
+raw banners in `results/archive/firsthit_hits_2026-07-18.txt`; Gate B/C trend continuation written
+into `docs/archive/gate_bc_firsthit_results.md` (hit density holds at ~1e-5 order; cost still
 budget-pinned at 97.9-99.3% aborts — the landed levers, canon ×4 + eq 2.12 + score tiers,
 were NOT in this binary, so the ceiling is untested). Bookkeeping done: rung ledger
 promoted ×2 and PARKED at n=34/BUDGET=0 (deliberate — SA didn't clear these rungs, so no
@@ -765,7 +765,7 @@ exploit it. **Daniel's three calls (NEEDS_HUMAN): (1) the n≥34 probe wave — 
 enumeration + local non-emptiness validation at n=34/35 and the tar-pipe ship of the new
 fh binary (human step by design; Fir left idle as its slot); (2) SA at n≥34: fund it or
 retire the ladder (probe just outclassed it at the frontier); (3) send
-`docs/kotsireas_brief.md` — "our first-hit implementation of your framework cleared two
+`docs/briefs/kotsireas_brief.md` — "our first-hit implementation of your framework cleared two
 rungs in one morning" is a sharper opener than any compute ask.** Still pending upstream:
 Nibi's 4 probes (n=32/33, now Gate-replication data), Trillium's n=41/42 probes behind
 maintenance — those measure the TARGET rungs on WZ's own sigs.
@@ -776,7 +776,7 @@ Gate verdicts (07-17 loop + independent re-read, rules unmoved): **Gate C PASS**
 ~1e-5–1e-6 of stream, trend NOT degrading; one node re-found n=29/30/31 in 30 s/331 s/421 s,
 84 solutions total). **Gate B FAIL-as-measured** (~1.0 s/cand at n=31 vs 10 ms line) but NOT
 the KILL case — cost is 200k-budget-pinned with 97-99% aborts and the named levers untried.
-Full data: `docs/gate_bc_firsthit_results.md`. Probe fan-out SUBMITTED ~13:50, Duo-approved:
+Full data: `docs/archive/gate_bc_firsthit_results.md`. Probe fan-out SUBMITTED ~13:50, Duo-approved:
 **Rorqual `16632433` n=32 (7,9,0,0) / `16632434` n=32 (3,11,0,0) / `16632435` n=33 (6,4,9,1);
 Nibi `17871088` n=32 (1,7,4,8) / `17871090` n=32 (3,9,2,6) / `17871091` n=33 (0,6,7,7) /
 `17871092` n=33 (8,6,5,3)** — all PD at submit, queued behind the SA arrays. All 7 sig classes parity-derived (n even ⇒ a,b odd/c,d even; n odd ⇒ a,b
@@ -858,7 +858,7 @@ ahead of the literature).
 
 ## ⚡ TOP OF MIND — 2026-07-16 23:50: **FIRST-HIT WORK ORDER: Task 0 = BEST CASE (WZ's published n=41/42/43 verified + KEPT by all our filters); Gate B+C instrument BUILT + validated; n=19 first hit at depth 6.2×10⁻⁴ (inside the PASS window) in 1.9 s. n=29/30/31 gate runs MOVED TO CLUSTERS (laptop overheated — probes killed, correct call by Daniel). Paste blocks below.**
 
-**Task 0 (`docs/gate_bc_firsthit_results.md` has everything):** Wang-Zhu Table 1 transcribed from
+**Task 0 (`docs/archive/gate_bc_firsthit_results.md` has everything):** Wang-Zhu Table 1 transcribed from
 the PDF programmatically (zero hand-typing), all three verify_npaf PASS (NPAF=0 ∀s), 2.11a+b PASS
 at m=3 AND m=6, and **every filter level KEEPS all three** (retention harness). Banked in
 `results/reference/` with WZ provenance; `canary_thm211b.py` now 10/10 with them as permanent
@@ -890,7 +890,7 @@ AB_BUDGET=5e7 — PD behind the maintenance reservation, will start when it lift
 SUPERSEDED jobs scancel'd clean (`1921290` P22_GATE — PASS arithmetically impossible; `1921309`
 JOIN22 canary — already passed on Rorqual).** Fir/Nibi untouched (SA round 11 / PD). Next reader:
 the FIRSTHIT checker section reads these; verdicts go against the PRE-REGISTERED rules in
-`docs/gate_bc_firsthit_results.md` — Gate C PASS = depth ≤~1e-3 under some ordering with no
+`docs/archive/gate_bc_firsthit_results.md` — Gate C PASS = depth ≤~1e-3 under some ordering with no
 degradation n=29→31; Gate B PASS = ≤~10 ms/candidate at n=31. Task 3 (the real first-hit build)
 ONLY if both pass. An n=41/42 FOUND banner = WZ replication: verify_npaf locally, bank to
 results/champions/ with provenance, tell Daniel immediately.
@@ -928,7 +928,7 @@ quantity.
 | 2 STREAM | 541/541 profiles, 18,660 raw key hits | 35,092 s (~9.7 h) | **83%** |
 | 3 RESOLVE | hit at profile 192/342 | ~7,042 s (~2.0 h) | 17% |
 
-Stream is the cost ⇒ **`docs/fable_workorder_join_sharding.md` targets the right phase.** The late
+Stream is the cost ⇒ **`docs/archive/fable_workorder_join_sharding.md` targets the right phase.** The late
 tail is still real and still argues for cost-balanced (not contiguous) shards: profiles 512→541 (29 of
 them) cost ~15,081 s, vs ~15,744 s for the first 480 combined.
 
@@ -996,7 +996,7 @@ canary `16243606` still has the OLD binary — read it under the old rules (rule
 **⚡ SAME DAY: THM-2.11B CODE ADVERSARIALLY REVIEWED — the math is CORRECT (independent
 re-derivation + bit-exact reproduction of every documented number, incl. two NON-banked
 sigs), no real solution excluded. Full verdict + 7 verified findings:
-`docs/wz_paper_reconstruction.md` §"ADVERSARIALLY REVIEWED 2026-07-16".** Highlights:
+`docs/research/wz_paper_reconstruction.md` §"ADVERSARIALLY REVIEWED 2026-07-16".** Highlights:
 (1) `WZ_PROFILE_CHECK` had never asserted 2.11b (validation-plan step 1 was NOT done) —
 CLOSED same day: it now asserts the raw predicate + survive_profiles6/mod-3-tighten
 membership; validated 6/6 champions PASS exit 0, quarantined n27 FAIL exit 1. (2) The doc's
@@ -1023,7 +1023,7 @@ after a verify_npaf PASS.
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-15: **THE JOIN IS NOT DEAD — "dead above n≈29" was measured on PRE-Thm-2.2 counts inflated ~10⁵×. Measured tonight on a 4-core laptop: the complete join FINDS + self-verifies BS(20,19) in 26 SECONDS.** Details + curve: `docs/wz_paper_reconstruction.md`.
+## ⚡ TOP OF MIND — 2026-07-15: **THE JOIN IS NOT DEAD — "dead above n≈29" was measured on PRE-Thm-2.2 counts inflated ~10⁵×. Measured tonight on a 4-core laptop: the complete join FINDS + self-verifies BS(20,19) in 26 SECONDS.** Details + curve: `docs/research/wz_paper_reconstruction.md`.
 
 | n | C,D stream | result | wall (4 cores) |
 |---|---|---|---|
@@ -1053,7 +1053,7 @@ n=41-43 is still many rungs beyond this curve.
 
 ---
 
-## ⚡ TOP OF MIND — 2026-07-15 (later): **WE FOUND THE MISSING WANG-ZHU CONSTRAINT. It is Thm 2.3 eq 2.11b — the residue-level autocorrelation condition — and it is NOT IN OUR CODE.** Full analysis: **`docs/wz_paper_reconstruction.md`**. Read that before touching the solver.
+## ⚡ TOP OF MIND — 2026-07-15 (later): **WE FOUND THE MISSING WANG-ZHU CONSTRAINT. It is Thm 2.3 eq 2.11b — the residue-level autocorrelation condition — and it is NOT IN OUR CODE.** Full analysis: **`docs/research/wz_paper_reconstruction.md`**. Read that before touching the solver.
 
 **We finally read the actual paper** (arXiv:2506.20296 — it was never in the repo; two prior
 reconstructions were guesses). Thm 2.3's eq 2.11 has **two** parts:
@@ -1158,7 +1158,7 @@ exactly like a PASS.** Verify the count is 20 before believing the number. Resub
 shards rather than reporting a partial sum.
 
 **PRE-REGISTERED RULE (do not move the line now that the number is visible —
-`docs/wz_firsthit_plan.md`):** C,D stream **≤ ~1e9 at n=36 → PASS** ⇒ the Wang-Zhu
+`docs/plans/wz_firsthit_plan.md`):** C,D stream **≤ ~1e9 at n=36 → PASS** ⇒ the Wang-Zhu
 Theorem-2.2 route to n=41-43 is alive, resume Phase 1 with joint-pair generation.
 **≥ 1e12 → KILL** ⇒ the Thm-2.2 lift is not the lever either. **In between → run Gate B**
 (per-candidate A,B completion cost) before judging. Deciding to *build* Phase 1 is Daniel's
@@ -1559,7 +1559,7 @@ a **64-bit FNV-1a hash** (exact recheck catches collisions) + **dedup to one A,B
 autocorrelation** (SOUND — any A,B with AB=−CD cancels that C,D) + **hash the smaller side**. BS(11,10)
 still correct 3/3 threaded; hash ~8× smaller at n=10 (far more at n=42 via dedup).
 
-**CURRENT RUNS (2026-06-24, memory-optimized `wz_match` via `cluster/deploy/cluster_wz_match.sh`):**
+**CURRENT RUNS (2026-06-24, memory-optimized `wz_match` via `cluster/archive/deploy/cluster_wz_match.sh`):**
 - **Rorqual 14727116 → BS(43,42) (7,11,0,0)** — THE GOAL retry (12 h). Known-solvable (published) sig.
   Open question: does it FINISH in time now (OOM should be gone; generation set is still large)?
 - **Fir 45797874 → BS(37,36) (5,11,0,0)** — wall-test rung (6 h); completing proves the fix scales.
@@ -1571,7 +1571,7 @@ for c in fir rorqual nibi; do echo "════ $c ════"; ssh dangord@$
   "squeue -u dangord -h -o '%.12i %.10j %.2t %.11L %R'; cd \$SCRATCH/bs45 2>/dev/null && \
    for f in \$(ls -t wz_match_output_*.txt 2>/dev/null|head -1); do echo \"=== \$f ===\"; tail -10 \"\$f\"; done"; done
 ```
-Deploy: `tar -cf - src/solver/wz_match.cpp cluster/deploy/cluster_wz_match.sh | ssh dangord@<cluster> 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch --export=ALL,WZ_N=<n>,WZ_A=<a>,WZ_B=<b>,WZ_C=<c>,WZ_D=<d> cluster/deploy/cluster_wz_match.sh'` (Nibi adds `--account=def-ikotsire_cpu`).
+Deploy: `tar -cf - src/solver/wz_match.cpp cluster/archive/deploy/cluster_wz_match.sh | ssh dangord@<cluster> 'scancel -u dangord 2>/dev/null; cd $SCRATCH/bs45 && tar -xvf - && sbatch --export=ALL,WZ_N=<n>,WZ_A=<a>,WZ_B=<b>,WZ_C=<c>,WZ_D=<d> cluster/archive/deploy/cluster_wz_match.sh'` (Nibi adds `--account=def-ikotsire_cpu`).
 
 **Honest status / next lever:** architecture proven (blind n=18 in 51 s). OPEN: does n=42's dedup'd
 generated set finish within walltime/RAM on a 192-core node? If Rorqual prints `*** BS(43,42) FOUND ***`

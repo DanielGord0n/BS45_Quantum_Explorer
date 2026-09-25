@@ -209,7 +209,7 @@ struct PairNormSet {
 };
 
 // ===== Thm 2.3 eq 2.11b — the RESIDUE-LEVEL AUTOCORRELATION condition =======
-// Added 2026-07-15 after reading arXiv:2506.20296 (docs/wz_paper_reconstruction.md).
+// Added 2026-07-15 after reading arXiv:2506.20296 (docs/research/wz_paper_reconstruction.md).
 // eq 2.11 has TWO parts; we only ever implemented the first:
 //   2.11a  sum of ALL class-sum squares = 4n+2                      <- PairNormSet
 //   2.11b  N_K(s)+N_R(s)+N_P(s)+N_Q(s)
@@ -448,7 +448,7 @@ static vector<Profile> survive_profiles(int L, int sigX, int sigY,
 
 // Modulus-m generalization of the COUNT-ONLY DFS (m <= 8). Same per-sequence
 // spectral filter, class constraints at modulus m instead of 3; stores nothing.
-// Used by the WZ_COUNT_MOD6 Gate-A probe (docs/wz_firsthit_plan.md).
+// Used by the WZ_COUNT_MOD6 Gate-A probe (docs/plans/wz_firsthit_plan.md).
 static void count_seqs_for_profile_m(int L, const vector<int> &target, int m,
                                      bool pin0, long long &examined,
                                      long long &spec_ok) {
@@ -1391,7 +1391,7 @@ int main(int argc, char **argv) {
     // switch Q(C,D) = (U+RV, U-RV), U=(C+D)/2, V=(C-D)/2, to the orbit group (32 -> 64).
     // Q swaps the antisymmetric parts of C and D; it keeps both sums, the pair NPAF and
     // hence the A,B completion problem (verified on all six known solutions:
-    // docs/reviews/2026-09-24-evidence/astra_checks.py). It maps binary to binary when
+    // docs/reviews/evidence/2026-09-24/astra_checks.py). It maps binary to binary when
     // every mirror quad has product +1: interior quads come from P22_POS, and at n=44
     // every class has c+d = 0 mod 4, which forces the free endpoint quad positive too.
     // Profile action: p' = (p+q+Rp-Rq)/2, q' = (p+q-Rp+Rq)/2 (always integral).
@@ -1761,7 +1761,7 @@ int main(int argc, char **argv) {
     size_t abp_cap = 20000;    // cells with bigger lists run unconstrained
     if (const char *e = getenv("WZ_FH_AB_PROF_CAP")) abp_cap = (size_t)atoll(e);
     // ---- Per-arm candidate-level resume (2026-07-28 spec:
-    // docs/superpowers/specs/2026-07-28-per-arm-candidate-resume-design.md).
+    // docs/research/2026-07-28-per-arm-candidate-resume-design.md).
     // Deep-n arms die mid-drain of their first cell (cells_done=0 on every
     // n>=41 job), so resume must be POSITIONAL IN THE SORTED BATCH SEQUENCE:
     // (cell pi, drain batch, completed-within-batch k). Every step is
@@ -2687,12 +2687,12 @@ int main(int argc, char **argv) {
          << "TRUE streams: A,B " << abS << "   C,D " << cdS << "  (-1 = side skipped)\n"
          << "vs independent-side pair-work (earlier Gate A/count-only runs): the\n"
          << "ratio quantifies Thm 2.2's pruning power at this n.\n"
-         << "Gate rule (docs/wz_firsthit_plan.md): C,D stream <= ~1e9 at n=36 PASS; >= 1e12 KILL.\n"
+         << "Gate rule (docs/plans/wz_firsthit_plan.md): C,D stream <= ~1e9 at n=36 PASS; >= 1e12 KILL.\n"
          << "Time: " << t << "s\n" << flush;
     return 0;
   }
 
-  // ---- WZ_COUNT_MOD6: GATE A of docs/wz_firsthit_plan.md. Streaming counts of
+  // ---- WZ_COUNT_MOD6: GATE A of docs/plans/wz_firsthit_plan.md. Streaming counts of
   //      the MOD-6-constrained stream (the Wang-Zhu lift), zero materialization.
   //      Compare against a separate WZ_COUNT_ONLY (mod-3) run of the same sig:
   //      the reduction ratio is the gate metric. Progress lines leave partial
@@ -2743,7 +2743,7 @@ int main(int argc, char **argv) {
          << "mod-6 pair-work: A,B " << ab_pw << "  C,D " << cd_pw
          << "  total " << (ab_pw + cd_pw) << "\n"
          << "Compare vs the same sig's WZ_COUNT_ONLY (mod-3) run for the reduction ratio.\n"
-         << "Gate rule (docs/wz_firsthit_plan.md): C,D stream <= ~1e9 at n=36 PASS; >= 1e12 KILL.\n"
+         << "Gate rule (docs/plans/wz_firsthit_plan.md): C,D stream <= ~1e9 at n=36 PASS; >= 1e12 KILL.\n"
          << "Time: " << t << "s\n" << flush;
     return 0;
   }

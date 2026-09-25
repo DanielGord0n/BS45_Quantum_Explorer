@@ -2,7 +2,7 @@
 """Verify Astra's 2026-09-24 math-review claims on the six known solutions.
 
 Pure arithmetic on banked sequences (no solver, no search). Run from the repo root:
-    python3 docs/reviews/2026-09-24-evidence/astra_checks.py
+    python3 docs/reviews/evidence/2026-09-24/astra_checks.py
 
 Item 1: quad switch Q(C,D) = (U+RV, U-RV), U=(C+D)/2, V=(C-D)/2.
 Item 2: one-sign extension BS(n+1,n) -> BS(n+2,n+1) over each seed's full 4,096 orbit.
@@ -11,7 +11,7 @@ Item 3: A,B exchange (only a sanity check that it is a symmetry; implementation 
 from itertools import product
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 FILES = {
     'ours-41': 'results/champions/champion_firsthit_bs42_41.txt',
     'ours-42': 'results/champions/champion_firsthit_bs43_42.txt',

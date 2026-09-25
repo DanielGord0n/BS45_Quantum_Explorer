@@ -7,7 +7,7 @@
 #SBATCH --output=gpu_spike_output_%j.txt
 #SBATCH --account=def-ikotsire
 
-# GPU feasibility spike (lever 3, docs/n44_search_narrowing_research.md).
+# GPU feasibility spike (lever 3, docs/research/n44_search_narrowing_research.md).
 # Measures A,B-completer throughput: 1 CPU core vs 1 GPU, identical iterative
 # DFS (validated verdict-exact vs production at n=19 + n=41, 2026-07-31).
 # PRE-REGISTERED RULE: speedup >=300x => BUILD the production GPU completer;

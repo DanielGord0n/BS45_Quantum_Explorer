@@ -1,8 +1,8 @@
-# Independent review of `docs/superpowers/plans/2026-09-22-n44-research-improvement-plan.md`
+# Independent review of `docs/archive/2026-09-22-n44-research-improvement-plan.md`
 
 Reviewer: Claude (Opus 5.5), 2026-09-22. Review only: no code, queue, checkpoint or
 deployment changes were made. Baseline inspected: `cc7d28e` (HEAD), HANDOFF entries
-through 2026-09-22 night, `HANDOFF_ARCHIVE.md`, the lever ledger, both Astra reviews and
+through 2026-09-22 night, `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`, the lever ledger, both Astra reviews and
 the instrument spec, and `src/solver/wz_match.cpp`.
 
 Labels used below: **FACT** (measured or read from code/logs), **HYPOTHESIS** (plausible,
@@ -15,7 +15,7 @@ unmeasured), **UNKNOWN** (no evidence either way).
   listed power outage at that check. No verdict exists. Stage 1's lever-28 gate is still open;
   scheduling any new lever-28 test would be redundant.
 - **No F2/G2 lane has ever been submitted.** FACT: the only F2 record is the build and a local
-  B=2 validation (HANDOFF line ~478; `docs/lever19_sweep_plan.md` 192-193). There is no capture
+  B=2 validation (HANDOFF line ~478; `docs/plans/lever19_sweep_plan.md` 192-193). There is no capture
   verdict to locate.
 - **The shadow instrument has not been built.** FACT: only the spec exists
   (`docs/reviews/2026-09-22-astra-instrument-spec.md`).
@@ -36,7 +36,7 @@ unmeasured), **UNKNOWN** (no evidence either way).
 - Soundness: the check is an exact equality on a fully determined shift; node charging moved
   before placement, so budget semantics are unchanged. Stream order untouched, so no CFGSIG
   or checkpoint effect. Reversed in-cell order changes C,D enumeration only; no interaction.
-- Correction to our own ledger: `docs/n44_search_narrowing_research.md` lever 28 says
+- Correction to our own ledger: `docs/research/n44_search_narrowing_research.md` lever 28 says
   "1.5-1.6x fewer completer nodes". Under the counter-preserving placement the CHARGED node
   count is identical by construction; any gain is wall-time per charged node. The plan states
   this correctly; the ledger line should be fixed.

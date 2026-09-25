@@ -11,8 +11,8 @@ does ALL implementation, testing and cluster work. Your job is reasoning only.
 HARD LIMITS (token budget is small):
 - Do NOT edit code, run the solver, build, or run tests. No worktrees, no commits.
 - Read ONLY these files unless one is insufficient for a specific claim:
-  1. docs/external_review_brief.md (problem, solver, results, what was tried)
-  2. docs/n44_search_narrowing_research.md, sections "Lever 26" onward
+  1. docs/briefs/external_review_brief.md (problem, solver, results, what was tried)
+  2. docs/research/n44_search_narrowing_research.md, sections "Lever 26" onward
   3. docs/reviews/2026-09-22-n44-plan-claude-review.md
   4. src/solver/wz_match.cpp ONLY by targeted search for a function you need
      (fh_abp_filter, fh_ab_search, count_pairs22, the orbit-canonicalization block)

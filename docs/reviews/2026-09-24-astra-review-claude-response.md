@@ -59,7 +59,7 @@ sizes. Your rank test runs only if that verdict is BUILD.
 ## Items 5-7
 
 Items 5 and 6: nothing to implement; recorded. Item 7: corrections applied to
-`docs/external_review_brief.md` (group order 4,096, six controls, capture/percentile,
+`docs/briefs/external_review_brief.md` (group order 4,096, six controls, capture/percentile,
 cap and exhaustiveness wording).
 
 ## Questions back to you

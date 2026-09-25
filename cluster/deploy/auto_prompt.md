@@ -62,11 +62,11 @@ Do not re-run the checker.
      - Exit 3 / `EXHAUSTED` → **DO NOT refill SA at this rung.** More tickets here
        is measured-dead (SA caps ~n≈33-35). Follow the escalation the check prints:
        finish the JOIN22 / Theorem-2.2 canary (never passed — a ~15h slot on
-       Trillium's 24h queue), then the Phase-0 gates in `docs/wz_firsthit_plan.md`.
+       Trillium's 24h queue), then the Phase-0 gates in `docs/plans/wz_firsthit_plan.md`.
        Those are PRE-REGISTERED experiments, so you may submit them autonomously via
        `duo_run.sh`. Anything beyond them is a NEW research direction → NEEDS_HUMAN.
        Put "SA ladder capped at n=<N> — escalated to <experiment>" in the summary.
-       (Do NOT mention `docs/kotsireas_brief.md` — Daniel declined sending it on
+       (Do NOT mention `docs/briefs/kotsireas_brief.md` — Daniel declined sending it on
        2026-08-05; the standing human lever is the allocation ask, already drafted,
        and it needs no daily reminder.)
      - Exit 0 / `ACTIVE` → refilling is still justified; proceed.
@@ -140,7 +140,7 @@ Do not re-run the checker.
      WZ_FH_DRAIN_TOP both && mv into place && cp to cluster/deploy/`. The new source is
      byte-identical in behaviour when WZ_FH_DRAIN_TOP is unset (validated 09-01), so
      running/queued lanes are unaffected. **LEVER 20 (`WZ_FH_DRAIN_TOP=50000`) is
-     gated on its pre-registered control** (docs/n44_search_narrowing_research.md):
+     gated on its pre-registered control** (docs/research/n44_search_narrowing_research.md):
      do NOT apply it to n=44 lanes until Nibi's N43dt327 (our n=43 hit's window, capped)
      or another N43dt lane re-finds a known n=43 solution. Report that verdict loudly.
      **RAC ACCOUNT (2026-08-31):** submit with `--account=rrg-ikotsire` on clusters where
@@ -151,7 +151,7 @@ Do not re-run the checker.
      09-24). No repeat rep, and never enable WZ_FH_TELEMETRY on any job unless Daniel's session
      says so. RAW EVIDENCE RULE: whenever a decision rests on a measurement line (GATEB_TELEM,
      GATEB cum_*, COUNT_ONLY, control nodes_this_cand), save the verbatim line(s) with job ID
-     to docs/reviews/<date>-evidence/<jobid>.txt and commit it; HANDOFF paraphrase alone is
+     to docs/reviews/evidence/<jobid>.txt and commit it; HANDOFF paraphrase alone is
      not enough (09-24: the pilot's raw line was never saved).
      **TWO MEASUREMENT JOBS ON FIR (2026-09-24) — NOT search lanes:** 61315095 (CS44g2000,
      $SCRATCH/bs45_cellsize) and 61516887 (QCANARY v2, $SCRATCH/bs45_qcanary; 61331128 = v1, done). Never count them
@@ -183,13 +183,13 @@ Do not re-run the checker.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
      **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**
-     two defects fixed (docs/n44_search_narrowing_research.md levers 26-27): endpoint pins
+     two defects fixed (docs/research/n44_search_narrowing_research.md levers 26-27): endpoint pins
      were dropping ~75% of workhorse orbits under canon, and lanes had no ownership (~99%
      repeated work). A Pass G lane owns raw cells [k, k+S) per arm: env
      `WZ_FH_PROF_SKIP=k,WZ_FH_PROF_END=k+S,WZ_FH_DRAIN_TOP=50000,WZ_FH_AB_BUDGET=2000000,
      WZ_FH_ORBIT_CANON=1` (+`WZ_FH_STREAM_REV=1` for the reversed-front twin). Names
      `<C>44g<k>` / `<C>44gr<k>`. S = 1000 (3,13,0,0); 300 for dedup ~8x classes; 150 for
-     dedup ~4x classes (table in docs/lever19_sweep_plan.md). A lane is DONE when GATEB
+     dedup ~4x classes (table in docs/plans/lever19_sweep_plan.md). A lane is DONE when GATEB
      shows `range_done=178/178` (or its output says RANGE EXHAUSTED on every arm):
      NEVER resubmit it. A lane that is not done gets restacked (singleton, verbatim) until
      it is. Refill rule: when a cluster's pending < 8, first restack its unfinished G
@@ -219,7 +219,7 @@ Do not re-run the checker.
      do not average shares or sum GATEB cum_* across reps. Two incomplete reads stop
      the pilot; no local n44 fallback. Details: docs/reviews/2026-09-23-telemetry-review-fixes.md.
      **LEVER 19 SWEEP RULES (2026-08-29, supersede stack-depth for sweep lanes):** read
-     `docs/lever19_sweep_plan.md`. Sweep lanes (names F44i*/F44Bi*/R44i*/R44Ai*/R44Di*/
+     `docs/plans/lever19_sweep_plan.md`. Sweep lanes (names F44i*/F44Bi*/R44i*/R44Ai*/R44Di*/
      T43b*/N43b*) are ONE rep each — never restack the same k. Do NOT top up the deep
      front stacks (F44w*/F44s*/R44r*) while sweep lanes are pending on that cluster.
      When a cluster's pending sweep lanes drop below ~8, submit the NEXT pass/phase
@@ -234,7 +234,7 @@ Do not re-run the checker.
      Its instructions are retired; the live priority is now the FIRSTHIT probes below.)*
 
    - **🚨 THE FIRSTHIT PROBES OUTRANK EVERYTHING (submitted 07-16 ~23:55; work order
-     `docs/fable_workorder_firsthit_n41.md`, results doc `docs/gate_bc_firsthit_results.md`).**
+     `docs/archive/fable_workorder_firsthit_n41.md`, results doc `docs/archive/gate_bc_firsthit_results.md`).**
      Rorqual `16498722`/`16498723`/`16498724` = the PRE-REGISTERED Gate B+C runs at n=29/30/31.
      Trillium `1926730`/`1926731` = EXPLORATORY probes at n=41/n=42 on Wang-Zhu's own published
      sigs (PD behind maintenance; they start when it lifts). The checker's "FIRSTHIT PROBES"
@@ -246,7 +246,7 @@ Do not re-run the checker.
        PRE-REGISTERED rules (do not move them now that numbers are visible): **Gate C PASS** =
        depth ≲1e-3 of the stream under some ordering AND not degrading n=29→31; **Gate B PASS** =
        ≤~10 ms/candidate at n=31 (compute ms/cand = wall × arms ÷ candidates). Verdicts →
-       `docs/gate_bc_firsthit_results.md` + HANDOFF. **Whether to build Task 3 (the full
+       `docs/archive/gate_bc_firsthit_results.md` + HANDOFF. **Whether to build Task 3 (the full
        first-hit architecture) on a PASS is Daniel's call — set NEEDS_HUMAN with the numbers.**
      - **FIRSTHIT probes at n=32/33 (if queued): a FOUND banner BEATS the banked best (n=31).**
        Full R2: `verify_npaf.py` PASS → bank to `results/champions/` with provenance (job id,
