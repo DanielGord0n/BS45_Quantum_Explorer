@@ -1,7 +1,7 @@
 # Pass H plan (draft v2 2026-09-25 after Astra's review; NOT built, NOT deployed)
 
 Pass H replaces Pass G on all 12 n=44 classes. It is built only after the Q cluster canary
-(Fir 61331128) PASSES, and deployed only on Daniel's go. Background:
+(v2: Fir 61516887; v1 61331128 was INCONCLUSIVE on a macOS cell index) PASSES, and deployed only on Daniel's go. Background:
 `docs/reviews/2026-09-24-astra-review-claude-response.md` and HANDOFF 2026-09-24.
 
 ## What changes versus Pass G
@@ -62,7 +62,7 @@ kept, and in what order.
    independent of G job status. Running G reps may finish in the old namespace, but G is no
    longer resubmitted. The loop reconciles the manifest against queued, running and finished
    jobs, so a cancelled or failed H unit shows as uncompleted, never as an invisible gap.
-4. **Prune certificates.** Audit every removed orbit's certificate. For the 716-cell
+4. **Prune certificates.** Audit every removed orbit's certificate. For the Fir-order dead list
    prediction on 61315095, a finished stream with cand=0 corroborates it; timeouts, partials and
    unvisited cells are inconclusive; any emitted candidate blocks launch.
 5. **Performance rule** (an operating policy, not a discovery claim): >= 90% of G's kept-cells
