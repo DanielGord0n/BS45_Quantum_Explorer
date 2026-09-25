@@ -218,6 +218,13 @@ $PROMPT"
 fi
 
 MODEL="$MODEL_PRIMARY"
+# Remembered primary block (2026-09-25): a credit-exhausted primary stays blocked for days,
+# so re-trying it every run only adds a CLI start (09-25: that start stalled 31 min).
+BLOCK_FILE="$REPO/results/model_block_${MODEL_PRIMARY}.txt"
+if [ -f "$BLOCK_FILE" ] && [ "$(awk 'NR==1{print $1}' "$BLOCK_FILE" 2>/dev/null || echo 0)" -gt "$(date +%s)" ] 2>/dev/null; then
+  log "Primary '$MODEL_PRIMARY' still blocked ($(cut -d' ' -f2- "$BLOCK_FILE")); using '$MODEL_FALLBACK' directly."
+  MODEL="$MODEL_FALLBACK"
+fi
 attempt=1
 rc=1
 PARTIAL=0
@@ -227,10 +234,33 @@ while : ; do
   # shellcheck disable=SC2086
   # Hard cap (2026-09-19): normal runs take 20-60 min; 4-6 h runs died on API timeouts.
   MAX_AGENT_SEC="${MAX_AGENT_SEC:-5400}"
+  # STARTUP STALL GUARD (2026-09-25): twice the CLI sat 20-31 min BEFORE starting its
+  # session while the Mac was idle with the display off, and continued within ~15 s of the
+  # display waking (09-24 13:21:27 -> 13:21:43; 09-25 13:33:11 -> 13:33:22). Not reproduced
+  # with a 20 s display-off, so the mechanism is unproven. Mitigation: declare user
+  # activity (wakes the display) right before launch, and a watchdog that re-wakes every
+  # 2 min until a session transcript appears, pushing an alert at 4 min.
+  caffeinate -u -t 5 >/dev/null 2>&1 &
+  START_MARK="$REPO/results/.agent_start_mark"; touch "$START_MARK"
+  (
+    for m in 2 4 6 8 10 12 14 16 18 20; do
+      sleep 120
+      find "$HOME/.claude/projects" -name '*.jsonl' -newer "$START_MARK" 2>/dev/null | grep -q . && exit 0
+      caffeinate -u -t 3 >/dev/null 2>&1
+      log "Agent session not started after ${m} min (CLI startup stall) — woke the display."
+      [ "$m" = 4 ] && ntfy_push "BS45: agent stalled at startup" \
+        "The Claude CLI has not started after 4 min (it stalls while the Mac is idle). The loop keeps waking the display; touching the Mac also releases it." "high" "warning"
+    done
+  ) &
+  WATCH_PID=$!
   # </dev/null: claude -p blocks until stdin EOF (verified 2026-09-20: 25 s with an open
-  # pipe vs 2 s with no stdin) — never let it inherit a pipe.
-  python3 "$DIR/run_with_timeout.py" "$MAX_AGENT_SEC" "$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" $CLAUDE_ARGS </dev/null >>"$LOG" 2>&1
+  # pipe vs 2 s with no stdin) — never let it inherit a pipe. caffeinate -i: no idle
+  # sleep while the agent runs. No IDE auto-connect for headless runs (VS Code may be
+  # throttled while the Mac is idle, and the loop never needs it).
+  CLAUDE_CODE_AUTO_CONNECT_IDE=false CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL=1 \
+    python3 "$DIR/run_with_timeout.py" "$MAX_AGENT_SEC" caffeinate -i "$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" $CLAUDE_ARGS </dev/null >>"$LOG" 2>&1
   rc=$?
+  pkill -P "$WATCH_PID" 2>/dev/null; kill "$WATCH_PID" 2>/dev/null || true
   [ "$rc" -eq 124 ] && log "Agent exceeded ${MAX_AGENT_SEC}s and was killed (rc=124)."
   log "Claude exited rc=$rc"
 
@@ -246,6 +276,9 @@ while : ; do
   if [ "$MODEL" = "$MODEL_PRIMARY" ] && did_nothing \
      && { limit_hit || tail -25 "$LOG" | grep -qiE "model.*(not found|unavailable|invalid|unknown)|does not support this model"; }; then
     WHY="$(block_reason)"
+    # remember a credit block for 20 h (next run goes straight to the fallback; a real
+    # reset shows up the day after, when the primary is tried again)
+    credits_gone && echo "$(( $(date +%s) + 72000 )) $WHY (since $(date '+%F %H:%M'))" > "$BLOCK_FILE"
     log "Primary '$MODEL_PRIMARY' blocked ($WHY) — falling back to '$MODEL_FALLBACK'."
     ntfy_push "BS45 — falling back to $MODEL_FALLBACK" \
       "$MODEL_PRIMARY blocked ($WHY). Running on $MODEL_FALLBACK instead." "low" "arrows_counterclockwise"

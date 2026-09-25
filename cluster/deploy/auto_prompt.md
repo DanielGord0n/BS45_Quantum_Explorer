@@ -162,11 +162,15 @@ Do not re-run the checker.
        "^CELLSIZE" fh_arms_61315095/arm_*.log` -> save verbatim to
        docs/reviews/evidence/cellsize_61315095.txt, run `python3 tools/cellsize_summary.py` on it,
        report its VERDICT line (NO-OP/BUILD/KILL/BETWEEN/INSUFFICIENT) and the rate lines.
-       ALSO check the Q-closure-prune prediction: for every CELLSIZE line whose pi appears in
-       docs/reviews/2026-09-24-evidence/qprune_prediction_3_13_0_0_w2000-3000.txt, cand MUST be 0.
-       Report how many matched, their sec values, and LOUDLY any nonzero (= prune unsound).
-       61331128: `cd $SCRATCH/bs45_qcanary && cat qcanary_61331128.txt` -> save verbatim to
-       docs/reviews/evidence/qcanary_61331128.txt, pipe each FOUND block to tools/verify_npaf.py,
+       ALSO check the Q-closure-prune prediction, using ONLY the list generated ON FIR by the
+       QCANARY v2 job: `awk '$1>=356000 && $1<534000' $SCRATCH/bs45_qcanary/qprune_dead_3_13_0_0.txt`
+       (the docs/ copy named INVALID_macos_indices... is WRONG: macOS and Fir order tied cells
+       differently). For every CELLSIZE line whose pi is in that list, cand MUST be 0 when
+       partial=0. Report matches, their sec values, and LOUDLY any nonzero (= prune unsound).
+       If the Fir list does not exist yet, say so and skip this check (not a failure).
+       61331128 was v1 (INCONCLUSIVE: macOS cell index, fixed in v2); read the v2 job named in
+       HANDOFF instead: `cd $SCRATCH/bs45_qcanary && cat qcanary_<v2 id>.txt` -> save verbatim to
+       docs/reviews/evidence/qcanary_<v2 id>.txt, pipe each FOUND block to tools/verify_npaf.py,
        report both VERDICT lines (PASS/FAIL/INCONCLUSIVE) and whether ours42 hit the predicted idx.
      Both verdicts follow rules pre-registered in HANDOFF 09-24; apply them literally. Any
      follow-up (build whole-cell top-K, build Pass H, repeat job) is NEEDS_HUMAN: never build,

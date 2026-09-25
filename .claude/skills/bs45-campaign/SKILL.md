@@ -50,6 +50,11 @@ repo root (scp does NOT expand $SCRATCH): `tar -cf - <files> | ssh ... 'cd $SCRA
 - **Odd bestAB values (e.g. 9) under WZ_PSD_BIAS** = the logged cost includes the bias term
   (true penalty is always even). Reported floors under bias are inflated by 0–3; only
   bestAB=0/FOUND is exact.
+- **Cell indices are NOT portable across toolchains (2026-09-25).** Cells tied on profile
+  score are ordered by `std::sort`'s unspecified tie behaviour: an index/window/arm computed
+  on macOS (libc++) is a different cell on the clusters (libstdc++). Proven: libc++ tie
+  randomization moved one cell 582325 -> 549054; QCANARY v1 hit an orbit duplicate. Compute
+  cell addresses ON THE CLUSTER (in-job LOCATE); rank RANGES from LOCATE are portable.
 - **OOM ~20–30 s after "[profiles] ..."** in wz_match = the count-phase materialization wall,
   NOT the hash. Use `WZ_COUNT_ONLY=1` (streaming, cannot OOM) for any feasibility question.
 
