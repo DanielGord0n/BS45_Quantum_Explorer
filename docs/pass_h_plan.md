@@ -1,4 +1,4 @@
-# Pass H plan (draft 2026-09-25, NOT built, NOT deployed)
+# Pass H plan (draft v2 2026-09-25 after Astra's review; NOT built, NOT deployed)
 
 Pass H replaces Pass G on all 12 n=44 classes. It is built only after the Q cluster canary
 (Fir 61331128) PASSES, and deployed only on Daniel's go. Background:
@@ -46,3 +46,27 @@ kept, and in what order.
   interaction with front-only selection or with ownership?
 - Any reason to prefer "kept-cells-only compact list" over raw-position windows?
 - Anything in the transition that could leave an orbit unowned by every lane?
+
+## Required changes from Astra's review (docs/reviews/2026-09-25-astra-passh.md)
+
+1. **Deterministic order across toolchains.** Sort key = (orbit-min score, orbit id, CELL KEY),
+   never raw position or `std::sort` tie behaviour. Today's canary v1 failure proved that
+   macOS and Fir order tied cells differently. Every worker prints a digest of the ordered raw
+   list and the kept-position bitmap; the driver refuses to search or resume on a mismatch.
+2. **Ownership manifest.** For each class and direction, partition windows
+   `[0, ceil(N_raw/178))` into disjoint half-open lane ranges (from the raw-list length, never
+   from kept counts). Assert that every kept raw index i has exactly one owner
+   `(class, direction, range, arm = i mod 178)`. The manifest is committed and reviewed before
+   Daniel's go.
+3. **Transition.** H ranges start at their own lower bounds with fresh H checkpoints,
+   independent of G job status. Running G reps may finish in the old namespace, but G is no
+   longer resubmitted. The loop reconciles the manifest against queued, running and finished
+   jobs, so a cancelled or failed H unit shows as uncompleted, never as an invisible gap.
+4. **Prune certificates.** Audit every removed orbit's certificate. For the 716-cell
+   prediction on 61315095, a finished stream with cand=0 corroborates it; timeouts, partials and
+   unvisited cells are inconclusive; any emitted candidate blocks launch.
+5. **Performance rule** (an operating policy, not a discovery claim): >= 90% of G's kept-cells
+   per lane-day = PASS; < 80% = roll back to the untouched G checkpoints; 80-90% = inconclusive,
+   with one prespecified follow-up. The 1.92 tile ratio is a size ratio, not a measured speed.
+6. **Stream levers** (WZ_FH_CD_PRUNE) are NOT part of the H launch. They join separately, and
+   only if pilot 61518000 passes.

@@ -172,7 +172,11 @@ Do not re-run the checker.
        instead: `cd $SCRATCH/bs45_qcanary && cat qcanary_61516887.txt` -> save verbatim to
        docs/reviews/evidence/qcanary_61516887.txt, pipe each FOUND block to tools/verify_npaf.py,
        report both VERDICT lines (PASS/FAIL/INCONCLUSIVE) and whether ours42 hit the predicted idx.
-     Both verdicts follow rules pre-registered in HANDOFF 09-24; apply them literally. Any
+       61518000 (CDPILOT, $SCRATCH/bs45_cdpilot, 8 cores, 8 h): `cd $SCRATCH/bs45_cdpilot && cat
+       cdpilot_61518000.txt` -> save verbatim to docs/reviews/evidence/cdpilot_61518000.txt, run
+       `python3 tools/cd_prune_pilot_summary.py` on it, report its VERDICT (PASS/CLOSE/INCONCLUSIVE/
+       FAIL) and the time and DFS-visit ratios. Also not a lane: never count/restack/cancel it.
+     All verdicts follow rules pre-registered in HANDOFF 09-24/09-25; apply them literally. Any
      follow-up (build whole-cell top-K, build Pass H, repeat job) is NEEDS_HUMAN: never build,
      deploy or submit on either result. A canary FOUND is an EXPECTED re-find of a banked n=42
      solution, not news and not a champion.

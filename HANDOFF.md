@@ -20,7 +20,13 @@ INVALID (renamed); v2 also writes the Fir-order dead list to $SCRATCH/bs45_qcana
 qprune_dead_3_13_0_0.txt, which the loop now uses for the CELLSIZE check. Production unaffected (one
 toolchain per cluster, gcc 12.3 everywhere). CELLSIZE 61315095 RUNNING 10:53 at 14:3x. (3) Astra
 Pass H review: docs/reviews/2026-09-25-astra-passh.md (approve with ownership manifest + cell-key
-tie-break + transition rules; stream levers: endpoint-quad root filter, exact residual reachability).**
+tie-break + transition rules; stream levers: endpoint-quad root filter, exact residual reachability). (4) STREAM LEVERS BUILT, default off: WZ_FH_CD_PRUNE=1|2|3 (root mod-4 filter |
+exact mirror-pair residual reachability), stream-IDENTICAL (tools/test_cd_prune.py: 896 runs n=6..13,
+dump bytes + per-cell counts + exact verdicts), not in CFGSIG (checkpoint-compatible if it passes).
+PAIRED PILOT Fir 61518000 (CDPILOT, $SCRATCH/bs45_cdpilot, 8 cores 8 h, sha 50aec4df..): 4 workhorse
+F44g2000 shards x {0,3}, count-only to the 500k prefix, same node. PRE-REGISTERED
+(tools/cd_prune_pilot_summary.py): identity must hold else FAIL; PASS = median per-cell time ratio
+off/on >= 1.25 over >= 8 paired finished cells; CLOSE < 1.05; else INCONCLUSIVE.**
 
 **⚡ 2026-09-25 (daily loop 1pm — ALL FOUR reached) — NO HITS; Q CANARY 61331128 = INCONCLUSIVE
 (HARNESS ADDRESSING BUG, the Q path was never exercised) => NEEDS_HUMAN; 13 hitless reads, 0 submits.**
