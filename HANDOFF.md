@@ -1,8 +1,40 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-24 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-25 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-25 (daily loop 1pm — ALL FOUR reached) — NO HITS; Q CANARY 61331128 = INCONCLUSIVE
+(HARNESS ADDRESSING BUG, the Q path was never exercised) => NEEDS_HUMAN; 13 hitless reads, 0 submits.**
+NEW FOUND: none on all four. ★ QCANARY 61331128 (read via duo_run, 2 taps; verbatim in
+docs/reviews/evidence/qcanary_61331128.txt): COMPLETED in 35 s (not 12 h). Both targets printed
+"step1: NO TARGET LINE -> VERDICT: INCONCLUSIVE (image not reached)". Step-1 logs: candidates_streamed=0,
+cells_orbit_dup=1, pins_dropped=1, cells_done=0, RANGE EXHAUSTED in 1.7 s on both arms; resume_pi =
+582503 (ours42) / 26283 (wz42) = target cell_idx + 178 exactly, so the arm owned position
+cell_idx and found an orbit DUPLICATE there. PROBABLE CAUSE (local reproduction on the same fe7485e
+source, sha 3c9b9c46..): LOCATE reports cell_idx 582325 canon_kept=YES as a RAW profile index, and
+its own flat-order line says "cell_score=30 rank_lo=501588 ties=120016; window_lo=2817 window_hi=3492".
+The canary script instead set window=cell_idx div 178, arm=cell_idx mod 178 (3271/87, 146/117), i.e.
+used a raw index as a flat-order (PROF_ORDER=1) position. So the job read some other (dup) cell.
+The local test harness (tools/test_target_canary.py) uses PROF_SKIP=cell_idx with no NSHARD, the
+same assumption; at n=8/10 it passed, so either small-n order coincides with raw order or the
+harness shares the bug. My two local n=42 TARGET reruns hit my 90 s bound (not diagnosed further).
+PRE-REGISTERED RULE applied literally: INCONCLUSIVE => redesign, NO Q deploy. No FOUND => nothing
+to verify. NEEDS_HUMAN: fix the canary addressing (map the kept raw cell to its flat-order
+position/arm, e.g. have LOCATE print the kept cell's exact flat position), re-validate, resubmit.
+CELLSIZE 61315095 still RUNNING (R 2:35 at check) — not read, not touched.
+READS (all hitless, aborts vs ~35% line): FIR 61213834 (F44gr0) cells 431 range_done 0/178 aborts 8.7%;
+61213836 (F44gr1000) 807 cells range_done=4/178 aborts 17.7%; 61213837 (F44g2000) 849, 13.3%;
+61213838 (F44gr2000) 796, 27.2%; 61213839 (F44g3000) 955 cells, cells_empty=3, 19.8%. All
+tested_cum > tested (resumes intact, no CFGSIG/fresh-start). Units began on 3014b95 => rate only.
+RORQUAL R44G (9,9,0,4) 21608263-270: cells 634-769 each, range_done 0/178 except 267 (6/178) and
+268 (4/178); aborts 26.5/31.9/18.5/28.9/39.9/32.2/27.8/33.5% — 21608267 at 39.9% is OVER the
+~35% line (single lane; pooled over the 8 = 89.2M/300.2M = 29.7%). Flagged, no action (budget
+lever closed; (9,9,0,4) runs hot). QUEUES: Fir 13 R + 19 PD (incl. CS44g2000), Rorqual 0 R + 48 PD,
+Nibi 296 PD, Trillium 60 PD — every floor satisfied (Fir/Rorqual pending >= 8, Nibi >= 100) => no
+refill, rung_status not needed (no idle cluster). CHECKER: exclusions +61213834/836-839,
++21608263-270 (regex validated: reads excluded, live 61213835/840, 61305503, 61315095 kept).
+ROUND VERDICT: no hits, no verified solutions; canary INCONCLUSIVE by harness bug => NEEDS_HUMAN.**
 
 **⚡ 2026-09-24 (Claude session, late) — ASTRA FOLLOW-UP: Q-CLOSURE PRUNE BUILT (default off),
 -5.5% MORE ORBITS, ALL PROVABLY EMPTY.** Astra: docs/reviews/2026-09-25-astra-followup.md (prune
