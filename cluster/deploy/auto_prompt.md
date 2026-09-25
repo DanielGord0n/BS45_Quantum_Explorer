@@ -154,7 +154,7 @@ Do not re-run the checker.
      to docs/reviews/<date>-evidence/<jobid>.txt and commit it; HANDOFF paraphrase alone is
      not enough (09-24: the pilot's raw line was never saved).
      **TWO MEASUREMENT JOBS ON FIR (2026-09-24) — NOT search lanes:** 61315095 (CS44g2000,
-     $SCRATCH/bs45_cellsize) and 61331128 (QCANARY, $SCRATCH/bs45_qcanary). Never count them
+     $SCRATCH/bs45_cellsize) and 61516887 (QCANARY v2, $SCRATCH/bs45_qcanary; 61331128 = v1, done). Never count them
      toward Fir refill numbers; never restack, cancel or resubmit them. While either is still
      in squeue, just report its state (PD/R + elapsed). Once one is GONE from squeue and not
      yet read in HANDOFF, READ it in the same Fir session (no extra tap if possible):
@@ -168,9 +168,9 @@ Do not re-run the checker.
        differently). For every CELLSIZE line whose pi is in that list, cand MUST be 0 when
        partial=0. Report matches, their sec values, and LOUDLY any nonzero (= prune unsound).
        If the Fir list does not exist yet, say so and skip this check (not a failure).
-       61331128 was v1 (INCONCLUSIVE: macOS cell index, fixed in v2); read the v2 job named in
-       HANDOFF instead: `cd $SCRATCH/bs45_qcanary && cat qcanary_<v2 id>.txt` -> save verbatim to
-       docs/reviews/evidence/qcanary_<v2 id>.txt, pipe each FOUND block to tools/verify_npaf.py,
+       61331128 was v1 (INCONCLUSIVE: macOS cell index, fixed in v2); read v2 = Fir 61516887
+       instead: `cd $SCRATCH/bs45_qcanary && cat qcanary_61516887.txt` -> save verbatim to
+       docs/reviews/evidence/qcanary_61516887.txt, pipe each FOUND block to tools/verify_npaf.py,
        report both VERDICT lines (PASS/FAIL/INCONCLUSIVE) and whether ours42 hit the predicted idx.
      Both verdicts follow rules pre-registered in HANDOFF 09-24; apply them literally. Any
      follow-up (build whole-cell top-K, build Pass H, repeat job) is NEEDS_HUMAN: never build,

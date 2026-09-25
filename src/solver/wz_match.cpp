@@ -536,6 +536,19 @@ static unsigned long long G_REC_CALLS = 0;
 static long long wall_now_sec() {
   return chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now().time_since_epoch()).count();
 }
+// WZ_FH_CD_PRUNE (2026-09-25, Astra Pass H review items 2-3; default 0 = off). C,D side,
+// even L, m=6 only; both prune ONLY subtrees with no profile-matching leaf, so the emitted
+// stream is byte-identical (tools/test_cd_prune.py).
+//  bit 1: endpoint quad filter. Interior quads are positive-product (entry sum = 0 mod 4),
+//         so the root quad's entry sum must equal sum(tx)+sum(ty) mod 4.
+//  bit 2: exact residual reachability per mirror residue pair {r,s}, s=(L-1-r) mod 6
+//         (three disjoint pairs when L is even). Each remaining interior quad adds one of
+//         the 8 positive-product vectors = +-columns of H (H^T H = 4I) to (x_r,y_r,x_s,y_s),
+//         so with Delta = target - placed and t = H^T Delta / 4 the q remaining quads of the
+//         pair can hit it exactly iff t is integral, |t|_1 <= q and q-|t|_1 is even.
+//         Applied from depth 1 (the root quad may be negative-product).
+static int G_CD_PRUNE = 0;
+static unsigned long long G_CD_NODES = 0;  // DFS visits (measurement; printed by CELLSIZE)
 static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
                           bool abSide, bool pinX, bool pinY,
                           long long &leaves, long long &ok,
@@ -553,8 +566,26 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
   int half = L / 2;
   vector<int> X(L, 0), Y(L, 0);
   int px[8] = {0}, py[8] = {0}, placed[8] = {0};
+  // WZ_FH_CD_PRUNE setup (see G_CD_PRUNE): mirror residue blocks and quads left per block.
+  const bool cd_ok = !abSide && m == 6 && L % 2 == 0;
+  const bool cd_root = cd_ok && (G_CD_PRUNE & 1), cd_reach = cd_ok && (G_CD_PRUNE & 2);
+  int blk_of[6] = {0}, blk_r[3] = {0}, blk_s[3] = {0}, root_mod = 0;
+  vector<array<int, 3>> qrem;
+  if (cd_ok && G_CD_PRUNE) {
+    int nb = 0;
+    for (int r = 0; r < 6; r++) {
+      int s = (L - 1 - r) % 6;
+      if (r < s) { blk_r[nb] = r; blk_s[nb] = s; blk_of[r] = blk_of[s] = nb; nb++; }
+    }
+    qrem.assign(half + 1, {0, 0, 0});
+    for (int d = half - 1; d >= 0; d--) { qrem[d] = qrem[d + 1]; qrem[d][blk_of[d % 6]]++; }
+    int tot = 0;
+    for (int c = 0; c < 6; c++) tot += tx[c] + ty[c];
+    root_mod = (tot % 4 + 4) % 4;
+  }
   function<void(int)> rec = [&](int d) {
     if (g_fh_sigterm || (stop && stop->load(memory_order_relaxed))) return;
+    G_CD_NODES++;
     if (G_WALL_SEC > 0) {
       if (G_WALL_HIT) return;
       if ((++G_REC_CALLS & 4095ULL) == 0 && wall_now_sec() - G_LAST_CAND_SEC > G_WALL_SEC) { G_WALL_HIT = true; return; }
@@ -564,6 +595,16 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
       int dx = tx[c] - px[c], dy = ty[c] - py[c];
       if (dx < -rem || dx > rem || dy < -rem || dy > rem) return;
       if (((dx - (-rem)) & 1) != 0 || ((dy - (-rem)) & 1) != 0) return;
+    }
+    if (cd_reach && d >= 1) {
+      for (int b = 0; b < 3; b++) {
+        int r = blk_r[b], s = blk_s[b], q = qrem[d][b];
+        int D0 = tx[r] - px[r], D1 = ty[r] - py[r], D2 = tx[s] - px[s], D3 = ty[s] - py[s];
+        int t0 = D0 + D1 + D2 + D3, t1 = D0 - D1 + D2 - D3, t2 = D0 + D1 - D2 - D3, t3 = D0 - D1 - D2 + D3;
+        if ((t0 | t1 | t2 | t3) & 3) return;                 // t not integral
+        int l1 = (abs(t0) + abs(t1) + abs(t2) + abs(t3)) / 4;
+        if (l1 > q || ((q - l1) & 1)) return;
+      }
     }
     if (d == half) {
       auto finish = [&]() {
@@ -600,6 +641,7 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
       int k = G_STREAM_REV ? (ns - 1 - kk) : kk;
       if (d == 0 && pinX && S[k][0] != 1) continue;
       if (d == 0 && pinY && S[k][1] != 1) continue;
+      if (d == 0 && cd_root && (((S[k][0] + S[k][1] + S[k][2] + S[k][3]) % 4 + 4) % 4) != root_mod) continue;
       X[i1] = S[k][0]; Y[i1] = S[k][1]; X[i2] = S[k][2]; Y[i2] = S[k][3];
       px[c1] += S[k][0]; py[c1] += S[k][1]; px[c2] += S[k][2]; py[c2] += S[k][3];
       placed[c1]++; placed[c2]++;
@@ -1085,6 +1127,7 @@ int main(int argc, char **argv) {
   if (const char *hk = getenv("WZ_HASH_KEEP")) G_HASH_KEEP = atoi(hk);
   if (getenv("WZ_THM211B")) G_THM211B = true;   // Thm 2.3 eq 2.11b profile filter
   if (getenv("WZ_THM212"))  G_THM212  = true;   // Thm 2.3 eq (18) mod-4 filter
+  if (const char *e = getenv("WZ_FH_CD_PRUNE")) G_CD_PRUNE = atoi(e);  // stream-identical C,D DFS prunes
   // FIRSTHIT at n>=36: 2.11b + 2.12 are STREAM ENABLERS, not options. Measured
   // 2026-07-21 at n=41: unfiltered mod-6 cells = 2.36M, ~90% empty, ZERO
   // candidates streamed in 15 min (and 11.5-25 h on clusters); filtered =
@@ -2053,6 +2096,7 @@ int main(int argc, char **argv) {
       const long long cs_start = cand;          // WZ_FH_CELLSIZE bookkeeping
       const auto cs_t0 = Clock::now();
       double cs_sec_at_buf = -1;                // seconds to stream fh_buf_cap candidates
+      const unsigned long long cs_nodes0 = G_CD_NODES;  // DFS visits at cell start
       long long tg_idx = -1, tg_batch = -1, tg_score = -1, tg_less = 0, tg_eq_before = 0,
                 tg_batch_seen = -1;             // WZ_FH_TARGET bookkeeping
       unordered_map<long long, long long> tg_hist;        // score histogram of this batch before the target
@@ -2285,6 +2329,7 @@ int main(int argc, char **argv) {
              << " sec=" << chrono::duration<double>(Clock::now() - cs_t0).count()
              << " sec_at_buf=" << cs_sec_at_buf
              << " leaves=" << lv << " hall_ok=" << okc << "\n" << flush;  // stream-cost anatomy
+        cout << "CDSTAT pi=" << pi << " dfs_nodes=" << (G_CD_NODES - cs_nodes0) << " cd_prune=" << G_CD_PRUNE << "\n";
         if (tg_idx >= 0)
           cout << "TARGET pi=" << pi << " idx=" << tg_idx << " batch=" << tg_batch
                << " rank_in_batch=" << (tg_less + tg_eq_before) << " score=" << tg_score

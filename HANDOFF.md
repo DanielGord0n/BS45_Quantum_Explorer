@@ -4,6 +4,24 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `HANDOFF_ARCHIVE.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-25 (Claude session, afternoon) — LOOP STALL GUARDED; CANARY v1 ROOT CAUSE PROVEN; CANARY
+v2 SUBMITTED (Fir 61516887).** (1) 1pm stall: the fable CLI sat 13:01:53 -> 13:33:22 BEFORE its
+session started (transcript), released 11 s after the display woke (13:33:11); same on 09-24
+(13:21:27 -> 13:21:43). Not MCP (strict-mcp 8.9 s, default 7.4 s now), not credit retries (blocked
+fable fails in 3.3 s), not reproduced by a 20 s display-off. Mechanism unproven; both cases used the
+VS Code-bundled CLI. GUARD in daily_auto.sh: caffeinate -u before launch, watchdog re-wakes every
+2 min + phone alert at 4 min until a transcript appears, caffeinate -i around the agent, no IDE
+auto-connect, remembered 20 h primary credit block; launchd job now ProcessType=Interactive
+(verified 'spawn type = interactive'). (2) Canary v1 INCONCLUSIVE root cause (the loop's raw-vs-flat
+diagnosis was wrong): profile-score ties are ordered by std::sort's unspecified tie behaviour, so
+macOS libc++ and Fir libstdc++ disagree on indices; libc++ tie randomization moves ours42's cell
+582325 -> 549054. v2 LOCATEs in-job on Fir (rehearsed PASS). The macOS-index qprune prediction is
+INVALID (renamed); v2 also writes the Fir-order dead list to $SCRATCH/bs45_qcanary/
+qprune_dead_3_13_0_0.txt, which the loop now uses for the CELLSIZE check. Production unaffected (one
+toolchain per cluster, gcc 12.3 everywhere). CELLSIZE 61315095 RUNNING 10:53 at 14:3x. (3) Astra
+Pass H review: docs/reviews/2026-09-25-astra-passh.md (approve with ownership manifest + cell-key
+tie-break + transition rules; stream levers: endpoint-quad root filter, exact residual reachability).**
+
 **⚡ 2026-09-25 (daily loop 1pm — ALL FOUR reached) — NO HITS; Q CANARY 61331128 = INCONCLUSIVE
 (HARNESS ADDRESSING BUG, the Q path was never exercised) => NEEDS_HUMAN; 13 hitless reads, 0 submits.**
 NEW FOUND: none on all four. ★ QCANARY 61331128 (read via duo_run, 2 taps; verbatim in
