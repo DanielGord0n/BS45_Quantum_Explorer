@@ -71,7 +71,18 @@ ALL THREE FOLLOW-UPS ARE NEEDS_HUMAN (pre-registered: no build/deploy/submit on 
 Pass H (Q re-tile) now has a canary that says the known n=42 Q-image is ~14.5M completions deep
 in its cell => Daniel decides whether Pass H is still the program, and what the canary redesign
 is (a deeper DRAIN for the canary only, or a different target); whole-cell top-K is dead (KILL);
-the cheaper-stream lever is the remaining open build. Trillium restack: see below.
+the cheaper-stream lever is the remaining open build.
+TRILLIUM RESTACK (pending 5 < 8; all 60 Pass G lanes on their first rep, started 09:09 EDT today):
+first tap tried a verbatim `eval sacct SubmitLine` and submitted NOTHING (fail-closed: Trillium's
+site wrapper records `SBATCH --comment /opt/slurm/bin/sbatch --export=NONE --get-user-env ... args
+twice`, so the guard skipped all 60 — the recorded env was still read off it verbatim); second tap
+rebuilt the exact lines (--requeue --mem=0 -J <lane> -d singleton, default account def-ikotsire,
+S=300, K=50000, budget 2e6, canon, REV=1 on gr lanes) and submitted 2 reps per lane = 120 jobs,
+IDs 2431169-2431288 (rep 1 = 2431169-2431228, rep 2 = 2431229-2431288, order A/K/L x k=0..2700 x
+g,gr). Trillium after: 55 R + 125 PD, every one of the 60 lane names has exactly 3 jobs.
+ROUND VERDICT: no hits, no verified solutions; 22 hitless Fir reads; Fir +27, Trillium +120 reps;
+three pre-registered gates read (CELLSIZE KILL, CDPILOT CLOSE, QCANARY v2 INCONCLUSIVE x2) =>
+NEEDS_HUMAN for every follow-up (Pass H go/no-go and canary redesign, cheaper-stream build).**
 
 **⚡ 2026-09-26 (Claude session) — ASTRA RED-TEAM VERIFIED; 1 REAL DEFECT FIXED (not yet deployed).**
 Review: docs/reviews/2026-09-26-astra-redteam.md; my item-by-item verification:
