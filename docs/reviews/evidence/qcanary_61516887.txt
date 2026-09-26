@@ -1,0 +1,25 @@
+# QCANARY v2 Fir 61516887 — verbatim read by daily loop 2026-09-26 via duo_run (combined Fir session)
+# command: cd $SCRATCH/bs45_qcanary && ls -l && cat qcanary_61516887.txt
+total 808
+-rw-r----- 1 dangord dangord   5161 Sep 25 11:30 cluster_q_canary.sh
+-rw-r----- 1 dangord dangord   5913 Sep 25 11:40 ours42_locate.log
+-rw-r----- 1 dangord dangord   6674 Sep 25 17:29 ours42_step1.log
+-rwxr-x--- 1 dangord dangord 348368 Sep 24 13:32 qc_bin_61331128
+-rwxr-x--- 1 dangord dangord 352464 Sep 25 11:39 qc_bin_61516887
+-rw-r----- 1 dangord dangord    308 Sep 24 13:32 qcanary_61331128.txt
+-rw-r----- 1 dangord dangord    976 Sep 25 23:39 qcanary_61516887.txt
+-rw-r----- 1 dangord dangord   1068 Sep 25 11:40 qprune_3_13_0_0.log
+-rw-r----- 1 dangord dangord  55407 Sep 25 11:39 qprune_dead_3_13_0_0.txt
+drwxr-x--- 3 dangord dangord   4096 Sep 24 12:48 src
+-rw-r----- 1 dangord dangord   7418 Sep 25 11:40 wz42_locate.log
+-rw-r----- 1 dangord dangord  11588 Sep 25 23:33 wz42_step1.log
+=== QCANARY job 61516887 node fc30427 Fri Sep 25 11:39:24 PDT 2026 sha 03c9bbd524683c48 ===
+[qprune] [qprune] missing_Q_images=7776 not_realizable=7776 eq212=0 nonintegral=0 unknown=0 dead_orbits=295 cells_removed=7776 | dead raw cells in windows 2000-2999: 413
+[ours42] step0: kept cell pi=562219 (window 3158, arm 95) | LOCATE_CANON: orbit_canon=1 matched_cells=96 kept_cells=1 retained=YES
+[wz42] step0: kept cell pi=30678 (window 172, arm 62) | LOCATE_CANON: orbit_canon=1 matched_cells=128 kept_cells=8 retained=YES
+[ours42] step1: TARGET pi=562219 idx=23816271 batch=47 rank_in_batch=301410 score=150 strictly_less=257461 ties_before=43949 batch_complete=1 | CELLSIZE pi=562219 cand=24000000 capped=0 partial=0 sec=20910.2 sec_at_buf=405.272 leaves=4859718026 hall_ok=24000000
+[ours42] VERDICT: INCONCLUSIVE (needs 14467728 completions > MAXWORK=300000)
+[2026-09-25T23:39:38.781] error: *** JOB 61516887 ON fc30427 CANCELLED AT 2026-09-25T23:39:38 DUE TO TIME LIMIT ***
+
+# sacct:
+  61516887     QCANARY    TIMEOUT    12:00:20      0:0 

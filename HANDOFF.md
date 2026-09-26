@@ -26,6 +26,52 @@ K=(7,11,2,2), L=(1,13,2,2), S=300 fwd+rev) started 09:09 EDT today (55 R, 5 PD b
 reads yet (header-only outputs). rung_status EXHAUSTED as always (Pass G is the program; no SA).
 CHECKER: exclusions +61305503/504/506-517/520/521, +61213835, +61213840-844 (regex validated: the 9
 running 613055xx reps, 61305518 (not ours) and the 3 measurement jobs stay visible).**
+sacct names for the unlabelled reads: 61213835=F44g1000, 61213840=F44gr3000, 61213841=F44g4000,
+61213842=F44gr4000, 61213843=F44g5000, 61213844=F44gr5000 (all COMPLETED 11:30). CFGSIG check on
+every 613055xx arm log: 0 "CFGSIG mismatch"/"fresh start", 0 STALE => resumes intact.
+FIR RESTACK (pending 0 < 8; all 12 workhorse lanes unfinished): 27 singleton reps, the verbatim
+09-24 env (rrg-ikotsire_cpu, --mem=0, no telemetry), 3 each for the lanes with nothing queued and
+2 each for the 9 running ones: F44gr0 61686867/870/873; F44gr1000 61686868/871/874; F44g2000
+61686869/872/875; F44g0 61686876/885; F44g1000 61686877/886; F44gr2000 61686878/887; F44g3000
+61686879/888; F44gr3000 61686880/889; F44g4000 61686881/890; F44gr4000 61686882/891; F44g5000
+61686883/892; F44gr5000 61686884/893. Fir after: 8 R + 27 PD (61305522 F44gr2000 finished during
+the session, unread until the next check).
+★ CELLSIZE 61315095 (CS44g2000, COMPLETED 11:30:44) — PRE-REGISTERED VERDICT: **KILL** (whole-cell
+top-K is NOT built; the prefix policy stands; cheaper stream enumeration is the lever). Raw lines
+verbatim in docs/reviews/evidence/cellsize_61315095.txt; tools/cellsize_summary.py: cells=710
+live=700 empty=10 capped=530 partial=170 (censored = lower bounds); P(R<1)=0.000, P(R<=1.5)=0.000,
+P(R>=3)=1.000, P(R>=4)=1.000, P(R>=8)=1.000 (every finished live cell hit the 4M cap = >=8x the
+500k prefix); time to stream the 500k prefix: median 0.62 h over 659 cells (vs the ~1.4 h
+estimate). Q-CLOSURE-PRUNE PREDICTION CHECK (Fir-order list generated in-job by 61516887,
+docs/reviews/evidence/qprune_dead_fir_3_13_0_0_w2000-3000.txt, 413 dead raw cells in windows
+2000-2999): 2 streamed cells are on the list, pi=401784 (cand=0, partial=0, sec=7802) and
+pi=370315 (cand=0, partial=0, sec=10716) => both EMPTY as predicted, NO nonzero (no unsoundness
+signal; 2 of 413 is a thin sample because dead cells sit late in flat order); those sec values
+are the per-cell saving the prune would buy.
+★ QCANARY v2 61516887 (TIMEOUT 12:00:20, i.e. ran to the wall) — VERDICT **INCONCLUSIVE on BOTH
+targets** (pre-registered rule => redesign, NO Q deploy). Verbatim in
+docs/reviews/evidence/qcanary_61516887.txt. In-job LOCATE worked this time: ours42 -> kept cell
+pi=562219 (window 3158, arm 95; matched_cells=96 kept_cells=1 retained=YES), wz42 -> pi=30678
+(window 172, arm 62; matched 128, kept 8, retained=YES). ours42 step 1 reached the image:
+TARGET idx=23816271 batch=47 rank_in_batch=301410 score=150 strictly_less=257461 ties_before=43949
+batch_complete=1 (cell streamed to 24.0M candidates in 20910 s) => the image needs 48 x 301,411 =
+14,467,728 completions > MAXWORK 300k => INCONCLUSIVE by the work bound: under the 64-group canon
+the ours42 image sits at in-cell rank ~257k-301k of batch 47, i.e. FAR outside the K=50k front
+(the same fact the 09-24 Q audit did not measure). wz42: step 1 was still streaming (log last
+written 23:33) when the 12 h wall hit at 23:39 => INCONCLUSIVE (image not reached). No step 2, no
+FOUND, nothing to verify; the qprune audit in-job: missing_Q_images=7776 not_realizable=7776
+eq212=0 unknown=0 dead_orbits=295 cells_removed=7776.
+★ CDPILOT 61518000 (COMPLETED 07:40:07, 8 cores, sha 50aec4df) — PRE-REGISTERED VERDICT: **CLOSE**
+(median time ratio off/on < 1.05 => WZ_FH_CD_PRUNE is not a lever; stays default off, not
+deployed). Verbatim in docs/reviews/evidence/cdpilot_61518000.txt; tools/cd_prune_pilot_summary.py:
+42 paired finished cells, identity mismatches 0 (stream-identical held on the cluster), time ratio
+off/on median 1.010 (min 0.905, max 1.251), DFS-visit ratio off/on median 1.139 (prunes ~12% of
+DFS visits for ~1% wall).
+ALL THREE FOLLOW-UPS ARE NEEDS_HUMAN (pre-registered: no build/deploy/submit on these results):
+Pass H (Q re-tile) now has a canary that says the known n=42 Q-image is ~14.5M completions deep
+in its cell => Daniel decides whether Pass H is still the program, and what the canary redesign
+is (a deeper DRAIN for the canary only, or a different target); whole-cell top-K is dead (KILL);
+the cheaper-stream lever is the remaining open build. Trillium restack: see below.
 
 **⚡ 2026-09-26 (Claude session) — ASTRA RED-TEAM VERIFIED; 1 REAL DEFECT FIXED (not yet deployed).**
 Review: docs/reviews/2026-09-26-astra-redteam.md; my item-by-item verification:

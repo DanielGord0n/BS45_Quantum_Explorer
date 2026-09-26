@@ -1,0 +1,193 @@
+# CDPILOT Fir 61518000 — verbatim read by daily loop 2026-09-26 via duo_run (combined Fir session)
+# command: cd $SCRATCH/bs45_cdpilot && cat cdpilot_61518000.txt
+=== CDPILOT job 61518000 node fc30532 Model name:                              AMD EPYC 9655 96-Co Sat Sep 26 01:25:15 PDT 2026 sha 50aec4df9ebfe7d5 ===
+cdp_s103_m0.log CELLSIZE pi=395619 cand=500000 capped=1 partial=0 sec=3807.43 sec_at_buf=3807.43 leaves=934169465 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=395619 dfs_nodes=35683278275 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=397043 cand=500000 capped=1 partial=0 sec=1594.39 sec_at_buf=1594.39 leaves=398834059 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=397043 dfs_nodes=16282261828 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=397221 cand=500000 capped=1 partial=0 sec=2261.97 sec_at_buf=2261.97 leaves=491607752 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=397221 dfs_nodes=17825751759 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=399891 cand=500000 capped=1 partial=0 sec=3911.67 sec_at_buf=3911.67 leaves=1136257629 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=399891 dfs_nodes=39637074952 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=405587 cand=500000 capped=1 partial=0 sec=3948.52 sec_at_buf=3948.52 leaves=1080335928 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=405587 dfs_nodes=39700666711 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=405765 cand=500000 capped=1 partial=0 sec=3965.97 sec_at_buf=3965.97 leaves=797605358 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=405765 dfs_nodes=27425307319 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=406299 cand=500000 capped=1 partial=0 sec=1236.93 sec_at_buf=1236.92 leaves=296890450 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=406299 dfs_nodes=11952243103 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=412173 cand=500000 capped=1 partial=0 sec=2091.6 sec_at_buf=2091.6 leaves=433662281 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=412173 dfs_nodes=17343677671 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=417513 cand=500000 capped=1 partial=0 sec=2087.98 sec_at_buf=2087.98 leaves=488363137 hall_ok=500000
+cdp_s103_m0.log CDSTAT pi=417513 dfs_nodes=17392081589 cd_prune=0
+cdp_s103_m0.log CELLSIZE pi=418047 cand=366270 capped=0 partial=1 sec=2670.86 sec_at_buf=-1 leaves=714484145 hall_ok=366270
+cdp_s103_m0.log CDSTAT pi=418047 dfs_nodes=26001388666 cd_prune=0
+cdp_s103_m3.log CELLSIZE pi=395619 cand=500000 capped=1 partial=0 sec=3766.9 sec_at_buf=3766.9 leaves=934169465 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=395619 dfs_nodes=31262330187 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=397043 cand=500000 capped=1 partial=0 sec=1591.89 sec_at_buf=1591.89 leaves=398834059 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=397043 dfs_nodes=13226715820 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=397221 cand=500000 capped=1 partial=0 sec=2275.1 sec_at_buf=2275.1 leaves=491607752 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=397221 dfs_nodes=16032956847 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=399891 cand=500000 capped=1 partial=0 sec=3928.91 sec_at_buf=3928.91 leaves=1136257629 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=399891 dfs_nodes=36101844184 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=405587 cand=500000 capped=1 partial=0 sec=3944.52 sec_at_buf=3944.52 leaves=1080335928 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=405587 dfs_nodes=35094027959 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=405765 cand=500000 capped=1 partial=0 sec=3999.3 sec_at_buf=3999.3 leaves=797605358 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=405765 dfs_nodes=25276187911 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=406299 cand=500000 capped=1 partial=0 sec=1238.09 sec_at_buf=1238.09 leaves=296890450 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=406299 dfs_nodes=9995311303 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=412173 cand=500000 capped=1 partial=0 sec=2072.97 sec_at_buf=2072.97 leaves=433662281 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=412173 dfs_nodes=14442830175 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=417513 cand=500000 capped=1 partial=0 sec=2050.93 sec_at_buf=2050.93 leaves=488363137 hall_ok=500000
+cdp_s103_m3.log CDSTAT pi=417513 dfs_nodes=15669289661 cd_prune=3
+cdp_s103_m3.log CELLSIZE pi=418047 cand=376044 capped=0 partial=1 sec=2705.91 sec_at_buf=-1 leaves=729100474 hall_ok=376044
+cdp_s103_m3.log CDSTAT pi=418047 dfs_nodes=23437336915 cd_prune=3
+cdp_s11_m0.log CELLSIZE pi=396239 cand=500000 capped=1 partial=0 sec=2843.47 sec_at_buf=2843.47 leaves=741117857 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=396239 dfs_nodes=27354052971 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=397485 cand=500000 capped=1 partial=0 sec=3116.21 sec_at_buf=3116.21 leaves=675588251 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=397485 dfs_nodes=24194705906 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=401757 cand=500000 capped=1 partial=0 sec=3477.08 sec_at_buf=3477.08 leaves=1006410510 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=401757 dfs_nodes=34993726598 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=403003 cand=500000 capped=1 partial=0 sec=1215.09 sec_at_buf=1215.08 leaves=274134050 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=403003 dfs_nodes=11186814519 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=405317 cand=500000 capped=1 partial=0 sec=2240.5 sec_at_buf=2240.5 leaves=696995505 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=405317 dfs_nodes=27006979617 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=405495 cand=500000 capped=1 partial=0 sec=2772.72 sec_at_buf=2772.72 leaves=674602447 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=405495 dfs_nodes=23144410078 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=405851 cand=500000 capped=1 partial=0 sec=2041.81 sec_at_buf=2041.81 leaves=545037828 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=405851 dfs_nodes=19865200779 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=411191 cand=500000 capped=1 partial=0 sec=1746.91 sec_at_buf=1746.91 leaves=396122767 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=411191 dfs_nodes=14420098279 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=412793 cand=500000 capped=1 partial=0 sec=4292.18 sec_at_buf=4292.18 leaves=952818485 hall_ok=500000
+cdp_s11_m0.log CDSTAT pi=412793 dfs_nodes=32093322856 cd_prune=0
+cdp_s11_m0.log CELLSIZE pi=414039 cand=459243 capped=0 partial=1 sec=3830.65 sec_at_buf=-1 leaves=949402774 hall_ok=459243
+cdp_s11_m0.log CDSTAT pi=414039 dfs_nodes=35142774769 cd_prune=0
+cdp_s11_m3.log CELLSIZE pi=396239 cand=500000 capped=1 partial=0 sec=2828.31 sec_at_buf=2828.31 leaves=741117857 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=396239 dfs_nodes=24029123971 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=397485 cand=500000 capped=1 partial=0 sec=3018.39 sec_at_buf=3018.39 leaves=675588251 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=397485 dfs_nodes=21915300978 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=401757 cand=500000 capped=1 partial=0 sec=3619.99 sec_at_buf=3619.99 leaves=1006410510 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=401757 dfs_nodes=32078681158 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=403003 cand=500000 capped=1 partial=0 sec=1194.17 sec_at_buf=1194.17 leaves=274134050 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=403003 dfs_nodes=8684810559 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=405317 cand=500000 capped=1 partial=0 sec=2212.8 sec_at_buf=2212.8 leaves=696995505 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=405317 dfs_nodes=23102212265 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=405495 cand=500000 capped=1 partial=0 sec=2774.69 sec_at_buf=2774.69 leaves=674602447 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=405495 dfs_nodes=21426756830 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=405851 cand=500000 capped=1 partial=0 sec=2036.8 sec_at_buf=2036.8 leaves=545037828 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=405851 dfs_nodes=17538719867 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=411191 cand=500000 capped=1 partial=0 sec=1748.78 sec_at_buf=1748.78 leaves=396122767 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=411191 dfs_nodes=12772034135 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=412793 cand=500000 capped=1 partial=0 sec=4237.3 sec_at_buf=4237.3 leaves=952818485 hall_ok=500000
+cdp_s11_m3.log CDSTAT pi=412793 dfs_nodes=29680413424 cd_prune=3
+cdp_s11_m3.log CELLSIZE pi=414039 cand=493170 capped=0 partial=1 sec=3905.6 sec_at_buf=-1 leaves=1021833291 hall_ok=493170
+cdp_s11_m3.log CDSTAT pi=414039 dfs_nodes=33243539105 cd_prune=3
+cdp_s149_m0.log CELLSIZE pi=369677 cand=500000 capped=1 partial=0 sec=1321.07 sec_at_buf=1321.07 leaves=222835118 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=369677 dfs_nodes=8536901053 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=397267 cand=500000 capped=1 partial=0 sec=2165.73 sec_at_buf=2165.73 leaves=374574729 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=397267 dfs_nodes=13945417766 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=397979 cand=500000 capped=1 partial=0 sec=1999.5 sec_at_buf=1999.49 leaves=565002413 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=397979 dfs_nodes=20321245123 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=399403 cand=500000 capped=1 partial=0 sec=3217.75 sec_at_buf=3217.75 leaves=726763194 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=399403 dfs_nodes=26112380527 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=403853 cand=500000 capped=1 partial=0 sec=1394.78 sec_at_buf=1394.78 leaves=304286506 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=403853 dfs_nodes=11583131851 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=404921 cand=500000 capped=1 partial=0 sec=2450.82 sec_at_buf=2450.82 leaves=516736666 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=404921 dfs_nodes=18180034111 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=406879 cand=500000 capped=1 partial=0 sec=755.776 sec_at_buf=755.774 leaves=211821835 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=406879 dfs_nodes=8270436306 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=407057 cand=500000 capped=1 partial=0 sec=3580.6 sec_at_buf=3580.6 leaves=805790476 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=407057 dfs_nodes=27716114288 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=409905 cand=500000 capped=1 partial=0 sec=1964.92 sec_at_buf=1964.92 leaves=469092979 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=409905 dfs_nodes=17855473946 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=414355 cand=500000 capped=1 partial=0 sec=2077.82 sec_at_buf=2077.82 leaves=512176241 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=414355 dfs_nodes=19071746493 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=415067 cand=500000 capped=1 partial=0 sec=1688.04 sec_at_buf=1688.04 leaves=288647464 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=415067 dfs_nodes=31205033238 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=415601 cand=500000 capped=1 partial=0 sec=4935.04 sec_at_buf=4935.04 leaves=1139136392 hall_ok=500000
+cdp_s149_m0.log CDSTAT pi=415601 dfs_nodes=43889506802 cd_prune=0
+cdp_s149_m0.log CELLSIZE pi=416135 cand=316 capped=0 partial=1 sec=22.9733 sec_at_buf=-1 leaves=9713512 hall_ok=316
+cdp_s149_m0.log CDSTAT pi=416135 dfs_nodes=384965554 cd_prune=0
+cdp_s149_m3.log CELLSIZE pi=369677 cand=500000 capped=1 partial=0 sec=1178.69 sec_at_buf=1178.69 leaves=222835118 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=369677 dfs_nodes=7201748637 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=397267 cand=500000 capped=1 partial=0 sec=2025.12 sec_at_buf=2025.12 leaves=374574729 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=397267 dfs_nodes=11939627910 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=397979 cand=500000 capped=1 partial=0 sec=2001.41 sec_at_buf=2001.41 leaves=565002413 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=397979 dfs_nodes=18087217195 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=399403 cand=500000 capped=1 partial=0 sec=3070.17 sec_at_buf=3070.17 leaves=726763194 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=399403 dfs_nodes=25050094303 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=403853 cand=500000 capped=1 partial=0 sec=1252.12 sec_at_buf=1252.12 leaves=304286506 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=403853 dfs_nodes=9919739915 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=404921 cand=500000 capped=1 partial=0 sec=2271.79 sec_at_buf=2271.79 leaves=516736666 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=404921 dfs_nodes=16510616911 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=406879 cand=500000 capped=1 partial=0 sec=752.474 sec_at_buf=752.472 leaves=211821835 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=406879 dfs_nodes=7139672490 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=407057 cand=500000 capped=1 partial=0 sec=3412.4 sec_at_buf=3412.4 leaves=805790476 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=407057 dfs_nodes=25541062648 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=409905 cand=500000 capped=1 partial=0 sec=1740.99 sec_at_buf=1740.99 leaves=469092979 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=409905 dfs_nodes=15642099978 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=414355 cand=500000 capped=1 partial=0 sec=1992.25 sec_at_buf=1992.25 leaves=512176241 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=414355 dfs_nodes=16479549013 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=415067 cand=500000 capped=1 partial=0 sec=1349.64 sec_at_buf=1349.64 leaves=288647464 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=415067 dfs_nodes=9912662246 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=415601 cand=500000 capped=1 partial=0 sec=4984.94 sec_at_buf=4984.93 leaves=1139136392 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=415601 dfs_nodes=38287269658 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=416135 cand=500000 capped=1 partial=0 sec=1321.7 sec_at_buf=1321.7 leaves=338101223 hall_ok=500000
+cdp_s149_m3.log CDSTAT pi=416135 dfs_nodes=11397477726 cd_prune=3
+cdp_s149_m3.log CELLSIZE pi=416669 cand=1407 capped=0 partial=1 sec=223.309 sec_at_buf=-1 leaves=76823340 hall_ok=1407
+cdp_s149_m3.log CDSTAT pi=416669 dfs_nodes=2448613487 cd_prune=3
+cdp_s57_m0.log CELLSIZE pi=396997 cand=500000 capped=1 partial=0 sec=1035.43 sec_at_buf=1035.43 leaves=222417200 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=396997 dfs_nodes=9209988868 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=397887 cand=500000 capped=1 partial=0 sec=859.211 sec_at_buf=859.211 leaves=156836651 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=397887 dfs_nodes=5754370614 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=400201 cand=500000 capped=1 partial=0 sec=2322.3 sec_at_buf=2322.3 leaves=737584824 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=400201 dfs_nodes=27030410932 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=401447 cand=500000 capped=1 partial=0 sec=2145.15 sec_at_buf=2145.15 leaves=491966126 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=401447 dfs_nodes=18828703738 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=401625 cand=500000 capped=1 partial=0 sec=3055.56 sec_at_buf=3055.56 leaves=666079679 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=401625 dfs_nodes=23050479297 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=404473 cand=500000 capped=1 partial=0 sec=2095.8 sec_at_buf=2095.79 leaves=408037079 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=404473 dfs_nodes=14858174324 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=405007 cand=500000 capped=1 partial=0 sec=1536.88 sec_at_buf=1536.88 leaves=331378158 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=405007 dfs_nodes=12738562873 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=405541 cand=500000 capped=1 partial=0 sec=4093.63 sec_at_buf=4093.63 leaves=953181832 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=405541 dfs_nodes=32844914629 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=408745 cand=500000 capped=1 partial=0 sec=1833.87 sec_at_buf=1833.87 leaves=347515940 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=408745 dfs_nodes=12642034471 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=409279 cand=500000 capped=1 partial=0 sec=1110.2 sec_at_buf=1110.2 leaves=218788911 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=409279 dfs_nodes=8140378796 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=413729 cand=500000 capped=1 partial=0 sec=1526.4 sec_at_buf=1526.4 leaves=338218231 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=413729 dfs_nodes=12448873187 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=414975 cand=500000 capped=1 partial=0 sec=3597.12 sec_at_buf=3597.12 leaves=777445457 hall_ok=500000
+cdp_s57_m0.log CDSTAT pi=414975 dfs_nodes=27400159181 cd_prune=0
+cdp_s57_m0.log CELLSIZE pi=415331 cand=212630 capped=0 partial=1 sec=2365.18 sec_at_buf=-1 leaves=566820212 hall_ok=212630
+cdp_s57_m0.log CDSTAT pi=415331 dfs_nodes=19934927062 cd_prune=0
+cdp_s57_m3.log CELLSIZE pi=396997 cand=500000 capped=1 partial=0 sec=1037.32 sec_at_buf=1037.32 leaves=222417200 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=396997 dfs_nodes=7404492932 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=397887 cand=500000 capped=1 partial=0 sec=868.602 sec_at_buf=868.602 leaves=156836651 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=397887 dfs_nodes=5046841654 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=400201 cand=500000 capped=1 partial=0 sec=2294.14 sec_at_buf=2294.14 leaves=737584824 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=400201 dfs_nodes=23389687500 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=401447 cand=500000 capped=1 partial=0 sec=2112.77 sec_at_buf=2112.77 leaves=491966126 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=401447 dfs_nodes=15665714434 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=401625 cand=500000 capped=1 partial=0 sec=2936.41 sec_at_buf=2936.4 leaves=666079679 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=401625 dfs_nodes=21250473633 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=404473 cand=500000 capped=1 partial=0 sec=1897.41 sec_at_buf=1897.41 leaves=408037079 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=404473 dfs_nodes=12989725900 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=405007 cand=500000 capped=1 partial=0 sec=1416.73 sec_at_buf=1416.73 leaves=331378158 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=405007 dfs_nodes=10684289361 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=405541 cand=500000 capped=1 partial=0 sec=3847.38 sec_at_buf=3847.37 leaves=953181832 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=405541 dfs_nodes=30233783717 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=408745 cand=500000 capped=1 partial=0 sec=2025.7 sec_at_buf=2025.7 leaves=347515940 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=408745 dfs_nodes=11191251263 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=409279 cand=500000 capped=1 partial=0 sec=1174.55 sec_at_buf=1174.55 leaves=218788911 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=409279 dfs_nodes=7149709460 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=413729 cand=500000 capped=1 partial=0 sec=1527.86 sec_at_buf=1527.86 leaves=338218231 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=413729 dfs_nodes=10795211211 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=414975 cand=500000 capped=1 partial=0 sec=3596.84 sec_at_buf=3596.84 leaves=777445457 hall_ok=500000
+cdp_s57_m3.log CDSTAT pi=414975 dfs_nodes=26504717285 cd_prune=3
+cdp_s57_m3.log CELLSIZE pi=415331 cand=294781 capped=0 partial=1 sec=2840.52 sec_at_buf=-1 leaves=661347935 hall_ok=294781
+cdp_s57_m3.log CDSTAT pi=415331 dfs_nodes=22551619554 cd_prune=3
+=== CDPILOT done Sat Sep 26 09:05:16 PDT 2026 ===
+
+# sacct:
+  61518000     CDPILOT  COMPLETED    07:40:07      0:0 
