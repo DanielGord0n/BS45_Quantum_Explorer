@@ -1,8 +1,31 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-25 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-26 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-26 (daily loop 1pm — ALL FOUR reached) — NO HITS; 22 new hitless Fir Pass G reads;
+the three Fir measurement jobs (CELLSIZE 61315095, QCANARY v2 61516887, CDPILOT 61518000) have LEFT
+the queue => read this run (verdicts appended below as they land); Fir 9 R + 0 PD and Trillium 55 R +
+5 PD are both under the pending>=8 floor => restack (IDs appended below).** NEW FOUND: none on all four.
+FIR READS (all hitless, 178/178 arms, tested_cum > tested on every rep = resumes intact, aborts vs the
+~35% line): 61213835 (k=1000 range) 735 cells range_done=28/178 aborts 10.5%; 61213840 (k=3000) 893,
+0/178, 27.5%; 61213841 (k=4000) 1079, 0/178, 17.6%; 61213842 (k=4000) 865, 0/178, 30.1%; 61213843
+(k=5000) 1149, 1/178, 20.7%; 61213844 (k=5000) 942, 0/178, 30.2%; F44g0 61305503 382 cells 0/178 6.4%
++ 61305504 413, 0/178, 7.6%; F44gr0 61305506 496, 0/178, 9.7% + 61305517 523, 0/178, 11.6%; F44g1000
+61305507 551, range_done=105/178, 9.6%; F44gr1000 61305508 762, 33/178, 18.2% + 61305520 611,
+range_done=112/178, 16.6%; F44g2000 61305509 844, 0/178, 13.8% + 61305521 889, 0/178, 13.7%;
+F44gr2000 61305510 793, 0/178, 24.5%; F44g3000 61305511 994 (6 empty), 5/178, 16.4%; F44gr3000
+61305512 895, 2/178, 24.9%; F44g4000 61305513 1104 (25 empty), 2/178, 15.4%; F44gr4000 61305514 834,
+1/178, 30.8% (highest, under the line); F44g5000 61305515 1159 (39 empty), 20/178, 20.0%; F44gr5000
+61305516 982 (30 empty), 4/178, 27.7%. The k=1000 lanes are the first workhorse ranges nearing
+completion (fwd 105/178, rev 112/178); every other lane 0-33/178, so ALL 12 lanes still get restacked.
+Units began on 3014b95 => rate only, not exact alpha. RORQUAL 0 R + 48 PD, NIBI 296 PD: no reads,
+floors satisfied, no action. TRILLIUM: the 60 Pass G lanes (2388934-993; classes A=(5,9,6,6),
+K=(7,11,2,2), L=(1,13,2,2), S=300 fwd+rev) started 09:09 EDT today (55 R, 5 PD by priority), no
+reads yet (header-only outputs). rung_status EXHAUSTED as always (Pass G is the program; no SA).
+CHECKER: exclusions +61305503/504/506-517/520/521, +61213835, +61213840-844 (regex validated: the 9
+running 613055xx reps, 61305518 (not ours) and the 3 measurement jobs stay visible).**
 
 **⚡ 2026-09-26 (Claude session) — ASTRA RED-TEAM VERIFIED; 1 REAL DEFECT FIXED (not yet deployed).**
 Review: docs/reviews/2026-09-26-astra-redteam.md; my item-by-item verification:
