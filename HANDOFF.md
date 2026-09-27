@@ -4,6 +4,22 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-26 (Daniel session, night) — CHECKER RERUN (4 taps, all four reached): NO HITS; 57 new
+hitless reads (55 Trillium Pass G first reps 2388934-993 minus the 5 still pending 2388935/961/969/970/980,
++ Fir 61305522 F44gr2000 792 cells 23.7% aborts, 61305523 F44g3000 925 cells range_done=36/178 17.7%).
+Trillium reps: 178/178 arms everywhere, range_done 0-4/178, 7-55M tested; POOLED ABORTS by class: A
+(5,9,6,6) 36.4% (13 lanes over the 35% line, max 52.4% on 2388949), K 27.0%, L 24.8% => class A sits at
+the line; NO ACTION (Astra: aborts do not prove barren candidates; 5e6 measured worse). Trillium ran the
+3014b95 driver (no cum fields; submitted 09-22, expected). Queues: Fir 7 R + 27 PD, Rorqual 1 R + 47 PD,
+Nibi 0 R + 296 PD, Trillium 0 R + 125 PD (the 120 restack reps queued). CHECKER exclusions +57 (validated:
+the 5 unread originals and all queued reps stay visible). NEXT BUILD (from the three verdicts): the
+stream's cost is the leaf spectral test (CELLSIZE: median 581 leaves per emitted candidate, p90 1569;
+~220k leaves/s/arm), so WZ_FH_HALL_FAST=1 (pair test only, most-rejecting angles first; SAME decision:
+pair energy >= each single energy under monotone IEEE rounding) — byte-identical stream in 448 runs /
+972k leaves; local n=44 timing + Fir paired pilot below. CANARY v3 = WZ_FH_TARGET_COMPLETE (stream to the
+located image, complete it directly with budget 5e7, stop; 36 h, 2 cores) — 80 small-n canaries + script
+rehearsal PASS; supersedes the batch/rank drain design that put ours42 14.5M completions deep.**
+
 **⚡ 2026-09-26 (daily loop 1pm — ALL FOUR reached) — NO HITS; 22 new hitless Fir Pass G reads;
 the three Fir measurement jobs (CELLSIZE 61315095, QCANARY v2 61516887, CDPILOT 61518000) have LEFT
 the queue => read this run (verdicts appended below as they land); Fir 9 R + 0 PD and Trillium 55 R +

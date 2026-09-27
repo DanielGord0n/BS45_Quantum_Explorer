@@ -130,7 +130,8 @@ bool hall_ok(const int *X, int xlen, const int *Y, int ylen) {
 // WZ_FH_HALL_FAST=1 (2026-09-26; default off): SAME DECISION as
 // hall_ok_single(X) && hall_ok_single(Y) && hall_ok(X,Y), cheaper. The pair energy at an
 // angle is fl(fl(fl(sx)+qy1)+qy2) with every term >= 0, and IEEE rounding is monotone, so
-// pair <= limit implies both singles <= limit at that angle: the pair test alone decides.
+// pair <= limit implies both singles <= limit at that angle; here each angle runs the three
+// original predicates cheapest-first, so the accepted set is identical by construction.
 // Angles are visited in an adaptive order (most-rejecting first, re-sorted every 4096
 // rejected leaves); a conjunction is order-independent, and rx/ix use the same loop and
 // tables as the original, so the accepted stream is byte-identical (tools/test_hall_fast.py).
@@ -147,8 +148,15 @@ static bool hall_ok_pair_fast(const int *X, int xlen, const int *Y, int ylen) {
     const double *sj = G_HALL_SIN[j];
     double rx = 0, ix = 0, ry = 0, iy = 0;
     for (int i = 0; i < xlen; i++) { rx += X[i] * cj[i]; ix += X[i] * sj[i]; }
-    for (int i = 0; i < ylen; i++) { ry += Y[i] * cj[i]; iy += Y[i] * sj[i]; }
-    if (rx * rx + ix * ix + ry * ry + iy * iy > limit + 0.5) {
+    // Same three predicates as the original at this angle, in the original expressions,
+    // cheapest first: X alone (88 flops), then Y alone, then the pair. Never more work per
+    // angle than the original, and the reject lands at the first failing (angle, test).
+    bool fail = rx * rx + ix * ix > limit + 0.5;
+    if (!fail) {
+      for (int i = 0; i < ylen; i++) { ry += Y[i] * cj[i]; iy += Y[i] * sj[i]; }
+      fail = ry * ry + iy * iy > limit + 0.5 || rx * rx + ix * ix + ry * ry + iy * iy > limit + 0.5;
+    }
+    if (fail) {
       G_HALL_FAIL[j]++;
       if ((++G_HALL_REJ & 4095) == 0)
         stable_sort(G_HALL_ORDER, G_HALL_ORDER + 200,
