@@ -2,7 +2,7 @@
 """Read a CDPILOT output (cluster_cd_prune_pilot.sh) and apply its pre-registered rule.
 
 Usage: python3 tools/cd_prune_pilot_summary.py cdpilot_<job>.txt
-Pairs CELLSIZE/CDSTAT lines by (shard, pi) across CD_PRUNE=0 and =3.
+Pairs CELLSIZE/CDSTAT lines by (shard, pi) across mode 0 (off) and the nonzero mode (on).
 IDENTITY: the paired cells must have equal cand; cells present in one mode only are fine
 only if they are the last, partial cell of a process. PASS: median off/on time ratio >= 1.25
 over >= 8 paired finished (partial=0) cells; CLOSE: < 1.05; else INCONCLUSIVE.
@@ -29,7 +29,8 @@ def main():
     keys = {(s, p) for (s, p, _) in cells}
     ratios, node_ratios, mismatch = [], [], []
     for s, p in sorted(keys):
-        a, b = cells.get((s, p, 0)), cells.get((s, p, 3))
+        on = [m for (ss, pp, m) in cells if ss == s and pp == p and m != 0]
+        a, b = cells.get((s, p, 0)), (cells.get((s, p, on[0])) if on else None)
         if not a or not b:
             continue
         if a[1] or b[1]:            # partial in either mode: counts are lower bounds, skip
@@ -39,7 +40,7 @@ def main():
             continue
         if b[2] > 0:
             ratios.append(a[2] / b[2])
-        n0, n3 = nodes.get((s, p, 0)), nodes.get((s, p, 3))
+        n0, n3 = nodes.get((s, p, 0)), (nodes.get((s, p, on[0])) if on else None)
         if n0 and n3:
             node_ratios.append(n0 / n3)
     print(f'paired finished cells: {len(ratios)}  identity mismatches: {len(mismatch)} {mismatch[:5]}')

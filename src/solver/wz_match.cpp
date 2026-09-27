@@ -127,6 +127,38 @@ bool hall_ok(const int *X, int xlen, const int *Y, int ylen) {
   return true;
 }
 
+// WZ_FH_HALL_FAST=1 (2026-09-26; default off): SAME DECISION as
+// hall_ok_single(X) && hall_ok_single(Y) && hall_ok(X,Y), cheaper. The pair energy at an
+// angle is fl(fl(fl(sx)+qy1)+qy2) with every term >= 0, and IEEE rounding is monotone, so
+// pair <= limit implies both singles <= limit at that angle: the pair test alone decides.
+// Angles are visited in an adaptive order (most-rejecting first, re-sorted every 4096
+// rejected leaves); a conjunction is order-independent, and rx/ix use the same loop and
+// tables as the original, so the accepted stream is byte-identical (tools/test_hall_fast.py).
+// CELLSIZE 61315095 measured 581 leaves per emitted candidate: the leaf test is the stream.
+static int G_HALL_FAST = 0;
+static int G_HALL_ORDER[200];
+static long long G_HALL_FAIL[201], G_HALL_REJ = 0;
+static void hall_order_init() { for (int t = 0; t < 200; t++) G_HALL_ORDER[t] = t + 1; }
+static bool hall_ok_pair_fast(const int *X, int xlen, const int *Y, int ylen) {
+  double limit = 4.0 * G_N + 2.0;
+  for (int t = 0; t < 200; t++) {
+    int j = G_HALL_ORDER[t];
+    const double *cj = G_HALL_COS[j];
+    const double *sj = G_HALL_SIN[j];
+    double rx = 0, ix = 0, ry = 0, iy = 0;
+    for (int i = 0; i < xlen; i++) { rx += X[i] * cj[i]; ix += X[i] * sj[i]; }
+    for (int i = 0; i < ylen; i++) { ry += Y[i] * cj[i]; iy += Y[i] * sj[i]; }
+    if (rx * rx + ix * ix + ry * ry + iy * iy > limit + 0.5) {
+      G_HALL_FAIL[j]++;
+      if ((++G_HALL_REJ & 4095) == 0)
+        stable_sort(G_HALL_ORDER, G_HALL_ORDER + 200,
+                    [](int a, int b) { return G_HALL_FAIL[a] > G_HALL_FAIL[b]; });
+      return false;
+    }
+  }
+  return true;
+}
+
 // Per-sequence Thm 2.4 bound: f_X(theta) <= 4n+2.
 bool hall_ok_single(const int *X, int xlen) {
   double limit = 4.0 * G_N + 2.0;
@@ -609,8 +641,11 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
     if (d == half) {
       auto finish = [&]() {
         leaves++;
-        if (hall_ok_single(X.data(), L) && hall_ok_single(Y.data(), L) &&
-            hall_ok(X.data(), L, Y.data(), L)) {
+        bool pass = (G_HALL_FAST && !abSide)
+          ? hall_ok_pair_fast(X.data(), L, Y.data(), L)
+          : (hall_ok_single(X.data(), L) && hall_ok_single(Y.data(), L) &&
+             hall_ok(X.data(), L, Y.data(), L));
+        if (pass) {
           ok++;
           if (sink) (*sink)(X, Y);
         }
@@ -1139,6 +1174,8 @@ int main(int argc, char **argv) {
   if (getenv("WZ_THM211B")) G_THM211B = true;   // Thm 2.3 eq 2.11b profile filter
   if (getenv("WZ_THM212"))  G_THM212  = true;   // Thm 2.3 eq (18) mod-4 filter
   if (const char *e = getenv("WZ_FH_CD_PRUNE")) G_CD_PRUNE = atoi(e);  // stream-identical C,D DFS prunes
+  hall_order_init();
+  if (const char *e = getenv("WZ_FH_HALL_FAST")) G_HALL_FAST = atoi(e);  // decision-identical leaf test
   // FIRSTHIT at n>=36: 2.11b + 2.12 are STREAM ENABLERS, not options. Measured
   // 2026-07-21 at n=41: unfiltered mod-6 cells = 2.36M, ~90% empty, ZERO
   // candidates streamed in 15 min (and 11.5-25 h on clusters); filtered =
@@ -2318,6 +2355,16 @@ int main(int argc, char **argv) {
               if (fh_targets.count(k)) {
                 tg_idx = c; tg_batch = b; tg_score = sc;
                 for (auto &h : tg_hist) { if (h.first < sc) tg_less += h.second; else if (h.first == sc) tg_eq_before += h.second; }
+                // WZ_FH_TARGET_COMPLETE=1 (canary v3, 2026-09-26): complete THIS image now with
+                // the real completer (budget from WZ_FH_AB_BUDGET), then stop. Tests stream ->
+                // exact image -> A,B completion under the new canonicalization without draining
+                // the whole batch (ours42's image sits ~14.5M completions deep in its cell).
+                if (getenv("WZ_FH_TARGET_COMPLETE") && atoi(getenv("WZ_FH_TARGET_COMPLETE"))) {
+                  cout << "TARGET_COMPLETE pi=" << pi << " idx=" << c << " score=" << sc << "\n" << flush;
+                  complete_one(Ci, Di);
+                  fh_stop.store(true); cell_stop.store(true);
+                  return;
+                }
               } else tg_hist[sc]++;
             } else if (b == tg_batch && sc < tg_score) tg_less++;
             if (tg_idx >= 0 && (b > tg_batch || c % fh_buf_cap == 0)) { cell_stop.store(true); return; }
@@ -2364,7 +2411,15 @@ int main(int argc, char **argv) {
              << " sec=" << chrono::duration<double>(Clock::now() - cs_t0).count()
              << " sec_at_buf=" << cs_sec_at_buf
              << " leaves=" << lv << " hall_ok=" << okc << "\n" << flush;  // stream-cost anatomy
-        cout << "CDSTAT pi=" << pi << " dfs_nodes=" << (G_CD_NODES - cs_nodes0) << " cd_prune=" << G_CD_PRUNE << "\n";
+        cout << "CDSTAT pi=" << pi << " dfs_nodes=" << (G_CD_NODES - cs_nodes0) << " cd_prune=" << G_CD_PRUNE
+             << " hall_fast=" << G_HALL_FAST << "\n";
+        if (G_HALL_FAST) {  // top-8 rejecting angles so far (cumulative over the arm)
+          vector<int> idx(200); for (int t = 0; t < 200; t++) idx[t] = t + 1;
+          stable_sort(idx.begin(), idx.end(), [](int a, int b) { return G_HALL_FAIL[a] > G_HALL_FAIL[b]; });
+          cout << "HALLSTAT rejected=" << G_HALL_REJ << " top:";
+          for (int t = 0; t < 8; t++) cout << " j" << idx[t] << "=" << G_HALL_FAIL[idx[t]];
+          cout << "\n" << flush;
+        }
         if (tg_idx >= 0)
           cout << "TARGET pi=" << pi << " idx=" << tg_idx << " batch=" << tg_batch
                << " rank_in_batch=" << (tg_less + tg_eq_before) << " score=" << tg_score
