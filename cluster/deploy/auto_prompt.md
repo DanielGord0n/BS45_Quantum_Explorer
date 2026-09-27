@@ -153,33 +153,22 @@ Do not re-run the checker.
      GATEB cum_*, COUNT_ONLY, control nodes_this_cand), save the verbatim line(s) with job ID
      to docs/reviews/evidence/<jobid>.txt and commit it; HANDOFF paraphrase alone is
      not enough (09-24: the pilot's raw line was never saved).
-     **TWO MEASUREMENT JOBS ON FIR (2026-09-24) — NOT search lanes:** 61315095 (CS44g2000,
-     $SCRATCH/bs45_cellsize) and 61516887 (QCANARY v2, $SCRATCH/bs45_qcanary; 61331128 = v1, done). Never count them
-     toward Fir refill numbers; never restack, cancel or resubmit them. While either is still
-     in squeue, just report its state (PD/R + elapsed). Once one is GONE from squeue and not
-     yet read in HANDOFF, READ it in the same Fir session (no extra tap if possible):
-       61315095: `cd $SCRATCH/bs45_cellsize && tail -3 firsthit_output_61315095.txt && grep -h
-       "^CELLSIZE" fh_arms_61315095/arm_*.log` -> save verbatim to
-       docs/reviews/evidence/cellsize_61315095.txt, run `python3 tools/cellsize_summary.py` on it,
-       report its VERDICT line (NO-OP/BUILD/KILL/BETWEEN/INSUFFICIENT) and the rate lines.
-       ALSO check the Q-closure-prune prediction, using ONLY the list generated ON FIR by the
-       QCANARY v2 job: `awk '$1>=356000 && $1<534000' $SCRATCH/bs45_qcanary/qprune_dead_3_13_0_0.txt`
-       (the docs/ copy named INVALID_macos_indices... is WRONG: macOS and Fir order tied cells
-       differently). For every CELLSIZE line whose pi is in that list, cand MUST be 0 when
-       partial=0. Report matches, their sec values, and LOUDLY any nonzero (= prune unsound).
-       If the Fir list does not exist yet, say so and skip this check (not a failure).
-       61331128 was v1 (INCONCLUSIVE: macOS cell index, fixed in v2); read v2 = Fir 61516887
-       instead: `cd $SCRATCH/bs45_qcanary && cat qcanary_61516887.txt` -> save verbatim to
-       docs/reviews/evidence/qcanary_61516887.txt, pipe each FOUND block to tools/verify_npaf.py,
-       report both VERDICT lines (PASS/FAIL/INCONCLUSIVE) and whether ours42 hit the predicted idx.
-       61518000 (CDPILOT, $SCRATCH/bs45_cdpilot, 8 cores, 8 h): `cd $SCRATCH/bs45_cdpilot && cat
-       cdpilot_61518000.txt` -> save verbatim to docs/reviews/evidence/cdpilot_61518000.txt, run
-       `python3 tools/cd_prune_pilot_summary.py` on it, report its VERDICT (PASS/CLOSE/INCONCLUSIVE/
-       FAIL) and the time and DFS-visit ratios. Also not a lane: never count/restack/cancel it.
-     All verdicts follow rules pre-registered in HANDOFF 09-24/09-25; apply them literally. Any
-     follow-up (build whole-cell top-K, build Pass H, repeat job) is NEEDS_HUMAN: never build,
-     deploy or submit on either result. A canary FOUND is an EXPECTED re-find of a banked n=42
-     solution, not news and not a champion.
+     **MEASUREMENT JOBS ON FIR — NOT search lanes (never count toward refill numbers; never
+     restack, cancel or resubmit). DONE and read (09-26): 61315095 CELLSIZE = KILL, 61518000 CDPILOT =
+     CLOSE, 61516887 QCANARY v2 = INCONCLUSIVE. LIVE: 61765037 = QCANARY v3 ($SCRATCH/bs45_qcanary,
+     2 cores, 36 h walltime) and the HALL_FAST pilot named in HANDOFF ($SCRATCH/bs45_cdpilot, 8
+     cores, 8 h). While one is still in squeue, report its state (PD/R + elapsed). Once it is GONE
+     from squeue and not yet read in HANDOFF, read it in the same Fir session:
+       QCANARY v3: `cd $SCRATCH/bs45_qcanary && cat qcanary_61765037.txt` -> save verbatim to
+       docs/reviews/evidence/qcanary_61765037.txt; pipe each FOUND block to tools/verify_npaf.py;
+       report both VERDICT lines. PASS = FOUND + NPAF verified (an EXPECTED re-find of a banked
+       n=42 solution: not news, not a champion); FAIL = TARGET_COMPLETE line but no FOUND;
+       INCONCLUSIVE = no TARGET_COMPLETE line.
+       HALL_FAST pilot: `cd $SCRATCH/bs45_cdpilot && cat pilot_<id>.txt` -> save verbatim to
+       docs/reviews/evidence/pilot_<id>.txt, run `python3 tools/cd_prune_pilot_summary.py` on it,
+       report VERDICT (PASS/CLOSE/INCONCLUSIVE/FAIL) and the time ratio.
+     All verdicts follow rules pre-registered in HANDOFF; apply them literally. Every follow-up
+     (Pass H, deploying HALL_FAST, repeats) is NEEDS_HUMAN: never build, deploy or submit on them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
      **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**
