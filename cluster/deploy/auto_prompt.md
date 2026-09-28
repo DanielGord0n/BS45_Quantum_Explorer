@@ -165,6 +165,16 @@ Do not re-run the checker.
      cancel or resubmit them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
+     **PASS H (built 2026-09-28; LAUNCH ONLY ON DANIEL'S GO, recorded in HANDOFF):** lanes named
+     H44<letter><k> (forward) / H44<letter>r<k> (reversed) run the Pass G policy (K=50k of the first
+     500k buffer, budget 2e6) over the 64-group + closure-prune kept list in the deterministic
+     orbit-min order (WZ_FH_PROF_ORDER=3). Every H submit line comes from docs/plans/
+     passh_submit_<cluster>.txt (never hand-edit env; each carries WZ_FH_EXPECT_DIGEST and an arm
+     refuses on a digest mismatch: "RESULT: DIGEST MISMATCH" in any arm log = STOP, NEEDS_HUMAN).
+     Restack an H lane (singleton, same line) until GATEB range_done=178/178; never resubmit a G
+     lane once H is launched on that cluster (running G reps may finish and are read as usual);
+     G lanes still count toward "queued" only until they finish. Read rule for H reps is the Pass G
+     rule (cells_done_sum, range_done, aborts vs 35%, CFGSIG mismatch = alarm).
      **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**
      two defects fixed (docs/research/n44_search_narrowing_research.md levers 26-27): endpoint pins
      were dropping ~75% of workhorse orbits under canon, and lanes had no ownership (~99%
