@@ -153,21 +153,16 @@ Do not re-run the checker.
      GATEB cum_*, COUNT_ONLY, control nodes_this_cand), save the verbatim line(s) with job ID
      to docs/reviews/evidence/<jobid>.txt and commit it; HANDOFF paraphrase alone is
      not enough (09-24: the pilot's raw line was never saved).
-     **MEASUREMENT JOBS ON FIR — NOT search lanes (never count toward refill numbers; never
-     restack, cancel or resubmit). DONE and read (09-26): 61315095 CELLSIZE = KILL, 61518000 CDPILOT =
-     CLOSE, 61516887 QCANARY v2 = INCONCLUSIVE. LIVE: 61765037 = QCANARY v3 ($SCRATCH/bs45_qcanary,
-     2 cores, 36 h walltime) and 61866970 = HALL_FAST pilot ($SCRATCH/bs45_cdpilot, 8 cores, 8 h). While one is still in squeue, report its state (PD/R + elapsed). Once it is GONE
-     from squeue and not yet read in HANDOFF, read it in the same Fir session:
-       QCANARY v3: `cd $SCRATCH/bs45_qcanary && cat qcanary_61765037.txt` -> save verbatim to
-       docs/reviews/evidence/qcanary_61765037.txt; pipe each FOUND block to tools/verify_npaf.py;
-       report both VERDICT lines. PASS = FOUND + NPAF verified (an EXPECTED re-find of a banked
-       n=42 solution: not news, not a champion); FAIL = TARGET_COMPLETE line but no FOUND;
-       INCONCLUSIVE = no TARGET_COMPLETE line.
-       HALL_FAST pilot: `cd $SCRATCH/bs45_cdpilot && cat pilot_61866970.txt` -> save verbatim to
-       docs/reviews/evidence/pilot_61866970.txt, run `python3 tools/cd_prune_pilot_summary.py` on it,
-       report VERDICT (PASS/CLOSE/INCONCLUSIVE/FAIL) and the time ratio.
-     All verdicts follow rules pre-registered in HANDOFF; apply them literally. Every follow-up
-     (Pass H, deploying HALL_FAST, repeats) is NEEDS_HUMAN: never build, deploy or submit on them.
+     **PRODUCTION BUILD = f611904 (sha a92cd7fd..) deployed to all four $SCRATCH/bs45 trees on
+     2026-09-28** (HALL_FAST leaf test default ON: decision-identical, ~6x faster stream; front-only
+     resume-boundary fix; truncated-list refusal; internal-error line). CFGSIG unchanged =>
+     checkpoints resume; jobs compile at start, so reps started after the deploy carry it. Expect
+     cells per rep to rise (stream was ~48% of worker time): report cells_done_sum per rep as
+     usual; a rep with cells_done far BELOW its lane's earlier reps on the new build is an alarm.
+     MEASUREMENT JOBS: all read and closed (CELLSIZE KILL, CDPILOT CLOSE, QCANARY v2 INCONCLUSIVE,
+     QCANARY v3 PASS on ours42, HALL_FAST pilot PASS). Any new isolated-dir job is listed in HANDOFF
+     with its own read rule; jobs named QCANARY/PILOT/CS44* are never lanes: never count, restack,
+     cancel or resubmit them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
      **PASS G IS THE PROGRAM (2026-09-22; supersedes Pass F/FR/F2 and the stride-8 tiling):**
