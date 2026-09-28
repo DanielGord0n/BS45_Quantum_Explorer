@@ -127,7 +127,7 @@ bool hall_ok(const int *X, int xlen, const int *Y, int ylen) {
   return true;
 }
 
-// WZ_FH_HALL_FAST=1 (2026-09-26; default off): SAME DECISION as
+// WZ_FH_HALL_FAST (2026-09-26; DEFAULT ON since 09-28, =0 disables): SAME DECISION as
 // hall_ok_single(X) && hall_ok_single(Y) && hall_ok(X,Y), cheaper. The pair energy at an
 // angle is fl(fl(fl(sx)+qy1)+qy2) with every term >= 0, and IEEE rounding is monotone, so
 // pair <= limit implies both singles <= limit at that angle; here each angle runs the three
@@ -136,7 +136,7 @@ bool hall_ok(const int *X, int xlen, const int *Y, int ylen) {
 // rejected leaves); a conjunction is order-independent, and rx/ix use the same loop and
 // tables as the original, so the accepted stream is byte-identical (tools/test_hall_fast.py).
 // CELLSIZE 61315095 measured 581 leaves per emitted candidate: the leaf test is the stream.
-static int G_HALL_FAST = 0;
+static int G_HALL_FAST = 1;  // DEFAULT ON since 2026-09-28: Fir pilot 61866970 PASS (6.03x median stream time, 42 cells, 0 identity mismatches); WZ_FH_HALL_FAST=0 disables
 static int G_HALL_ORDER[200];
 static long long G_HALL_FAIL[201], G_HALL_REJ = 0;
 static void hall_order_init() { for (int t = 0; t < 200; t++) G_HALL_ORDER[t] = t + 1; }
@@ -1183,7 +1183,7 @@ int main(int argc, char **argv) {
   if (getenv("WZ_THM212"))  G_THM212  = true;   // Thm 2.3 eq (18) mod-4 filter
   if (const char *e = getenv("WZ_FH_CD_PRUNE")) G_CD_PRUNE = atoi(e);  // stream-identical C,D DFS prunes
   hall_order_init();
-  if (const char *e = getenv("WZ_FH_HALL_FAST")) G_HALL_FAST = atoi(e);  // decision-identical leaf test
+  if (const char *e = getenv("WZ_FH_HALL_FAST")) G_HALL_FAST = atoi(e);  // decision-identical leaf test (default on)
   // FIRSTHIT at n>=36: 2.11b + 2.12 are STREAM ENABLERS, not options. Measured
   // 2026-07-21 at n=41: unfiltered mod-6 cells = 2.36M, ~90% empty, ZERO
   // candidates streamed in 15 min (and 11.5-25 h on clusters); filtered =
