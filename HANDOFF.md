@@ -4,6 +4,28 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-27 (Daniel session, night) — TODAY'S 1PM LOOP WAS A CASUALTY OF MAC SLEEP; READS + RESTACK
+DONE BY HAND; HALL_FAST PILOT + Q CANARY v3 LIVE.** (1) Loop: fired 13:04 on a DarkWake (lid closed), the
+Mac re-slept 9 s later; the checker crawled to 13:46 across dark-wake windows (Nibi Duo missed = by the
+09-19 design: no unattended re-push, the button re-checks), and the agent then sat suspended for 9 h
+(1.3 s CPU) because run_with_timeout's clock stops during sleep. Killed it at 22:30, lock released. ROOT
+CAUSE: pmset sleep=1 (AC and battery): the Mac sleeps after 1 idle minute. MITIGATION SHIPPED: the launchd
+job now runs under caffeinate -i -s (holds the Mac once awake, AC only); NEEDS DANIEL (sudo): pmset -c
+sleep 0 + a scheduled 12:58 wake (see chat), lid open or external display at 1pm. Last night's session
+died at ~00:30 (Mac sleep again) before the pilot was submitted. (2) READS (Fir+Nibi, 2 taps, all
+hitless): 19 Fir reads 3-53M tested, aborts 8-31%, 178/178 arms; lanes near completion: F44g1000 174/178
+(61686877) + 152/178 (61305519), F44g5000 170/178 (61686883), F44gr1000 166/178 (61686868), F44g3000
+128/178, F44gr5000 116/178, F44g5000 109/178 (61305527); others 0-75/178. Nibi 0 R + 296 PD all
+'(Priority)' = fair-share wait (loaded 09-15/16; ~13 d expected), not an error. (3) FIR RESTACK: 21 reps
+from the lanes' own sacct SubmitLines (guards: exact env, singleton, --mem=0, rrg-ikotsire_cpu, REV only
+on gr, END=SKIP+1000), every lane to 3 queued: 61867921-941 (first attempt sent 21 plain echoes by a
+local-expansion mistake: 0 submits, no duplicates). (4) HALL_FAST PILOT = Fir 61866970 (PILOT,
+$SCRATCH/bs45_cdpilot, 8 cores 8 h, sha 846f554d = 02ccfd2 solver): 4 shards x {0,1}, rule in
+tools/cd_prune_pilot_summary.py (PASS >= 1.25 median time ratio, CLOSE < 1.05). Q CANARY v3 61765037
+running 12.7 h of 36 at 22:45. (5) Checker exclusions +19 (validated: the 15 live 6168xx reps, 21 new,
+both pilots, Trillium's 120 + 5 unread stay visible). ship_patched_job.sh: never append ';...' to the
+sbatch line (it is one ${SBATCH:-...} word). Astra prompt ready: docs/reviews/prompts/astra-policy-prompt.md.**
+
 **⚡ 2026-09-26 (Daniel session, night) — CHECKER RERUN (4 taps, all four reached): NO HITS; 57 new
 hitless reads (55 Trillium Pass G first reps 2388934-993 minus the 5 still pending 2388935/961/969/970/980,
 + Fir 61305522 F44gr2000 792 cells 23.7% aborts, 61305523 F44g3000 925 cells range_done=36/178 17.7%).

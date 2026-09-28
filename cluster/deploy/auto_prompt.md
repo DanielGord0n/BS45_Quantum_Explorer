@@ -156,16 +156,15 @@ Do not re-run the checker.
      **MEASUREMENT JOBS ON FIR — NOT search lanes (never count toward refill numbers; never
      restack, cancel or resubmit). DONE and read (09-26): 61315095 CELLSIZE = KILL, 61518000 CDPILOT =
      CLOSE, 61516887 QCANARY v2 = INCONCLUSIVE. LIVE: 61765037 = QCANARY v3 ($SCRATCH/bs45_qcanary,
-     2 cores, 36 h walltime) and the HALL_FAST pilot named in HANDOFF ($SCRATCH/bs45_cdpilot, 8
-     cores, 8 h). While one is still in squeue, report its state (PD/R + elapsed). Once it is GONE
+     2 cores, 36 h walltime) and 61866970 = HALL_FAST pilot ($SCRATCH/bs45_cdpilot, 8 cores, 8 h). While one is still in squeue, report its state (PD/R + elapsed). Once it is GONE
      from squeue and not yet read in HANDOFF, read it in the same Fir session:
        QCANARY v3: `cd $SCRATCH/bs45_qcanary && cat qcanary_61765037.txt` -> save verbatim to
        docs/reviews/evidence/qcanary_61765037.txt; pipe each FOUND block to tools/verify_npaf.py;
        report both VERDICT lines. PASS = FOUND + NPAF verified (an EXPECTED re-find of a banked
        n=42 solution: not news, not a champion); FAIL = TARGET_COMPLETE line but no FOUND;
        INCONCLUSIVE = no TARGET_COMPLETE line.
-       HALL_FAST pilot: `cd $SCRATCH/bs45_cdpilot && cat pilot_<id>.txt` -> save verbatim to
-       docs/reviews/evidence/pilot_<id>.txt, run `python3 tools/cd_prune_pilot_summary.py` on it,
+       HALL_FAST pilot: `cd $SCRATCH/bs45_cdpilot && cat pilot_61866970.txt` -> save verbatim to
+       docs/reviews/evidence/pilot_61866970.txt, run `python3 tools/cd_prune_pilot_summary.py` on it,
        report VERDICT (PASS/CLOSE/INCONCLUSIVE/FAIL) and the time ratio.
      All verdicts follow rules pre-registered in HANDOFF; apply them literally. Every follow-up
      (Pass H, deploying HALL_FAST, repeats) is NEEDS_HUMAN: never build, deploy or submit on them.
