@@ -588,6 +588,7 @@ static long long wall_now_sec() {
 //         pair can hit it exactly iff t is integral, |t|_1 <= q and q-|t|_1 is even.
 //         Applied from depth 1 (the root quad may be negative-product).
 static int G_CD_PRUNE = 0;
+static string G_ORDER_DIGEST;  // "<list>:<kept>" under WZ_FH_PROF_ORDER=3
 static unsigned long long G_CD_NODES = 0;  // DFS visits (measurement; printed by CELLSIZE)
 static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
                           bool abSide, bool pinX, bool pinY,
@@ -1415,6 +1416,7 @@ int main(int argc, char **argv) {
     else if (prof_order == 2)
       sort(fhProfs.begin(), fhProfs.end(), [&](const Profile &a, const Profile &b)
            { return profScore(a) > profScore(b); });
+    // prof_order == 3 (Pass H) is applied AFTER canonicalization below: it needs the orbit map.
     // ---- C,D ORBIT CANONICALIZATION (WZ_FH_ORBIT_CANON=1, 2026-08-04).
     // The cell list enumerates each C,D equivalence orbit REDUNDANTLY (measured:
     // 3.8x at n=43 published, 7.9-28.9x at n=44) under negC/negD/revC/revD/swap
@@ -1582,6 +1584,61 @@ int main(int argc, char **argv) {
       cout << "[orbitcanon]" << (orbit_q ? " group=64" : "") << " cells=" << fhProfs.size() << " kept_orbits="
            << fh_keep.size() << " dedup="
            << (double)fhProfs.size() / max((size_t)1, fh_keep.size()) << "x\n" << flush;
+      // ---- WZ_FH_PROF_ORDER=3 (Pass H, 2026-09-28; Astra reviews 09-25/09-26/09-27):
+      // DETERMINISTIC, TOOLCHAIN-INDEPENDENT ordering. Key = (orbit-min profile score over the
+      // orbit's LISTED members, orbit id, cell key): a total order, so std::sort tie behaviour
+      // (which differs between libc++ and libstdc++ and moved a cell 582325 -> 549054 on
+      // 09-25) cannot change positions. Digests of the ordered list and of the kept-position
+      // bitmap are printed; WZ_FH_EXPECT_DIGEST="<list>:<kept>" makes an arm REFUSE to search
+      // or resume on a mismatch; the kept digest is also part of CFGSIG (.dg).
+      if (prof_order == 3) {
+        unordered_map<string, long long> omin;
+        for (size_t i = 0; i < fhProfs.size(); i++) {
+          long long sc = profScore(fhProfs[i]);
+          auto it = omin.find(oid[i]);
+          if (it == omin.end() || sc < it->second) omin[oid[i]] = sc;
+        }
+        vector<size_t> perm(fhProfs.size());
+        for (size_t i = 0; i < perm.size(); i++) perm[i] = i;
+        sort(perm.begin(), perm.end(), [&](size_t a, size_t b) {
+          long long sa = omin[oid[a]], sb = omin[oid[b]];
+          if (sa != sb) return sa < sb;
+          if (oid[a] != oid[b]) return oid[a] < oid[b];
+          return own[a] < own[b];
+        });
+        vector<Profile> sorted(fhProfs.size());
+        for (size_t i = 0; i < perm.size(); i++) sorted[i] = fhProfs[perm[i]];
+        fhProfs.swap(sorted);
+        auto fnv = [](unsigned long long h, const string &k) {
+          for (unsigned char c : k) { h ^= c; h *= 1099511628211ULL; }
+          return h;
+        };
+        unsigned long long dl = 1469598103934665603ULL, dk = 1469598103934665603ULL;
+        long long kept_n = 0;
+        for (size_t i = 0; i < fhProfs.size(); i++) {
+          string k = fh_cellkey(fhProfs[i].px, fhProfs[i].py);
+          dl = fnv(dl, k);
+          bool kept = fh_keep.count(k) > 0;
+          kept_n += kept;
+          dk = fnv(dk, kept ? "1" : "0");
+        }
+        char dbuf[64];
+        snprintf(dbuf, sizeof dbuf, "%016llx:%016llx", dl, dk);
+        G_ORDER_DIGEST = dbuf;
+        cout << "[order] ord3 cells=" << fhProfs.size() << " kept=" << kept_n
+             << " windows=" << (fhProfs.size() + fh_nshard - 1) / fh_nshard
+             << " digest=" << dbuf << "\n" << flush;
+        if (const char *e = getenv("WZ_FH_EXPECT_DIGEST"))
+          if (strcmp(e, dbuf) != 0) {
+            cout << "RESULT: DIGEST MISMATCH (expected " << e << ") — refusing to search or resume\n" << flush;
+            return 2;
+          }
+        if (getenv("WZ_FH_LIST_ONLY")) return 0;
+      }
+    }
+    if (prof_order == 3 && !orbit_canon) {
+      cout << "RESULT: PROF_ORDER=3 requires WZ_FH_ORBIT_CANON=1\n" << flush;
+      return 2;
     }
     cout << "[firsthit] profiles=" << fhProfs.size() << " m=" << fh_m
          << " order=" << prof_order
@@ -1971,6 +2028,11 @@ int main(int argc, char **argv) {
     if (qp_active) {
       size_t L0 = strlen(fh_sigbuf);
       snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".qp1");
+    }
+    if (prof_order == 3) {  // attempt policy (budget) + kept-bitmap digest bind the namespace
+      size_t L0 = strlen(fh_sigbuf);
+      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".bud%lld.dg%s", FH_BUDGET,
+               G_ORDER_DIGEST.size() >= 33 ? G_ORDER_DIGEST.c_str() + 17 : "none");
     }
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;
