@@ -1,0 +1,15 @@
+-rw-r----- 1 dangord dangord 1588 Sep 28 08:12 qcanary_61765037.txt
+=== QCANARY job 61765037 node fc30410 Sat Sep 26 20:12:44 PDT 2026 sha 586a2fd800b124af ===
+[qprune] [qprune] missing_Q_images=7776 not_realizable=7776 eq212=0 nonintegral=0 unknown=0 dead_orbits=295 cells_removed=7776 | dead raw cells in windows 2000-2999: 413
+[wz42] step0: kept cell pi=30678 (window 172, arm 62) | LOCATE_CANON: orbit_canon=1 matched_cells=128 kept_cells=8 retained=YES
+[ours42] step0: kept cell pi=562219 (window 3158, arm 95) | LOCATE_CANON: orbit_canon=1 matched_cells=96 kept_cells=1 retained=YES
+[ours42] step1: TARGET_COMPLETE pi=562219 idx=23816271 score=150 | CELLSIZE pi=562219 cand=23816271 capped=0 partial=1 sec=24270.9 sec_at_buf=487.509 leaves=4831580370 hall_ok=23816271
+[ours42] result: *** BS(43,42) FOUND ***  (firsthit probe) | FIRSTHIT: idx=23816271 profile_rank=562219 nodes_this_cand=86976 score=150 elapsed=24272.5s | VERIFY: max |NPAF[s]| over s=1..42 = 0  (NPAF==0 confirmed)
+[ours42] VERDICT: PASS (verify locally)
+*** BS(43,42) FOUND ***  (firsthit probe)
+sig = (-7,11,0,0)
+A = {1,-1,1,1,1,-1,1,-1,1,-1,-1,1,1,-1,1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,-1};
+B = {1,1,1,-1,1,1,-1,1,1,1,1,-1,-1,-1,-1,1,-1,1,-1,-1,1,1,1,1,1,-1,1,-1,1,-1,1,1,1,1,-1,1,1,1,-1,-1,1,-1,1};
+C = {1,-1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,-1,-1,-1,1,1,1,-1,1,-1,1,1,-1,-1};
+D = {1,1,-1,-1,1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,1,1,1,-1,1,1,-1,1,1,-1,-1,-1,1,-1,1,-1};
+[2026-09-28T08:12:40.022] error: *** JOB 61765037 ON fc30410 CANCELLED AT 2026-09-28T08:12:40 DUE TO TIME LIMIT ***

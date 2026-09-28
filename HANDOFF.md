@@ -1,8 +1,80 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-26 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-28 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-28 (daily loop 1pm — Fir/Nibi/Rorqual reached; Trillium in a listed login outage, no push)
+— NO HITS in production; BOTH FIR MEASUREMENT JOBS READ: QCANARY v3 = PASS on ours42 (expected Q-image
+re-find of the banked n=42, verify_npaf PASS locally; wz42 INCONCLUSIVE, wall hit) and HALL_FAST PILOT =
+PASS (median time ratio 6.03x, identity held) => NEEDS_HUMAN for every follow-up (Pass H go, HALL_FAST
+deploy); FIRST PASS G UNIT DONE: F44g5000 range_done=178/178; 0 submits (no cluster under its floor).**
+NEW FOUND: none on Fir/Nibi/Rorqual. NEEDS_HUMAN follow-ups are pre-registered as human steps: nothing was
+built, deployed or submitted on either verdict.
+★ QCANARY v3 61765037 (TIMEOUT 1-12:00:03 = ran to the 36 h wall, sha 586a2fd8) — verbatim in
+docs/reviews/evidence/qcanary_61765037.txt. In-job LOCATE: ours42 -> kept cell pi=562219 (window 3158,
+arm 95; matched 96, kept 1, retained=YES); wz42 -> pi=30678 (window 172, arm 62; matched 128, kept 8).
+[ours42] step1: TARGET_COMPLETE pi=562219 idx=23816271 score=150 (cell streamed 23.8M candidates in
+24271 s = 6.7 h, leaves=4.83e9, hall_ok=23816271) -> `*** BS(43,42) FOUND ***` FIRSTHIT idx=23816271
+profile_rank=562219 nodes_this_cand=86976 score=150 elapsed=24272.5 s, in-job VERIFY NPAF==0, job line
+"[ours42] VERDICT: PASS". LOCAL R2: `python3 tools/verify_npaf.py` on the printed A/B/C/D -> PASS
+(NPAF[s]=0 all s=1..43, sum-of-squares 170, comb8 encoding). IDENTITY: A and B are byte-identical to
+results/champions/champion_firsthit_bs43_42.txt; C,D are NOT the banked C,D but ARE its Q-image
+Q(C,D)=(U+RV,U-RV) up to swap/negation/reversal (checked in-session) = exactly the located Q-image cell.
+PRE-REGISTERED VERDICT: **PASS** = an EXPECTED re-find of the banked n=42 solution: NOT news, NOT a new
+champion, nothing banked (the 64-group canon retains the known solution AND the direct completer reaches
+it: 86,976 nodes, under budget). nodes_this_cand=86976 equals the 08-04 hit's count exactly.
+[wz42]: no step-1 line at all (ours42 consumed 6.7 h, wz42 then streamed ~29 h without reaching its
+image before the wall) => **INCONCLUSIVE** (rule: no TARGET_COMPLETE line). qprune audit in-job:
+missing_Q_images=7776 not_realizable=7776 eq212=0 nonintegral=0 unknown=0 dead_orbits=295
+cells_removed=7776; dead raw cells in windows 2000-2999: 413 (unchanged from v2).
+★ HALL_FAST PILOT 61866970 (PILOT, COMPLETED 07:40:10, node fc20332 EPYC 9655, 8 cores, sha 846f554d)
+— verbatim in docs/reviews/evidence/pilot_61866970.txt; tools/cd_prune_pilot_summary.py: paired
+finished cells 42, identity mismatches 0, time ratio off/on median 6.030 (min 3.268, max 7.477),
+DFS-visit ratio 1.000 => PRE-REGISTERED VERDICT: **PASS** (>= 1.25). Explicit per-mode recomputation
+(mode 0 vs mode 1 only): same 42 pairs, median 6.030; per shard mode-1 finished 49/52/51/51 cells vs
+~11-13 for mode 0 in the same 7.67 h. CAVEAT (report only): the output also carries 47 `cdp_s*_m3.log`
+lines = STALE leftovers of the 09-25 CDPILOT (61518000) in the same $SCRATCH/bs45_cdpilot directory
+(the collector globs cdp_s*_m*.log); the tool paired mode 0 with mode 1 (glob order) so the verdict is
+unaffected, and mode0/mode3 across the two runs gives 1.050 (consistent with the earlier CLOSE). This
+job ran only 4 shards x {0,1} = 8 processes on 8 cores. HALL_FAST is NOT deployed (default off).
+FIR READS (13, all hitless, 178/178 arms, sacct names for the unlabelled): ★ F44g5000 61686892
+(COMPLETED 05:19:03, ended 09-27 21:33) range_done=178/178, 18 cells, cum_done=3574 cum_dup=104232
+cum_empty=104, resume_pi 1038952-1039129 = the FIRST Pass G ownership unit to finish (k=5000 range
+of the workhorse (3,13,0,0), S=1000, forward front). Its already-queued rep 61867938 (F44g5000) ran
+49 s today: candidates=0 tested=0 range_done=178/178 (RANGE EXHAUSTED, no work) => exclude both;
+61867939 (F44g5000, PD) will do the same when it starts: leave it, NEVER resubmit F44g5000 (G2 on
+this range is the next step per the refill rule, but Fir pending 17 >= 8, so not today). Unit began
+on 3014b95 => rate only, not exact alpha. F44g1000 61686886 (COMPLETED 11:30, ended 03:43) 15 cells,
+tested 0.73M, aborts 6.6%, range_done=177/178; F44gr1000 61686871 (COMPLETED 11:30, ended 02:39) 33
+cells, 1.5M, 18.8%, range_done=177/178 (both one arm from done; reps queued). Others (tested,
+aborts, range_done): 61686885 25.1M 8.9% 3/178; 61686891 39.4M 30.2% 46/178; 61686890 27.3M 18.4%
+148/178; 61686889 19.0M 28.0% 157/178; 61686888 7.6M 18.9% 174/178; 61686872 43.8M 13.7% 0/178;
+61686887 39.1M 24.2% 0/178; 61686870 30.3M 13.0% 1/178. Aborts all under the ~35% line; no CFGSIG
+mismatch / fresh-start / STALE lines in the checker excerpts (tested_cum > tested everywhere).
+RORQUAL READS (9, (9,9,0,4) R44G lanes, all hitless, 178/178 arms, first reps so tested_cum=tested):
+21608271 42.6M aborts 22.8% range_done=0/178; 21608272 35.4M 35.2%; 21608273 43.9M 26.2%; 21608274
+35.6M 39.6%; 21608275 42.0M 32.3%; 21608276 40.4M 31.5%; 21608277 47.4M 27.4%; 21608278 39.5M
+35.8%; 21608280 41.7M 32.3% range_done=67/178; all others 0/178. Three lanes over the ~35% line
+(21608274 39.6%, 21608278 35.8%, 21608272 35.2%); pooled 114.6M/368.5M = 31.1% => flagged, no action
+((9,9,0,4) runs hot; budget lever closed). No output for 21608279 (not in squeue, not on disk);
+21608281 (R44Ggr5400) sits PD "(launch failed requeued held)" => needs `scontrol release 21608281`
+on Rorqual (human tap; not done autonomously). The 19 R44H (3,5,0,12) lanes 21608282-300 started
+07:07-08:00 EDT today (header-only), 20 PD.
+QUEUES: Fir 7 R + 17 PD (61686873/874/875/893 + 61867928/930/932 R; 61867921-941 rest PD; the two
+measurement jobs gone), Rorqual 19 R + 20 PD, Nibi 0 R + 296 PD (all Priority = fair-share wait,
+expected), Trillium unreached (listed outage: GPU login node issues). Every floor satisfied (Fir/
+Rorqual pending >= 8, Nibi >= 100) => no refill; rung_status EXHAUSTED as always (Pass G is the program).
+CHECKER: exclusions +61686870/871/872/885-892, +61867938, +21608271-278/280 (regex validated: live
+61686873/874/875/893, 61867921-941 minus 938, 21608281-319 stay visible).
+NEEDS_HUMAN (pre-registered human steps, in order): (1) Q canary PASS + CELLSIZE KILL + Astra 09-27
+policy => Pass H go/no-go is Daniel's call (v3 plan, 80/20 hedge, K=175k B=1 pilot); (2) HALL_FAST
+PASS at ~6x => decide the fleet redeploy bundle (HALL_FAST default/env, the 09-26 resume-boundary fix,
+cum accounting), CFGSIG must stay unchanged; (3) release 21608281 on Rorqual; (4) Trillium unread (5
+originals 2388935/961/969/970/980 + the 120 reps) until the outage lifts.
+ROUND VERDICT: no hits, no verified NEW solutions (the canary FOUND is a verified re-find of the banked
+n=42, not banked again); 22 hitless reads; two pre-registered gates read (QCANARY v3 PASS/INCONCLUSIVE,
+HALL_FAST PASS); 0 submits.**
 
 **⚡ 2026-09-27 (Daniel session, late) — MAC SLEEP FIXED BY DANIEL (pmset -c sleep 0, displaysleep 10,
 repeat wakeorpoweron 12:58 daily); loop: wall-clock agent timeout, slow-check (>15 min) warning in the
