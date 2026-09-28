@@ -4,6 +4,22 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-28 (Daniel session) — BOTH GATES VERIFIED; HALL_FAST DEPLOYED FLEET-WIDE (build f611904,
+sha a92cd7fd..).** Q CANARY v3 61765037: independently re-verified locally (verify_npaf PASS; A,B identical
+to the banked n=42 champion, C,D in its 64-orbit) => the Q path is proven end to end on a real cluster
+cell; wz42 half hit the 36 h wall (INCONCLUSIVE, secondary). HALL_FAST PILOT 61866970: re-paired
+mode 0 vs mode 1 only (the file also holds stale m3 lines from 61518000): 42 paired finished cells,
+median off/on 6.03x (min 3.27, max 7.48), the 4 'cand mismatches' are each shard's walltime-cut last
+cell (partial=1 in mode 0), so identity holds. Top rejecting angles j4, j9, j14, j19 (most leaves die
+at the first few angles of the adaptive order). Flipped default ON (WZ_FH_HALL_FAST=0 disables);
+all 10 suites + n29 canary PASS. DEPLOY (4 taps): sha-checked 37 KB patch onto each cluster's cbe3859
+solver (.bak-cbe3859 kept), before c2571d40.. -> after a92cd7fd.. on Fir, Rorqual, Nibi, Trillium;
+CFGSIG unchanged, running reps finish on the old binary, everything that starts afterwards compiles
+the new one. Expected: worker time ~0.476/6+0.524 = 0.60 => ~1.66x cells per rep. Queues at deploy:
+Fir 7 R + 17 PD, Rorqual 19 R + 20 PD (up from 4 R), Nibi 296 PD, Trillium 125 PD. MAC: macOS 27.0
+upgrade (00:35 today) broke clang++ linking; workaround SDKROOT=MacOSX26.sdk (memory note). NEXT: Pass
+H build (Q + prune + deterministic order + manifest), then Daniel's go.**
+
 **⚡ 2026-09-28 (daily loop 1pm — Fir/Nibi/Rorqual reached; Trillium in a listed login outage, no push)
 — NO HITS in production; BOTH FIR MEASUREMENT JOBS READ: QCANARY v3 = PASS on ours42 (expected Q-image
 re-find of the banked n=42, verify_npaf PASS locally; wz42 INCONCLUSIVE, wall hit) and HALL_FAST PILOT =

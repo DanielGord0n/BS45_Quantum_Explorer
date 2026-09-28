@@ -56,7 +56,7 @@ blocks launch; (d) the manifest check in Mechanics 2.
   within 110% of the model). Model: T_175/T_50 = 2.31 at the measured 0.476/0.524 split; the
   wider policy wins iff its 125k extra candidates carry > 52.4% of the first 50k's mean success
   probability; the mixture is 1.10x under uniform rank density and 0.89x if all mass is in the
-  top 50k. If the leaf-test pilot speeds generation by v, T_175/T_50 = (0.476/v+1.834)/(0.476/v+0.524).
+  top 50k. With the leaf-test speedup v = 6 (pilot 61866970, deployed 09-28), T_175/T_50 = (0.476/6+1.834)/(0.476/6+0.524) = 3.17: the wider policy now needs > 3.17x the success mass, so the hedge is weaker; re-price after H's first reps show the real per-cell split.
 - **Class allocation.** Node-days in proportion to tile cost N_i/r_i (equal fractional coverage;
   the robust choice with no class prior). Spread lanes over low, middle and high cell-score bands.
 - **Budget.** Keep 2e6. Abort rates alone justify no change: budget b' beats b iff
@@ -70,7 +70,7 @@ size ratio, not a measured speed.
 
 ## Not part of the H launch (separate, each with its own pilot)
 
-- `WZ_FH_HALL_FAST` leaf-test speedup (decision-identical): pilot Fir 61866970.
+- `WZ_FH_HALL_FAST`: PASS (6.03x) and deployed fleet-wide 09-28 (build f611904).
 - `WZ_FH_MID_SOLVE` middle-sign pre-check: identical results, 1.8% fewer nodes at small n;
   promote only if a cluster timing shows at least 2% end-to-end.
 - Outer 2/3-quad reachable-tuple tables, A,B exchange (4 classes), A,B profile reachability:
