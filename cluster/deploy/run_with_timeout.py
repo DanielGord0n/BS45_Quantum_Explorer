@@ -8,8 +8,16 @@ if len(sys.argv) < 3:
     sys.stderr.write("usage: run_with_timeout.py <seconds> <cmd> [args...]\n"); sys.exit(64)
 limit = float(sys.argv[1]); cmd = sys.argv[2:]
 p = subprocess.Popen(cmd, start_new_session=True)
+# 2026-09-27: wall-clock deadline. Popen.wait(timeout) counts monotonic time, which stops while
+# the Mac sleeps: a 5400 s cap ran 9 h across sleep/dark-wake cycles. time.time() keeps counting.
+deadline = time.time() + limit
 try:
-    sys.exit(p.wait(timeout=limit))
+    while True:
+        try:
+            sys.exit(p.wait(timeout=min(30, max(0.1, deadline - time.time()))))
+        except subprocess.TimeoutExpired:
+            if time.time() >= deadline:
+                raise
 except subprocess.TimeoutExpired:
     sys.stderr.write(f"[run_with_timeout] {limit:.0f}s exceeded — killing process group\n")
     try: os.killpg(os.getpgid(p.pid), signal.SIGTERM)
