@@ -4,6 +4,14 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-27 (Daniel session, late) — MAC SLEEP FIXED BY DANIEL (pmset -c sleep 0, displaysleep 10,
+repeat wakeorpoweron 12:58 daily); loop: wall-clock agent timeout, slow-check (>15 min) warning in the
+digest; ASTRA POLICY REVIEW IN (docs/reviews/2026-09-27-astra-policy.md): keep Q + prune + budget 2e6;
+hedge becomes 20% of node-days on B=1,K=175k (not B=2) after a <=2 node-day cost pilot; no representative
+rule improves capture (all representatives hold the same candidates up to bijection; prefixes differ);
+abort rates alone justify no budget change; the n=42 image at rank ~257k-301k is excluded by K=50k and
+K=175k regardless of buffers (the '14.5M deep' phrasing was wrong). Pass H plan updated accordingly.**
+
 **⚡ 2026-09-27 (Daniel session, night) — TODAY'S 1PM LOOP WAS A CASUALTY OF MAC SLEEP; READS + RESTACK
 DONE BY HAND; HALL_FAST PILOT + Q CANARY v3 LIVE.** (1) Loop: fired 13:04 on a DarkWake (lid closed), the
 Mac re-slept 9 s later; the checker crawled to 13:46 across dark-wake windows (Nibi Duo missed = by the

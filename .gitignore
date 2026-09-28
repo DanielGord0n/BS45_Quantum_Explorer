@@ -40,3 +40,5 @@ results/ntfy_listener.err
 results/reached_*.txt
 results/reminders.log
 results/interim_summary.txt
+results/latest_check*.txt
+results/*reread*

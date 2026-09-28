@@ -126,12 +126,21 @@ if [ "$SUPPLEMENTARY" = 1 ]; then
   log "SUPPLEMENTARY pass for missed cluster(s): ${CLUSTERS:-?} — hourly Duo re-push (RETRY_MAX=${RETRY_MAX:-10})."
   "$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"          # CLUSTERS from env; hourly retries inside
 else
+  touch "$REPO/results/.agent_start_mark"
   log "Running checker (first pass, no waiting on missed taps)…"
   RETRY_MAX=0 "$DIR/check_all_retry.sh" > "$CHECK_OUTPUT" 2>>"$LOG"
 fi
 # Deterministic digest to the phone within a minute of the check (2026-09-20) — numbers
 # first, narrative later; also the fallback text if the agent fails.
+CHECK_SEC=$(( $(date +%s) - $(stat -f %m "$REPO/results/.agent_start_mark" 2>/dev/null || date +%s) ))
 MECH="$(python3 "$DIR/summarize_check.py" "$CHECK_OUTPUT" 2>/dev/null)"
+# 2026-09-27: a 4-cluster check takes ~2 min awake; 40+ min means the Mac was sleeping between
+# dark wakes (09-27: 13:04 -> 13:46) and the queue numbers are hours stale by the time the
+# agent runs. Flag it in the digest and the log so nobody trusts the pending counts blindly.
+if [ "$CHECK_SEC" -gt 900 ]; then
+  log "WARNING: checker took ${CHECK_SEC}s (>15 min) — the Mac was probably asleep; queue counts may be stale."
+  MECH="[SLOW CHECK ${CHECK_SEC}s: Mac likely slept; counts stale] $MECH"
+fi
 if [ -n "$MECH" ]; then
   log "digest: $MECH"
   if grep -q "FOUND banners: [1-9]" <<<"$MECH"; then ntfy_push "🚨 BS45 check: FOUND banner" "$MECH" "urgent" "rotating_light"

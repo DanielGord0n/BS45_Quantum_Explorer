@@ -41,21 +41,26 @@ existing suites; (c) the Fir-order dead-cell prediction on CELLSIZE 61315095: a 
 with cand=0 corroborates; timeouts/partials/unvisited are inconclusive; any emitted candidate
 blocks launch; (d) the manifest check in Mechanics 2.
 
-## Policy (for Daniel's decision at launch)
+## Policy (for Daniel's decision at launch; updated 2026-09-27 from Astra's policy review)
 
-- **Breadth versus depth hedge (Astra).** Streaming costs about half of worker time and is paid
-  before any completion, so completing more of each cell can win: under the measured split,
-  K=175k with one buffer costs 2.31x the incumbent per cell and wins if its candidates hold more
-  than 2.31x the success mass (1.52x better if success density is uniform over ranks; worse if
-  it is concentrated at the very front). The data cannot decide this. Proposal: 80% of node-days
-  on the incumbent (K=50k, B=1) and 20% on B=2, K=175k over disjoint fresh ranges, starting with a
-  pilot of at most 2 node-days to measure its real cost. Keep it only if it captures at least one
-  known witness outside the incumbent selection at a measured cost of at most 5x per cell.
-- **Class allocation.** Allocate each class's node-days in proportion to its tile cost N_i/r_i, so
-  every class reaches the same fraction of coverage. That is the robust choice when we do not
-  know which class holds a solution. Spread lanes over low, middle and high cell-score bands.
-- **Budget.** Keep 2e6. Note the budget counter charges quad trials but not middle trials, so
-  "2e6 nodes" is not the literal total-node cap; report both counters.
+- **Canonicalization changes prefixes, not candidate sets.** Every representative of an orbit
+  holds the same candidates up to a bijection (same count, same flatness multiset), but a
+  truncated pass visits a representative-dependent prefix. The known n=42 solution's image under
+  Q sits at in-cell flatness rank ~257k-301k, which K=50k excludes with any number of buffers
+  (and K=175k too); it is not "14.5M completions deep under the front policy". No representative
+  rule is known to improve capture; keep H's launch rule (min cell key). A future diversity pilot
+  may alternate between the two constituent 32-orbits' minima under a recorded seed, bound to the
+  manifest, only if its matched cost is within 10% of the incumbent.
+- **Breadth hedge: 80% of node-days on B=1, K=50k; 20% on B=1, K=175k** (not B=2), both at
+  budget 2e6, as a bounded cost pilot first (<= 2 node-days on prespecified fresh cells, cost
+  within 110% of the model). Model: T_175/T_50 = 2.31 at the measured 0.476/0.524 split; the
+  wider policy wins iff its 125k extra candidates carry > 52.4% of the first 50k's mean success
+  probability; the mixture is 1.10x under uniform rank density and 0.89x if all mass is in the
+  top 50k. If the leaf-test pilot speeds generation by v, T_175/T_50 = (0.476/v+1.834)/(0.476/v+0.524).
+- **Class allocation.** Node-days in proportion to tile cost N_i/r_i (equal fractional coverage;
+  the robust choice with no class prior). Spread lanes over low, middle and high cell-score bands.
+- **Budget.** Keep 2e6. Abort rates alone justify no change: budget b' beats b iff
+  p_b'/p_b > T_b'/T_b, and abort percentages do not give the left side. No replay store.
 
 ## Performance rule (an operating policy, not a discovery claim)
 
@@ -65,8 +70,10 @@ size ratio, not a measured speed.
 
 ## Not part of the H launch (separate, each with its own pilot)
 
-- `WZ_FH_CD_PRUNE` stream prunes: pilot Fir 61518000.
+- `WZ_FH_HALL_FAST` leaf-test speedup (decision-identical): pilot Fir 61866970.
 - `WZ_FH_MID_SOLVE` middle-sign pre-check: identical results, 1.8% fewer nodes at small n;
   promote only if a cluster timing shows at least 2% end-to-end.
 - Outer 2/3-quad reachable-tuple tables, A,B exchange (4 classes), A,B profile reachability:
   built only after timing shows where completion time goes.
+- CLOSED by measurement: whole-cell top-K (KILL: every finished cell >= 8x the prefix),
+  `WZ_FH_CD_PRUNE` DFS prunes (CLOSE: 12% fewer visits, 1% wall).
