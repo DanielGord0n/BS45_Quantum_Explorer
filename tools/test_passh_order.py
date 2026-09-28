@@ -52,7 +52,7 @@ def main():
             subprocess.run([compiler, '-O3', '-std=c++17', *extra, str(SOURCE), '-o', str(b)], check=True)
             bins[tag] = b
         base = dict(WZ_FIRSTHIT=1, WZ_FH_M6=1, WZ_THM211B=1, WZ_THM212=1, WZ_FH_ORBIT_CANON=1, WZ_FH_ORBIT_Q=1,
-                    WZ_FH_ORBIT_QPRUNE=1, WZ_FH_PROG_SEC=9999)
+                    WZ_FH_ORBIT_QPRUNE=1, WZ_FH_PROG_SEC=9999, WZ_FH_ORD3_NODIGEST_OK=1)
         n_digest = n_kept = n_verdict = n_locate = 0
         for n in range(8, 14):
             sols = {}
@@ -102,9 +102,30 @@ def main():
                     assert rc in (0, 3) and 'DIGEST MISMATCH' not in o and 'candidates_streamed=' in o
                     rc, o = run(bins['normal'], n, sig, {**base, 'WZ_FH_PROF_ORDER': 3, 'WZ_FH_ORBIT_CANON': 0})
                     assert rc == 2 and 'requires WZ_FH_ORBIT_CANON' in o
+                    # production ord3 without the manifest digest refuses (measurement modes exempt)
+                    nod = {k: v for k, v in base.items() if k != 'WZ_FH_ORD3_NODIGEST_OK'}
+                    rc, o = run(bins['normal'], n, sig, {**nod, 'WZ_FH_PROF_ORDER': 3, 'WZ_FH_AB_BUDGET': 1})
+                    assert rc == 2 and 'requires WZ_FH_EXPECT_DIGEST' in o
+                    # resume regression (Astra 09-28 gap 1): a checkpoint whose CFGSIG carries a
+                    # different ordered-LIST digest but the same kept bitmap must be refused (fresh start)
+                    ck = tmp / 'ck-ord3'; ck.mkdir(exist_ok=True)
+                    cfg = {**base, 'WZ_FH_PROF_ORDER': 3, 'WZ_FH_AB_BUDGET': 1, 'WZ_FH_CKPT_DIR': str(ck),
+                           'WZ_FH_TEST_STOP_AFTER': 2}
+                    rc, o = run(bins['normal'], n, sig, cfg)
+                    ckf = next(ck.glob('*.ckpt')); txt = ckf.read_text()
+                    sigline = txt.splitlines()[0]
+                    assert '.dg' in sigline and ':' in sigline.split('.dg')[1], sigline
+                    lst, bm = sigline.split('.dg')[1].split(':')[0], sigline.split('.dg')[1].split(':')[1]
+                    forged = txt.replace('.dg' + lst + ':' + bm, '.dg' + ('0' * 16) + ':' + bm)
+                    assert forged != txt
+                    ckf.write_text(forged)
+                    cfg.pop('WZ_FH_TEST_STOP_AFTER')
+                    rc, o = run(bins['normal'], n, sig, cfg)
+                    assert 'starting FRESH' in o, 'old checkpoint with a different list digest was resumed'
         print(f'PASS: ORDER=3 digests + counts identical across tie orders in {n_digest} classes (n=8..13); '
               f'kept multiset == ORDER=1 in {n_kept}; verdicts identical in {n_verdict}; {n_locate} known-solution '
-              'LOCATE positions identical across tie orders; EXPECT_DIGEST refuses on mismatch; no-canon refused.',
+              'LOCATE positions identical across tie orders; EXPECT_DIGEST refuses on mismatch and is required for ord3 search; '
+              'no-canon refused; checkpoint with a different list digest (same bitmap) starts FRESH.',
               flush=True)
 
 

@@ -1622,6 +1622,13 @@ int main(int argc, char **argv) {
           kept_n += kept;
           dk = fnv(dk, kept ? "1" : "0");
         }
+        {
+          unordered_set<string> uniq(own.begin(), own.end());
+          if (uniq.size() != own.size()) {
+            cout << "RESULT: DUPLICATE CELL KEYS in the raw list (" << own.size() - uniq.size() << ") — refusing\n" << flush;
+            return 2;
+          }
+        }
         char dbuf[64];
         snprintf(dbuf, sizeof dbuf, "%016llx:%016llx", dl, dk);
         G_ORDER_DIGEST = dbuf;
@@ -1634,6 +1641,13 @@ int main(int argc, char **argv) {
             return 2;
           }
         if (getenv("WZ_FH_LIST_ONLY")) return 0;
+        // production ord3 (a real search) must carry the manifest's digest; measurement and
+        // locate modes may run without it
+        if (!getenv("WZ_FH_EXPECT_DIGEST") && !getenv("WZ_FH_LOCATE_C") && !getenv("WZ_FH_ORBIT_AUDIT")
+            && !getenv("WZ_FH_CELLSIZE") && !getenv("WZ_FH_ORD3_NODIGEST_OK")) {
+          cout << "RESULT: PROF_ORDER=3 search requires WZ_FH_EXPECT_DIGEST (from the manifest)\n" << flush;
+          return 2;
+        }
       }
     }
     if (prof_order == 3 && !orbit_canon) {
@@ -1994,7 +2008,7 @@ int main(int argc, char **argv) {
     FILE *fh_dump = nullptr;        // MEASUREMENT INSTRUMENT (WZ_FH_DUMP=path):
     if (const char *e = getenv("WZ_FH_DUMP"))  // dump each streamed C,D candidate
       fh_dump = fopen(e, "w");      // for offline filter research; default OFF
-    char fh_sigbuf[256];
+    char fh_sigbuf[512];
     snprintf(fh_sigbuf, sizeof fh_sigbuf,
              "n%d.a%d.b%d.c%d.d%d.ns%d.sh%d.ord%d.m%d.co%d.ap%d.sm%lld.cap%lld.sk%d.t1%d.t2%d.oc%d.dt%lld",
              n, G_SIG_A, G_SIG_B, G_SIG_C, G_SIG_D, fh_nshard, fh_shard,
@@ -2029,20 +2043,22 @@ int main(int argc, char **argv) {
       size_t L0 = strlen(fh_sigbuf);
       snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".qp1");
     }
-    if (prof_order == 3) {  // attempt policy (budget) + kept-bitmap digest bind the namespace
+    if (prof_order == 3) {  // attempt policy (budget) + FULL list:kept digest bind the namespace
+      // (Astra 09-28: the bitmap half alone lets two different ordered lists share a CFGSIG)
       size_t L0 = strlen(fh_sigbuf);
-      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".bud%lld.dg%s", FH_BUDGET,
-               G_ORDER_DIGEST.size() >= 33 ? G_ORDER_DIGEST.c_str() + 17 : "none");
+      int w = snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".bud%lld.dg%s", FH_BUDGET,
+                       G_ORDER_DIGEST.empty() ? "none" : G_ORDER_DIGEST.c_str());
+      if (w < 0 || (size_t)w >= sizeof fh_sigbuf - L0) { cout << "RESULT: CFGSIG buffer overflow\n" << flush; return 2; }
     }
     string fh_cfg_sig = fh_sigbuf;
     bool fh_resuming = false;
     long long fh_res_pi = 0, fh_res_batch = 0, fh_res_k = 0, fh_tested_base = 0;
     if (!fh_ckpt_path.empty() && fh_resume_on) {
       if (FILE *cf = fopen(fh_ckpt_path.c_str(), "r")) {
-        char sline[300], fsig[260] = {0};
+        char sline[600], fsig[520] = {0};
         long long rpi = -1, rb = -1, rk = -1, tc = 0, cdc = 0, cdu = 0, cde = 0, cem = 0;
         while (fgets(sline, sizeof sline, cf)) {
-          if (sscanf(sline, "CFGSIG=%259s", fsig) == 1) continue;
+          if (sscanf(sline, "CFGSIG=%519s", fsig) == 1) continue;
           if (sscanf(sline, "resume_pi=%lld", &rpi) == 1) continue;
           if (sscanf(sline, "resume_batch=%lld", &rb) == 1) continue;
           if (sscanf(sline, "resume_k=%lld", &rk) == 1) continue;

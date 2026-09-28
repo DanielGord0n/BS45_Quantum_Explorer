@@ -1,4 +1,4 @@
-# Pass H plan (v3, 2026-09-26: folds in Astra's Pass H review and red-team; NOT built, NOT deployed)
+# Pass H plan (v4, 2026-09-28: BUILT and gated; launch waits for Daniel's go)
 
 Pass H replaces Pass G on all 12 n=44 classes. Build only after the Q canary (v2: Fir 61516887)
 PASSES; deploy only on Daniel's go. Reviews: `docs/reviews/2026-09-25-astra-passh.md`,
@@ -13,7 +13,7 @@ PASSES; deploy only on Daniel's go. Reviews: `docs/reviews/2026-09-25-astra-pass
 | Cell order | flat: kept representative's profile score, ties by `std::sort` (toolchain-dependent) | (orbit-min score, orbit id, cell key): identical on every toolchain |
 | Kept orbits (12 classes) | 1,460,098 | 759,190 (-48%) |
 | In-cell policy | K=50k of the first 500k buffer, budget 2e6, early check on | unchanged for the incumbent (see Policy for the hedge) |
-| Namespace | CFGSIG base | CFGSIG + `.oq1.qp1` + ordering flag + ATTEMPT POLICY (K, B, budget) + list digest |
+| Namespace | CFGSIG base | CFGSIG + `ord3` + `.oq1.qp1` + `.bud<budget>` + `.dg<list>:<kept>` (both digest halves, Astra 09-28) |
 
 ## Mechanics
 
@@ -51,8 +51,11 @@ blocks launch; (d) the manifest check in Mechanics 2.
   rule is known to improve capture; keep H's launch rule (min cell key). A future diversity pilot
   may alternate between the two constituent 32-orbits' minima under a recorded seed, bound to the
   manifest, only if its matched cost is within 10% of the incumbent.
-- **Breadth hedge: 80% of node-days on B=1, K=50k; 20% on B=1, K=175k** (not B=2), both at
-  budget 2e6, as a bounded cost pilot first (<= 2 node-days on prespecified fresh cells, cost
+- **Breadth hedge: NOT at launch** (Astra 09-28: with the 6x stream, T_175/T_50 = 3.17, so K=175k needs
+  > 3.17x the success mass; an 80/20 mix gains 2-2.4% under uniform density and loses 14% if the mass is
+  in the top 50k). Launch 100% incumbent (B=1, K=50k, 2e6); after H's first reps give real timings,
+  reconsider a <= 2 node-day K=175k cost pilot in its own namespace. Earlier text kept for the record:
+  80% of node-days on B=1, K=50k; 20% on B=1, K=175k (not B=2), both at budget 2e6, as a bounded cost pilot first (<= 2 node-days on prespecified fresh cells, cost
   within 110% of the model). Model: T_175/T_50 = 2.31 at the measured 0.476/0.524 split; the
   wider policy wins iff its 125k extra candidates carry > 52.4% of the first 50k's mean success
   probability; the mixture is 1.10x under uniform rank density and 0.89x if all mass is in the
@@ -77,3 +80,17 @@ size ratio, not a measured speed.
   built only after timing shows where completion time goes.
 - CLOSED by measurement: whole-cell top-K (KILL: every finished cell >= 8x the prefix),
   `WZ_FH_CD_PRUNE` DFS prunes (CLOSE: 12% fewer visits, 1% wall).
+
+## Launch checklist (2026-09-28, after Astra's launch review)
+
+- Solver: full `list:kept` digest in CFGSIG; ord3 search refuses without `WZ_FH_EXPECT_DIGEST`;
+  raw cell keys asserted unique; driver unsets every measurement/locate variable.
+- Submit lines: explicit `WZ_FH_STREAM_REV=0|1`, `WZ_FH_DRAIN_BATCHES=1`, class digest on every line
+  (`tools/passh_manifest.py`; lint: `tools/test_passh_submit.py`).
+- Gates re-run on the launch build: `test_passh_order.py` (incl. forged-list-digest resume refusal),
+  default-off identity, resume boundary, six-control retention under ORDER=3 + Q + prune.
+- Transition: per cluster, sha-checked redeploy (solver + driver), `scancel` PENDING G (checkpoints
+  kept), submit all H units at their lower bounds; running G reps finish and are read; G never
+  resubmitted. Any `RESULT: DIGEST MISMATCH` in an arm log = STOP.
+- Follow-ups, separate from launch: shared C,D stream for (7,11,2,2)/(1,13,2,2) (sound, ~7% of that
+  pair's cost, pilot only if >= 5% matched CPU saving); K=175k cost pilot after H timings.

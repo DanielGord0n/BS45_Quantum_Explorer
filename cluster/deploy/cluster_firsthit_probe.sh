@@ -56,6 +56,9 @@ lscpu | grep -m1 "Model name"   # compute-node CPU for the paper hardware sectio
 g++ -O3 -march=native -std=c++17 -fopenmp -o "$BIN" src/solver/wz_match.cpp || exit 1
 
 export WZ_FIRSTHIT=1 OMP_NUM_THREADS=1
+# 2026-09-28 (Astra launch review): a search job never inherits measurement/locate modes from
+# the submitting shell (WZ_FH_LIST_ONLY exits on presence, CELLSIZE completes nothing).
+unset WZ_FH_LIST_ONLY WZ_FH_CELLSIZE WZ_FH_TARGET_C WZ_FH_TARGET_D WZ_FH_TARGET_COMPLETE WZ_FH_LOCATE_C WZ_FH_LOCATE_D WZ_FH_ORBIT_AUDIT WZ_FH_MAX_CAND WZ_FH_DUMP WZ_FH_TEST_STOP_AFTER
 export WZ_FH_AB_BUDGET=${WZ_FH_AB_BUDGET:-200000}
 [ -n "$WZ_FH_PROF_ORDER" ]   && export WZ_FH_PROF_ORDER
 [ -n "$WZ_FH_SCORE_MAX" ]    && export WZ_FH_SCORE_MAX

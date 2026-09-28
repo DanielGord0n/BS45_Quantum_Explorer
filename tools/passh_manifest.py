@@ -75,7 +75,7 @@ def main():
             for rev in (0, 1):
                 name = f"H44{letter}{'r' if rev else ''}{ln['skip']}"
                 envs = f"WZ_N=44,WZ_A={sig[0]},WZ_B={sig[1]},WZ_C={sig[2]},WZ_D={sig[3]},{ENV_COMMON}" \
-                       f"{',WZ_FH_STREAM_REV=1' if rev else ''},WZ_FH_PROF_SKIP={ln['skip']},WZ_FH_PROF_END={ln['end']}," \
+                       f",WZ_FH_STREAM_REV={rev},WZ_FH_DRAIN_BATCHES=1,WZ_FH_PROF_SKIP={ln['skip']},WZ_FH_PROF_END={ln['end']}," \
                        f"WZ_FH_EXPECT_DIGEST={digest}"
                 lines.append(f"sbatch --requeue --mem=0 {ACCOUNT[cluster]} -J {name} -d singleton --export=ALL,{envs} ./cluster_firsthit_probe.sh")
         submit.setdefault(cluster, []).extend(lines)
