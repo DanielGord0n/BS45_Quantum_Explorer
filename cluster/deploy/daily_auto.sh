@@ -156,9 +156,8 @@ if ! grep -q "NEW FOUND" "$CHECK_OUTPUT" 2>/dev/null; then
       "default" "warning"
     exit 0
   fi
-  log "No cluster answered on the first pass — arming hourly reminders (no unattended pushes)."
-  ntfy_push "BS45: no Duo taps — nothing read yet" "Tap Run check now when you can; I'll remind you hourly (no pushes until you tap)." "default" "hourglass"
-  python3 "$DIR/spawn_detached.py" "$DIR/remind_unread.sh" ${CLUSTERS:-$ALL_CLUSTERS} >/dev/null
+  log "No cluster answered on the first pass — nothing read today (no reminders: 2026-09-28 Daniel's choice)."
+  ntfy_push "BS45: no Duo taps — nothing read today" "Tap Run check now whenever you like; no reminders will follow. Queues keep computing." "default" "hourglass"
   exit 0
 fi
 
@@ -386,9 +385,10 @@ fi
 # Runs AFTER the main agent pass, so today's read was never delayed. Sequential:
 # the supplementary agent only starts once this pass is completely done.
 if [ "$SUPPLEMENTARY" != 1 ] && [ -n "$MISSED" ]; then
-  log "Missed Duo on: ${MISSED} — arming hourly reminders (pushes only when Daniel taps)."
+  # 2026-09-28: no hourly reminders any more (Daniel's choice). One note, then silence; the
+  # button still re-checks only the unread cluster(s).
+  log "Missed Duo on: ${MISSED} — unread today (no reminders)."
   ntfy_push "BS45: ${MISSED} unread today" \
-    "Missed the Duo push for ${MISSED}. Tap Run check now when you can — it will check only ${MISSED}. I'll remind you hourly." "default" "hourglass"
-  python3 "$DIR/spawn_detached.py" "$DIR/remind_unread.sh" $MISSED >/dev/null
+    "Missed the Duo push for ${MISSED}. Tap Run check now if you want it read today (it checks only ${MISSED}); otherwise tomorrow's 1pm run covers it." "low" "hourglass"
 fi
 log "Done."
