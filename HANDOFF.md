@@ -4,6 +4,24 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-28 (Daniel session, later) — PASS H BUILT AND GATED; LAUNCH WAITS FOR DANIEL'S GO.**
+Build (cb3c160): WZ_FH_PROF_ORDER=3 = deterministic orbit-min ordering (key: orbit-min profile score,
+orbit id, cell key = total order), [order] list/kept digests, WZ_FH_EXPECT_DIGEST refusal, CFGSIG gains
+.bud<budget>.dg<kept digest> under ord3; driver exports Q/QPRUNE/digest and CKDIR gains _oq1_qp1;
+WZ_FH_LIST_ONLY. GATES PASS: tools/test_passh_order.py (digests/counts/kept sets/LOCATE positions
+identical between the normal build and a tie-randomized libc++ build, 23 classes; verdicts == ORDER=1;
+EXPECT_DIGEST refuses), default-off identity, six controls retained under ORDER=3 + Q + prune.
+MANIFEST (tools/passh_manifest.py -> docs/plans/passh_manifest.json + passh_submit_<cluster>.txt): 12
+classes, 759,190 kept orbits, 444 lane-units (S=1000 workhorse / 300 / 150 as Pass G; Fir 12, Rorqual 76,
+Nibi 296, Trillium 60), ownership asserted by simulation; every submit line carries its class digest.
+NOTE: (7,11,2,2) and (1,13,2,2) have IDENTICAL C,D lists (digest d06bb0e3..): only the A,B target
+differs (Astra asked whether a joint completion is worth it). LAUNCH PROCEDURE (docs/plans/launch/):
+per cluster step1 = sha-checked redeploy of solver (f611904 -> HEAD) + driver, then scancel PENDING
+G jobs (checkpoints untouched for rollback); step2 = submit the H lines (1 rep per lane-unit; Nibi in
+3 chunks). Running G reps finish and are read normally. Taps: Fir 2, Rorqual 2, Trillium 2, Nibi 4.
+PRE-REGISTERED PERFORMANCE RULE: H kept-cells per lane-day >= 90% of G's = PASS, < 80% = roll back to
+the untouched G checkpoints. Astra launch-review prompt: docs/reviews/prompts/astra-passh-manifest-prompt.md.**
+
 **⚡ 2026-09-28 (Daniel session) — BOTH GATES VERIFIED; HALL_FAST DEPLOYED FLEET-WIDE (build f611904,
 sha a92cd7fd..).** Q CANARY v3 61765037: independently re-verified locally (verify_npaf PASS; A,B identical
 to the banked n=42 champion, C,D in its 64-orbit) => the Q path is proven end to end on a real cluster
