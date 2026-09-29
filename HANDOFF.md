@@ -67,6 +67,7 @@ regenerated passh_submit_<cluster>.txt (fresh CKDIRs ..._177_..., digests unchan
 kept-rank sharding in the solver (balanced arms, needs an Astra review, days). (2) Nibi's remaining
 217 H lanes (21 + 196) wait for (1) because the lines change. (3) If neither, the pre-registered
 roll-back to the untouched G checkpoints.
+FIX BRANCH PUSHED: auto/2026-09-29 @ a08a920 (tools/passh_manifest.py --narms default 177; lint refuses even counts; manifest 446 units, digests unchanged; docs/plans/launch/passh_step1_<c>.sh = sha-check + scancel PENDING H44* (no deploy: the solver is unchanged), passh_step2_<c>_*.sh = the 177-arm submit lines; plan section "Arm count must be odd"). DANIEL'S STEPS (10 taps): git checkout auto/2026-09-29; for c in fir rorqual trillium nibi: ./cluster/deploy/duo_run.sh $c "$(cat docs/plans/launch/passh_step1_$c.sh)" then each passh_step2_$c_*.sh (Nibi 3 chunks); then merge the branch into main so the loop restacks from the 177-arm lines (the loop rule "EXACT line from passh_submit_<cluster>.txt" then points at the new file).
 ROUND VERDICT: no hits, no verified solutions; 58 hitless reads (7 H + 14 Fir G + 25 Nibi G + 19
 Rorqual G, minus overlaps none); one structural defect found and proven; 12 submits (Fir).**
 
