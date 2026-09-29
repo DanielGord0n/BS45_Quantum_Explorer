@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-28 (Daniel session, night) — ★ PASS H LAUNCHED on Fir, Rorqual, Trillium (build a3b84f9,
+solver sha f81ff24e.., driver 98215131.., both sha-verified per cluster; 6 taps).** Cancelled PENDING G
+jobs (Fir 10, Rorqual 20, Trillium 125; checkpoints untouched for rollback); RUNNING G reps (Fir 9,
+Rorqual ~19) finish on the old build and are read normally; G is never resubmitted on these three.
+H units submitted 148/148, 1 rep each: Fir 61997672-61997684 (12), Rorqual 21991394-21991469 (76), Trillium 2451684-2451744 (60); IDs in docs/reviews/evidence/passh_launch_2026-09-28_ids.txt.
+NIBI HELD ON PASS G (296 PD untouched) because the prof's DRAC ticket is about exactly those queued
+jobs and a cancel/resubmit would reset their queue age; switch Nibi to H (docs/plans/launch/
+passh_step1_nibi.sh + step2_nibi_1..3, 4 taps) once DRAC replies or the G jobs start. LOOP RULES: restack
+H lanes (singleton, the manifest line) until range_done=178/178; 'RESULT: DIGEST MISMATCH' in any arm log
+= STOP; performance rule pre-registered: H kept-cells per lane-day >= 90% of G = PASS, < 80% = roll back.
+Expected first H reads: Fir tomorrow (9 G reps finish first), Rorqual as nodes free, Trillium when it
+schedules. No hedge, no G2: 100% incumbent policy (K=50k, B=1, budget 2e6).**
+
 **⚡ 2026-09-28 (Daniel session, evening) — NIBI QUEUE ESCALATED: Prof. Kotsireas opened a DRAC support
 ticket ('RRG Nibi question', 16:54, Daniel cc'd) asking why the ~300 RRG jobs queued on Nibi since 09-22
 have not started. Trillium is NOT on the RRG (default allocation only), per the prof. If DRAC asks for

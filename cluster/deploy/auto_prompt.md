@@ -165,7 +165,11 @@ Do not re-run the checker.
      cancel or resubmit them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
-     **PASS H (built 2026-09-28; LAUNCH ONLY ON DANIEL'S GO, recorded in HANDOFF):** lanes named
+     **PASS H IS LIVE on Fir, Rorqual, Trillium since 2026-09-28 (148 units, 1 rep each); NIBI STAYS ON
+     PASS G (296 PD) until Daniel switches it (DRAC ticket on that queue): on Nibi keep the G floor rule,
+     never submit H there yourself. On the other three: refill = restack H lanes to keep pending >= 8
+     using the EXACT line from docs/plans/passh_submit_<cluster>.txt for that lane; never resubmit G.**
+     **PASS H details:** lanes named
      H44<letter><k> (forward) / H44<letter>r<k> (reversed) run the Pass G policy (K=50k of the first
      500k buffer, budget 2e6) over the 64-group + closure-prune kept list in the deterministic
      orbit-min order (WZ_FH_PROF_ORDER=3). Every H submit line comes from docs/plans/
