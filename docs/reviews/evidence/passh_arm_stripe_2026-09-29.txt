@@ -1,0 +1,45 @@
+# Local measurement 2026-09-29 (Mac, clang++ -O3, SDKROOT MacOSX26.sdk), throwaway copy of src/solver/wz_match.cpp @ d0e76cb with one added env-gated line (WZ_FH_KEPT_DUMP writes the raw index of every kept cell); NOT committed. Same env as tools/passh_manifest.py (ORDER=3, canon+Q+prune, LIST_ONLY, NSHARD=178). Digests match docs/plans/passh_manifest.json => the lists are identical to the clusters'. 'arms_with_kept' = residues i mod 178 of kept raw indices i; lane rows = manifest ranges.
+
+n=44 sig=(3,13,0,0) rc=0 wall=26s
+   [orbitcanon] group=64 cells=1038952 kept_orbits=21564 dedup=48.1799x
+   [order] ord3 cells=1038952 kept=21564 windows=5837 digest=29c735514905ada3:10d39042abff23e3
+  kept=21564 even_idx=21564 odd_idx=0 arms_with_kept=89/178 even_arms=89 odd_arms=0
+  lane windows [0,1000): kept=4093 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=57 min_per_busy_arm=35
+  lane windows [1000,2000): kept=3816 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=53 min_per_busy_arm=30
+  lane windows [2000,3000): kept=3367 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=45 min_per_busy_arm=27
+  lane windows [3000,4000): kept=3393 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=47 min_per_busy_arm=27
+  lane windows [4000,5000): kept=3698 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=53 min_per_busy_arm=31
+  lane windows [5000,6000): kept=3197 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=44 min_per_busy_arm=27
+exit=0
+n=44 sig=(9,9,0,4) rc=0 wall=29s
+   [orbitcanon] group=64 cells=968858 kept_orbits=65092 dedup=14.8844x
+   [order] ord3 cells=968858 kept=65092 windows=5444 digest=97de47dafb56bead:10182d24bbf95783
+  kept=65092 even_idx=65092 odd_idx=0 arms_with_kept=89/178 even_arms=89 odd_arms=0
+  lane windows [0,300): kept=4040 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=54 min_per_busy_arm=35
+  lane windows [300,600): kept=3880 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=55 min_per_busy_arm=32
+  lane windows [600,900): kept=3676 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=48 min_per_busy_arm=32
+  lane windows [900,1200): kept=3659 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=51 min_per_busy_arm=34
+n=44 sig=(1,7,8,8) rc=0 wall=26s
+   [orbitcanon] group=64 cells=977601 kept_orbits=66801 dedup=14.6345x
+   [order] ord3 cells=977601 kept=66801 windows=5493 digest=830c3df38e7f67df:b65381ae7a57bb3c
+  kept=66801 even_idx=40538 odd_idx=26263 arms_with_kept=178/178 even_arms=89 odd_arms=89
+  lane windows [0,300): kept=4077 arms_with_kept=92 even_arms=3 odd_arms=89 max_per_arm=56 min_per_busy_arm=1
+  lane windows [300,600): kept=3847 arms_with_kept=176 even_arms=87 odd_arms=89 max_per_arm=52 min_per_busy_arm=1
+  lane windows [600,900): kept=3833 arms_with_kept=178 even_arms=89 odd_arms=89 max_per_arm=48 min_per_busy_arm=3
+  lane windows [900,1200): kept=3545 arms_with_kept=89 even_arms=89 odd_arms=0 max_per_arm=57 min_per_busy_arm=26
+
+# Simulated odd arm counts from the workhorse kept list:
+NARMS=177: arms_with_kept=177/177 min/arm=104 max/arm=141
+   lane [0,1000) kept=4073 arms=177 min=15 max=30
+   lane [1000,2000) kept=3800 arms=177 min=13 max=32
+   lane [2000,3000) kept=3332 arms=177 min=11 max=25
+   lane [3000,4000) kept=3382 arms=177 min=13 max=26
+   lane [4000,5000) kept=3665 arms=177 min=11 max=30
+   lane [5000,6000) kept=3312 arms=177 min=8 max=27
+NARMS=179: arms_with_kept=179/179 min/arm=103 max/arm=147
+   lane [0,1000) kept=4113 arms=179 min=13 max=34
+   lane [1000,2000) kept=3833 arms=179 min=10 max=29
+   lane [2000,3000) kept=3407 arms=179 min=9 max=27
+   lane [3000,4000) kept=3393 arms=179 min=11 max=27
+   lane [4000,5000) kept=3727 arms=179 min=13 max=31
+   lane [5000,6000) kept=3091 arms=179 min=9 max=26
