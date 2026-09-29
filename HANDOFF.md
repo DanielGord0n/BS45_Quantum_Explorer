@@ -59,7 +59,7 @@ no action; range_done 0-5/178 (21608294 5, 21608295 4). Queue: 76 H PD (21991394
 header-only files (cancelled at the H launch) => excluded. rung_status EXHAUSTED as always.
 CHECKER: exclusions +61997672-678, +14 Fir G, +22485476-501, +21608282-300, +2388935/961/969
 (regex validated: live 61997679/681-684, 22485502-517, 22925873-964, 21991394-469, 2451684-744 visible).
-SUBMITS: Fir H restack, 12 singleton reps from docs/plans/passh_submit_fir.txt (IDs appended below).
+SUBMITS: Fir H restack DONE, 12/12 echoed (duo_run, docs/plans/launch/passh_step2_fir_1.sh verbatim): H44g0 62113111, H44gr0 62113112, H44g1000 62113113, H44gr1000 62113114, H44g2000 62113115, H44gr2000 62113116, H44g3000 62113117, H44gr3000 62113119, H44g4000 62113120, H44gr4000 62113121, H44g5000 62113122, H44gr5000 62113123 (62113118 is not ours). Singleton => the 5 queue behind their running first reps. These carry the 178-arm lines: if the 177-arm fix is adopted, scancel them with the other pending H.
 NEEDS_HUMAN (in order): (1) the arm-stripe fix — RECOMMENDED: FH_NARMS=177 (odd) manifest on branch
 auto/2026-09-29 (tools-only: passh_manifest.py --narms, regenerated manifest/submit lines/launch
 scripts, lint PASS): per cluster scancel PENDING H (and Fir's queued reps), resubmit from the
