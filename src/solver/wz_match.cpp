@@ -1632,9 +1632,17 @@ int main(int argc, char **argv) {
         char dbuf[64];
         snprintf(dbuf, sizeof dbuf, "%016llx:%016llx", dl, dk);
         G_ORDER_DIGEST = dbuf;
+        // per-arm ownership (2026-09-29): kept cells sit on one index parity (orbits are
+        // contiguous even-sized blocks), so an EVEN arm count idled half of every node
+        // (Fir: range_done=89/178). Report the least-loaded arm so a manifest can refuse it.
+        vector<long long> per_arm(fh_nshard, 0);
+        for (size_t i = 0; i < fhProfs.size(); i++)
+          if (fh_keep.count(fh_cellkey(fhProfs[i].px, fhProfs[i].py))) per_arm[i % fh_nshard]++;
+        long long arm_min = *min_element(per_arm.begin(), per_arm.end()), arm_max = *max_element(per_arm.begin(), per_arm.end());
         cout << "[order] ord3 cells=" << fhProfs.size() << " kept=" << kept_n
              << " windows=" << (fhProfs.size() + fh_nshard - 1) / fh_nshard
-             << " digest=" << dbuf << "\n" << flush;
+             << " digest=" << dbuf << " arms=" << fh_nshard << " kept_per_arm_min=" << arm_min
+             << " max=" << arm_max << "\n" << flush;
         if (const char *e = getenv("WZ_FH_EXPECT_DIGEST"))
           if (strcmp(e, dbuf) != 0) {
             cout << "RESULT: DIGEST MISMATCH (expected " << e << ") — refusing to search or resume\n" << flush;

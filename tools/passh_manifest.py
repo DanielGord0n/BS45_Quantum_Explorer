@@ -66,6 +66,9 @@ def main():
         p = subprocess.run([binary, '44', *map(str, sig)], env=env, capture_output=True, text=True, timeout=1800)
         m = re.search(r'^\[order\] ord3 cells=(\d+) kept=(\d+) windows=(\d+) digest=(\S+)', p.stdout, re.M)
         assert p.returncode == 0 and m, (sig, p.stdout[-400:])
+        pa = re.search(r'kept_per_arm_min=(\d+) max=(\d+)', p.stdout)
+        if pa:  # solver >= 09-29 reports per-arm ownership: every arm must own kept cells
+            assert int(pa[1]) > 0, (sig, 'an arm owns no kept cells with NARMS=%d' % NARMS, pa.groups())
         cells, kept, windows, digest = int(m[1]), int(m[2]), int(m[3]), m[4]
         assert windows == math.ceil(cells / NARMS)
         lanes = []

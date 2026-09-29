@@ -4,6 +4,20 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-29 (Daniel session, afternoon) — PASS H ARM-STRIPE DEFECT FIXED FLEET-WIDE (10 taps).** The
+1pm loop found it: all 7 Fir H first reps ended range_done=89/178 because under ORDER=3 every 64-orbit is
+a contiguous even-sized block and the kept cell is its first member, so kept cells sit on ONE index
+parity (even on the workhorse; odd at n=12) and with 178 arms half the arms own nothing (half of every
+node idle; per busy arm H did 1.6x G). I verified the parity claim locally (n=44 shards 1,3 of 178 own
+0 kept cells; n=12 63/64 kept at odd positions) and reviewed the loop's branch auto/2026-09-29: FH_NARMS=177
+(odd => both parities spread over all arms), manifest regenerated (446 units, digests unchanged, lint
+PASS), step1 = cancel PENDING 178-arm H only (solver sha verified, no deploy), merged 7823523. EXECUTED:
+cancelled pending 178-arm H (Fir 12 incl. the loop's restack, Rorqual 76, Trillium 60, Nibi 296; running
+178-arm reps finish at half efficiency and are read); submitted Fir 62117655-62117666 (12), Rorqual 22037981-22038057 (76), Trillium 2458789-2458859 (60), Nibi 22930967-22932947 (298) = 446/446. New CKDIR namespace
+(ns177), fresh checkpoints. GUARD ADDED: [order] now prints kept_per_arm_min/max for the configured arm
+count and tools/passh_manifest.py refuses a manifest where any arm owns nothing (print-only solver
+change, ships with the next deploy). Loop rule unchanged: restack from the manifest lines (now 177).**
+
 **⚡ 2026-09-29 (Daniel session) — ★ PASS H ON ALL FOUR: NIBI SWITCHED (4 taps).** DRAC's answer on the
 prof's ticket: the Nibi waits are EXPECTED, the rrg-ikotsire account has run ~2x its target share on Nibi
 since Sep 1, so it is in fair-share debt (portal.alliancecan.ca shows usage vs target); the prof will
