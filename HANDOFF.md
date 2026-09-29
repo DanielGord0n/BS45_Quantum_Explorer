@@ -1,6 +1,6 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-28 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-29 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
@@ -11,6 +11,64 @@ fast-track the RRG renewal. So the reason to hold Nibi is gone: sha-checked rede
 255 pending G (17 G reps had started and keep running), submitted Nibi 22925873-22926792 (296) = 296/296 H units. Fleet: 444/444
 H units live (Fir 12, Rorqual 76, Nibi 296, Trillium 60), 1 rep each; G never resubmitted anywhere.
 EXPECT: Nibi to schedule slowly until the fair-share balance recovers (not a fault, nothing to fix).**
+
+**⚡ 2026-09-29 (daily loop 1pm — all four reached) — NO HITS; ★ FIRST 7 PASS H REPS READ (Fir):
+EVERY ONE range_done=89/178 with arms_interrupted=89 => ROOT CAUSE FOUND AND PROVEN LOCALLY: under
+ORDER=3 each 64-group orbit is a contiguous block of even size, so every kept (orbit-min) cell sits at
+an EVEN raw index, and the arm interleave (arm = i mod 178, 178 even) gives the 89 odd arms NOTHING
+— half of every H node is idle. NEEDS_HUMAN: fix = odd arm count (FH_NARMS=177, tools-only; prepared
+on branch auto/2026-09-29, see below) or roll back; 215 H lanes on Rorqual/Trillium/Nibi are still
+PENDING, so acting today orphans only Fir's 7 reps (~7 node-days). Fir restacked (12 H reps, IDs
+below). NIBI WAS SWITCHED TO H outside HANDOFF (Daniel, 09-28 night/09-29): 79 of the 100 chunk-1
+lanes queued (H44Dr300..H44Dr3300 = 21 never echoed; docs/plans/launch/passh_step2_nibi_1b.sh holds
+exactly those), chunks 2-3 (196 lanes) not submitted; the G jobs finally STARTED (16 R, 25 read).**
+H READS (Fir, build a3b84f9, all hitless, 178/178 arms, first reps so tested_cum=tested): 61997672
+H44g0 571 kept cells 29.9M tested aborts 3.5%; 61997673 H44gr0 588 / 30.8M / 5.1%; 61997674 H44g1000
+783 / 40.9M / 10.1%; 61997675 H44gr1000 619 / 32.9M / 20.0%; 61997676 H44g2000 823 / 43.0M / 11.0%;
+61997677 H44gr2000 574 / 30.6M / 25.7%; 61997678 H44g3000 689 / 36.3M / 17.5%; pooled aborts 13.2%;
+range_done=89/178 AND arms_interrupted=89 on all seven; no DIGEST MISMATCH, no CFGSIG mismatch, no
+fresh start, no STALE line. Verbatim GATEB lines: docs/reviews/evidence/passh_first_reads_2026-09-29.txt.
+LOCAL PROOF (26 s per class; a /tmp copy of wz_match.cpp with an env-gated kept-index dump, NOT
+committed; the list digest matched the manifest's 29c735514905ada3:10d39042abff23e3 exactly):
+workhorse (3,13,0,0) kept=21564, even raw indices 21564, odd 0 => 89/178 arms own kept cells in every
+lane [k,k+1000) (35-57 kept cells per busy arm, 0 on the 89 others). (9,9,0,4) (Rorqual, letter G):
+65092 kept, all even => 89/178. (1,7,8,8) (Nibi, letter B): mixed 40538 even / 26263 odd (an odd-
+sized orbit flips the parity mid-list): lane [0,300) 92 arms busy (89 odd + 3 even), lane [300,600)
+176. Simulated from the same kept list: NARMS=177 => 177/177 arms busy in every workhorse lane (8-32
+kept per arm); 179 likewise. Per BUSY arm H did ~7.5 kept cells/12 h vs G ~4.6/arm (1.6x, consistent
+with the HALL_FAST 1.66x expectation) => the H policy itself performs; the striping halves it.
+PERFORMANCE RULE (pre-registered 09-28): H first reps mean 664 kept cells/rep (median 619) vs the 5
+Fir G reps read today that still had work (61867921 1133, 61686875 920, 61867928 771, 61867936 683,
+61686873 625; mean 826, median 771) => 0.80 = exactly the roll-back line, with mixed G builds (some
+pre-HALL_FAST) => inconclusive by the rule, cause known. Fix vs roll back is Daniel's call.
+FIR G READS (14, hitless; lane names not in the checker; G is not resubmitted, checkpoints kept):
+DONE range_done=178/178: 61867924, 61867926, 61867930, 61867931, 61867934, 61867939 (F44g5000, no
+work), 61686874. Not done: 61867936 130/178 (683 cells, aborts 30.7%), 61867921 17/178 (1133, 8.4%),
+61867932 175/178 (74), 61867928 0/178 (771, 25.1%), 61686875 1/178 (920, 12.9%), 61686873 11/178
+(625, 14.7%), 61686893 170/178 (226, 28.5%). Fir queue at check: 5 H R (61997679, 61997681-684), 0 PD.
+NIBI: the (1,7,8,8) G lanes started 09-29 01:03-06:39 EDT (queue moved after the DRAC ticket): 25
+first reps 22485476-501 (minus 483, not ours) = N44Cg0..N44Cg3600 fwd+rev (names inferred from the
+running tail 22485502=N44Cgr3600): hitless, 522-770 cells, 29.1-41.7M tested, pooled aborts 30.8%
+(259.0M/840.7M), 9 lanes over the 35% line (max 44.8% on 22485498) => flagged, no action (budget
+lever closed); range_done 0-29/178 (22485491 29, 22485492 19). Running: 16 G reps 22485502-517
+(N44Cgr3600..N44Dg300, (1,7,8,8)+(5,5,8,8)), finish tonight. Pending: 79 H 22925873-964.
+RORQUAL: 19 R44H (3,5,0,12) G reps 21608282-300 read: hitless, 296-732 cells, 16.9-38.9M tested,
+pooled aborts 40.5% (225.5M/556.7M), 14 of 19 over 35% (max 54.4% on 21608293) => class runs hot,
+no action; range_done 0-5/178 (21608294 5, 21608295 4). Queue: 76 H PD (21991394-469), 0 R.
+21608281 (held) is gone from the queue. TRILLIUM: 60 H PD (2451684-744), 0 R; 2388935/961/969 are
+header-only files (cancelled at the H launch) => excluded. rung_status EXHAUSTED as always.
+CHECKER: exclusions +61997672-678, +14 Fir G, +22485476-501, +21608282-300, +2388935/961/969
+(regex validated: live 61997679/681-684, 22485502-517, 22925873-964, 21991394-469, 2451684-744 visible).
+SUBMITS: Fir H restack, 12 singleton reps from docs/plans/passh_submit_fir.txt (IDs appended below).
+NEEDS_HUMAN (in order): (1) the arm-stripe fix — RECOMMENDED: FH_NARMS=177 (odd) manifest on branch
+auto/2026-09-29 (tools-only: passh_manifest.py --narms, regenerated manifest/submit lines/launch
+scripts, lint PASS): per cluster scancel PENDING H (and Fir's queued reps), resubmit from the
+regenerated passh_submit_<cluster>.txt (fresh CKDIRs ..._177_..., digests unchanged); alternative =
+kept-rank sharding in the solver (balanced arms, needs an Astra review, days). (2) Nibi's remaining
+217 H lanes (21 + 196) wait for (1) because the lines change. (3) If neither, the pre-registered
+roll-back to the untouched G checkpoints.
+ROUND VERDICT: no hits, no verified solutions; 58 hitless reads (7 H + 14 Fir G + 25 Nibi G + 19
+Rorqual G, minus overlaps none); one structural defect found and proven; 12 submits (Fir).**
 
 **⚡ 2026-09-28 (Daniel session, night) — ★ PASS H LAUNCHED on Fir, Rorqual, Trillium (build a3b84f9,
 solver sha f81ff24e.., driver 98215131.., both sha-verified per cluster; 6 taps).** Cancelled PENDING G
