@@ -4,6 +4,14 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-29 (Daniel session) — ★ PASS H ON ALL FOUR: NIBI SWITCHED (4 taps).** DRAC's answer on the
+prof's ticket: the Nibi waits are EXPECTED, the rrg-ikotsire account has run ~2x its target share on Nibi
+since Sep 1, so it is in fair-share debt (portal.alliancecan.ca shows usage vs target); the prof will
+fast-track the RRG renewal. So the reason to hold Nibi is gone: sha-checked redeploy (a3b84f9), cancelled
+255 pending G (17 G reps had started and keep running), submitted Nibi 22925873-22926792 (296) = 296/296 H units. Fleet: 444/444
+H units live (Fir 12, Rorqual 76, Nibi 296, Trillium 60), 1 rep each; G never resubmitted anywhere.
+EXPECT: Nibi to schedule slowly until the fair-share balance recovers (not a fault, nothing to fix).**
+
 **⚡ 2026-09-28 (Daniel session, night) — ★ PASS H LAUNCHED on Fir, Rorqual, Trillium (build a3b84f9,
 solver sha f81ff24e.., driver 98215131.., both sha-verified per cluster; 6 taps).** Cancelled PENDING G
 jobs (Fir 10, Rorqual 20, Trillium 125; checkpoints untouched for rollback); RUNNING G reps (Fir 9,
