@@ -4,8 +4,8 @@
 For each of the 12 n=44 classes, runs the solver in list-only mode (ORDER=3, canon + Q +
 closure prune) to get the raw-list length, kept count, window count and the toolchain-
 independent digests, then partitions the windows [0, ceil(N_raw/178)) into disjoint lane
-ranges of S windows per class. Every raw index i belongs to exactly one (window = i // 178,
-arm = i % 178), so a partition of windows gives every kept index exactly one owner per
+ranges of S windows per class. Every raw index i belongs to exactly one (window = i // NARMS,
+arm = i % NARMS; NARMS must be ODD, see --narms), so a partition of windows gives every kept index exactly one owner per
 direction; the script asserts that explicitly by simulation and writes:
   docs/plans/passh_manifest.json   (lanes, digests, counts)
   docs/plans/passh_submit_<cluster>.txt   (one sbatch line per lane, fwd + rev)
@@ -31,7 +31,7 @@ CLASSES = [
     ((3, 3, 4, 12), 150, 'nibi', 'E'), ((7, 7, 4, 8), 150, 'nibi', 'F'), ((5, 7, 2, 10), 150, 'nibi', 'I'),
     ((5, 9, 6, 6), 300, 'trillium', 'A'), ((7, 11, 2, 2), 300, 'trillium', 'K'), ((1, 13, 2, 2), 300, 'trillium', 'L'),
 ]
-ENV_COMMON = 'WZ_FH_PROF_ORDER=3,WZ_FH_ORBIT_CANON=1,WZ_FH_ORBIT_Q=1,WZ_FH_ORBIT_QPRUNE=1,WZ_FH_DRAIN_TOP=50000,WZ_FH_AB_BUDGET=2000000,FH_NARMS=178'
+ENV_COMMON = 'WZ_FH_PROF_ORDER=3,WZ_FH_ORBIT_CANON=1,WZ_FH_ORBIT_Q=1,WZ_FH_ORBIT_QPRUNE=1,WZ_FH_DRAIN_TOP=50000,WZ_FH_AB_BUDGET=2000000,FH_NARMS={narms}'
 ACCOUNT = {'fir': '--account=rrg-ikotsire_cpu', 'rorqual': '--account=rrg-ikotsire_cpu', 'nibi': '--account=rrg-ikotsire_cpu', 'trillium': ''}
 
 
@@ -39,7 +39,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--binary')
     ap.add_argument('--out', default=str(ROOT / 'docs/plans'))
+    # 2026-09-29: the arm count MUST be odd. Under ORDER=3 every 64-group orbit is a contiguous
+    # block of even size, so every kept (orbit-min) cell sits at an even raw index; with an even
+    # arm count (arm = i mod NARMS) the odd arms own nothing (Fir 09-29: range_done=89/178 on all
+    # seven first reps, half of every node idle). An odd count spreads the even indices over every
+    # arm (measured: 177/177 busy in every workhorse lane). 178 is kept only for reproducing the
+    # 09-28 manifest.
+    ap.add_argument('--narms', type=int, default=177)
     a = ap.parse_args()
+    global NARMS
+    NARMS = a.narms
+    env_common = ENV_COMMON.format(narms=NARMS)
     tmp = tempfile.mkdtemp(prefix='bs45-manifest-')
     binary = a.binary
     if not binary:
@@ -74,7 +84,7 @@ def main():
         for ln in lanes:
             for rev in (0, 1):
                 name = f"H44{letter}{'r' if rev else ''}{ln['skip']}"
-                envs = f"WZ_N=44,WZ_A={sig[0]},WZ_B={sig[1]},WZ_C={sig[2]},WZ_D={sig[3]},{ENV_COMMON}" \
+                envs = f"WZ_N=44,WZ_A={sig[0]},WZ_B={sig[1]},WZ_C={sig[2]},WZ_D={sig[3]},{env_common}" \
                        f",WZ_FH_STREAM_REV={rev},WZ_FH_DRAIN_BATCHES=1,WZ_FH_PROF_SKIP={ln['skip']},WZ_FH_PROF_END={ln['end']}," \
                        f"WZ_FH_EXPECT_DIGEST={digest}"
                 lines.append(f"sbatch --requeue --mem=0 {ACCOUNT[cluster]} -J {name} -d singleton --export=ALL,{envs} ./cluster_firsthit_probe.sh")

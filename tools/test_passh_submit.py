@@ -3,7 +3,7 @@
 
 Every line must: name a lane H44<letter>[r]<skip>; carry explicit WZ_FH_STREAM_REV=0|1 matching
 the name, WZ_FH_DRAIN_BATCHES=1, WZ_FH_PROF_ORDER=3, WZ_FH_ORBIT_CANON=1, WZ_FH_ORBIT_Q=1,
-WZ_FH_ORBIT_QPRUNE=1, WZ_FH_DRAIN_TOP=50000, WZ_FH_AB_BUDGET=2000000, FH_NARMS=178, the class
+WZ_FH_ORBIT_QPRUNE=1, WZ_FH_DRAIN_TOP=50000, WZ_FH_AB_BUDGET=2000000, FH_NARMS=<manifest narms>, the class
 signature, PROF_SKIP/END equal to a manifest range, and WZ_FH_EXPECT_DIGEST equal to the class
 digest; -d singleton and --requeue --mem=0. Names unique; every manifest range appears exactly
 once per direction; no measurement variables.
@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     man = json.load(open(ROOT / 'docs/plans/passh_manifest.json'))
+    assert man['narms'] % 2 == 1, ('arm count must be odd (ord3 parity stripe, 2026-09-29)', man['narms'])
     by_sig = {tuple(c['sig']): c for c in man['classes']}
     seen = {}
     total = 0
@@ -36,7 +37,7 @@ def main():
             assert letter[1] == c['letter'] and int(letter[2]) == int(env['WZ_FH_PROF_SKIP']), name
             want = {'WZ_N': '44', 'WZ_FH_PROF_ORDER': '3', 'WZ_FH_ORBIT_CANON': '1', 'WZ_FH_ORBIT_Q': '1',
                     'WZ_FH_ORBIT_QPRUNE': '1', 'WZ_FH_DRAIN_TOP': '50000', 'WZ_FH_AB_BUDGET': '2000000',
-                    'FH_NARMS': '178', 'WZ_FH_STREAM_REV': str(rev), 'WZ_FH_DRAIN_BATCHES': '1',
+                    'FH_NARMS': str(man['narms']), 'WZ_FH_STREAM_REV': str(rev), 'WZ_FH_DRAIN_BATCHES': '1',
                     'WZ_FH_EXPECT_DIGEST': c['digest']}
             for k, v in want.items():
                 assert env.get(k) == v, (name, k, env.get(k), v)

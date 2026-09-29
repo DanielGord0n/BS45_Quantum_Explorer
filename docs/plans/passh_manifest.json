@@ -1,6 +1,6 @@
 {
- "build": "60ab655",
- "narms": 178,
+ "build": "53c81f2",
+ "narms": 177,
  "classes": [
   {
    "sig": [
@@ -13,7 +13,7 @@
    "cluster": "fir",
    "cells": 1038952,
    "kept": 21564,
-   "windows": 5837,
+   "windows": 5870,
    "S": 1000,
    "digest": "29c735514905ada3:10d39042abff23e3",
    "lanes": [
@@ -39,7 +39,7 @@
     },
     {
      "skip": 5000,
-     "end": 5837
+     "end": 5870
     }
    ]
   },
@@ -54,7 +54,7 @@
    "cluster": "rorqual",
    "cells": 968858,
    "kept": 65092,
-   "windows": 5444,
+   "windows": 5474,
    "S": 300,
    "digest": "97de47dafb56bead:10182d24bbf95783",
    "lanes": [
@@ -132,7 +132,7 @@
     },
     {
      "skip": 5400,
-     "end": 5444
+     "end": 5474
     }
    ]
   },
@@ -147,7 +147,7 @@
    "cluster": "rorqual",
    "cells": 975172,
    "kept": 62261,
-   "windows": 5479,
+   "windows": 5510,
    "S": 300,
    "digest": "11d2076e321a0bc7:1f127bcc64c5a4aa",
    "lanes": [
@@ -225,7 +225,7 @@
     },
     {
      "skip": 5400,
-     "end": 5479
+     "end": 5510
     }
    ]
   },
@@ -240,7 +240,7 @@
    "cluster": "nibi",
    "cells": 977601,
    "kept": 66801,
-   "windows": 5493,
+   "windows": 5524,
    "S": 300,
    "digest": "830c3df38e7f67df:b65381ae7a57bb3c",
    "lanes": [
@@ -318,7 +318,7 @@
     },
     {
      "skip": 5400,
-     "end": 5493
+     "end": 5524
     }
    ]
   },
@@ -333,7 +333,7 @@
    "cluster": "nibi",
    "cells": 972489,
    "kept": 66536,
-   "windows": 5464,
+   "windows": 5495,
    "S": 300,
    "digest": "a028c2dcd6f8c445:d41fa6fe9b817275",
    "lanes": [
@@ -411,7 +411,7 @@
     },
     {
      "skip": 5400,
-     "end": 5464
+     "end": 5495
     }
    ]
   },
@@ -426,7 +426,7 @@
    "cluster": "nibi",
    "cells": 1008233,
    "kept": 70404,
-   "windows": 5665,
+   "windows": 5697,
    "S": 300,
    "digest": "4a391beb5af950e5:f51c5085f6ccc251",
    "lanes": [
@@ -504,7 +504,7 @@
     },
     {
      "skip": 5400,
-     "end": 5665
+     "end": 5697
     }
    ]
   },
@@ -519,7 +519,7 @@
    "cluster": "nibi",
    "cells": 921646,
    "kept": 113943,
-   "windows": 5178,
+   "windows": 5208,
    "S": 150,
    "digest": "d1d3b2f023598315:e7e7847036eae81c",
    "lanes": [
@@ -661,7 +661,7 @@
     },
     {
      "skip": 5100,
-     "end": 5178
+     "end": 5208
     }
    ]
   },
@@ -676,7 +676,7 @@
    "cluster": "nibi",
    "cells": 987487,
    "kept": 125303,
-   "windows": 5548,
+   "windows": 5580,
    "S": 150,
    "digest": "372bd676669234d9:c00f2cf699a23b3a",
    "lanes": [
@@ -826,7 +826,11 @@
     },
     {
      "skip": 5400,
-     "end": 5548
+     "end": 5550
+    },
+    {
+     "skip": 5550,
+     "end": 5580
     }
    ]
   },
@@ -841,7 +845,7 @@
    "cluster": "nibi",
    "cells": 483840,
    "kept": 61657,
-   "windows": 2719,
+   "windows": 2734,
    "S": 150,
    "digest": "75f823a8e565cfbb:cb5295dd953f8672",
    "lanes": [
@@ -919,7 +923,7 @@
     },
     {
      "skip": 2700,
-     "end": 2719
+     "end": 2734
     }
    ]
   },
@@ -934,7 +938,7 @@
    "cluster": "trillium",
    "cells": 496428,
    "kept": 34661,
-   "windows": 2789,
+   "windows": 2805,
    "S": 300,
    "digest": "7c23b72b07f86cbf:9168ef85a6d39432",
    "lanes": [
@@ -976,7 +980,7 @@
     },
     {
      "skip": 2700,
-     "end": 2789
+     "end": 2805
     }
    ]
   },
@@ -991,7 +995,7 @@
    "cluster": "trillium",
    "cells": 502076,
    "kept": 35484,
-   "windows": 2821,
+   "windows": 2837,
    "S": 300,
    "digest": "d06bb0e3aaaef96b:0b960164e7c1c4d3",
    "lanes": [
@@ -1033,7 +1037,7 @@
     },
     {
      "skip": 2700,
-     "end": 2821
+     "end": 2837
     }
    ]
   },
@@ -1048,7 +1052,7 @@
    "cluster": "trillium",
    "cells": 502076,
    "kept": 35484,
-   "windows": 2821,
+   "windows": 2837,
    "S": 300,
    "digest": "d06bb0e3aaaef96b:0b960164e7c1c4d3",
    "lanes": [
@@ -1090,7 +1094,7 @@
     },
     {
      "skip": 2700,
-     "end": 2821
+     "end": 2837
     }
    ]
   }
