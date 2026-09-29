@@ -4,6 +4,12 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-28 (Daniel session, evening) — NIBI QUEUE ESCALATED: Prof. Kotsireas opened a DRAC support
+ticket ('RRG Nibi question', 16:54, Daniel cc'd) asking why the ~300 RRG jobs queued on Nibi since 09-22
+have not started. Trillium is NOT on the RRG (default allocation only), per the prof. If DRAC asks for
+details: account rrg-ikotsire_cpu, 296 PD all '(Priority)', 178-core 12 h jobs. Loop: no hourly Duo
+reminders any more (one low-priority note per missed cluster). PASS H LAUNCH still awaits Daniel's go.**
+
 **⚡ 2026-09-28 (Daniel session, later) — PASS H BUILT AND GATED; LAUNCH WAITS FOR DANIEL'S GO.**
 Build (cb3c160): WZ_FH_PROF_ORDER=3 = deterministic orbit-min ordering (key: orbit-min profile score,
 orbit id, cell key = total order), [order] list/kept digests, WZ_FH_EXPECT_DIGEST refusal, CFGSIG gains
