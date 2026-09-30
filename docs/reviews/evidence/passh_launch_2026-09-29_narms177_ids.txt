@@ -444,6 +444,20 @@ H44I2550: Submitted batch job 22932934
 H44Ir2550: Submitted batch job 22932938
 H44I2700: Submitted batch job 22932942
 H44Ir2700: Submitted batch job 22932947
+# 2026-09-30 daily loop: Fir second reps (restack, same lines)
+H44g0: Submitted batch job 62277619
+H44gr0: Submitted batch job 62277620
+H44g1000: Submitted batch job 62277622
+H44gr1000: Submitted batch job 62277623
+H44g2000: Submitted batch job 62277624
+H44gr2000: Submitted batch job 62277625
+H44g3000: Submitted batch job 62277626
+H44gr3000: Submitted batch job 62277627
+H44g4000: Submitted batch job 62277628
+H44gr4000: Submitted batch job 62277629
+H44g5000: Submitted batch job 62277630
+H44gr5000: Submitted batch job 62277631
+# 2026-09-30 Daniel session: Fir queue depth, two more reps per lane
 H44g0: Submitted batch job 62278014
 H44gr0: Submitted batch job 62278015
 H44g1000: Submitted batch job 62278016
