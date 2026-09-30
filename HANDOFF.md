@@ -19,7 +19,7 @@ H44gr3000 567, 681 H44g4000 799, 682 H44gr4000 621, 683 H44g5000 748, 684 H44gr5
 arms_interrupted=89 each, hitless, pooled aborts 22.2%) => all 12 old-namespace first reps are now read; their
 ns178 checkpoints are orphaned (fix chose fresh ns177 CKDIRs). FIR QUEUE AT CHECK: EMPTY (0 R, 0 PD) => below
 the floor of 8 => RESTACK all 12 H lanes (singleton, docs/plans/launch/passh_step2_fir_1.sh verbatim = the 177-arm
-manifest lines) — IDs below once the submit echoes.
+manifest lines) — DONE, 12/12 echoed (duo_run, 1 tap, docs/plans/launch/passh_step2_fir_1.sh verbatim): H44g0 62277619, H44gr0 62277620, H44g1000 62277622, H44gr1000 62277623, H44g2000 62277624, H44gr2000 62277625, H44g3000 62277626, H44gr3000 62277627, H44g4000 62277628, H44gr4000 62277629, H44g5000 62277630, H44gr5000 62277631 (62277621 is not ours). Second reps on the ns177 checkpoints => expect cum_done > cells_done_sum when they read; a 'fresh start' / CFGSIG line = alarm.
 NIBI: 298 H PD (22930967-22932947), 0 R — expected (fair-share debt per DRAC 09-29), no action. The last 16 Nibi
 G reps 22485502-517 (N44Cgr3600..N44Dg300; (1,7,8,8) letter C x13, (5,5,8,8) letter D x3; 178 arms) read hitless:
 516-759 cells (mean 619), 29.0-41.8M tested, pooled aborts 37.0% (197.3M/533.2M) — the 13 (1,7,8,8) reps run
