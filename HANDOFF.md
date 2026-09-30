@@ -4,6 +4,14 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-30 (Daniel session) — FIR QUEUE DEPTH + CLI START.** (1) Fir idled ~7 h this morning: 1 rep per
+H lane (12 h) drained by ~03:00, nothing refilled until 13:10. Fixed: 24 more singleton reps (1 tap,
+62278014-62278037) => 3 jobs per lane; loop rule now 'every Fir H lane has 3 jobs (running+pending)'.
+(2) The CLI startup stall recurred with the Mac awake (13:01:21 invoke, still not started at 13:05; watchdog
+woke the display; done 13:11), so sleep was not the whole cause. The headless agent now runs with
+--strict-mcp-config --mcp-config cluster/deploy/no_mcp.json (no connector handshakes; start 4.8 s locally).
+If tomorrow's start is still slow, the remaining suspect is the CLI's own startup network calls.**
+
 **⚡ 2026-09-30 (daily loop 1pm — all four reached) — NO HITS; ★ ARM-STRIPE FIX VERIFIED ON FIR: all 12
 FH_NARMS=177 Pass H first reps (62117655-666, build a3b84f9, ns177 CKDIRs) read hitless with EVERY arm busy
 (arms_summarized=177/177, arms_interrupted=177, range_done=0/177 on all 12; cum_done == cells_done_sum, fresh

@@ -166,7 +166,9 @@ Do not re-run the checker.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
      **PASS H IS LIVE ON ALL FOUR CLUSTERS since 2026-09-29 (444 units, 1 rep each). Refill = restack H
-     lanes to keep each cluster's pending >= its floor (Fir/Rorqual 8, Nibi 100, Trillium 8) using the
+     lanes so that EVERY H lane has 3 jobs (running + pending) on Fir (12 lanes, 12 h reps: 1 rep/lane
+     drains the queue by ~03:00 and idles Fir until 1pm, as on 09-30), and each cluster's pending stays
+     >= its floor (Rorqual 8, Nibi 100, Trillium 8), using the
      EXACT line from docs/plans/passh_submit_<cluster>.txt for that lane; never resubmit a G lane. Nibi
      schedules slowly (fair-share debt per DRAC 09-29): 0 R there is expected, not an alarm.**
      **PASS H details:** lanes named

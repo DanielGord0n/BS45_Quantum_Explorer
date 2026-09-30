@@ -54,7 +54,9 @@ CLAUDE_BIN="${CLAUDE_BIN:-$(pick_claude)}"
 
 MODEL_PRIMARY="${MODEL_PRIMARY:-fable}"   # CLI alias -> newest Fable the CLI knows (5.1 on 2.1.280)
 MODEL_FALLBACK="${MODEL_FALLBACK:-opus}"  # CLI alias -> newest Opus (5.5 on 2.1.280); aliases advance with CLI updates
-CLAUDE_ARGS="${CLAUDE_ARGS:---dangerously-skip-permissions}"
+# 2026-09-30: no MCP servers for the headless agent (it only needs Bash/git/duo_run); the connector
+# handshakes were the likeliest cause of the 4+ min startup stalls (no-MCP start measured 4.8 s).
+CLAUDE_ARGS="${CLAUDE_ARGS:---dangerously-skip-permissions --strict-mcp-config --mcp-config $DIR/no_mcp.json}"
 
 # Session-limit retry policy (portable: fixed backoff, no fragile date parsing).
 RETRY_WAIT="${RETRY_WAIT:-1800}"     # 30 min between attempts
