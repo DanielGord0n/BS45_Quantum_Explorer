@@ -1,8 +1,38 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-29 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-09-30 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-09-30 (daily loop 1pm — all four reached) — NO HITS; ★ ARM-STRIPE FIX VERIFIED ON FIR: all 12
+FH_NARMS=177 Pass H first reps (62117655-666, build a3b84f9, ns177 CKDIRs) read hitless with EVERY arm busy
+(arms_summarized=177/177, arms_interrupted=177, range_done=0/177 on all 12; cum_done == cells_done_sum, fresh
+checkpoints; no DIGEST MISMATCH / CFGSIG mismatch / fresh-start / STALE / oom line anywhere). Kept cells per
+rep 897-1324 (mean 1085, sum 13024; tested 48.7-70.2M/rep, pooled aborts 17.4% = 121.5M/697.1M, per-rep
+4.7-27.5%, all under 35%) vs 664 mean on the striped 178-arm reps => PRE-REGISTERED PERFORMANCE RULE: H = 1085
+vs Fir G mean 826 (09-29 reads) = 131% >= 90% => PASS; H stays, no roll-back. Verbatim GATEB lines:
+docs/reviews/evidence/passh_narms177_first_reads_2026-09-30.txt. Per lane: H44g0 62117655 998 cells 4.7% ab;
+H44gr0 656 1004/7.0%; H44g1000 657 1253/10.6%; H44gr1000 658 956/21.4%; H44g2000 659 1324/11.7%; H44gr2000 660
+897/27.0%; H44g3000 661 1140/16.5%; H44gr3000 662 947/26.0%; H44g4000 663 1263/16.3%; H44gr4000 664 1022/23.8%;
+H44g5000 665 1196/20.8%; H44gr5000 666 1024/27.5%. The last 5 Fir 178-arm first reps also read (61997679
+H44gr3000 567, 681 H44g4000 799, 682 H44gr4000 621, 683 H44g5000 748, 684 H44gr5000 624 cells; range_done=89/178,
+arms_interrupted=89 each, hitless, pooled aborts 22.2%) => all 12 old-namespace first reps are now read; their
+ns178 checkpoints are orphaned (fix chose fresh ns177 CKDIRs). FIR QUEUE AT CHECK: EMPTY (0 R, 0 PD) => below
+the floor of 8 => RESTACK all 12 H lanes (singleton, docs/plans/launch/passh_step2_fir_1.sh verbatim = the 177-arm
+manifest lines) — IDs below once the submit echoes.
+NIBI: 298 H PD (22930967-22932947), 0 R — expected (fair-share debt per DRAC 09-29), no action. The last 16 Nibi
+G reps 22485502-517 (N44Cgr3600..N44Dg300; (1,7,8,8) letter C x13, (5,5,8,8) letter D x3; 178 arms) read hitless:
+516-759 cells (mean 619), 29.0-41.8M tested, pooled aborts 37.0% (197.3M/533.2M) — the 13 (1,7,8,8) reps run
+34.9-49.7% (12 over the 35% line, max 49.7% on 22485512), the 3 (5,5,8,8) reps 11.1-17.7%; class runs hot as on
+09-29, budget lever closed => flagged, no action; range_done 0-3/178 (22485514 2, 22485513 3). G never resubmitted.
+RORQUAL: 7 H R (22037981-987 = H44G0..H44G900, (9,9,0,4), 177 arms, started 04:48-09:28 EDT today, header-only
+=> read tomorrow) + 69 H PD (22037988-22038057) => above floor, no action. [orbitcanon] on the new arms:
+cells=968858 kept_orbits=65092 dedup=14.88x (matches the manifest class). TRILLIUM: 60 H PD (2458789-2458859), 0 R
+=> no action. rung_status EXHAUSTED as always (SA ladder retired; Pass H is the program).
+CHECKER: exclusions +62117655-666, +61997679/681-684, +22485502-517 (regex validated: live 22037981/987, 22930967,
+22932947, 2458789/859 visible; read IDs excluded). The 7 running Rorqual H reps are NOT excluded.
+ROUND VERDICT: no hits, no verified solutions; 33 hitless reads (12 Fir H-177 + 5 Fir H-178 + 16 Nibi G); the
+09-29 defect fix is confirmed working in production; Fir restack = the only submit.**
 
 **⚡ 2026-09-29 (Daniel session, afternoon) — PASS H ARM-STRIPE DEFECT FIXED FLEET-WIDE (10 taps).** The
 1pm loop found it: all 7 Fir H first reps ended range_done=89/178 because under ORDER=3 every 64-orbit is
