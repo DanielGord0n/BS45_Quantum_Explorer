@@ -4,6 +4,28 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-09-30 (Daniel session, afternoon) — ASTRA DEEP DIVE (docs/reviews/2026-09-30-astra-deep.md) →
+A1 BUILT AND GATED (commit 38dfbd9); COMPLETION PILOT Fir 62283881 RUNNING.** The completer is ~85% of
+worker time now. A1 = exact outer-lag reachable-tuple tables (WZ_FH_OUTER_K=2|3, DEFAULT OFF): at depth d
+the k outermost open lags depend only on the next k quads and the k boundary quads, so a small table per
+boundary pattern gives the reachable residual tuples and admissible current quads. VERIFIED
+(tools/test_outer_tables.py PASS): tables equal an independent enumeration from real arrays/lags (K2 96,
+K3 2848 entries; filler quads provably irrelevant); identity over 84 class/budget runs (uncapped identical;
+under caps 11 hits moved to an earlier candidate that stopped aborting, every old hit candidate still
+completes with <= nodes); SIX CONTROLS complete-only (new WZ_FH_COMPLETE_C/_D mode) FOUND with identical
+A,B and 3.0-4.1x fewer nodes (ours-41 1.93M->0.55M, ours-42 353k->87k, ours-43 340k->94k, WZ-41
+6.2M->1.6M, WZ-42 10.2M->3.4M, WZ-43 13.8M->3.8M). C1 done: completer FOUND-but-NPAF-fails is fatal (exit
+5, candidate not advanced; WZ_FH_TEST_INTERNAL_ERROR test). WZ_FH_CAND_LOG=1 = one line per candidate.
+PILOT 62283881 (cluster_completion_pilot.sh via ship_patched_job.sh, sha 2735afb9 on a3b84f9, isolated
+$SCRATCH/bs45_cpilot): 4 shards x {K=0,K=3} on one node, production H stream, each arm completes its
+first 40k streamed candidates at 2e6. PRE-REGISTERED (tools/completion_pilot_summary.py): per-candidate
+identity (hit->hit with <= nodes, clean-no->clean-no, abort->{hit,clean-no,abort}) else FAIL; PASS =
+completion time -15% and resolved count not down; CLOSE < 5%; needs >= 2000 pairs. Nodes are not time:
+the pilot decides. If PASS: flip G_OUTER_K default to 3 (checkpoint-compatible, no CFGSIG change) and
+redeploy fleet-wide with sha-checked patches (production solver = f81ff24 = a3b84f9). QUEUED from the
+review, not built: A2 (exact A,B profile-row reachability), A3 (coupled coefficient bound), C2 (depth-only
+Kab table), B abort-tail counters. Response note: docs/reviews/2026-09-30-astra-deep-claude-response.md.**
+
 **⚡ 2026-09-30 (Daniel session) — FIR QUEUE DEPTH + CLI START.** (1) Fir idled ~7 h this morning: 1 rep per
 H lane (12 h) drained by ~03:00, nothing refilled until 13:10. Fixed: 24 more singleton reps (1 tap,
 62278014-62278037) => 3 jobs per lane; loop rule now 'every Fir H lane has 3 jobs (running+pending)'.
