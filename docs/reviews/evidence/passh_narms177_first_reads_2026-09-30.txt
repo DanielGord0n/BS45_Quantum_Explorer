@@ -1,0 +1,138 @@
+# Pass H reads of 2026-09-30 13:01 EDT checker (results/latest_check.txt), verbatim.
+# Fir FH_NARMS=177 FIRST reps (build a3b84f9, ns177 CKDIRs, fresh checkpoints): 62117655=H44g0 656=H44gr0 657=H44g1000 658=H44gr1000 659=H44g2000 660=H44gr2000 661=H44g3000 662=H44gr3000 663=H44g4000 664=H44gr4000 665=H44g5000 666=H44gr5000 (names from passh_launch_2026-09-29_narms177_ids.txt).
+# Fir 178-arm first reps that were still running at the 09-29 fix (read today): 61997679, 61997681-684.
+# Nibi Pass G reps 22485502-517 = N44Cgr3600..N44Dg300 ((1,7,8,8) letter C, (5,5,8,8) letter D), 178 arms, read today for completeness (G is not resubmitted).
+# Decision resting on these lines: pre-registered performance rule (H kept cells/lane-day >= 90% of G = PASS): 177-arm H mean 1085/rep vs Fir G mean 826 (09-29 reads) => 131% PASS; arm stripe gone (arms_interrupted=177/177, range_done=0/177 on all 12).
+
+=== firsthit_output_62117655.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20470 — Tue Sep 29 14:04:21 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=576416435 tested=53277317 tested_min=165272 tested_cum=53277317 resume_pi_min=8264 resume_pi_max=83208 orbit_dup=42378 aborted=2514849 AB_nodes=30272645414781 arms_summarized=177/177 arms_interrupted=177 cells_done_min=3 cells_done_sum=998 cells_empty=0 cum_done=998 cum_dup=42378 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117656.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20471 — Tue Sep 29 14:04:21 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=578485521 tested=53642522 tested_min=111003 tested_cum=53642522 resume_pi_min=7096 resume_pi_max=83208 orbit_dup=42500 aborted=3729413 AB_nodes=33036690605007 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=1004 cells_empty=0 cum_done=1004 cum_dup=42500 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117657.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20502 — Tue Sep 29 14:04:20 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=707284062 tested=66521838 tested_min=200000 tested_cum=66521838 resume_pi_min=201676 resume_pi_max=300320 orbit_dup=72187 aborted=7031583 AB_nodes=48421573423185 arms_summarized=177/177 arms_interrupted=177 cells_done_min=4 cells_done_sum=1253 cells_empty=0 cum_done=1253 cum_dup=72187 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117658.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20504 — Tue Sep 29 14:04:21 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=554948191 tested=51074653 tested_min=100000 tested_cum=51074653 resume_pi_min=193388 resume_pi_max=293104 orbit_dup=55388 aborted=10917632 AB_nodes=48351223401447 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=956 cells_empty=0 cum_done=956 cum_dup=55388 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117659.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20441 — Tue Sep 29 14:13:27 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=745383215 tested=70189484 tested_min=91960 tested_cum=70189484 resume_pi_min=362272 resume_pi_max=530800 orbit_dup=80252 aborted=8215255 AB_nodes=51798014204905 arms_summarized=177/177 arms_interrupted=177 cells_done_min=1 cells_done_sum=1324 cells_empty=0 cum_done=1324 cum_dup=80252 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117660.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20505 — Tue Sep 29 14:13:28 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=524349443 tested=48680581 tested_min=115751 tested_cum=48680581 resume_pi_min=370448 resume_pi_max=472288 orbit_dup=56471 aborted=13130106 AB_nodes=51100536841503 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=897 cells_empty=0 cum_done=897 cum_dup=56471 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117661.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20508 — Tue Sep 29 14:13:29 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=652198759 tested=60622637 tested_min=82549 tested_cum=60622637 resume_pi_min=542672 resume_pi_max=686544 orbit_dup=61508 aborted=9984957 AB_nodes=51077534307985 arms_summarized=177/177 arms_interrupted=177 cells_done_min=1 cells_done_sum=1140 cells_empty=0 cum_done=1140 cum_dup=61508 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117662.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20459 — Tue Sep 29 14:15:24 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=557958995 tested=51447805 tested_min=181275 tested_cum=51447805 resume_pi_min=552960 resume_pi_max=641296 orbit_dup=51221 aborted=13400635 AB_nodes=54261513967592 arms_summarized=177/177 arms_interrupted=177 cells_done_min=3 cells_done_sum=947 cells_empty=0 cum_done=947 cum_dup=51221 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117663.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20525 — Tue Sep 29 15:29:30 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=711816544 tested=67209877 tested_min=214962 tested_cum=67209877 resume_pi_min=729936 resume_pi_max=859160 orbit_dup=59105 aborted=10942793 AB_nodes=52764393956806 arms_summarized=177/177 arms_interrupted=177 cells_done_min=4 cells_done_sum=1263 cells_empty=0 cum_done=1263 cum_dup=59105 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117664.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20439 — Tue Sep 29 15:49:29 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=597715026 tested=55322698 tested_min=197322 tested_cum=55322698 resume_pi_min=728080 resume_pi_max=825048 orbit_dup=49338 aborted=13184636 AB_nodes=55809957146838 arms_summarized=177/177 arms_interrupted=177 cells_done_min=3 cells_done_sum=1022 cells_empty=0 cum_done=1022 cum_dup=49338 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117665.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20528 — Tue Sep 29 16:39:35 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=677797600 tested=63804691 tested_min=200000 tested_cum=63804691 resume_pi_min=910712 resume_pi_max=1035936 orbit_dup=64960 aborted=13265523 AB_nodes=57592613607781 arms_summarized=177/177 arms_interrupted=177 cells_done_min=4 cells_done_sum=1196 cells_empty=0 cum_done=1196 cum_dup=64960 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_62117666.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 177 arms — node fc20516 — Tue Sep 29 16:56:22 PDT 2026 ===
+arms_with_hits=0 / 177
+GATEB: candidates=596517286 tested=55284144 tested_min=219005 tested_cum=55284144 resume_pi_min=907784 resume_pi_max=1035936 orbit_dup=57152 aborted=15178979 AB_nodes=60199557676810 arms_summarized=177/177 arms_interrupted=177 cells_done_min=4 cells_done_sum=1024 cells_empty=0 cum_done=1024 cum_dup=57152 cum_dead=0 cum_empty=0 range_done=0/177
+=== firsthit_output_61997679.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 178 arms — node fc20529 — Mon Sep 28 22:35:13 PDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=326715380 tested=30354202 tested_min=0 tested_cum=30354202 resume_pi_min=548208 resume_pi_max=712177 orbit_dup=103029 aborted=7824288 AB_nodes=32193698780732 arms_summarized=178/178 arms_interrupted=89 cells_done_min=0 cells_done_sum=567 cells_empty=0 cum_done=567 cum_dup=103029 cum_dead=0 cum_empty=0 range_done=89/178
+=== firsthit_output_61997681.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 178 arms — node fc20471 — Mon Sep 28 22:47:14 PDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=440472250 tested=41604381 tested_min=0 tested_cum=41604381 resume_pi_min=726368 resume_pi_max=890177 orbit_dup=107153 aborted=6575171 AB_nodes=32076887154130 arms_summarized=178/178 arms_interrupted=89 cells_done_min=0 cells_done_sum=799 cells_empty=0 cum_done=799 cum_dup=107153 cum_dead=0 cum_empty=0 range_done=89/178
+=== firsthit_output_61997682.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 178 arms — node fc20536 — Mon Sep 28 22:59:16 PDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=353979779 tested=33094222 tested_min=0 tested_cum=33094222 resume_pi_min=725248 resume_pi_max=890177 orbit_dup=103811 aborted=8111205 AB_nodes=33870087590206 arms_summarized=178/178 arms_interrupted=89 cells_done_min=0 cells_done_sum=621 cells_empty=0 cum_done=621 cum_dup=103811 cum_dead=0 cum_empty=0 range_done=89/178
+=== firsthit_output_61997683.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 178 arms — node fc20456 — Mon Sep 28 23:03:14 PDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=417531063 tested=39410574 tested_min=0 tested_cum=39410574 resume_pi_min=907880 resume_pi_max=1039129 orbit_dup=93840 aborted=7705616 AB_nodes=34485227827047 arms_summarized=178/178 arms_interrupted=89 cells_done_min=0 cells_done_sum=748 cells_empty=0 cum_done=748 cum_dup=93840 cum_dead=0 cum_empty=0 range_done=89/178
+=== firsthit_output_61997684.txt ===
+=== FIRSTHIT probe BS(45,44) sig (3,13,0,0) — 178 arms — node fc20543 — Mon Sep 28 23:11:17 PDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=355962542 tested=33114158 tested_min=0 tested_cum=33114158 resume_pi_min=907400 resume_pi_max=1039129 orbit_dup=90676 aborted=9214580 AB_nodes=36318416590172 arms_summarized=178/178 arms_interrupted=89 cells_done_min=0 cells_done_sum=624 cells_empty=0 cum_done=624 cum_dup=90676 cum_dead=0 cum_empty=0 range_done=89/178
+=== firsthit_output_22485502.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c456.nibi.sharcnet — Tue Sep 29 01:37:29 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=337706813 tested=29615919 tested_min=106955 tested_cum=29615919 resume_pi_min=641285 resume_pi_max=646925 orbit_dup=1728 aborted=14019762 AB_nodes=42074893096574 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=567 range_done=0/178
+=== firsthit_output_22485503.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c287.nibi.sharcnet — Tue Sep 29 01:38:17 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=393890852 tested=34741621 tested_min=112951 tested_cum=34741621 resume_pi_min=695110 resume_pi_max=709593 orbit_dup=3743 aborted=12120947 AB_nodes=40813249945161 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=645 range_done=0/178
+=== firsthit_output_22485504.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c372.nibi.sharcnet — Tue Sep 29 02:35:33 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=339468746 tested=29601923 tested_min=103155 tested_cum=29601923 resume_pi_min=694928 resume_pi_max=708472 orbit_dup=2922 aborted=13567384 AB_nodes=41649456508649 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=529 range_done=0/178
+=== firsthit_output_22485505.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c639.nibi.sharcnet — Tue Sep 29 02:40:52 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=372467784 tested=32994390 tested_min=104825 tested_cum=32994390 resume_pi_min=748548 resume_pi_max=757210 orbit_dup=3260 aborted=12505844 AB_nodes=39585790864204 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=606 range_done=0/178
+=== firsthit_output_22485506.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c436.nibi.sharcnet — Tue Sep 29 02:56:52 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=342945591 tested=30025620 tested_min=95285 tested_cum=30025620 resume_pi_min=748548 resume_pi_max=756782 orbit_dup=3014 aborted=13301423 AB_nodes=41833179528712 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=539 range_done=0/178
+=== firsthit_output_22485507.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c695.nibi.sharcnet — Tue Sep 29 04:39:04 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=395938021 tested=35105947 tested_min=125004 tested_cum=35105947 resume_pi_min=802158 resume_pi_max=810655 orbit_dup=3414 aborted=12903354 AB_nodes=42561549938460 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=679 range_done=0/178
+=== firsthit_output_22485508.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c230.nibi.sharcnet — Tue Sep 29 04:42:51 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=347000000 tested=30060004 tested_min=112894 tested_cum=30060004 resume_pi_min=801485 resume_pi_max=809169 orbit_dup=2931 aborted=14416492 AB_nodes=43296458265793 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=576 range_done=0/178
+=== firsthit_output_22485509.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c518.nibi.sharcnet — Tue Sep 29 04:47:56 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=373336571 tested=32929727 tested_min=134307 tested_cum=32929727 resume_pi_min=856002 resume_pi_max=889765 orbit_dup=11915 aborted=14925167 AB_nodes=44246818487133 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=579 range_done=0/178
+=== firsthit_output_22485510.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c598.nibi.sharcnet — Tue Sep 29 06:22:16 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=368867440 tested=31898611 tested_min=129740 tested_cum=31898611 resume_pi_min=856225 resume_pi_max=889765 orbit_dup=11836 aborted=13783741 AB_nodes=43638109110861 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=570 range_done=0/178
+=== firsthit_output_22485511.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c629.nibi.sharcnet — Tue Sep 29 06:22:16 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=390894340 tested=34322911 tested_min=120916 tested_cum=34322911 resume_pi_min=909310 resume_pi_max=927322 orbit_dup=6597 aborted=14191974 AB_nodes=44249433335385 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=661 range_done=0/178
+=== firsthit_output_22485512.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c631.nibi.sharcnet — Tue Sep 29 06:22:16 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=352010298 tested=30976615 tested_min=108250 tested_cum=30976615 resume_pi_min=908543 resume_pi_max=927322 orbit_dup=5922 aborted=15393405 AB_nodes=45346312095404 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=579 range_done=0/178
+=== firsthit_output_22485513.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c638.nibi.sharcnet — Tue Sep 29 06:22:16 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=407991467 tested=36456713 tested_min=100000 tested_cum=36456713 resume_pi_min=963241 resume_pi_max=977710 orbit_dup=5988 aborted=14290522 AB_nodes=46408735414987 arms_summarized=178/178 arms_interrupted=175 cells_done_min=3 cells_done_sum=719 range_done=3/178
+=== firsthit_output_22485514.txt ===
+=== FIRSTHIT probe BS(45,44) sig (1,7,8,8) — 178 arms — node c643.nibi.sharcnet — Tue Sep 29 06:22:16 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=376831458 tested=33260208 tested_min=100000 tested_cum=33260208 resume_pi_min=962540 resume_pi_max=977710 orbit_dup=5537 aborted=15433481 AB_nodes=47002734044222 arms_summarized=178/178 arms_interrupted=176 cells_done_min=2 cells_done_sum=643 range_done=2/178
+=== firsthit_output_22485515.txt ===
+=== FIRSTHIT probe BS(45,44) sig (5,5,8,8) — 178 arms — node c684.nibi.sharcnet — Tue Sep 29 06:22:16 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=445840820 tested=40413835 tested_min=87393 tested_cum=40413835 resume_pi_min=1618 resume_pi_max=22276 orbit_dup=5374 aborted=4492303 AB_nodes=27483621691617 arms_summarized=178/178 arms_interrupted=178 cells_done_min=1 cells_done_sum=739 range_done=0/178
+=== firsthit_output_22485516.txt ===
+=== FIRSTHIT probe BS(45,44) sig (5,5,8,8) — 178 arms — node c688.nibi.sharcnet — Tue Sep 29 06:22:16 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=331475946 tested=28956118 tested_min=100000 tested_cum=28956118 resume_pi_min=938 resume_pi_max=15613 orbit_dup=3743 aborted=4595404 AB_nodes=26381908044295 arms_summarized=178/178 arms_interrupted=178 cells_done_min=2 cells_done_sum=516 range_done=0/178
+=== firsthit_output_22485517.txt ===
+=== FIRSTHIT probe BS(45,44) sig (5,5,8,8) — 178 arms — node c183.nibi.sharcnet — Tue Sep 29 06:39:31 EDT 2026 ===
+arms_with_hits=0 / 178
+GATEB: candidates=458436572 tested=41817568 tested_min=87172 tested_cum=41817568 resume_pi_min=54058 resume_pi_max=83263 orbit_dup=4370 aborted=7386011 AB_nodes=33984543239462 arms_summarized=178/178 arms_interrupted=178 cells_done_min=1 cells_done_sum=759 range_done=0/178
