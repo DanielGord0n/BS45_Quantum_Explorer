@@ -529,6 +529,8 @@ static void count_seqs_for_profile_m(int L, const vector<int> &target, int m,
 // C,D side is unconstrained (P22_16). Odd-L middle is free (P22_4). Every
 // banked champion AND the published WZ BS(43)/BS(44) satisfy this encoding.
 static int P22_16[16][4], P22_POS[8][4], P22_NEG[8][4], P22_4[4][2];
+static int FH_CD_target[256];  // completer target -N_CD (declared here for the A1 tables)
+static void init_outer_tables();
 static void init_p22() {
   int np = 0, nn = 0;
   for (int i = 0; i < 16; i++) {
@@ -539,6 +541,79 @@ static void init_p22() {
   }
   int m4[4][2] = {{1,1},{1,-1},{-1,1},{-1,-1}};
   memcpy(P22_4, m4, sizeof m4);
+  init_outer_tables();
+}
+
+// ---- A1: exact outer-lag reachable-tuple tables (Astra deep dive 2026-09-30, item A1) ----
+// At completer depth d (positions [0,d) and [L-d,L) assigned), the residuals at the k
+// outermost open lags s_j = L-1-d-j (j<k, k<=d, d+k<=L/2) get contributions ONLY from the
+// next k unknown quads against the k known boundary quads: no unknown-unknown edge exists
+// at those lags. So the tuple (R_0..R_{k-1}) that any completion must produce is one of the
+// 8^k tuples of F_j = sum_{r<=j} A[j-r] aR_r + B[j-r] bR_r + A[L-1-j+r] aL_r + B[L-1-j+r] bL_r,
+// and for a reachable tuple only the first-quad choices v_0 that occur are possible. Tables
+// depend only on the boundary pattern (root quad from P22_NEG with A[0]=B[0]=+1: 2 choices;
+// quads at depths 1..k-1: 8 each) => 2*8^(k-1) patterns. WZ_FH_OUTER_K=0 (off, default) | 2 | 3.
+// Exactness + independent enumeration: tools/test_outer_tables.py.
+static int G_OUTER_K = 0;
+static bool G_CAND_LOG = false;  // WZ_FH_CAND_LOG=1: one line per completed candidate (pilots)
+static unsigned char OUTER2[16][5][9];          // [pattern][F0/2+2][F1/2+4] -> 8-bit mask over P22_POS
+static unsigned char OUTER3[128][5][9][13];     // [pattern][F0/2+2][F1/2+4][F2/2+6]
+static signed char POS_INDEX[16];               // 4-bit sign pattern -> P22_POS index, -1 if odd
+static int ROOT_INDEX[2];                       // P22_NEG indices with v0=v1=+1, by (aR>0)
+static inline int sign_bits(int a, int b, int c, int d) { return ((a > 0) << 3) | ((b > 0) << 2) | ((c > 0) << 1) | (d > 0); }
+static void init_outer_tables() {
+  for (int i = 0; i < 16; i++) POS_INDEX[i] = -1;
+  for (int q = 0; q < 8; q++) POS_INDEX[sign_bits(P22_POS[q][0], P22_POS[q][1], P22_POS[q][2], P22_POS[q][3])] = q;
+  for (int q = 0; q < 8; q++)
+    if (P22_NEG[q][0] == 1 && P22_NEG[q][1] == 1) ROOT_INDEX[P22_NEG[q][2] > 0] = q;
+  memset(OUTER2, 0, sizeof OUTER2); memset(OUTER3, 0, sizeof OUTER3);
+  for (int k = 2; k <= 3; k++) {
+    int npat = 2 * (k == 2 ? 8 : 64);
+    for (int pat = 0; pat < npat; pat++) {
+      int bA[3], bB[3], eA[3], eB[3];   // left / right boundary signs at depths 0..k-1
+      int rb = pat & 1, rest = pat >> 1;
+      const int *rq = P22_NEG[ROOT_INDEX[rb]];
+      bA[0] = rq[0]; bB[0] = rq[1]; eA[0] = rq[2]; eB[0] = rq[3];
+      for (int t = 1; t < k; t++) {
+        const int *q = P22_POS[rest % 8]; rest /= 8;
+        bA[t] = q[0]; bB[t] = q[1]; eA[t] = q[2]; eB[t] = q[3];
+      }
+      int nassign = (k == 2) ? 64 : 512;
+      for (int asg = 0; asg < nassign; asg++) {
+        int idx[3]; int a = asg;
+        for (int r = 0; r < k; r++) { idx[r] = a % 8; a /= 8; }
+        int F[3] = {0, 0, 0};
+        for (int j = 0; j < k; j++)
+          for (int r = 0; r <= j; r++) {
+            const int *v = P22_POS[idx[r]];  // (aL, bL, aR, bR)
+            F[j] += bA[j - r] * v[2] + bB[j - r] * v[3] + eA[j - r] * v[0] + eB[j - r] * v[1];
+          }
+        int i0 = F[0] / 2 + 2, i1 = F[1] / 2 + 4, i2 = F[2] / 2 + 6;
+        if (k == 2) OUTER2[pat][i0][i1] |= (unsigned char)(1 << idx[0]);
+        else        OUTER3[pat][i0][i1][i2] |= (unsigned char)(1 << idx[0]);
+      }
+    }
+  }
+}
+// Mask of admissible current quads at depth d, 0 if the residual tuple is unreachable,
+// 0xFF when the guard does not apply.
+static inline unsigned outer_mask(int d, int L, const int *A, const int *B, const int *Dab) {
+  int k = G_OUTER_K;
+  if (k < 2 || d < k || d + k > L / 2 || A[0] != 1 || B[0] != 1) return 0xFFu;
+  int pat = (A[L - 1] > 0), mul = 2;
+  for (int t = 1; t < k; t++) {
+    int q = POS_INDEX[sign_bits(A[t], B[t], A[L - 1 - t], B[L - 1 - t])];
+    if (q < 0) return 0xFFu;
+    pat += mul * q; mul *= 8;
+  }
+  int R[3];
+  for (int j = 0; j < k; j++) {
+    int sj = L - 1 - d - j;
+    R[j] = FH_CD_target[sj] - Dab[sj];
+    if ((R[j] & 1) || R[j] < -4 * (j + 1) || R[j] > 4 * (j + 1)) return 0;
+  }
+  if (k == 2) return OUTER2[pat][R[0] / 2 + 2][R[1] / 2 + 4];
+  return OUTER3[pat][R[0] / 2 + 2][R[1] / 2 + 4][R[2] / 2 + 6];
 }
 
 // GATE A' (2026-07-08): count (X,Y) pairs of length L JOINTLY satisfying
@@ -864,7 +939,6 @@ struct FhTelemetry {
 };
 static FhTelemetry FH_TM;
 static bool fh_aborted = false;
-static int FH_CD_target[256];
 static int FH_ABS_A = 0, FH_ABS_B = 0;
 
 // ---- Profile-constrained A,B completion (WZ_FH_AB_PROF, 2026-07-26) --------
@@ -1041,7 +1115,11 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
   }
   int i1 = d, i2 = L - 1 - d;
   const int (*S)[4] = (d == 0) ? P22_NEG : P22_POS;  // A,B side encoding
+  // A1 outer-lag tables: which current quads can still produce the k outermost residuals
+  unsigned omask = (G_OUTER_K && d > 0) ? outer_mask(d, L, A, B, Dab) : 0xFFu;
+  if (omask == 0) return false;  // no quad can: the residual tuple is unreachable
   for (int k = 0; k < 8; k++) {
+    if (d > 0 && !((omask >> k) & 1u)) continue;  // exact: this quad reaches no completion
     int a1 = S[k][0], b1 = S[k][1], a2 = S[k][2], b2 = S[k][3];
     // Isomorphic-transformation truncation (WZ Step 5: "the isomorphic
     // transformation of A,B sequences to truncate branches"). Negating all of
@@ -1145,12 +1223,13 @@ static int fh_complete_ab(const int *C, const int *D) {
     : fh_ab_search<false>(0, A, B, Dab, Kab, 0, 0, 1, 0, 1, 0);
   if (!found)
     return fh_aborted ? 3 : 2;
+  static const bool test_ierr = getenv("WZ_FH_TEST_INTERNAL_ERROR") != nullptr;  // test hook
   for (int s = 1; s <= n; s++)
-    if (npaf_at(A, B, n1, C, D, n, s) != 0) {
+    if (npaf_at(A, B, n1, C, D, n, s) != 0 || test_ierr) {
       // Must never happen (Astra red-team 2026-09-26): the DFS claimed a completion that the
       // independent NPAF check rejects. Never let it pass as an ordinary "no completion".
       cout << "FH_INTERNAL_ERROR: completer FOUND but NPAF[" << s << "] != 0\n" << flush;
-      return 2;
+      return 4;  // fatal: the caller stops before this candidate can be marked attempted
     }
   memcpy(g_solA, A, n1 * sizeof(int));
   memcpy(g_solB, B, n1 * sizeof(int));
@@ -1184,6 +1263,18 @@ int main(int argc, char **argv) {
   if (getenv("WZ_THM212"))  G_THM212  = true;   // Thm 2.3 eq (18) mod-4 filter
   if (const char *e = getenv("WZ_FH_CD_PRUNE")) G_CD_PRUNE = atoi(e);  // stream-identical C,D DFS prunes
   hall_order_init();
+  if (const char *e = getenv("WZ_FH_OUTER_K")) G_OUTER_K = atoi(e);  // A1 tables: 0 | 2 | 3
+  G_CAND_LOG = getenv("WZ_FH_CAND_LOG") && atoi(getenv("WZ_FH_CAND_LOG"));
+  if (getenv("WZ_FH_OUTER_DUMP")) {  // test hook: print both tables and exit
+    init_p22();
+    for (int q = 0; q < 8; q++) printf("POS %d %d %d %d %d\n", q, P22_POS[q][0], P22_POS[q][1], P22_POS[q][2], P22_POS[q][3]);
+    for (int q = 0; q < 8; q++) printf("NEG %d %d %d %d %d\n", q, P22_NEG[q][0], P22_NEG[q][1], P22_NEG[q][2], P22_NEG[q][3]);
+    for (int p2 = 0; p2 < 16; p2++) for (int a = 0; a < 5; a++) for (int b = 0; b < 9; b++)
+      if (OUTER2[p2][a][b]) printf("K2 %d %d %d %d\n", p2, (a - 2) * 2, (b - 4) * 2, OUTER2[p2][a][b]);
+    for (int p3 = 0; p3 < 128; p3++) for (int a = 0; a < 5; a++) for (int b = 0; b < 9; b++) for (int c = 0; c < 13; c++)
+      if (OUTER3[p3][a][b][c]) printf("K3 %d %d %d %d %d\n", p3, (a - 2) * 2, (b - 4) * 2, (c - 6) * 2, OUTER3[p3][a][b][c]);
+    return 0;
+  }
   if (const char *e = getenv("WZ_FH_HALL_FAST")) G_HALL_FAST = atoi(e);  // decision-identical leaf test (default on)
   // FIRSTHIT at n>=36: 2.11b + 2.12 are STREAM ENABLERS, not options. Measured
   // 2026-07-21 at n=41: unfiltered mod-6 cells = 2.36M, ~90% empty, ZERO
@@ -2152,6 +2243,34 @@ int main(int argc, char **argv) {
     }
     FH_ABP_M = fh_m;   // partial-class bookkeeping modulus (harmless when off)
     for (int c = 0; c < fh_m; c++) FH_ABP_TIC[c] = class_count(G_N1, c, fh_m);
+    // WZ_FH_COMPLETE_C/_D (2026-09-30): run the completer ONCE on a given C,D (no stream,
+    // unconstrained rows) and print the outcome. Seconds per known solution: the six-control
+    // gate for completer changes (A1/A2/A3), independent of streaming.
+    if (const char *cc = getenv("WZ_FH_COMPLETE_C")) {
+      const char *dd = getenv("WZ_FH_COMPLETE_D");
+      auto parse = [](const char *str) {
+        vector<int> v; int val, cnt;
+        while (sscanf(str, "%d%n", &val, &cnt) == 1) { v.push_back(val); str += cnt; while (*str == ',' || *str == ' ') str++; }
+        return v;
+      };
+      vector<int> C0 = parse(cc), D0 = parse(dd ? dd : "");
+      if ((int)C0.size() != n || (int)D0.size() != n) { cout << "COMPLETE_ONLY: bad C/D length\n"; return 2; }
+      FH_ABP = nullptr;
+      long long nb = fh_nodes_total;
+      auto t0c = Clock::now();
+      int r = fh_complete_ab(C0.data(), D0.data());
+      cout << "COMPLETE_ONLY r=" << r << " nodes=" << (fh_nodes_total - nb) << " budget=" << FH_BUDGET
+           << " outer_k=" << G_OUTER_K << " sec=" << chrono::duration<double>(Clock::now() - t0c).count() << "\n";
+      if (r == 0) {
+        int n1 = G_N1;
+        cout << "*** BS(" << n1 << "," << n << ") FOUND ***  (complete-only)\n";
+        cout << "A = {"; for (int i = 0; i < n1; i++) cout << g_solA[i] << (i < n1 - 1 ? "," : ""); cout << "};\n";
+        cout << "B = {"; for (int i = 0; i < n1; i++) cout << g_solB[i] << (i < n1 - 1 ? "," : ""); cout << "};\n";
+        cout << "C = {"; for (int i = 0; i < n; i++) cout << g_solC[i] << (i < n - 1 ? "," : ""); cout << "};\n";
+        cout << "D = {"; for (int i = 0; i < n; i++) cout << g_solD[i] << (i < n - 1 ? "," : ""); cout << "};\n";
+      }
+      return 0;
+    }
     long long cells_prof_dead = 0, cells_prof_uncap = 0;
     fh_cum_dead_ptr = &cells_prof_dead;
     // Checkpoint shadow state: ck_* always describes "everything before this
@@ -2284,7 +2403,16 @@ int main(int argc, char **argv) {
         long long nodes_before = fh_nodes_total;
         auto started = FH_TM.stride ? Clock::now() : Clock::time_point{};
         FH_TM.hist_active = FH_TM.stride && FH_TM.selected(FH_TM.completions);
+        auto cl_started = G_CAND_LOG ? Clock::now() : Clock::time_point{};
         int r = fh_complete_ab(Ci, Di);
+        if (r == 4) {  // C1 (Astra 09-30): never let an internal error pass as an ordinary outcome
+          cout << "RESULT: INTERNAL ERROR at candidate idx=" << cand << " pi=" << pi
+               << " — arm stopped, candidate NOT marked attempted, checkpoint NOT advanced\n" << flush;
+          exit(5);
+        }
+        if (G_CAND_LOG)
+          cout << "CAND idx=" << cand << " pi=" << pi << " r=" << r << " nodes=" << (fh_nodes_total - nodes_before)
+               << " ns=" << chrono::duration_cast<chrono::nanoseconds>(Clock::now() - cl_started).count() << "\n";
         if (FH_TM.stride) {
           long long elapsed = FhTelemetry::ns(started), nodes = fh_nodes_total - nodes_before;
           FH_TM.complete_ns += elapsed;
