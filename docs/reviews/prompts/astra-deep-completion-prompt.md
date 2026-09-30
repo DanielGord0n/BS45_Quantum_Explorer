@@ -1,4 +1,4 @@
-# Prompt for GPT-6 Astra (Codex): deep dive, no token limit (2026-09-30)
+# Prompt for GPT-6 Astra (Codex): completer deep dive, budget-aware (2026-09-30)
 
 Paste everything below the line into a NEW Codex chat.
 
@@ -6,15 +6,15 @@ Paste everything below the line into a NEW Codex chat.
 
 You are the mathematics reviewer for the BS(45,44) search (base sequences, the open case of
 the base-sequence conjecture). Claude implements, tests and deploys everything; you reason.
-This time there is NO token limit: take the space you need, derive things fully, and write
-proofs rather than sketches. Reasoning only: no code edits, runs, builds, tests, worktrees or
-commits. Read the files below fully (not by targeted search this time), plus the solver
-functions named in section C.
+Reasoning only: no code edits, runs, builds, tests, worktrees or commits.
 
-FILES: docs/briefs/external_review_brief.md; docs/reviews/2026-09-26-astra-redteam.md and
-docs/reviews/2026-09-26-astra-redteam-claude-response.md; docs/reviews/2026-09-27-astra-policy.md;
-docs/reviews/2026-09-28-astra-passh-launch.md; docs/plans/pass_h_plan.md;
-docs/research/wz_paper_reconstruction.md; the newest ~10 entries of HANDOFF.md.
+BUDGET: the token budget is limited but larger than before. Spend it on derivations, not on
+reading: read docs/reviews/2026-09-26-astra-redteam-claude-response.md and the "STATE" block
+below in full; read src/solver/wz_match.cpp ONLY by targeted search for fh_ab_search,
+fh_complete_ab, fh_place, fh_abp_filter, fh_abp_leaf_ok (plus count_pairs22 and thm212_ok only
+if item C needs them); open any other file only when a specific claim requires it. Write the
+output file INCREMENTALLY: item A first, then B, then C, then D, saving after each, so a cutoff
+still leaves the finished items on disk.
 
 STATE (2026-09-30): Pass H is live on all four clusters: 64-group canonicalization (your quad
 switch Q) + closure prune, deterministic orbit-min ordering, 177 arms per node (an even arm
@@ -48,20 +48,18 @@ B. THE ABORT TAIL. 20-50% of completions hit the 2e6 cap. Is there structure in 
    could detect BEFORE completion, or that argues for a class-specific budget? Derive what
    would need measuring; we can add counters to the completer cheaply.
 
-C. FULL MATH RE-AUDIT, UNHURRIED. Re-read count_pairs22, survive_profiles6, thm212_ok,
-   PairAutoSet, hall_ok*, the orbit canonicalization block, the Q-closure prune, ORDER=3,
-   fh_ab_search and fh_complete_ab in src/solver/wz_match.cpp in full, and re-derive each
-   necessary condition from Wang-Zhu's theorems. Anything unsound, or any condition that is
-   weaker than it could be for free.
+C. RE-AUDIT THE COMPLETER ONLY (budget permitting): fh_ab_search, fh_complete_ab, fh_place,
+   the profile-row constraint and the early check. Re-derive each condition from Wang-Zhu's
+   theorems. Anything unsound, or any condition weaker than it could be for free.
 
-D. THEORY, OPEN-ENDED. With the space to think: is there any structural reason BS(45,44)
+D. THEORY, OPEN-ENDED (only if budget remains; short): is there any structural reason BS(45,44)
    might not exist, or any construction we have not considered (product, recursive, from
    Turyn-type or Golay-like objects, or from the twin-class structure)? Where do the six known
    solutions sit relative to each other in the invariants we track (flatness score, orbit,
    profile), and does that suggest where at n=44 to look first? Anything from the literature
    on base sequences and T-sequences beyond Wang-Zhu that changes our search.
 
-OUTPUT: for each item, claim; full proof; confidence; exact implementation specification
+OUTPUT: for each item, claim; proof (full for A, sketch elsewhere); confidence; exact implementation specification
 (inputs, formulas, where it applies, cost); verification protocol (six controls + exhaustive
 n=6/8/10, identity requirements); pre-registered pass/fail; expected effect in worker-time
 terms given the 15/85 split. Rank by expected gain per implementation effort. Say plainly
