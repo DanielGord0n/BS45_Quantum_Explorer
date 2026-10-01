@@ -482,3 +482,5 @@ H44g4000: Submitted batch job 62278034
 H44gr4000: Submitted batch job 62278035
 H44g5000: Submitted batch job 62278036
 H44gr5000: Submitted batch job 62278037
+# 2026-10-01 daily loop: Fir third rep for H44g0 (lane had 2 queued, rule says 3)
+H44g0: Submitted batch job 62417659

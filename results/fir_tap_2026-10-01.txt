@@ -1,0 +1,55 @@
+== squeue CPILOT:
+== sacct:
+62283881      COMPLETED   00:38:00      0:0         fc20359 
+== files:
+-rw-r----- 1 dangord dangord  2144542 Sep 30 11:40 cp_s102_m0.log
+-rw-r----- 1 dangord dangord  2103180 Sep 30 11:28 cp_s102_m3.log
+-rw-r----- 1 dangord dangord  2160180 Sep 30 11:51 cp_s10_m0.log
+-rw-r----- 1 dangord dangord  2119466 Sep 30 11:35 cp_s10_m3.log
+-rw-r----- 1 dangord dangord  1881665 Sep 30 11:14 cp_s148_m0.log
+-rw-r----- 1 dangord dangord  1881665 Sep 30 11:14 cp_s148_m3.log
+-rw-r----- 1 dangord dangord  2142404 Sep 30 11:45 cp_s56_m0.log
+-rw-r----- 1 dangord dangord  2102794 Sep 30 11:33 cp_s56_m3.log
+-rw-r----- 1 dangord dangord 21166956 Sep 30 11:51 cpilot_62283881.txt
+== md5:
+46d10fb445b79f25c9b95eed781c3fa3  cpilot_62283881.txt
+== wc:
+  320018 21166956 cpilot_62283881.txt
+== CAND per log (total, r=0 hits):
+cp_s102_m0.log 40000 0
+cp_s102_m3.log 40000 0
+cp_s10_m0.log 40000 0
+cp_s10_m3.log 40000 0
+cp_s148_m0.log 40000 0
+cp_s148_m3.log 40000 0
+cp_s56_m0.log 40000 0
+cp_s56_m3.log 40000 0
+== nonCAND lines:
+=== CPILOT WZ_FH_OUTER_K=0/3 ncand=40000 job 62283881 node fc20359 Model name:                              AMD EPYC 9655 96-Co Wed Sep 30 11:13:51 PDT 2026 sha 2735afb9797ec80c ===
+cp_s102_m0.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s102_m0.log backtracks_entered=40000  clean_no_AB=39731  budget_aborted=269  total_AB_nodes=13442144245  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=10  cells_empty=0  cum_done=0  cum_dup=10  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=355872  resume_batch=1  resume_k=0
+cp_s102_m3.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s102_m3.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=2665365085  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=10  cells_empty=0  cum_done=0  cum_dup=10  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=355872  resume_batch=1  resume_k=0
+cp_s10_m0.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s10_m0.log backtracks_entered=40000  clean_no_AB=38670  budget_aborted=1330  total_AB_nodes=19854306012  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=38  cells_empty=0  cum_done=0  cum_dup=38  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=360736  resume_batch=1  resume_k=0
+cp_s10_m3.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s10_m3.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=4040074499  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=38  cells_empty=0  cum_done=0  cum_dup=38  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=360736  resume_batch=1  resume_k=0
+cp_s148_m0.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s148_m0.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=1360000  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=28  cells_empty=0  cum_done=0  cum_dup=28  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=359104  resume_batch=1  resume_k=0
+cp_s148_m3.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s148_m3.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=1360000  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=28  cells_empty=0  cum_done=0  cum_dup=28  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=359104  resume_batch=1  resume_k=0
+cp_s56_m0.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s56_m0.log backtracks_entered=40000  clean_no_AB=39658  budget_aborted=342  total_AB_nodes=13537495088  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=24  cells_empty=0  cum_done=0  cum_dup=24  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=358304  resume_batch=1  resume_k=0
+cp_s56_m3.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s56_m3.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=2616259399  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=24  cells_empty=0  cum_done=0  cum_dup=24  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=358304  resume_batch=1  resume_k=0
+=== CPILOT done Wed Sep 30 11:51:40 PDT 2026 ===
+== SUMMARY:
+paired candidates: 4  identity violations: 0 []
+completion time off/on: 0s / 0s = 1.701x  (saving 41.2%); nodes off/on 5.025x; resolved 4 -> 4; hits 0 -> 0
+VERDICT: INCONCLUSIVE (fewer than 2000 paired candidates)
+== FULL skipped: 21166956 bytes (scp it)
+== rep2 alarms 62277619:
+(alarm grep done)
+[firsthit ckpt] RESUME pi=24072 batch=0 k=4205 tested_cum=204205
+== SUBMIT:
+H44g0: Submitted batch job 62417659

@@ -25,6 +25,7 @@ TRILLIUM: 60 H PD (2458789-2458859), 0 R => no action. Verbatim GATEB lines: doc
 HOUSEKEEPING: the 09-30 loop's raw-evidence commit (40185e4: passh_narms177_first_reads_2026-09-30.txt + the Fir
 restack IDs) was only on branch auto/2026-09-30 and never reached main => cherry-picked onto main this run (1d825db;
 the IDs file now holds both the 62277619-631 and 62278014-037 blocks).
+SUBMIT (Fir, duo_run, 1 tap, verbatim passh_submit_fir.txt line): H44g0 third rep = 62417659 (echoed) => every Fir H lane now has 3 jobs queued. Same tap: no CFGSIG mismatch / fresh start / DIGEST MISMATCH / STALE / oom line in firsthit_output_62277619.txt or its 177 arm logs; arm_0 shows '[firsthit ckpt] RESUME pi=24072 batch=0 k=4205 tested_cum=204205' => the second rep resumed.
 CHECKER: exclusions +62277619, +22037981-987 (regex validated: live 62277620/622, 22037988, 22038001, 22930967,
 2458789, 62278014 and CPILOT 62283881 visible; the read IDs excluded).
 
