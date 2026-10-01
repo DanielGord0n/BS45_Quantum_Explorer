@@ -965,15 +965,90 @@ static int FH_ABP_TIC[8];                       // class totals of length n1 at 
 static int FH_PA[8], FH_PB[8], FH_PLACED[8];    // partial class sums / counts
 static vector<vector<int>> FH_ABP_STACK;        // surviving rows per DFS depth
 
+// ---- A2: exact profile-row reachability (Astra deep dive 2026-09-30 A2; built 2026-10-01) ----
+// After the root quad every remaining mirror quad (i, L-1-i) is positive-product (P22_POS:
+// a1*a2 == b1*b2), so its contribution to the class sums of residues r = i%m and s = (L-1-i)%m
+// is one of 8 sign vectors: for r != s the columns +-H[.][j] of the 4x4 Hadamard H below
+// (coordinates (uA_r, uB_r, uA_s, uB_s)); for r == s (+-2,+-2) or (0,0). Residues pair up under
+// the reflection r -> (L-1-r) mod m, the blocks use disjoint quads, and an odd-L middle (residue
+// mid%m, self-reflected, free until the leaf) adds (+-1,+-1). A row's residuals (row minus the
+// partial sums) are reachable with the q remaining quads of each block iff
+//   distinct {r,s}: t = H Delta / 4 integral, |t|_1 <= q, q - |t|_1 even;
+//   self {r}:       u, v even, max(|u|,|v|)/2 <= q, u/2 == v/2 (mod 2)  [tested after subtracting
+//                   one of the four middle choices while the middle is free].
+// Necessary for any completion of that row (sound prune); exact for the unrestricted
+// positive-quad model (tools/test_a2_rows.py: brute force vs formulas, C++ vs python, identity).
+// WZ_FH_A2=0 off (default) | 1 SHADOW: counts what it would prune, search unchanged | 2 prune.
+static int G_A2 = 0;
+static int A2_NBLK = 0;
+static int A2_BLK_R[8], A2_BLK_S[8];            // residues of block b (r == s: self-reflected)
+static int A2_BLK_MID[8];                       // block b holds the free middle (odd L)
+static int A2_CNT[40][8];                       // remaining mirror quads of block b at p = d+1
+static long long A2_rows_tested = 0, A2_rows_rej = 0, A2_cuts = 0, A2_saved_nodes = 0, A2_hit_under_cut = 0;
+static long long A2_cuts_depth[40], A2_saved_depth[40];
+static int A2_cut_depth = -1;                   // shadow: depth of the first would-be cut on this path
+static bool A2_lastrow = false;                 // shadow: set by fh_abp_filter when no survivor passes A2
+static void init_a2_tables(int L, int m) {
+  int half = L / 2;
+  int blk_of[8]; for (int c = 0; c < 8; c++) blk_of[c] = -1;
+  A2_NBLK = 0;
+  for (int c = 0; c < m; c++) {
+    if (blk_of[c] >= 0) continue;
+    int s = ((L - 1 - c) % m + m) % m;
+    A2_BLK_R[A2_NBLK] = c; A2_BLK_S[A2_NBLK] = s; A2_BLK_MID[A2_NBLK] = 0;
+    blk_of[c] = A2_NBLK; blk_of[s] = A2_NBLK; A2_NBLK++;
+  }
+  if (L % 2 == 1) A2_BLK_MID[blk_of[half % m]] = 1;
+  for (int p = 0; p <= half + 1 && p < 40; p++) {
+    for (int b = 0; b < 8; b++) A2_CNT[p][b] = 0;
+    for (int i = p; i < half; i++) A2_CNT[p][blk_of[i % m]]++;
+  }
+  memset(A2_cuts_depth, 0, sizeof A2_cuts_depth); memset(A2_saved_depth, 0, sizeof A2_saved_depth);
+}
+static inline bool a2_self_ok(int u, int v, int q) {
+  if ((u | v) & 1) return false;                  // both even
+  if (abs(u) > 2 * q || abs(v) > 2 * q) return false;
+  return ((u - v) & 3) == 0;                      // u/2 == v/2 (mod 2)
+}
+static inline bool a2_row_ok(const AbpRow &row, int p) {
+  for (int b = 0; b < A2_NBLK; b++) {
+    int r = A2_BLK_R[b], s = A2_BLK_S[b], q = A2_CNT[p][b];
+    int ur = row.k[r] - FH_PA[r], vr = row.r[r] - FH_PB[r];
+    if (r != s) {
+      int us = row.k[s] - FH_PA[s], vs = row.r[s] - FH_PB[s];
+      int t0 = ur + vr + us + vs, t1 = ur - vr + us - vs, t2 = ur + vr - us - vs, t3 = ur - vr - us + vs;
+      if ((t0 | t1 | t2 | t3) & 3) return false;   // H Delta must be 0 mod 4 componentwise
+      int l1 = (abs(t0) + abs(t1) + abs(t2) + abs(t3)) >> 2;
+      if (l1 > q || ((q - l1) & 1)) return false;
+    } else if (A2_BLK_MID[b]) {
+      if (!a2_self_ok(ur - 1, vr - 1, q) && !a2_self_ok(ur - 1, vr + 1, q) &&
+          !a2_self_ok(ur + 1, vr - 1, q) && !a2_self_ok(ur + 1, vr + 1, q)) return false;
+    } else if (!a2_self_ok(ur, vr, q)) return false;
+  }
+  return true;
+}
+static void a2_print() {
+  cout << "A2SHADOW mode=" << G_A2 << " rows_tested=" << A2_rows_tested << " rows_rejected=" << A2_rows_rej
+       << " cuts=" << A2_cuts << " saved_nodes=" << A2_saved_nodes << " total_nodes=" << fh_nodes_total
+       << " hit_under_cut=" << A2_hit_under_cut << " cuts_by_depth=";
+  for (int d = 0; d < 40; d++) if (A2_cuts_depth[d]) cout << d << ":" << A2_cuts_depth[d] << ",";
+  cout << " saved_by_depth=";
+  for (int d = 0; d < 40; d++) if (A2_saved_depth[d]) cout << d << ":" << A2_saved_depth[d] << ",";
+  cout << "\n" << flush;
+}
+
 // Filter the depth-d survivor list into depth d+1 under the current partials.
 // Parity is automatic (k[c] == class-count == pa[c]+rem (mod 2) for every
 // allowed row), so the test is the pure capacity box |k[c]-pa[c]| <= rem[c] —
 // the same pruning shape as count_pairs22, against a SET of exact targets.
+// A2 (above) runs AFTER the capacity box on each surviving row: mode 2 drops the row, mode 1
+// only records whether any survivor still passes (A2_lastrow = "would have cut this node").
 static inline bool fh_abp_filter(int d) {
   auto &src = FH_ABP_STACK[d];
   auto &dst = FH_ABP_STACK[d + 1];
   dst.clear();
   int m = FH_ABP_M;
+  bool a2_any = false;
   for (int idx : src) {
     const AbpRow &row = (*FH_ABP)[idx];
     bool ok = true;
@@ -982,8 +1057,14 @@ static inline bool fh_abp_filter(int d) {
       int dk = row.k[c] - FH_PA[c], dr = row.r[c] - FH_PB[c];
       if (dk < -rem || dk > rem || dr < -rem || dr > rem) { ok = false; break; }
     }
+    if (ok && G_A2) {
+      A2_rows_tested++;
+      if (!a2_row_ok(row, d + 1)) { A2_rows_rej++; if (G_A2 == 2) ok = false; }
+      else a2_any = true;
+    }
     if (ok) dst.push_back(idx);
   }
+  A2_lastrow = (G_A2 == 1) && !dst.empty() && !a2_any;
   return !dst.empty();
 }
 // Exact membership at the leaf (all positions placed, incl. an odd-L middle).
@@ -1181,11 +1262,21 @@ static bool fh_ab_search(int d, int *A, int *B, int *Dab, int *Kab,
     // per-class capacity left. Writes the depth-(d+1) survivor list the
     // recursion below consumes. Runs LAST — the cheap prunes go first.
     if (!prune && FH_ABP && !fh_abp_filter(d)) prune = true;
+    // A2 shadow: the first would-be cut on this path charges its whole subtree as "saved";
+    // nested would-be cuts underneath are not double-counted. A hit underneath is a soundness
+    // violation of the predicate and is counted (must stay 0).
+    bool a2_cut = false; long long a2_nodes0 = 0;
+    if (!prune && A2_lastrow && A2_cut_depth < 0) {
+      a2_cut = true; A2_cut_depth = d; a2_nodes0 = fh_nodes_total; A2_cuts++; A2_cuts_depth[d]++;
+    }
     if (!prune) {
       if (fh_ab_search<collect_depth>(d + 1, A, B, Dab, Kab, nsA, nsB,
-                       na_tied, na_cmp, nb_tied, nb_cmp))
+                       na_tied, na_cmp, nb_tied, nb_cmp)) {
+        if (a2_cut) A2_hit_under_cut++;
         return true;
+      }
     }
+    if (a2_cut) { A2_saved_nodes += fh_nodes_total - a2_nodes0; A2_saved_depth[d] += fh_nodes_total - a2_nodes0; A2_cut_depth = -1; }
     fh_unplace(i2, A, B, Dab, Kab, L);
     fh_unplace(i1, A, B, Dab, Kab, L);
   }
@@ -1217,6 +1308,7 @@ static int fh_complete_ab(const int *C, const int *D) {
   memset(FH_PA, 0, sizeof(FH_PA));
   memset(FH_PB, 0, sizeof(FH_PB));
   memset(FH_PLACED, 0, sizeof(FH_PLACED));
+  A2_cut_depth = -1; A2_lastrow = false;  // shadow state is per candidate
   fh_cur = 0;
   fh_aborted = false;
   bool found = FH_TM.hist_active
@@ -1265,6 +1357,7 @@ int main(int argc, char **argv) {
   if (const char *e = getenv("WZ_FH_CD_PRUNE")) G_CD_PRUNE = atoi(e);  // stream-identical C,D DFS prunes
   hall_order_init();
   if (const char *e = getenv("WZ_FH_OUTER_K")) G_OUTER_K = atoi(e);  // A1 tables: 0 | 2 | 3
+  if (const char *e = getenv("WZ_FH_A2")) G_A2 = atoi(e);            // A2 rows: 0 | 1 shadow | 2 prune
   G_CAND_LOG = getenv("WZ_FH_CAND_LOG") && atoi(getenv("WZ_FH_CAND_LOG"));
   if (getenv("WZ_FH_OUTER_DUMP")) {  // test hook: print both tables and exit
     init_p22();
@@ -2244,6 +2337,25 @@ int main(int argc, char **argv) {
     }
     FH_ABP_M = fh_m;   // partial-class bookkeeping modulus (harmless when off)
     for (int c = 0; c < fh_m; c++) FH_ABP_TIC[c] = class_count(G_N1, c, fh_m);
+    init_a2_tables(G_N1, fh_m);
+    if (getenv("WZ_FH_A2_DUMP")) {  // test hook: block structure, remaining counts, predicate samples
+      int half = G_N1 / 2;
+      for (int b = 0; b < A2_NBLK; b++) cout << "A2BLK " << b << " " << A2_BLK_R[b] << " " << A2_BLK_S[b] << " " << A2_BLK_MID[b] << "\n";
+      for (int p = 0; p <= half; p++) { cout << "A2CNT " << p; for (int b = 0; b < A2_NBLK; b++) cout << " " << A2_CNT[p][b]; cout << "\n"; }
+      unsigned long long x = 88172645463325252ull;  // xorshift64, deterministic
+      auto rnd = [&](int lo, int hi) { x ^= x << 13; x ^= x >> 7; x ^= x << 17; return lo + (int)(x % (unsigned long long)(hi - lo + 1)); };
+      memset(FH_PA, 0, sizeof FH_PA); memset(FH_PB, 0, sizeof FH_PB);
+      for (int p = 0; p <= half; p++)
+        for (int t = 0; t < 1500; t++) {
+          AbpRow row{}; int span = 2 * (half - p) + 3;
+          for (int c = 0; c < fh_m; c++) { row.k[c] = (int8_t)rnd(-span, span); row.r[c] = (int8_t)rnd(-span, span); }
+          cout << "A2EVAL " << p;
+          for (int c = 0; c < fh_m; c++) cout << " " << (int)row.k[c];
+          for (int c = 0; c < fh_m; c++) cout << " " << (int)row.r[c];
+          cout << " " << (a2_row_ok(row, p) ? 1 : 0) << "\n";
+        }
+      return 0;
+    }
     // WZ_FH_COMPLETE_C/_D (2026-09-30): run the completer ONCE on a given C,D (no stream,
     // unconstrained rows) and print the outcome. Seconds per known solution: the six-control
     // gate for completer changes (A1/A2/A3), independent of streaming.
@@ -2261,7 +2373,35 @@ int main(int argc, char **argv) {
       auto t0c = Clock::now();
       int r = fh_complete_ab(C0.data(), D0.data());
       cout << "COMPLETE_ONLY r=" << r << " nodes=" << (fh_nodes_total - nb) << " budget=" << FH_BUDGET
-           << " outer_k=" << G_OUTER_K << " sec=" << chrono::duration<double>(Clock::now() - t0c).count() << "\n";
+           << " outer_k=" << G_OUTER_K << " a2=" << G_A2 << " sec=" << chrono::duration<double>(Clock::now() - t0c).count() << "\n";
+      if (G_A2) a2_print();
+      if (r == 0 && getenv("WZ_FH_A2_ROWCHECK")) {
+        // Six-control production-geometry check (Astra 2026-10-01 item 2): the found A,B's own
+        // profile row, as a ONE-row allowed set, must survive every prefix of its completion
+        // under A2 — re-complete with that row for A2 = 0, 1 (shadow) and 2 (prune): all three
+        // must FOUND the same A,B; shadow must report hit_under_cut=0; prune nodes <= off nodes.
+        vector<AbpRow> one(1);
+        for (int c = 0; c < fh_m; c++) {
+          int ka = 0, kb = 0;
+          for (int i = c; i < G_N1; i += fh_m) { ka += g_solA[i]; kb += g_solB[i]; }
+          one[0].k[c] = (int8_t)ka; one[0].r[c] = (int8_t)kb;
+        }
+        vector<int> A0(g_solA, g_solA + G_N1), B0(g_solB, g_solB + G_N1);
+        FH_ABP = &one;
+        FH_ABP_STACK.assign(G_N1 / 2 + 2, {});
+        for (int mode : {0, 1, 2}) {
+          G_A2 = mode;
+          A2_rows_tested = A2_rows_rej = A2_cuts = A2_saved_nodes = A2_hit_under_cut = 0;
+          FH_ABP_STACK[0] = {0};
+          long long nb2 = fh_nodes_total;
+          int r2 = fh_complete_ab(C0.data(), D0.data());
+          bool same = r2 == 0 && equal(A0.begin(), A0.end(), g_solA) && equal(B0.begin(), B0.end(), g_solB);
+          cout << "A2ROWCHECK mode=" << mode << " r=" << r2 << " nodes=" << (fh_nodes_total - nb2)
+               << " same_AB=" << (same ? 1 : 0) << " hit_under_cut=" << A2_hit_under_cut
+               << " rows_tested=" << A2_rows_tested << " rows_rejected=" << A2_rows_rej << "\n";
+        }
+        FH_ABP = nullptr;
+      }
       if (r == 0) {
         int n1 = G_N1;
         cout << "*** BS(" << n1 << "," << n << ") FOUND ***  (complete-only)\n";
@@ -2674,6 +2814,7 @@ int main(int argc, char **argv) {
     double t = chrono::duration<double>(Clock::now() - T0).count();
     long long completed_tested = clean_no + aborted + (hit_idx >= 0 ? 1 : 0);
     fh_write_ckpt();  // final exact position (SIGTERM/deadline/test-hook paths)
+    if (G_A2) a2_print();
     cout << "\n=== FIRSTHIT SUMMARY (n=" << n << ", sig " << G_SIG_A << ","
          << G_SIG_B << "," << G_SIG_C << "," << G_SIG_D
          << ", shard " << fh_shard << "/" << fh_nshard << ") ===\n"

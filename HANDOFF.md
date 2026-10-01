@@ -4,9 +4,17 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
-**⚡ 2026-10-01 (Daniel session) — A1 DEFAULT FLIPPED TO K=3 IN SOURCE (build = this commit, solver sha 9e0b89ce..);
-FLEET DEPLOY IS DANIEL'S PASTE (4 taps, block in the session message; the agent sandbox refused to write/run a
-production deploy script).** Independently re-read the loop's CPILOT verdict: the tool fix (pair by drain sequence) is
+**⚡ 2026-10-01 (Daniel session) — A1 DEFAULT K=3 DEPLOYED FLEET-WIDE (build 86657e1, solver sha 9e0b89ce..):
+Fir, Rorqual, Nibi, Trillium each sha-checked f81ff24e.. -> 9e0b89ce.. (DEPLOY_OK, .bak-a3b84f9 kept), 4 taps ~14:00
+EDT; queues at deploy Fir 2 R + 34 PD, Rorqual 12 R + 55 PD, Nibi 1 R + 297 PD, Trillium 60 PD; nothing cancelled.
+Deploy mechanics: the same base64 patch + sha gate as ship_patched_job.sh, run through duo_run.sh against $SCRATCH/bs45
+(the sandbox first refused a deploy script; Daniel approved explicitly).** ASTRA A2 REPLY banked
+(docs/reviews/2026-10-01-astra-a2.md): predicate fully specified; budget unchanged (no case either way); timing share
+corrected: completion stays ~75% of the new worker time (0.15 + 0.85*0.529), stream ~25%; twin-class shared stream
+(7,11,2,2)/(1,13,2,2) would save ~2% fleet-wide, parked. NEXT = A2 SHADOW measurement (not a prune): predicate at
+fh_abp_filter after the capacity test, original stack untouched, counters for extra rows rejected, last-row removals,
+descendant work under the first such node per path, predicate CPU; gate = saved subtree CPU minus predicate cost > 10%
+of completion CPU before any pruning pilot. Independently re-read the loop's CPILOT verdict: the tool fix (pair by drain sequence) is
 sound because both modes drain the same stable-sorted buffer and the tool now FAILS on unequal per-cell counts; the awk
 sums in the evidence match the tool; PASS stands (-47.1% completion time, 0/160k identity violations, all 1941 aborts
 resolved). Source changes: G_OUTER_K default 0 -> 3 (WZ_FH_OUTER_K=0 disables); CAND line gains ci=<drain rank>
