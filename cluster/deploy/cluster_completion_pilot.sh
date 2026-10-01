@@ -24,7 +24,8 @@
 cd "$SLURM_SUBMIT_DIR"
 module load StdEnv/2023
 module load gcc/12.3
-PILOT_VAR=${PILOT_VAR:-WZ_FH_OUTER_K}; PILOT_ON=${PILOT_ON:-3}; NCAND=${NCAND:-40000}; SHARDS=${SHARDS:-10 56 102 148}
+PILOT_VAR=${PILOT_VAR:-WZ_FH_OUTER_K}; PILOT_ON=${PILOT_ON:-3}; NCAND=${NCAND:-40000}; SHARDS=${SHARDS:-10+56+102+148}
+PILOT_ON=${PILOT_ON//+/ }; SHARDS=${SHARDS//+/ }  # lists are '+'-joined on the sbatch line (no spaces survive --export)
 BIN=cp_bin_${SLURM_JOB_ID}
 g++ -O3 -march=native -std=c++17 -fopenmp -o "$BIN" src/solver/wz_match.cpp || exit 1
 echo "=== CPILOT $PILOT_VAR=0/$PILOT_ON shards=$SHARDS ncand=$NCAND job $SLURM_JOB_ID node $(hostname) $(lscpu | grep -m1 'Model name' | cut -c1-60) $(date) sha $(sha256sum src/solver/wz_match.cpp | cut -c1-16) ==="
