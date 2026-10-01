@@ -1,8 +1,32 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-09-30 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-10-01 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-10-01 (daily loop 1pm — all four reached) — NO HITS; 8 hitless Pass H reads (1 Fir second rep, 7 Rorqual
+(9,9,0,4) first reps), every arm busy, no alarms; CPILOT 62283881 gone from Fir's queue => read this run (verdict below);
+Fir H44g0 lane at 2 queued => 1 restack (the only submit).** NEW FOUND: none anywhere. rung_status EXHAUSTED as always.
+FIR: 62277619 H44g0 = SECOND rep on the ns177 checkpoint, hitless, 177/177 arms (arms_interrupted=177): cells_done_sum
+1194, cum_done 2192 = 998 (first rep 62117655) + 1194 EXACTLY => the checkpoint resumed (no fresh start / CFGSIG line in
+the checker extract; the arm logs were grepped in this run's Fir tap, see below); tested 59.5M (tested_cum 112.8M),
+aborted 4479895 = 7.5%, range_done 0/177, cum_dup 91536. Queue at check: 2 R (62277620 H44gr0, 62277622 H44g1000,
+~1.5 h left) + 34 PD (62277623-631 = 9 second reps; 62278014-037 = 24 third/fourth reps) => every lane has 3 jobs
+except H44g0 (62278014 + 62278026 = 2) => RESTACK ONE H44g0 (docs/plans/launch/passh_step2_fir_1.sh line, verbatim).
+RORQUAL: 7 first reps 22037981-987 = H44G0, H44Gr0, H44G300, H44Gr300, H44G600, H44Gr600, H44G900 ((9,9,0,4), S=300,
+177 arms, build a3b84f9) hitless, 177/177 arms busy, range_done 0/177, cum_done == cells_done_sum (fresh checkpoints,
+first reps): 810 / 702 / 980 / 862 / 1041 / 900 / 1010 cells (sum 6305, mean 901); tested 38.1-55.8M; aborts 2.6 / 6.2
+/ 9.6 / 15.1 / 10.5 / 17.1 / 14.3% (pooled 37.5M/338.6M = 11.1%, all under 35%). [orbitcanon] on the running arms:
+cells=968858 kept_orbits=65092 dedup=14.88x (manifest class). Queue: 14 R (22037988-22038002 minus 22037995 = H44Gr900..
+H44Gr3000, started 02:03-10:22 EDT today, header-only => read tomorrow) + 55 PD (22037995, 22038003-057) => above the
+floor of 8, no action (the 7 finished G-letter lanes stay unstacked by the floor rule). NIBI: 1 R (22930967 H44B0,
+(1,7,8,8), started 11:13 EDT today, header-only) + 297 PD (22930971-22932947) => above the floor of 100, no action.
+TRILLIUM: 60 H PD (2458789-2458859), 0 R => no action. Verbatim GATEB lines: docs/reviews/evidence/passh_reads_2026-10-01.txt.
+HOUSEKEEPING: the 09-30 loop's raw-evidence commit (40185e4: passh_narms177_first_reads_2026-09-30.txt + the Fir
+restack IDs) was only on branch auto/2026-09-30 and never reached main => cherry-picked onto main this run (1d825db;
+the IDs file now holds both the 62277619-631 and 62278014-037 blocks).
+CHECKER: exclusions +62277619, +22037981-987 (regex validated: live 62277620/622, 22037988, 22038001, 22930967,
+2458789, 62278014 and CPILOT 62283881 visible; the read IDs excluded).
 
 **⚡ 2026-09-30 (Daniel session, afternoon) — ASTRA DEEP DIVE (docs/reviews/2026-09-30-astra-deep.md) →
 A1 BUILT AND GATED (commit 38dfbd9); COMPLETION PILOT Fir 62283881 RUNNING.** The completer is ~85% of
