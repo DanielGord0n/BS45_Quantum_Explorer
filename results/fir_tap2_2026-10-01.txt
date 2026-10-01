@@ -1,0 +1,38 @@
+== md5:
+46d10fb445b79f25c9b95eed781c3fa3  cpilot_62283881.txt
+== sample CAND lines (head 2 / tail 2 per log):
+-- cp_s10_m0.log
+CAND idx=40000 pi=360736 r=2 nodes=388344 ns=45015175
+CAND idx=40000 pi=360736 r=2 nodes=355720 ns=39964939
+CAND idx=40000 pi=360736 r=2 nodes=117326 ns=11619971
+CAND idx=40000 pi=360736 r=2 nodes=22490 ns=3469566
+-- cp_s10_m3.log
+CAND idx=40000 pi=360736 r=2 nodes=81081 ns=25144060
+CAND idx=40000 pi=360736 r=2 nodes=63070 ns=19692826
+CAND idx=40000 pi=360736 r=2 nodes=18901 ns=6331229
+CAND idx=40000 pi=360736 r=2 nodes=3169 ns=2306674
+-- cp_s148_m0.log
+CAND idx=40000 pi=359104 r=2 nodes=34 ns=63400
+CAND idx=40000 pi=359104 r=2 nodes=34 ns=30920
+CAND idx=40000 pi=359104 r=2 nodes=34 ns=29780
+CAND idx=40000 pi=359104 r=2 nodes=34 ns=29759
+-- cp_s148_m3.log
+CAND idx=40000 pi=359104 r=2 nodes=34 ns=60510
+CAND idx=40000 pi=359104 r=2 nodes=34 ns=30700
+CAND idx=40000 pi=359104 r=2 nodes=34 ns=29260
+CAND idx=40000 pi=359104 r=2 nodes=34 ns=29210
+== awk per log: n_cand, sum_ns, sum_nodes, r0, r2, r3:
+cp_s102_m0.log 40000 1403482618101 13442144245 0 39731 269
+cp_s102_m3.log 40000 681339562775 2665365085 0 40000 0
+cp_s10_m0.log 40000 2145130995866 19854306012 0 38670 1330
+cp_s10_m3.log 40000 1165806505337 4040074499 0 40000 0
+cp_s148_m0.log 40000 1182959870 1360000 0 40000 0
+cp_s148_m3.log 40000 1214697160 1360000 0 40000 0
+cp_s56_m0.log 40000 1639040740966 13537495088 0 39658 342
+cp_s56_m3.log 40000 894611106609 2616259399 0 40000 0
+== SUMMARY v2 (pair by drain sequence):
+modes: off=0 on=3; cells off 4 on 4; per-cell counts equal: True
+paired candidates: 160000  unpaired off/on: 0/0  identity violations: 0 []
+completion time off/on: 5189s / 2743s = 1.892x  (saving 47.1%); nodes off/on 5.024x; resolved 158059 -> 160000; hits 0 -> 0
+VERDICT: PASS
+== done
