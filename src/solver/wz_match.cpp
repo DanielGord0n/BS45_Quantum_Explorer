@@ -552,9 +552,10 @@ static void init_p22() {
 // 8^k tuples of F_j = sum_{r<=j} A[j-r] aR_r + B[j-r] bR_r + A[L-1-j+r] aL_r + B[L-1-j+r] bL_r,
 // and for a reachable tuple only the first-quad choices v_0 that occur are possible. Tables
 // depend only on the boundary pattern (root quad from P22_NEG with A[0]=B[0]=+1: 2 choices;
-// quads at depths 1..k-1: 8 each) => 2*8^(k-1) patterns. WZ_FH_OUTER_K=0 (off, default) | 2 | 3.
-// Exactness + independent enumeration: tools/test_outer_tables.py.
-static int G_OUTER_K = 0;
+// quads at depths 1..k-1: 8 each) => 2*8^(k-1) patterns. WZ_FH_OUTER_K=0 (off) | 2 | 3 (DEFAULT
+// since 2026-10-01: CPILOT 62283881 PASS, 160k paired candidates, identity exact, completion
+// time -47.1%). Exactness + independent enumeration: tools/test_outer_tables.py.
+static int G_OUTER_K = 3;
 static bool G_CAND_LOG = false;  // WZ_FH_CAND_LOG=1: one line per completed candidate (pilots)
 static unsigned char OUTER2[16][5][9];          // [pattern][F0/2+2][F1/2+4] -> 8-bit mask over P22_POS
 static unsigned char OUTER3[128][5][9][13];     // [pattern][F0/2+2][F1/2+4][F2/2+6]
@@ -2399,6 +2400,7 @@ int main(int argc, char **argv) {
         }
         return sc;
       };
+      long long cand_rank = -1;  // drain rank of the candidate being completed (CAND ci=; pilots pair on it)
       auto complete_one = [&](const int *Ci, const int *Di) {
         long long nodes_before = fh_nodes_total;
         auto started = FH_TM.stride ? Clock::now() : Clock::time_point{};
@@ -2411,7 +2413,7 @@ int main(int argc, char **argv) {
           exit(5);
         }
         if (G_CAND_LOG)
-          cout << "CAND idx=" << cand << " pi=" << pi << " r=" << r << " nodes=" << (fh_nodes_total - nodes_before)
+          cout << "CAND idx=" << cand << " ci=" << cand_rank << " pi=" << pi << " r=" << r << " nodes=" << (fh_nodes_total - nodes_before)
                << " ns=" << chrono::duration_cast<chrono::nanoseconds>(Clock::now() - cl_started).count() << "\n";
         if (FH_TM.stride) {
           long long elapsed = FhTelemetry::ns(started), nodes = fh_nodes_total - nodes_before;
@@ -2515,6 +2517,7 @@ int main(int argc, char **argv) {
           // Deciles of this buffer's eligible drain, using absolute sorted rank
           // even on resume. Short buffers use their actual eligible length.
           telemetry_rank = FH_TM.stride ? (int)(10 * ci / stop_at) : -1;
+          cand_rank = (long long)ci;
           complete_one(Ci, Di);
           ck_batch = cur_batch;         // completed-through position: first
           ck_k = (long long)ci + 1;     // ci+1 of this sorted batch are DONE
@@ -2583,6 +2586,7 @@ int main(int argc, char **argv) {
                 // the whole batch (ours42's image sits ~14.5M completions deep in its cell).
                 if (getenv("WZ_FH_TARGET_COMPLETE") && atoi(getenv("WZ_FH_TARGET_COMPLETE"))) {
                   cout << "TARGET_COMPLETE pi=" << pi << " idx=" << c << " score=" << sc << "\n" << flush;
+                  cand_rank = c;
                   complete_one(Ci, Di);
                   fh_stop.store(true); cell_stop.store(true);
                   return;
@@ -2613,6 +2617,7 @@ int main(int argc, char **argv) {
           }
           fh_resuming = false;
         }
+        cand_rank = cell_done_ct;
         complete_one(Ci, Di);
         cell_done_ct++;
         ck_batch = 0;

@@ -165,12 +165,12 @@ Do not re-run the checker.
      cancel or resubmit them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
-     **CPILOT 62283881 (Fir, 2026-09-30, $SCRATCH/bs45_cpilot, 8 cores, up to 8 h): the A1 outer-lag
-     completer tables, paired off/on. NOT a lane: never count, restack or cancel it. Once it is gone
-     from squeue: `cd $SCRATCH/bs45_cpilot && cat cpilot_62283881.txt` -> save verbatim to
-     docs/reviews/evidence/cpilot_62283881.txt, run `python3 tools/completion_pilot_summary.py` on it,
-     report VERDICT (PASS/CLOSE/INCONCLUSIVE/FAIL) + saving + resolved/hits. PASS = NEEDS_HUMAN
-     (deploy decision is Daniel's).**
+     **CPILOT 62283881 was READ 2026-10-01 (PASS; evidence banked). Nothing more to do with it. A1
+     (WZ_FH_OUTER_K=3) is the source default from 2026-10-01; Daniel deploys it by hand onto each
+     cluster's $SCRATCH/bs45 (solver sha 9e0b89ce.. after, f81ff24e.. before). Until all four are
+     deployed, clusters may run different solver shas: expected, not an alarm. Reps compiled after
+     the deploy should show MORE cells_done per 12 h than the 09-30 reps: report cells_done per rep
+     next to the lane's previous rep; never submit, cancel or restack because of it.**
      **PASS H IS LIVE ON ALL FOUR CLUSTERS since 2026-09-29 (444 units, 1 rep each). Refill = restack H
      lanes so that EVERY H lane has 3 jobs (running + pending) on Fir (12 lanes, 12 h reps: 1 rep/lane
      drains the queue by ~03:00 and idles Fir until 1pm, as on 09-30), and each cluster's pending stays

@@ -94,7 +94,11 @@ def main():
         common = dict(WZ_FIRSTHIT=1, WZ_FH_M6=1, WZ_FH_AB_PROF=1,
                       WZ_THM211B=1, WZ_THM212=1, WZ_FH_ORBIT_CANON=1,
                       WZ_FH_PROF_ORDER=1, WZ_FH_BUF_CAP=16, WZ_FH_DRAIN_TOP=5,
-                      WZ_FH_MAX_CAND=256, WZ_FH_PROG_SEC=9999)
+                      WZ_FH_MAX_CAND=256, WZ_FH_PROG_SEC=9999,
+                      # the c2a3813 baseline predates the A1 outer-lag tables (default ON since
+                      # 2026-10-01); they change total_AB_nodes, so compare with them off here.
+                      # A1's own identity gate is tools/test_outer_tables.py.
+                      WZ_FH_OUTER_K=0)
         cases = [((6,5,1,0,0), {}), ((11,0,6,1,3), {}),
                  ((12,1,7,0,0), {}), ((13,2,4,3,5), {}),
                  ((13,2,4,3,5), {'WZ_FH_CELL_ORDER': 0}),

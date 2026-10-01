@@ -15,7 +15,7 @@ count does not fall; CLOSE: saving < 5%; else INCONCLUSIVE. Requires >= 2000 pai
 import re
 import sys
 
-L = re.compile(r'cp_s(\d+)_m(\d)\.log CAND idx=(\d+) pi=(\d+) r=(\d) nodes=(\d+) ns=(\d+)')
+L = re.compile(r'cp_s(\d+)_m(\d)\.log CAND idx=(\d+)(?: ci=-?\d+)? pi=(\d+) r=(\d) nodes=(\d+) ns=(\d+)')  # ci= added 2026-10-01 (print-only)
 
 
 def main():

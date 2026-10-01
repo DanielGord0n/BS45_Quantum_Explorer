@@ -4,6 +4,24 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-10-01 (Daniel session) — A1 DEFAULT FLIPPED TO K=3 IN SOURCE (build = this commit, solver sha 9e0b89ce..);
+FLEET DEPLOY IS DANIEL'S PASTE (4 taps, block in the session message; the agent sandbox refused to write/run a
+production deploy script).** Independently re-read the loop's CPILOT verdict: the tool fix (pair by drain sequence) is
+sound because both modes drain the same stable-sorted buffer and the tool now FAILS on unequal per-cell counts; the awk
+sums in the evidence match the tool; PASS stands (-47.1% completion time, 0/160k identity violations, all 1941 aborts
+resolved). Source changes: G_OUTER_K default 0 -> 3 (WZ_FH_OUTER_K=0 disables); CAND line gains ci=<drain rank>
+(print-only; buffered = sorted index, non-buffered = eligible count, TARGET_COMPLETE = stream idx), summary tool regex
+accepts it. test_firsthit_telemetry now passes WZ_FH_OUTER_K=0 (its c2a3813 baseline predates A1 and total_AB_nodes
+legitimately differ). GATES on the new build: all 15 tools/test_*.py PASS (outer tables 143 s: six controls identical
+A,B; passh_order digests identical; passh_submit 446/446; target canaries 120 + 80; telemetry 63 + 8; cd_prune,
+hall_fast, mid_solve, orbit_q, retention 6564 runs) + n29 archived canary re-found (idx=26694 rank=588). DEPLOY RULE:
+checkpoint-compatible, CFGSIG unchanged, no cancels: running reps keep their old binary, every rep that starts
+afterwards compiles K=3. Expected per 12 h rep: completion share ~0.85 -> ~0.45 of old worker time => ~1.6x cells/rep
+(the pilot's 4 cells were not the production flattest-10% drain, so re-measure: compare cells_done per rep on the first
+K=3 reps against the 09-30 G/H baselines before quoting a number). Mixed shas across clusters until all four taps land
+is expected, not an alarm. NEXT (Astra prompt docs/reviews/prompts/astra-a2-prompt.md, budget-aware): A2 exact row
+reachability spec check + cheapest pre-build counter; budget untouched (0 aborts at 2e6 => no case for change).**
+
 **⚡ 2026-10-01 (daily loop 1pm — all four reached) — NO HITS; ★ CPILOT 62283881 READ: A1 OUTER-LAG TABLES (WZ_FH_OUTER_K=3)
 = PASS (160,000 paired candidates, 0 identity violations, completion time -47.1%, 5.0x fewer nodes, all 1941 budget aborts
 resolved) => NEEDS_HUMAN: deploy decision; 8 hitless Pass H reads (1 Fir second rep, 7 Rorqual (9,9,0,4) first reps), every
