@@ -14,7 +14,23 @@ corrected: completion stays ~75% of the new worker time (0.15 + 0.85*0.529), str
 (7,11,2,2)/(1,13,2,2) would save ~2% fleet-wide, parked. NEXT = A2 SHADOW measurement (not a prune): predicate at
 fh_abp_filter after the capacity test, original stack untouched, counters for extra rows rejected, last-row removals,
 descendant work under the first such node per path, predicate CPU; gate = saved subtree CPU minus predicate cost > 10%
-of completion CPU before any pruning pilot. Independently re-read the loop's CPILOT verdict: the tool fix (pair by drain sequence) is
+of completion CPU before any pruning pilot. ★ A2 BUILT AND GATED (commit b2cf92e, DEFAULT OFF, WZ_FH_A2=1 shadow | 2
+prune): blocks under the reflection r -> (L-1-r) mod m (n=44: distinct {0,2},{3,5}; self {1}; self+middle {4}; counts
+8/7/4/3 before the root, 7 in {0,2} after it, exactly Astra's reference), predicate = Hadamard-transformed residual
+(integral, |t|_1 <= q, parity) per distinct block and the even/box/parity test per self block with the four-choice free
+middle. GATE tools/test_a2_rows.py PASS: formulas == brute force for q <= 4 (8^q / 5^q assignments + middle); solver
+blocks + per-depth counts == position enumeration for L=45,6,7,9,12,13 and m=3,6; C++ predicate == python on 150,000
+random rows; 84 class/budget identity runs (shadow identical to off with 0 hits under would-be cuts; prune uncapped
+identical, 28 capped hits retained); six controls re-complete to the same A,B under off/shadow/prune with their own
+row as the allowed set (nodes e.g. WZ-43 8063 -> 5243). NOTE under a cap total nodes are NOT monotone for a prune
+(budget charges quad trials: n=9 (2,4,3,3) budget 30 went 210 -> 212), so the identity rule is outcome-based, as
+Astra said. A2 PILOT Fir 62438417 (ship_patched_job.sh, $SCRATCH/bs45_a2pilot, sha 83d9dcaf.. on 86657e1, 12 cores,
+8 h): 4 shards x {A2=0, 1 shadow, 2 prune}, same 40k candidates per arm, production budget. PRE-REGISTERED
+(tools/completion_pilot_summary.py): shadow mode: identity must be exact (same outcome AND nodes), hit_under_cut must be
+0, estimate = saved_nodes/total_nodes x time(off) - overhead => PROCEED if > 10% of time(off) else CLOSE; prune mode: the
+A1 rule (per-candidate identity 0->0 with nodes <=, 2->2, 3->{0,2,3}; PASS >= 15% completion-time saving with resolved
+not down; CLOSE < 5%). Deploy of A2 prune (default flip) only on prune PASS, and it is Daniel's go. Small-n hint only:
+A2 rejects ~50% of capacity-surviving rows but would cut just 1-5% of nodes at n <= 13 (shallow trees); n=44 decides. Independently re-read the loop's CPILOT verdict: the tool fix (pair by drain sequence) is
 sound because both modes drain the same stable-sorted buffer and the tool now FAILS on unequal per-cell counts; the awk
 sums in the evidence match the tool; PASS stands (-47.1% completion time, 0/160k identity violations, all 1941 aborts
 resolved). Source changes: G_OUTER_K default 0 -> 3 (WZ_FH_OUTER_K=0 disables); CAND line gains ci=<drain rank>

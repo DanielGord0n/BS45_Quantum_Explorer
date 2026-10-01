@@ -165,6 +165,16 @@ Do not re-run the checker.
      cancel or resubmit them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
+     **A2 PILOT 62438417 (Fir, 2026-10-01, $SCRATCH/bs45_a2pilot, 12 cores, up to 8 h): A2 profile-row
+     reachability, 4 shards x {off, shadow, prune}. NOT a lane: never count, restack or cancel it. Once
+     it is gone from squeue: `cd $SCRATCH/bs45_a2pilot && cat cpilot_62438417.txt` -> save verbatim to
+     docs/reviews/evidence/a2pilot_62438417.txt (if the file is too large for one tap, save the
+     non-CAND lines plus the first 40 CAND lines, copy tools/completion_pilot_summary.py to Fir with a
+     quoted heredoc and run it THERE over the full file, exactly as the 10-01 loop did for 62283881),
+     run `python3 tools/completion_pilot_summary.py` on it, report BOTH verdict lines (mode 1 shadow:
+     PROCEED/CLOSE/FAIL with the estimated net saving and hit_under_cut; mode 2 prune: PASS/CLOSE/
+     INCONCLUSIVE/FAIL with the saving). Any FAIL or hit_under_cut>0 = NEEDS_HUMAN; prune PASS =
+     NEEDS_HUMAN (deploy decision is Daniel's).**
      **CPILOT 62283881 was READ 2026-10-01 (PASS; evidence banked). Nothing more to do with it. A1
      (WZ_FH_OUTER_K=3) is the source default from 2026-10-01 and was DEPLOYED to all four clusters'
      $SCRATCH/bs45 on 2026-10-01 ~14:00 EDT (solver sha 9e0b89ce..). Reps that STARTED after that
