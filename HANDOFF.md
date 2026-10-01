@@ -4,9 +4,35 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
-**⚡ 2026-10-01 (daily loop 1pm — all four reached) — NO HITS; 8 hitless Pass H reads (1 Fir second rep, 7 Rorqual
-(9,9,0,4) first reps), every arm busy, no alarms; CPILOT 62283881 gone from Fir's queue => read this run (verdict below);
-Fir H44g0 lane at 2 queued => 1 restack (the only submit).** NEW FOUND: none anywhere. rung_status EXHAUSTED as always.
+**⚡ 2026-10-01 (daily loop 1pm — all four reached) — NO HITS; ★ CPILOT 62283881 READ: A1 OUTER-LAG TABLES (WZ_FH_OUTER_K=3)
+= PASS (160,000 paired candidates, 0 identity violations, completion time -47.1%, 5.0x fewer nodes, all 1941 budget aborts
+resolved) => NEEDS_HUMAN: deploy decision; 8 hitless Pass H reads (1 Fir second rep, 7 Rorqual (9,9,0,4) first reps), every
+arm busy, no alarms; Fir H44g0 lane at 2 queued => 1 restack (the only submit).** NEW FOUND: none anywhere. rung_status
+EXHAUSTED as always.
+★ CPILOT 62283881 (Fir fc20359, AMD EPYC 9655, isolated $SCRATCH/bs45_cpilot, sha 2735afb9797ec80c, cluster_completion_pilot.sh):
+sacct COMPLETED 00:38:00 exit 0:0 (not the 8 h cap: 40,000 candidates per arm completed in 20-38 min). 4 shards (10, 56, 102,
+148) x {K=0, K=3}, production H stream (ORDER=3 + Q + prune, workhorse window 2000..3000, 177 arms), each arm completed its
+first 40,000 streamed candidates at budget 2e6, one cell per shard (pi 360736 / 358304 / 355872 / 359104). Pre-registered
+rule (tools/completion_pilot_summary.py): per-candidate identity, PASS = completion time -15% and resolved count not down,
+>= 2000 pairs. RESULT (tool v2 run ON FIR over the full file, md5 46d10fb445b79f25c9b95eed781c3fa3, 320,018 lines):
+paired 160,000/160,000 (per-cell counts equal across modes), identity violations 0, completion time off/on 5189 s / 2743 s
+= 1.892x (saving 47.1%), nodes off/on 5.024x (46.84e9 -> 9.32e9), resolved 158,059 -> 160,000 (every mode-0 budget abort
+— s10 1330, s56 342, s102 269, s148 0 — became a clean no under K=3; 0 aborts remain), hits 0 -> 0 (the hit->hit clause is
+untested here; the six local complete-only controls cover it). Per shard (sum ns off -> on): s10 2145 s -> 1166 s; s56
+1639 s -> 895 s; s102 1403 s -> 681 s; s148 1.18 s -> 1.21 s (a trivial cell: every candidate dies at 34 nodes, K=3 costs
++2.7% there = the table overhead on instant rejects). Independent awk sums over the raw CAND lines reproduce the tool's
+totals. VERDICT: PASS. Verbatim: docs/reviews/evidence/cpilot_62283881.txt (sacct, per-log totals lines, sample CAND lines,
+awk aggregates, both tool runs); the 21 MB per-candidate file stays on Fir (too big for a Duo tap; scp if wanted).
+TOOL DEFECT FOUND AND FIXED (commit 6412a8a, tools-only): the first run paired only 4 candidates ("INCONCLUSIVE") because
+the solver's CAND line prints idx= from the STREAM counter, which in the buffered path is already 40000 when draining
+starts, so idx is constant within a cell and the (shard, pi, idx) key collapsed to one pair per shard. Reproduced locally
+at n=13 (K=0/3, BUF_CAP=DRAIN_TOP=MAX_CAND=300: idx constant per cell). The tool now pairs the k-th CAND line of each
+(shard, cell) in mode 0 with the k-th in the on-mode (both modes drain the same sorted buffer in the same order; the tool
+now also FAILS if per-cell counts differ) — validated locally (57/57 pairs, awk cross-check identical) before the re-run.
+QUEUED for Daniel's session (print-only solver change, NOT made here): have the CAND line print the drain rank (ci) so
+key-based pairing also works. NEEDS_HUMAN (the HANDOFF 09-30 plan): on PASS, flip G_OUTER_K default to 3 (checkpoint-
+compatible, no CFGSIG change) and redeploy fleet-wide with sha-checked patches (production solver = f81ff24 = a3b84f9). Not
+done by the loop: code deploys are a human step.
 FIR: 62277619 H44g0 = SECOND rep on the ns177 checkpoint, hitless, 177/177 arms (arms_interrupted=177): cells_done_sum
 1194, cum_done 2192 = 998 (first rep 62117655) + 1194 EXACTLY => the checkpoint resumed (no fresh start / CFGSIG line in
 the checker extract; the arm logs were grepped in this run's Fir tap, see below); tested 59.5M (tested_cum 112.8M),
