@@ -65,6 +65,9 @@ def main():
     n = a.n
     CLASSES = CLASSES_BY_N[n]
     tag = 'passh' if n == 44 else f'passh{n}'
+    # n=45 (odd): WZ_FH_ENDPOS=1 (positive endpoint quad only) makes Q + closure prune sound at
+    # odd n (tools/test_endpos_q.py); n=44 lines stay exactly as launched.
+    extra = {44: '', 45: 'WZ_FH_ENDPOS=1,'}[n]
     env_common = ENV_COMMON.format(narms=NARMS)
     tmp = tempfile.mkdtemp(prefix='bs45-manifest-')
     binary = a.binary
@@ -75,6 +78,8 @@ def main():
     env = {k: v for k, v in os.environ.items() if not k.startswith(('WZ_', 'FH_'))}
     env.update(dict(WZ_FIRSTHIT='1', WZ_FH_ORBIT_CANON='1', WZ_FH_ORBIT_Q='1', WZ_FH_ORBIT_QPRUNE='1',
                     WZ_FH_PROF_ORDER='3', WZ_FH_LIST_ONLY='1', WZ_FH_NSHARD=str(NARMS)))
+    if extra:
+        env.update(dict(kv.split('=') for kv in extra.rstrip(',').split(',')))
     manifest = {'build': subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True,
                                         cwd=ROOT).stdout.strip(), 'narms': NARMS, 'n': n, 'classes': []}
     submit = {}
@@ -103,7 +108,7 @@ def main():
         for ln in lanes:
             for rev in (0, 1):
                 name = f"H{n}{letter}{'r' if rev else ''}{ln['skip']}"
-                envs = f"WZ_N={n},WZ_A={sig[0]},WZ_B={sig[1]},WZ_C={sig[2]},WZ_D={sig[3]},{env_common}" \
+                envs = f"WZ_N={n},WZ_A={sig[0]},WZ_B={sig[1]},WZ_C={sig[2]},WZ_D={sig[3]},{extra}{env_common}" \
                        f",WZ_FH_STREAM_REV={rev},WZ_FH_DRAIN_BATCHES=1,WZ_FH_PROF_SKIP={ln['skip']},WZ_FH_PROF_END={ln['end']}," \
                        f"WZ_FH_EXPECT_DIGEST={digest}"
                 lines.append(f"sbatch --requeue --mem=0 {ACCOUNT[cluster]} -J {name} -d singleton --export=ALL,{envs} ./cluster_firsthit_probe.sh")

@@ -664,6 +664,15 @@ static long long wall_now_sec() {
 //         pair can hit it exactly iff t is integral, |t|_1 <= q and q-|t|_1 is even.
 //         Applied from depth 1 (the root quad may be negative-product).
 static int G_CD_PRUNE = 0;
+// WZ_FH_ENDPOS=1 (2026-10-02, Astra n=45 note A): emit only C,D whose ENDPOINT quad is
+// positive-product (C0*D0*C[n-1]*D[n-1] = +1), like every interior quad. Sound for the
+// completer: at shift n-1 the four A,B terms a0a[n-1], a1a[n], b0b[n-1], b1b[n] have product
+// (root quad)(next quad) = (-1)(+1) = -1, so their sum is +-2 and c0c[n-1] + d0d[n-1] must be
+// -+2, i.e. equal signs => positive endpoint quad (Dokovic Thm 2.1; all 36 banked/reference
+// solutions, n=32..44, satisfy it). With every quad positive the quad switch Q is a
+// bijection of the stream at ANY n (the odd-n middle is fixed by Q), so Q + closure prune
+// become available at odd n. Changes the stream => CFGSIG ".ep1". Gate: tools/test_endpos_q.py.
+static bool G_ENDPOS = false;
 static string G_ORDER_DIGEST;  // "<list>:<kept>" under WZ_FH_PROF_ORDER=3
 static unsigned long long G_CD_NODES = 0;  // DFS visits (measurement; printed by CELLSIZE)
 static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
@@ -754,8 +763,8 @@ static void count_pairs22(int L, const vector<int> &tx, const vector<int> &ty,
     }
     int i1 = d, i2 = L - 1 - d;
     int c1 = i1 % m, c2 = i2 % m;
-    bool d0free = (d == 0 && !abSide);
-    const int (*S)[4] = (d == 0) ? (abSide ? P22_NEG : P22_16) : P22_POS;
+    bool d0free = (d == 0 && !abSide && !G_ENDPOS);  // ENDPOS: the C,D root quad is positive too
+    const int (*S)[4] = (d == 0) ? (abSide ? P22_NEG : (G_ENDPOS ? P22_POS : P22_16)) : P22_POS;
     int ns = d0free ? 16 : 8;
     for (int kk = 0; kk < ns; kk++) {
       int k = G_STREAM_REV ? (ns - 1 - kk) : kk;
@@ -1355,6 +1364,7 @@ int main(int argc, char **argv) {
   if (getenv("WZ_THM211B")) G_THM211B = true;   // Thm 2.3 eq 2.11b profile filter
   if (getenv("WZ_THM212"))  G_THM212  = true;   // Thm 2.3 eq (18) mod-4 filter
   if (const char *e = getenv("WZ_FH_CD_PRUNE")) G_CD_PRUNE = atoi(e);  // stream-identical C,D DFS prunes
+  G_ENDPOS = getenv("WZ_FH_ENDPOS") && atoi(getenv("WZ_FH_ENDPOS"));   // positive C,D endpoint quad only
   hall_order_init();
   if (const char *e = getenv("WZ_FH_OUTER_K")) G_OUTER_K = atoi(e);  // A1 tables: 0 | 2 | 3
   if (const char *e = getenv("WZ_FH_A2")) G_A2 = atoi(e);            // A2 rows: 0 | 1 shadow | 2 prune
@@ -1649,10 +1659,12 @@ int main(int argc, char **argv) {
     bool orbit_q = false;
     if (const char *e = getenv("WZ_FH_ORBIT_Q")) {
       int v = atoi(e);
-      bool safe = (n % 2 == 0) && (((G_SIG_C + G_SIG_D) % 4 + 4) % 4 == 0);
+      // ENDPOS (2026-10-02): with the endpoint quad forced positive every mirror quad is
+      // positive at any n, and the odd-n middle is fixed by Q, so Q is safe for every class.
+      bool safe = G_ENDPOS || ((n % 2 == 0) && (((G_SIG_C + G_SIG_D) % 4 + 4) % 4 == 0));
       orbit_q = (v == 2) || (v == 1 && safe);
       if (v == 1 && !safe)
-        cout << "[orbitq] DISABLED: needs n even and c+d = 0 mod 4 (n=" << n << " c=" << G_SIG_C
+        cout << "[orbitq] DISABLED: needs n even and c+d = 0 mod 4, or WZ_FH_ENDPOS=1 (n=" << n << " c=" << G_SIG_C
              << " d=" << G_SIG_D << ")\n" << flush;
       if (v == 2 && !safe)
         cout << "[orbitq] FORCED outside its proven range (test mode only)\n" << flush;
@@ -2227,6 +2239,10 @@ int main(int argc, char **argv) {
     if (G_WALL_SEC > 0) {
       size_t L0 = strlen(fh_sigbuf);
       snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".ws%lld", G_WALL_SEC);
+    }
+    if (G_ENDPOS) {  // stream changes (endpoint quad restricted) => new lane namespace
+      size_t L0 = strlen(fh_sigbuf);
+      snprintf(fh_sigbuf + L0, sizeof fh_sigbuf - L0, ".ep1");
     }
     if (orbit_canon && orbit_q) {  // kept-cell set changes => new lane namespace
       size_t L0 = strlen(fh_sigbuf);
