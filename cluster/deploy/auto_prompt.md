@@ -165,7 +165,7 @@ Do not re-run the checker.
      cancel or resubmit them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
-     **SOLVER ON ALL FOUR CLUSTERS = sha c71699f7.. since 2026-10-02 ~21:00 EDT (ENDPOS build, opt-in:
+     **SOLVER ON ALL FOUR CLUSTERS = sha c71699f7.. since 2026-10-02 ~16:45 EDT (ENDPOS build, opt-in:
      n=44 lanes unchanged). Reps that start after that compile it; nothing to do about it.**
      **ODDCANARY 62595724 (Fir, 2026-10-02, $SCRATCH/bs45_oddcanary, 2 cores, up to 24 h): the n=45
      launch control. It re-finds both known BS(44,43) under the exact n=45 pipeline (ENDPOS + Q +
@@ -173,9 +173,10 @@ Do not re-run the checker.
      from squeue: `cd $SCRATCH/bs45_oddcanary && cat oddcanary_62595724.txt` -> save verbatim to
      docs/reviews/evidence/oddcanary_62595724.txt; report the two "[ours43] VERDICT" / "[wz43]
      VERDICT" lines; if either FOUND block is printed, run tools/verify_npaf.py on it locally and
-     report. Two PASS = NEEDS_HUMAN (n=45 launch is Daniel's go); any FAIL = NEEDS_HUMAN (do not
-     launch n=45); INCONCLUSIVE = report, nothing to do. NEVER submit anything from
-     docs/plans/passh45_submit_*.txt on your own.**
+     report. ours43 ALREADY PASSED (read + verified in Daniel's session 10-02, both orbits retained
+     on Fir's toolchain) and n=45 WAS LAUNCHED on that evidence; only [wz43] is outstanding. wz43
+     PASS = report; wz43 FAIL = NEEDS_HUMAN at once (the n=45 lanes may need stopping; do NOT cancel
+     them yourself); INCONCLUSIVE = report, nothing to do.**
      **A2 PILOT 62438417 (Fir, 2026-10-01, $SCRATCH/bs45_a2pilot, 12 cores, up to 8 h): A2 profile-row
      reachability, 4 shards x {off, shadow, prune}. NOT a lane: never count, restack or cancel it. Once
      it is gone from squeue: `cd $SCRATCH/bs45_a2pilot && cat cpilot_62438417.txt` -> save verbatim to
@@ -191,12 +192,23 @@ Do not re-run the checker.
      $SCRATCH/bs45 on 2026-10-01 ~14:00 EDT (solver sha 9e0b89ce..). Reps that STARTED after that
      compile K=3 and should show MORE cells_done per 12 h than the 09-30 reps: report cells_done per
      rep next to the lane's previous rep; never submit, cancel or restack because of it.**
-     **PASS H IS LIVE ON ALL FOUR CLUSTERS since 2026-09-29 (444 units, 1 rep each). Refill = restack H
-     lanes so that EVERY H lane has 3 jobs (running + pending) on Fir (12 lanes, 12 h reps: 1 rep/lane
-     drains the queue by ~03:00 and idles Fir until 1pm, as on 09-30), and each cluster's pending stays
-     >= its floor (Rorqual 8, Nibi 100, Trillium 8), using the
-     EXACT line from docs/plans/passh_submit_<cluster>.txt for that lane; never resubmit a G lane. Nibi
-     schedules slowly (fair-share debt per DRAC 09-29): 0 R there is expected, not an alarm.**
+     **★ PROGRAM SINCE 2026-10-02 ~17:00 EDT (Daniel + the Professor): n=45 = PASS H45 on Fir, Rorqual,
+     Trillium; n=44 = Pass H on NIBI ONLY.** H45: 194 lane-units (97 ranges x fwd/rev) over 10 classes
+     with WZ_FH_ENDPOS=1 + Q + closure prune (582,683 kept orbits). Fir 78 (classes a,b,c,g; 62598470-
+     62598551), Rorqual 76 (d,e,f,h; 22293296-22293373), Trillium 40 (i,j; 2485247-2485286), 1 rep each.
+     LANE NAMES: grep docs/reviews/evidence/passh45_launch_2026-10-02_ids.txt (never infer from ID order).
+     REFILL: restack an H45 lane (singleton, EXACT line from docs/plans/passh45_submit_<cluster>.txt)
+     only when it has NO job queued and its last rep has been read with range_done < 177/177, so that
+     each cluster's pending stays >= its floor (Fir 12, Rorqual 8, Trillium 8); with 1 rep per lane the
+     first days need no restacks. n=44: restack Nibi H44 lanes from docs/plans/passh_submit_nibi.txt to
+     keep Nibi pending >= 100, exactly as before. NEVER resubmit an H44 lane on Fir, Rorqual or
+     Trillium (their pending n=44 reps were cancelled 10-02 by Daniel; the reps that were RUNNING then
+     finish and are read normally; checkpoints untouched). Nibi schedules slowly: 0 R there is not an
+     alarm. H45 READ RULE = the H rule below, plus: the arm logs must show "[orbitcanon] group=64" and
+     "[endpos] cells", the CFGSIG must contain ".ep1" (else ALARM: the lane is not running the gated
+     n=45 pipeline). A "*** BS(46,45) FOUND ***" banner would be the NEW RECORD: run verify_npaf.py,
+     bank results/champions/champion_firsthit_bs46_45.txt with full provenance, add the job to the
+     checker exclusions, NEEDS_HUMAN; the loop never announces.**
      **PASS H details:** lanes named
      H44<letter><k> (forward) / H44<letter>r<k> (reversed) run the Pass G policy (K=50k of the first
      500k buffer, budget 2e6) over the 64-group + closure-prune kept list in the deterministic

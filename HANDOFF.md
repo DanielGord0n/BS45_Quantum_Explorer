@@ -4,8 +4,27 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-10-02 (Daniel session, ~17:00 EDT) — ★★ n=45 LAUNCHED: PASS H45 on Fir, Rorqual, Trillium; Nibi stays on
+n=44.** Gate: ODDCANARY 62595724 read while running: BOTH n=43 orbits LOCATE-retained in kept cells on Fir's toolchain
+(ENDPOS + Q + prune + ORDER=3, 64,163 kept of 453,079 cells) and ours-43 RE-FOUND under the exact n=45 pipeline in 73 s
+(idx 451787, score 130, nodes 54,286; verify_npaf PASS locally + independent check; same solution as the banked ours-43
+up to symmetry; evidence docs/reviews/evidence/oddcanary_62595724_partial.txt). The pre-registered rule asked for both
+re-finds; wz43 (same code path, deeper in its cell) was still streaming, and launching was judged cheap to reverse, so
+Daniel's go was taken on this evidence; a wz43 FAIL would stop the n=45 lanes. LAUNCH (3 taps): Fir cancelled 22 PENDING
+n=44 reps, submitted 78 H45 (classes a (0,2,3,13), b (8,10,3,3), c (2,4,9,9), g (2,12,3,5); 62598470-62598551);
+Rorqual cancelled 38, submitted 76 (d (0,6,5,11), e (0,10,1,9), f (4,6,7,9), h (4,6,3,11); 22293296-22293373); Trillium
+cancelled 60, submitted 40 (i (6,8,1,9), j (6,12,1,1); 2485247-2485286). 194/194 echoed; lane->ID map
+docs/reviews/evidence/passh45_launch_2026-10-02_ids.txt. Running n=44 reps (Fir 11, Rorqual 17) finish and are read; all
+n=44 checkpoints untouched (restackable from passh_submit_*.txt). NIBI = the n=44 program now: its six classes are all
+other than the solved (9,9,0,4), which is what the Professor asked for; its 262 pending were left alone. Pre-launch
+checks: submit lint now covers both passes (n=45 lines must carry ENDPOS, n=44 must not); all 10 n=45 digests
+re-confirmed identical under the deployed c71699f7 build; the driver passes the job environment to every arm, so
+ENDPOS reaches the solver without a driver change. Loop prompt rewritten: H45 refill/read rules, Nibi-only n=44,
+never resubmit H44 on Fir/Rorqual/Trillium. EXPECTATION (honest): the n=45 space per class is ~half of n=44's cells
+but each candidate costs more; no throughput number until the first H45 reps read (~12 h after they start).**
+
 **⚡ 2026-10-02 (Daniel session, late) — ENDPOS BUILD DEPLOYED FLEET-WIDE (commit 24536af, solver sha c71699f7..;
-Fir, Rorqual, Nibi, Trillium each sha-checked 9e0b89ce.. -> c71699f7.., DEPLOY_OK, .bak-86657e1 kept; 4 taps ~21:00
+Fir, Rorqual, Nibi, Trillium each sha-checked 9e0b89ce.. -> c71699f7.., DEPLOY_OK, .bak-86657e1 kept; 4 taps ~16:45
 EDT; queues Fir 12 R + 22 PD, Rorqual 17 R + 38 PD, Nibi 26 R + 262 PD (fair-share easing), Trillium 0 R + 60 PD).
 ENDPOS is opt-in, so every n=44 lane keeps its CFGSIG and checkpoints; the n=45 launch is now submit-only. Also added
 the ENDPOS cell-level parity filter (sum(px)+sum(py) == px[mid]+py[mid] mod 4 at odd n): it removes 0 cells at n=45
