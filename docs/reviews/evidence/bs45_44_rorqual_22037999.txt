@@ -1,0 +1,23 @@
+# BS(45,44) FOUND — Rorqual job 22037999 (lane H44G2700), read by the 2026-10-02 1pm loop.
+# Source: results/latest_check.txt (checker run 2026-10-02), FIRSTHIT PROBES section, verbatim.
+# Submit line (docs/plans/passh_submit_rorqual.txt, verbatim):
+# sbatch --requeue --mem=0 --account=rrg-ikotsire_cpu -J H44G2700 -d singleton --export=ALL,WZ_N=44,WZ_A=9,WZ_B=9,WZ_C=0,WZ_D=4,WZ_FH_PROF_ORDER=3,WZ_FH_ORBIT_CANON=1,WZ_FH_ORBIT_Q=1,WZ_FH_ORBIT_QPRUNE=1,WZ_FH_DRAIN_TOP=50000,WZ_FH_AB_BUDGET=2000000,FH_NARMS=177,WZ_FH_STREAM_REV=0,WZ_FH_DRAIN_BATCHES=1,WZ_FH_PROF_SKIP=2700,WZ_FH_PROF_END=3000,WZ_FH_EXPECT_DIGEST=97de47dafb56bead:10182d24bbf95783 ./cluster_firsthit_probe.sh
+
+=== firsthit_output_22037999.txt ===
+=== FIRSTHIT probe BS(45,44) sig (9,9,0,4) — 177 arms — node rc13609 — Thu Oct  1 09:45:34 EDT 2026 ===
+*** BS(45,44) FOUND ***  (firsthit probe)
+sig = (-9,-9,0,4)
+A = {1,1,1,1,-1,1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,1,-1,1,-1,1,-1,1,1,1,-1,1,-1,-1,-1,-1,1,1,-1,-1,1,-1,-1,-1,-1,1,1,-1,-1,-1};
+B = {1,1,1,-1,-1,-1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,-1,1,-1,-1,1,-1,-1,-1,-1,1,-1,1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,-1,-1,1};
+C = {-1,-1,-1,1,-1,-1,-1,1,1,1,1,-1,-1,1,1,-1,1,-1,1,1,-1,1,1,-1,1,1,-1,1,-1,-1,1,-1,1,-1,1,-1,-1,1,1,1,1,-1,-1,-1};
+D = {-1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,1,1,-1,1,1,1,-1,1,1,-1,-1,1,1,-1,1,1,1,1,1,1,1,1,-1,1,-1,-1,-1,1,1,-1,-1,-1};
+VERIFY: max |NPAF[s]| over s=1..44 = 0  (NPAF==0 confirmed)
+arms_with_hits=1 / 177
+GATEB: candidates=262346486 tested=21643645 tested_min=54340 tested_cum=21643645 resume_pi_min=479806 resume_pi_max=498894 orbit_dup=6094 aborted=3942125 AB_nodes=18296028883139 arms_summarized=177/177 arms_interrupted=176 cells_done_min=1 cells_done_sum=356 cells_empty=0 cum_done=356 cum_dup=6094 cum_dead=0 cum_empty=0 range_done=0/177
+GLOBAL FIRST: FIRSTHIT: idx=1500000 profile_rank=488790 nodes_this_cand=159806 score=120 elapsed=14731s
+
+========== (input) ==========
+Lengths: A=45, B=45, C=44, D=44
+Signature: (a=-9, b=-9, c=0, d=4)  a²+b²+c²+d²=178 (expect 178)
+PASS: NPAF[s]=0 for all s=1..45
+PASS: fits Wang-Zhu pair encoding (comb8_neg for d=0, comb8_pos otherwise)

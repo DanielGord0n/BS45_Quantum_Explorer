@@ -1,0 +1,31 @@
+44 45 0
+-9 -9 0 4
+1 1 1 1 -1 1 -1 -1 -1 -1 -1 -1 1 -1 -1 -1 1 -1 1 -1 1 -1 1 1 1 -1 1 -1 -1 -1 -1 1 1 -1 -1 1 -1 -1 -1 -1 1 1 -1 -1 -1
+1 1 1 -1 -1 -1 -1 -1 1 -1 -1 1 -1 1 1 -1 -1 -1 1 -1 -1 1 -1 -1 -1 -1 1 -1 1 -1 1 -1 -1 1 -1 1 1 -1 -1 1 1 -1 -1 -1 1
+-1 -1 -1 1 -1 -1 -1 1 1 1 1 -1 -1 1 1 -1 1 -1 1 1 -1 1 1 -1 1 1 -1 1 -1 -1 1 -1 1 -1 1 -1 -1 1 1 1 1 -1 -1 -1
+-1 -1 -1 1 -1 1 1 1 -1 -1 -1 -1 1 1 -1 1 1 1 -1 1 1 -1 -1 1 1 -1 1 1 1 1 1 1 1 1 -1 1 -1 -1 -1 1 1 -1 -1 -1
+# BS(45,44), n=44 — banked 2026-10-02 by the 1pm daily loop (Pass H, class (9,9,0,4), forward front).
+# n=44 IS THE CAMPAIGN'S OPEN-RECORD TARGET: n<=40 known, Wang-Zhu constructed 41-43 (all three
+#   re-found by this solver), and no BS(45,44) was known to this project (results/reference/ holds
+#   only WZ 41/42/43, so there is nothing to compare against). LITERATURE STATUS AND ANY
+#   ANNOUNCEMENT ARE DANIEL'S CALL — the loop banks, it does not announce.
+# Found by: Rorqual job 22037999, lane H44G2700 = Pass H ownership unit of class (9,9,0,4),
+#   FORWARD in-cell front (WZ_FH_STREAM_REV=0), raw cells [2700,3000) (WZ_FH_PROF_SKIP=2700,
+#   WZ_FH_PROF_END=3000) in the deterministic orbit-min order (WZ_FH_PROF_ORDER=3) over the
+#   64-group + closure-prune kept list (WZ_FH_ORBIT_CANON=1, WZ_FH_ORBIT_Q=1, WZ_FH_ORBIT_QPRUNE=1,
+#   WZ_FH_EXPECT_DIGEST=97de47dafb56bead:10182d24bbf95783), K=50000 (WZ_FH_DRAIN_TOP), budget 2e6
+#   (WZ_FH_AB_BUDGET=2000000), FH_NARMS=177, build a3b84f9 (= f81ff24; the rep started before the
+#   10-01 A1 K=3 deploy, so outer-lag tables were OFF). Submit line verbatim in
+#   docs/plans/passh_submit_rorqual.txt; submitted 2026-09-29 (Daniel's session, Rorqual
+#   22037981-22038057 = 76 H units, ns177 fresh checkpoints), FIRST rep of the lane.
+# Job start Thu Oct 1 09:45:34 EDT 2026 on rc13609; hit at elapsed=14731 s (4.09 h, ~13:51 EDT).
+#   GLOBAL FIRST: idx=1500000 (stream counter, buffered path => not a candidate index)
+#   profile_rank=488790 nodes_this_cand=159806 score=120. arms_with_hits=1/177,
+#   arms_interrupted=176 (the hit arm exited), GATEB tested=21,643,645 aborted=3,942,125 (18.2%),
+#   cells_done_sum=356, AB_nodes=18,296,028,883,139. Solver's own VERIFY: max|NPAF|=0 over s=1..44.
+# Verified: tools/verify_npaf.py 2026-10-02 — PASS: NPAF[s]=0 for all s=1..45, signature
+#   (-9,-9,0,4) sum of squares 178 (expect 178), fits Wang-Zhu comb8 pair encoding; plus an
+#   independent third-path python recomputation in the same run (max|NPAF| s=1..45 = 0, lengths
+#   45/45/44/44, row sums -9,-9,0,4). Verbatim banner + verifier output:
+#   docs/reviews/evidence/bs45_44_rorqual_22037999.txt.
+# Sig as printed by the solver is (-9,-9,0,4); the lane class is (9,9,0,4) (negation-equivalent).

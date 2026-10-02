@@ -1,8 +1,54 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-10-01 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-10-02 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-10-02 (daily loop 1pm — all four reached) — ★★★ VERIFIED BS(45,44) = n=44, THE OPEN-RECORD TARGET: Rorqual
+22037999 (lane H44G2700, class (9,9,0,4), forward front, raw cells [2700,3000), FIRST rep, build a3b84f9/K=0, started Thu Oct 1
+09:45:34 EDT on rc13609) printed `*** BS(45,44) FOUND ***` sig (-9,-9,0,4) at elapsed=14731 s (4.09 h, ~13:51 EDT). R2 DONE:
+tools/verify_npaf.py PASS (NPAF[s]=0 for all s=1..45, sum of squares 178, WZ pair encoding) + an independent third-path python
+recomputation in the run (max|NPAF|=0) => BANKED results/champions/champion_firsthit_bs45_44.txt (full provenance; re-verified
+from the banked rows), verbatim banner + GATEB + GLOBAL FIRST + verifier output in docs/reviews/evidence/bs45_44_rorqual_22037999.txt.
+GLOBAL FIRST: idx=1500000 (stream counter) profile_rank=488790 nodes_this_cand=159806 score=120; arms_with_hits=1/177,
+arms_interrupted=176, tested=21.6M, aborted 3.94M (18.2%), cells_done 356 before the hit arm exited. No published BS(45,44)
+exists in this repo (results/reference/ = WZ 41/42/43 only), so no identity check applies. NEEDS_HUMAN: (1) Daniel re-verifies
+independently and settles literature status + announcement (the loop banks, it does not announce); (2) what the fleet does next
+(continue the H program for further solutions / other classes, or stop) — the loop only applied the standing rules below; the hit
+lane H44G2700 has range_done 0/177 and no further rep queued (Rorqual is above its floor), so restacking it is Daniel's call.
+HANDOFF framing note: the hard rule "n=44 needs new mathematics" is now contradicted by a verified direct-search hit; update the
+CLAUDE.md/skill framing in Daniel's session, not here. CHECKER GAP FIXED: the headline "NEW FOUND?" greps only covered sa_ladder
+and wz_match files, so the banner showed only inside the FIRSTHIT section; added a third grep over firsthit_output_*.txt for
+"FOUND ***" with the same exclusion regex (validated locally: 41 read/banked IDs excluded, 15 live IDs visible, bash -n OK).**
+OTHER READS (38 reps, all 177/177 arms, no CFGSIG mismatch / fresh start / DIGEST MISMATCH / STALE / oom line anywhere; verbatim
+GATEB lines in docs/reviews/evidence/passh_reads_2026-10-02.txt):
+FIR (3,13,0,0), 14 reps: pre-deploy second reps 62277620 H44gr0 1089 cells cum 2093 ab 11.4% range 0/177; 62277622 H44g1000 1312
+cum 2565 ab 10.7% r8. ★ FIRST A1 K=3 REPS (started 15:02-15:22 PDT Oct 1 = after the ~14:00 EDT deploy, by start time; the
+checker extract has no sha line): 62277623 H44gr1000 1198/cum 2154/ab 0.6%/r6; 624 H44g2000 1734/3058/0.3%/r90; 625 H44gr2000
+1002/1899/1.6%/r6; 626 H44g3000 1782/2922/0.4%/r79; 627 H44gr3000 1210/2157/1.6%/r5; 628 H44g4000 1660/2923/0.6%/r52; 629
+H44gr4000 1320/2342/1.3%/r10; 630 H44g5000 1751/2947/0.7%/r92; 631 H44gr5000 1557/2581/1.1%/r44; 62278014 H44g0 (3rd rep)
+1657/3849/0.0%/r108; 015 H44gr0 (3rd) 1294/3387/0.3%/r48; 016 H44g1000 (3rd) 1153/3718/0.2%/r157. K=3 effect: aborts collapsed
+to 0.0-1.6% (pooled 0.7% = 5.93M/850.5M) from 7.5-27% on K=0 reps; cells/rep mean 1443 (1002-1782) vs 1085 (09-30 first reps) /
+~1150 (second reps) = roughly +25-33% — same lanes but later cells, so indicative, not a controlled number. cum_done == previous
+cum + this rep on every lane checked (checkpoints resumed). FORWARD LANES ARE CLOSING: H44g1000 range_done 157/177, H44g0 108,
+H44g5000 92, H44g2000 90, H44g3000 79 — a lane at 177/177 is DONE and must never be resubmitted; what follows a finished H
+range (an H2 deeper pass, or nothing) is NOT defined in the rules => Daniel's call before those lanes finish (days).
+NIBI (1,7,8,8), 10 first reps: 22930967 H44B0 809 cells ab 9.9% (pre-deploy, K=0); K=3 by start time (21:00 EDT+): 22930971 H44Br0
+711/0.1%; 975 H44B300 949/1.0%; 979 H44Br300 732/0.9%; 984 H44B600 738/1.7%; 988 H44Br600 707/1.2%; 991 H44B900 760/2.2%; 994
+H44Br900 702/1.4%; 997 H44B1200 937/0.9%; 22931001 H44Br1200 674/1.7% (mean 768; aborts collapsed, cells flat vs the one K=0 rep);
+range_done 0/177 all; [orbitcanon] cells=977601 kept_orbits=66801 dedup=14.63x. RORQUAL (9,9,0,4), 13 hitless first reps
+(build a3b84f9, K=0): 22037988 H44Gr900 791 ab 23.0%; 989 H44G1200 1084/11.3%; 990 H44Gr1200 725/29.8%; 991 H44G1500 1017/14.6%;
+992 H44Gr1500 851/19.9%; 993 H44G1800 975/19.1%; 994 H44Gr1800 761/30.0%; 996 H44Gr2100 729/31.6%; 997 H44G2400 1038/18.0%; 998
+H44Gr2400 807/27.3%; 22038000 H44Gr2700 802/26.5%; 001 H44G3000 988/22.2%; 002 H44Gr3000 768/33.9% (max, under 35%); pooled
+22.9% = 141.2M/617.7M; mean 872 cells; range_done 0/177 all. 22037995 H44G2100 is still PD (never ran).
+QUEUES: Fir 12 R + 10 PD => lanes at 1-2 jobs => 14 RESTACKS (H44gr0 x2, H44g1000 x2, the other ten x1; docs/plans/launch/
+passh_restack_fir_2026-10-02.sh = verbatim passh_submit_fir.txt lines) in ONE tap together with the A2 pilot read; Rorqual 17 R
+(22038003-019 = H44G3300..H44Gr5400 + H44H0, started 08:30-11:06 EDT today, header-only => read tomorrow) + 38 PD => above floor 8,
+no action; Nibi 9 R (22931003-081, H44B1500..H44B2700, started 10:55-11:27 EDT today) + 279 PD => above floor 100, no action;
+Trillium 60 PD, 0 R => no action. A2 PILOT 62438417: gone from Fir squeue => read in the Fir tap (result below). rung_status
+EXHAUSTED as always (SA ledger n=38, retired); `promote` NOT run — it would flip the retired SA ledger to ACTIVE.
+CHECKER: exclusions +62277620-631, +62278014-016, +22930967/971/975/979/984/988/991/994/997/22931001, +22037988/989,
++2203799[0-4,6-9], +22038000-002 (22037995 PD stays visible); firsthit-banner grep added (above).**
 
 **⚡ 2026-10-01 (Daniel session) — A1 DEFAULT K=3 DEPLOYED FLEET-WIDE (build 86657e1, solver sha 9e0b89ce..):
 Fir, Rorqual, Nibi, Trillium each sha-checked f81ff24e.. -> 9e0b89ce.. (DEPLOY_OK, .bak-a3b84f9 kept), 4 taps ~14:00

@@ -1,0 +1,155 @@
+# Pass H reads from the 2026-10-02 1pm checker (results/latest_check.txt): verbatim arms_with_hits + GATEB (+ GLOBAL FIRST) lines per finished rep.
+# Build a3b84f9 on every rep that started before the A1 K=3 deploy (10-01 ~14:00 EDT); reps that started after it compile 9e0b89ce (K=3).
+
+=== fir firsthit_output_62278016.txt (started Thu Oct  1 15:22:30 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=585385182 tested=54433102 tested_min=0 tested_cum=186330671 resume_pi_min=211300 resume_pi_max=354176 orbit_dup=39893 aborted=119721 AB_nodes=10422375906354 arms_summarized=177/177 arms_interrupted=20 cells_done_min=0 cells_done_sum=1153 cells_empty=0 cum_done=3718 cum_dup=170610 cum_dead=0 cum_empty=0 range_done=157/177
+
+=== fir firsthit_output_62278014.txt (started Thu Oct  1 15:10:31 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=858591906 tested=81079919 tested_min=64569 tested_cum=193895971 resume_pi_min=97016 resume_pi_max=177175 orbit_dup=73646 aborted=37669 AB_nodes=12702425905323 arms_summarized=177/177 arms_interrupted=69 cells_done_min=2 cells_done_sum=1657 cells_empty=0 cum_done=3849 cum_dup=165182 cum_dead=0 cum_empty=0 range_done=108/177
+
+=== fir firsthit_output_62278015.txt (started Thu Oct  1 15:10:31 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=701175833 tested=64070277 tested_min=0 tested_cum=172030405 resume_pi_min=40520 resume_pi_max=177172 orbit_dup=59361 aborted=188810 AB_nodes=13825172295747 arms_summarized=177/177 arms_interrupted=129 cells_done_min=0 cells_done_sum=1294 cells_empty=0 cum_done=3387 cum_dup=146348 cum_dead=0 cum_empty=0 range_done=48/177
+
+=== fir firsthit_output_62277631.txt (started Thu Oct  1 15:10:11 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=843445874 tested=77165451 tested_min=20402 tested_cum=132449595 resume_pi_min=948344 resume_pi_max=1039128 orbit_dup=67829 aborted=858385 AB_nodes=23960480734412 arms_summarized=177/177 arms_interrupted=133 cells_done_min=1 cells_done_sum=1557 cells_empty=0 cum_done=2581 cum_dup=124981 cum_dead=0 cum_empty=0 range_done=44/177
+
+=== fir firsthit_output_62277630.txt (started Thu Oct  1 15:09:29 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=916196283 tested=85412640 tested_min=13045 tested_cum=149217331 resume_pi_min=973400 resume_pi_max=1039128 orbit_dup=74379 aborted=598877 AB_nodes=22049927605486 arms_summarized=177/177 arms_interrupted=85 cells_done_min=1 cells_done_sum=1751 cells_empty=0 cum_done=2947 cum_dup=139339 cum_dead=0 cum_empty=0 range_done=92/177
+
+=== fir firsthit_output_62277628.txt (started Thu Oct  1 15:08:28 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=886739357 tested=81671482 tested_min=145292 tested_cum=148881359 resume_pi_min=754984 resume_pi_max=885175 orbit_dup=79809 aborted=527582 AB_nodes=19457441426251 arms_summarized=177/177 arms_interrupted=125 cells_done_min=3 cells_done_sum=1660 cells_empty=0 cum_done=2923 cum_dup=138914 cum_dead=0 cum_empty=0 range_done=52/177
+
+=== fir firsthit_output_62277627.txt (started Thu Oct  1 15:08:28 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=683950701 tested=60037712 tested_min=150000 tested_cum=111485517 resume_pi_min=586256 resume_pi_max=708168 orbit_dup=63707 aborted=960791 AB_nodes=20836140369044 arms_summarized=177/177 arms_interrupted=172 cells_done_min=3 cells_done_sum=1210 cells_empty=0 cum_done=2157 cum_dup=114928 cum_dead=0 cum_empty=0 range_done=5/177
+
+=== fir firsthit_output_62277629.txt (started Thu Oct  1 15:08:28 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=738728434 tested=65473296 tested_min=174027 tested_cum=120795994 resume_pi_min=745136 resume_pi_max=885168 orbit_dup=59399 aborted=876974 AB_nodes=21306953912116 arms_summarized=177/177 arms_interrupted=167 cells_done_min=3 cells_done_sum=1320 cells_empty=0 cum_done=2342 cum_dup=108737 cum_dead=0 cum_empty=0 range_done=10/177
+
+=== fir firsthit_output_62277626.txt (started Thu Oct  1 15:07:28 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=934439181 tested=87595301 tested_min=128554 tested_cum=148217938 resume_pi_min=586256 resume_pi_max=708176 orbit_dup=91614 aborted=379975 AB_nodes=18778081189132 arms_summarized=177/177 arms_interrupted=98 cells_done_min=3 cells_done_sum=1782 cells_empty=0 cum_done=2922 cum_dup=153122 cum_dead=0 cum_empty=0 range_done=79/177
+
+=== fir firsthit_output_62277625.txt (started Thu Oct  1 15:07:28 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=574266585 tested=49793340 tested_min=99153 tested_cum=98473921 resume_pi_min=401664 resume_pi_max=531165 orbit_dup=54514 aborted=780790 AB_nodes=17461374649554 arms_summarized=177/177 arms_interrupted=171 cells_done_min=2 cells_done_sum=1002 cells_empty=0 cum_done=1899 cum_dup=110985 cum_dead=0 cum_empty=0 range_done=6/177
+
+=== fir firsthit_output_62277624.txt (started Thu Oct  1 15:03:28 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=905224303 tested=84402346 tested_min=50000 tested_cum=154591830 resume_pi_min=391040 resume_pi_max=531174 orbit_dup=82463 aborted=248134 AB_nodes=16708250592314 arms_summarized=177/177 arms_interrupted=87 cells_done_min=1 cells_done_sum=1734 cells_empty=0 cum_done=3058 cum_dup=162715 cum_dead=0 cum_empty=0 range_done=90/177
+
+=== fir firsthit_output_62277623.txt (started Thu Oct  1 15:02:28 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=669890364 tested=59402954 tested_min=45556 tested_cum=110477607 resume_pi_min=222816 resume_pi_max=354169 orbit_dup=57780 aborted=347934 AB_nodes=15242920341444 arms_summarized=177/177 arms_interrupted=171 cells_done_min=0 cells_done_sum=1198 cells_empty=0 cum_done=2154 cum_dup=113168 cum_dead=0 cum_empty=0 range_done=6/177
+
+=== fir firsthit_output_62277620.txt (started Wed Sep 30 23:27:05 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=620745463 tested=54317606 tested_min=0 tested_cum=107960128 resume_pi_min=37968 resume_pi_max=159240 orbit_dup=44487 aborted=6178103 AB_nodes=40406806236161 arms_summarized=177/177 arms_interrupted=177 cells_done_min=0 cells_done_sum=1089 cells_empty=0 cum_done=2093 cum_dup=86987 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== fir firsthit_output_62277622.txt (started Wed Sep 30 23:27:04 PDT 2026) sig (3,13,0,0) ===
+arms_with_hits=0
+GATEB: candidates=733508834 tested=65375731 tested_min=0 tested_cum=131897569 resume_pi_min=211300 resume_pi_max=354169 orbit_dup=58530 aborted=6982451 AB_nodes=46365426038225 arms_summarized=177/177 arms_interrupted=169 cells_done_min=0 cells_done_sum=1312 cells_empty=0 cum_done=2565 cum_dup=130717 cum_dead=0 cum_empty=0 range_done=8/177
+
+=== nibi firsthit_output_22931001.txt (started Thu Oct  1 23:28:04 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=422199081 tested=37547938 tested_min=85673 tested_cum=37547938 resume_pi_min=216324 resume_pi_max=233548 orbit_dup=10034 aborted=636864 AB_nodes=14551579129530 arms_summarized=177/177 arms_interrupted=177 cells_done_min=1 cells_done_sum=674 cells_empty=0 cum_done=674 cum_dup=10034 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930997.txt (started Thu Oct  1 23:28:04 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=551232044 tested=50370589 tested_min=147710 tested_cum=50370589 resume_pi_min=218988 resume_pi_max=242224 orbit_dup=13283 aborted=473524 AB_nodes=13775966240311 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=937 cells_empty=0 cum_done=937 cum_dup=13283 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930994.txt (started Thu Oct  1 23:28:04 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=434930210 tested=38814831 tested_min=110124 tested_cum=38814831 resume_pi_min=162248 resume_pi_max=186388 orbit_dup=11510 aborted=558317 AB_nodes=15418057464028 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=702 cells_empty=0 cum_done=702 cum_dup=11510 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930991.txt (started Thu Oct  1 23:25:35 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=456599343 tested=41964511 tested_min=91488 tested_cum=41964511 resume_pi_min=161128 resume_pi_max=191672 orbit_dup=12548 aborted=902253 AB_nodes=13666402659033 arms_summarized=177/177 arms_interrupted=177 cells_done_min=1 cells_done_sum=760 cells_empty=0 cum_done=760 cum_dup=12548 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930988.txt (started Thu Oct  1 21:18:58 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=436177362 tested=39075627 tested_min=115890 tested_cum=39075627 resume_pi_min=108897 resume_pi_max=134340 orbit_dup=9645 aborted=479391 AB_nodes=14486654403454 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=707 cells_empty=0 cum_done=707 cum_dup=9645 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930984.txt (started Thu Oct  1 21:07:05 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=447855680 tested=40689167 tested_min=89585 tested_cum=40689167 resume_pi_min=109081 resume_pi_max=134340 orbit_dup=10168 aborted=691103 AB_nodes=12624073266412 arms_summarized=177/177 arms_interrupted=177 cells_done_min=1 cells_done_sum=738 cells_empty=0 cum_done=738 cum_dup=10168 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930979.txt (started Thu Oct  1 21:05:05 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=449835251 tested=40488152 tested_min=127819 tested_cum=40488152 resume_pi_min=54969 resume_pi_max=86585 orbit_dup=11537 aborted=360231 AB_nodes=13952936652420 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=732 cells_empty=0 cum_done=732 cum_dup=11537 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930975.txt (started Thu Oct  1 21:00:08 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=543850791 tested=50374944 tested_min=112132 tested_cum=50374944 resume_pi_min=55129 resume_pi_max=82601 orbit_dup=14389 aborted=512490 AB_nodes=12411954477682 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=949 cells_empty=0 cum_done=949 cum_dup=14389 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930971.txt (started Thu Oct  1 21:00:04 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=425274434 tested=38258540 tested_min=100000 tested_cum=38258540 resume_pi_min=1593 resume_pi_max=34841 orbit_dup=9764 aborted=52349 AB_nodes=8887092302232 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=711 cells_empty=0 cum_done=711 cum_dup=9764 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== nibi firsthit_output_22930967.txt (started Thu Oct  1 11:13:46 EDT 2026) sig (1,7,8,8) ===
+arms_with_hits=0
+GATEB: candidates=478973398 tested=43815073 tested_min=101210 tested_cum=43815073 resume_pi_min=2977 resume_pi_max=33425 orbit_dup=10536 aborted=4334192 AB_nodes=28349157042861 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=809 cells_empty=0 cum_done=809 cum_dup=10536 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22038001.txt (started Thu Oct  1 10:22:26 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=577434526 tested=53643476 tested_min=143214 tested_cum=53643476 resume_pi_min=535406 resume_pi_max=566038 orbit_dup=15450 aborted=11920860 AB_nodes=49091328331222 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=988 cells_empty=0 cum_done=988 cum_dup=15450 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22038002.txt (started Thu Oct  1 10:22:25 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=469003775 tested=42830163 tested_min=130656 tested_cum=42830163 resume_pi_min=534364 resume_pi_max=561318 orbit_dup=12670 aborted=14501077 AB_nodes=51531591054958 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=768 cells_empty=0 cum_done=768 cum_dup=12670 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22038000.txt (started Thu Oct  1 10:19:37 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=485548727 tested=44030668 tested_min=116140 tested_cum=44030668 resume_pi_min=483602 resume_pi_max=503830 orbit_dup=11528 aborted=11649912 AB_nodes=47303895920208 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=802 cells_empty=0 cum_done=802 cum_dup=11528 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037998.txt (started Thu Oct  1 09:00:44 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=490266995 tested=44545555 tested_min=150000 tested_cum=44545555 resume_pi_min=430510 resume_pi_max=456358 orbit_dup=14111 aborted=12175106 AB_nodes=48140365245196 arms_summarized=177/177 arms_interrupted=177 cells_done_min=3 cells_done_sum=807 cells_empty=0 cum_done=807 cum_dup=14111 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037997.txt (started Thu Oct  1 08:12:50 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=605270560 tested=56238237 tested_min=164766 tested_cum=56238237 resume_pi_min=430606 resume_pi_max=465862 orbit_dup=17752 aborted=10145106 AB_nodes=47417877417887 arms_summarized=177/177 arms_interrupted=177 cells_done_min=3 cells_done_sum=1038 cells_empty=0 cum_done=1038 cum_dup=17752 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037996.txt (started Thu Oct  1 07:14:59 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=442348838 tested=39977451 tested_min=84652 tested_cum=39977451 resume_pi_min=373654 resume_pi_max=396678 orbit_dup=12481 aborted=12626568 AB_nodes=46677711613781 arms_summarized=177/177 arms_interrupted=177 cells_done_min=1 cells_done_sum=729 cells_empty=0 cum_done=729 cum_dup=12481 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037994.txt (started Thu Oct  1 06:41:42 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=465588143 tested=42161842 tested_min=120349 tested_cum=42161842 resume_pi_min=322286 resume_pi_max=345574 orbit_dup=12593 aborted=12630710 AB_nodes=47559595345973 arms_summarized=177/177 arms_interrupted=177 cells_done_min=2 cells_done_sum=761 cells_empty=0 cum_done=761 cum_dup=12593 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037993.txt (started Thu Oct  1 06:28:01 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=568623338 tested=52680733 tested_min=19048 tested_cum=52680733 resume_pi_min=320686 resume_pi_max=354070 orbit_dup=15527 aborted=10057042 AB_nodes=44478460374009 arms_summarized=177/177 arms_interrupted=177 cells_done_min=0 cells_done_sum=975 cells_empty=0 cum_done=975 cum_dup=15527 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037992.txt (started Thu Oct  1 06:24:39 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=510059040 tested=46384468 tested_min=150000 tested_cum=46384468 resume_pi_min=270484 resume_pi_max=297940 orbit_dup=13281 aborted=9245091 AB_nodes=43719489753994 arms_summarized=177/177 arms_interrupted=177 cells_done_min=3 cells_done_sum=851 cells_empty=0 cum_done=851 cum_dup=13281 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037991.txt (started Thu Oct  1 04:49:14 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=588964489 tested=54553362 tested_min=150000 tested_cum=54553362 resume_pi_min=271524 resume_pi_max=297940 orbit_dup=15091 aborted=7946030 AB_nodes=42258450528984 arms_summarized=177/177 arms_interrupted=177 cells_done_min=3 cells_done_sum=1017 cells_empty=0 cum_done=1017 cum_dup=15091 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037990.txt (started Thu Oct  1 04:19:23 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=439416600 tested=40002789 tested_min=25240 tested_cum=40002789 resume_pi_min=215100 resume_pi_max=247252 orbit_dup=12223 aborted=11907842 AB_nodes=45059410816375 arms_summarized=177/177 arms_interrupted=177 cells_done_min=0 cells_done_sum=725 cells_empty=0 cum_done=725 cum_dup=12223 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037999.txt (started Thu Oct  1 09:45:34 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=1
+GATEB: candidates=262346486 tested=21643645 tested_min=54340 tested_cum=21643645 resume_pi_min=479806 resume_pi_max=498894 orbit_dup=6094 aborted=3942125 AB_nodes=18296028883139 arms_summarized=177/177 arms_interrupted=176 cells_done_min=1 cells_done_sum=356 cells_empty=0 cum_done=356 cum_dup=6094 cum_dead=0 cum_empty=0 range_done=0/177
+GLOBAL FIRST: FIRSTHIT: idx=1500000 profile_rank=488790 nodes_this_cand=159806 score=120 elapsed=14731s
+
+=== rorqual firsthit_output_22037989.txt (started Thu Oct  1 02:14:02 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=609809001 tested=57471320 tested_min=19491 tested_cum=57471320 resume_pi_min=213756 resume_pi_max=250084 orbit_dup=16544 aborted=6486267 AB_nodes=34955094360284 arms_summarized=177/177 arms_interrupted=177 cells_done_min=0 cells_done_sum=1084 cells_empty=0 cum_done=1084 cum_dup=16544 cum_dead=0 cum_empty=0 range_done=0/177
+
+=== rorqual firsthit_output_22037988.txt (started Thu Oct  1 02:03:50 EDT 2026) sig (9,9,0,4) ===
+arms_with_hits=0
+GATEB: candidates=474050879 tested=43157208 tested_min=55529 tested_cum=43157208 resume_pi_min=161214 resume_pi_max=185170 orbit_dup=12299 aborted=9926553 AB_nodes=42974339078470 arms_summarized=177/177 arms_interrupted=177 cells_done_min=1 cells_done_sum=791 cells_empty=0 cum_done=791 cum_dup=12299 cum_dead=0 cum_empty=0 range_done=0/177
