@@ -4,6 +4,19 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-10-02 (Daniel session, late) — ENDPOS BUILD DEPLOYED FLEET-WIDE (commit 24536af, solver sha c71699f7..;
+Fir, Rorqual, Nibi, Trillium each sha-checked 9e0b89ce.. -> c71699f7.., DEPLOY_OK, .bak-86657e1 kept; 4 taps ~21:00
+EDT; queues Fir 12 R + 22 PD, Rorqual 17 R + 38 PD, Nibi 26 R + 262 PD (fair-share easing), Trillium 0 R + 60 PD).
+ENDPOS is opt-in, so every n=44 lane keeps its CFGSIG and checkpoints; the n=45 launch is now submit-only. Also added
+the ENDPOS cell-level parity filter (sum(px)+sum(py) == px[mid]+py[mid] mod 4 at odd n): it removes 0 cells at n=45
+(the mod-6 profile filters already imply it), so digests and the running control are unchanged; gate (6) proves every
+cell it would remove streams empty. Audit prompt for Astra: docs/reviews/prompts/astra-endpos-audit-prompt.md.
+FLEET PLAN FOR THE n=45 LAUNCH (Daniel: "shift most of them to 45"): on ODDCANARY 62595724 PASS, (1) scancel PENDING
+n=44 H reps on Fir and Trillium (running reps finish and are read; checkpoints untouched), (2) submit every line of
+docs/plans/passh45_submit_fir.txt / _trillium.txt / _rorqual.txt / _nibi.txt (194 units), (3) keep the n=44 PENDING
+reps on Rorqual and Nibi as the Professor's "more n=44 solutions" floor (no new n=44 restacks on Fir/Trillium; the
+loop's refill rule must be switched to H45 lanes at launch).**
+
 **⚡ 2026-10-02 (Daniel session, evening) — PROFESSOR CONFIRMED (checked in Maple), wants more n=44 solutions AND
 n=45 as the next target. ★ ODD-n Q UNLOCKED (Astra n=45 note A, docs/reviews/prompts/astra-n45-prompt.md reply pasted in
 chat; verified): every base-sequence solution has a POSITIVE C,D endpoint quad (at shift n-1 the four A,B terms have

@@ -165,6 +165,8 @@ Do not re-run the checker.
      cancel or resubmit them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
+     **SOLVER ON ALL FOUR CLUSTERS = sha c71699f7.. since 2026-10-02 ~21:00 EDT (ENDPOS build, opt-in:
+     n=44 lanes unchanged). Reps that start after that compile it; nothing to do about it.**
      **ODDCANARY 62595724 (Fir, 2026-10-02, $SCRATCH/bs45_oddcanary, 2 cores, up to 24 h): the n=45
      launch control. It re-finds both known BS(44,43) under the exact n=45 pipeline (ENDPOS + Q +
      prune, ORDER=3, 177 arms, 2e6). NOT a lane: never count, restack or cancel it. Once it is gone
