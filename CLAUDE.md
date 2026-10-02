@@ -20,8 +20,12 @@ and the verification discipline.
 4. **Don't rebuild what's measured dead** (exhaustion n≥36, hash-join above n≈29,
    incremental PSD pruning, bias above n=30, >12h walltimes) — the skill has the list with
    the numbers. Re-litigating these costs real cluster rounds.
-5. **Honest framing:** ladder finds are solver-capability results, not records. n≤40 is
-   known; 41–43 are Wang-Zhu's; n=44 is the open record and needs new mathematics.
+5. **Honest framing:** ladder finds for n≤43 are solver-capability results, not records (n≤40
+   known; 41–43 are Wang-Zhu's). **BS(45,44) WAS FOUND 2026-10-02** (Rorqual 22037999, Pass H,
+   class (9,9,0,4); banked in `results/champions/champion_firsthit_bs45_44.txt`, independently
+   re-verified) — the first known n=44 base sequences as far as the literature shows (Wang-Zhu
+   arXiv 2506.20296 v3, Feb 2026, stops at 43). Announcement and literature claims are Daniel's
+   and Professor Kotsireas's call; the repo is public, so the sequences are already visible.
 
 ## Layout (reorganized 2026-09-25)
 

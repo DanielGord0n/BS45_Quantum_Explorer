@@ -110,9 +110,13 @@ Nibi — the "unreliable" cluster — 41 minutes into a run). Buy tickets everyw
   (280/280). When a limit looks arbitrary: small-n empirical test + independent audit.
 - **One validated change per round.** Ship nothing to clusters that didn't pass small-n
   validation locally the same day.
-- **Honest framing, always:** these finds are solver-capability results — the sequences for
-  n≤40 are known to the literature (Wang-Zhu constructed 41–43). The world record is n=44 and
-  needs NEW MATHEMATICS. Never promise it; never call a ladder rung a "record".
+- **Honest framing, always:** ladder finds for n≤43 are solver-capability results — the sequences
+  for n≤40 are known to the literature (Wang-Zhu constructed 41–43). **n=44 was found on
+  2026-10-02** (Rorqual 22037999, Pass H lane H44G2700, class (9,9,0,4), build a3b84f9 with
+  HALL_FAST on and A1 off; verified by tools/verify_npaf.py and by an independent from-definition
+  checker; banked with provenance). The "needs new mathematics" line was wrong: direct search with
+  exact pruning did it. Any further n=44 hits are additional solutions, not records; n=45 would be.
+  Never announce from the loop; announcements are Daniel's and the Professor's.
 
 ## Escalation ladder (when the current rung stalls)
 
