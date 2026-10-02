@@ -42,7 +42,7 @@ range_done 0/177 all; [orbitcanon] cells=977601 kept_orbits=66801 dedup=14.63x. 
 H44Gr2400 807/27.3%; 22038000 H44Gr2700 802/26.5%; 001 H44G3000 988/22.2%; 002 H44Gr3000 768/33.9% (max, under 35%); pooled
 22.9% = 141.2M/617.7M; mean 872 cells; range_done 0/177 all. 22037995 H44G2100 is still PD (never ran).
 QUEUES: Fir 12 R + 10 PD => lanes at 1-2 jobs => 14 RESTACKS (H44gr0 x2, H44g1000 x2, the other ten x1; docs/plans/launch/
-passh_restack_fir_2026-10-02.sh = verbatim passh_submit_fir.txt lines) in ONE tap together with the A2 pilot read; Rorqual 17 R
+passh_restack_fir_2026-10-02.sh = verbatim passh_submit_fir.txt lines) in ONE tap together with the A2 pilot read — DONE, 14/14 echoed (duo_run, 1 tap): H44g0 62558169; H44gr0 62558171; H44gr0 62558172; H44g1000 62558173; H44g1000 62558174; H44gr1000 62558175; H44g2000 62558176; H44gr2000 62558177; H44g3000 62558178; H44gr3000 62558179; H44g4000 62558180; H44gr4000 62558181; H44g5000 62558182; H44gr5000 62558183 => every Fir H lane now has 3 jobs; Rorqual 17 R
 (22038003-019 = H44G3300..H44Gr5400 + H44H0, started 08:30-11:06 EDT today, header-only => read tomorrow) + 38 PD => above floor 8,
 no action; Nibi 9 R (22931003-081, H44B1500..H44B2700, started 10:55-11:27 EDT today) + 279 PD => above floor 100, no action;
 Trillium 60 PD, 0 R => no action. A2 PILOT 62438417: gone from Fir squeue => read in the Fir tap (result below). rung_status
