@@ -1595,6 +1595,31 @@ int main(int argc, char **argv) {
         cout << "RESULT: CELL LIST TRUNCATED at the 20M cap — refusing to search an incomplete tile\n" << flush;
         return 2;
       }
+      if (G_ENDPOS) {
+        // ENDPOS cell filter (2026-10-02, Astra n=45 note A): with every mirror quad positive,
+        // each quad adds 0 mod 4 to c+d and to the self-reflected middle residue's p+q, so a
+        // cell can hold an ENDPOS candidate only if  sum(px)+sum(py) == px[mid%6]+py[mid%6]
+        // (mod 4) at odd n (the middle element alone breaks the mod-4 balance), and
+        // sum(px)+sum(py) == 0 (mod 4) at even n. Cells failing it stream EMPTY under ENDPOS
+        // (tools/test_endpos_q.py checks CELLSIZE == 0 on every removed cell); removing them
+        // shrinks the kept list and the lane windows. Q-invariant (Q fixes p_mid, q_mid and
+        // both sums), so the closure prune stays consistent. WZ_FH_ENDPOS_NOCELL=1 = test hook.
+        const bool nocell = getenv("WZ_FH_ENDPOS_NOCELL") && atoi(getenv("WZ_FH_ENDPOS_NOCELL"));
+        size_t before = fhProfs.size();
+        vector<Profile> keep;
+        for (size_t i = 0; i < fhProfs.size(); i++) {
+          auto &p = fhProfs[i];
+          int s = 0;
+          for (int c = 0; c < 6; c++) s += p.px[c] + p.py[c];
+          int mid = (n % 2 == 1) ? p.px[(n / 2) % 6] + p.py[(n / 2) % 6] : 0;
+          bool ok = (((s - mid) % 4) + 4) % 4 == 0;
+          if (nocell) cout << "ENDPOS_CELL idx=" << i << " ok=" << (ok ? 1 : 0) << "\n";
+          if (ok || nocell) keep.push_back(p);
+        }
+        fhProfs.swap(keep);
+        cout << "[endpos] cells " << before << " -> " << fhProfs.size() << " (endpoint-parity filter"
+             << (nocell ? ", NOT applied: test hook" : "") << ")\n" << flush;
+      }
     } else {
       fhProfs = cdProfs;
     }

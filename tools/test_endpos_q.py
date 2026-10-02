@@ -122,6 +122,22 @@ def main():
                     assert sizes[0][pi] == 0, (n, sig, pi, 'pruned a non-empty cell')
                     pruned_cells += 1
         print(f'(4) odd n=7,9,11: every one of the {pruned_cells} closure-pruned cells streams empty under ENDPOS', flush=True)
+        # (6) the ENDPOS cell filter removes only cells that stream EMPTY under ENDPOS: with the
+        # filter disabled by the test hook (list order 0, canon off => CELLSIZE pi == list index),
+        # every cell flagged ok=0 must report cand=0.
+        removed = kept_cells = 0
+        for n in (7, 8, 9, 10, 11):
+            for sig in classes(n):
+                o = run(b, (n, *sig), {**base, 'WZ_FH_ORBIT_CANON': 0, 'WZ_FH_PROF_ORDER': 0, 'WZ_FH_ENDPOS': 1,
+                                       'WZ_FH_ENDPOS_NOCELL': 1, 'WZ_FH_CELLSIZE': 10 ** 9})
+                flags = {int(a): int(bb) for a, bb in re.findall(r'^ENDPOS_CELL idx=(\d+) ok=([01])', o, re.M)}
+                sizes = {int(a): int(bb) for a, bb in re.findall(r'^CELLSIZE pi=(\d+) cand=(\d+)', o, re.M)}
+                assert flags and set(sizes) <= set(flags), (n, sig, len(flags), len(sizes))
+                for pi, cand in sizes.items():
+                    if flags[pi] == 0:
+                        assert cand == 0, (n, sig, pi, cand, 'cell filter removed a non-empty cell')
+                removed += sum(1 for v in flags.values() if v == 0); kept_cells += sum(flags.values())
+        print(f'(6) ENDPOS cell filter n=7..11: {removed} cells removed, every one streams empty; {kept_cells} kept', flush=True)
         ck = tmp / 'ck'; ck.mkdir()
         run(b, (11, 0, 6, 1, 3), {**base, 'WZ_FH_ENDPOS': 1, 'WZ_FH_ORBIT_Q': 1, 'WZ_FH_AB_BUDGET': 1, 'WZ_FH_MAX_CAND': 50}, ck)
         sigl = next(ck.glob('*.ckpt')).read_text().splitlines()[0]
