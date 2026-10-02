@@ -1,0 +1,129 @@
+# A2 PILOT 62438417 (Fir, $SCRATCH/bs45_a2pilot, sha 83d9dcaf on 86657e1, 12 cores) — read by the 2026-10-02 1pm loop via one duo_run tap.
+# Verbatim: sacct, ls, wc/md5 of the full per-candidate file (stays on Fir, 35.7 MB, 480,034 lines, 480,000 CAND lines),
+# all non-CAND lines, the first 40 CAND lines, the A2SHADOW lines, and tools/completion_pilot_summary.py run ON FIR over the full file.
+
+=== A2PILOT 62438417 ===
+62438417      COMPLETED   00:27:22      0:0         fc20429 
+total 63564
+drwxr-x--- 3 dangord dangord     4096 Oct  1 11:20 .
+drwxr-x--- 8 dangord dangord    16384 Oct  1 11:13 ..
+-rw-r----- 1 dangord dangord     2807 Oct  1 11:13 cluster_completion_pilot.sh
+-rwxr-x--- 1 dangord dangord   409424 Oct  1 11:20 cp_bin_62438417
+-rw-r----- 1 dangord dangord  2452996 Oct  1 11:35 cp_s102_m0.log
+-rw-r----- 1 dangord dangord  2457862 Oct  1 11:38 cp_s102_m1.log
+-rw-r----- 1 dangord dangord  2449065 Oct  1 11:34 cp_s102_m2.log
+-rw-r----- 1 dangord dangord  2468884 Oct  1 11:42 cp_s10_m0.log
+-rw-r----- 1 dangord dangord  2474627 Oct  1 11:47 cp_s10_m1.log
+-rw-r----- 1 dangord dangord  2465400 Oct  1 11:41 cp_s10_m2.log
+-rw-r----- 1 dangord dangord  2230552 Oct  1 11:21 cp_s148_m0.log
+-rw-r----- 1 dangord dangord  2230706 Oct  1 11:21 cp_s148_m1.log
+-rw-r----- 1 dangord dangord  2230702 Oct  1 11:21 cp_s148_m2.log
+-rw-r----- 1 dangord dangord  2452023 Oct  1 11:40 cp_s56_m0.log
+-rw-r----- 1 dangord dangord  2457840 Oct  1 11:45 cp_s56_m1.log
+-rw-r----- 1 dangord dangord  2450483 Oct  1 11:40 cp_s56_m2.log
+-rw-r----- 1 dangord dangord 35767744 Oct  1 11:47 cpilot_62438417.txt
+drwxr-x--- 3 dangord dangord     4096 Oct  1 11:13 src
+480034 cpilot_62438417.txt
+0864c675cb577ab9513eabedbe145aa1  cpilot_62438417.txt
+--- NONCAND ---
+=== CPILOT WZ_FH_A2=0/1 2 shards=10 56 102 148 ncand=40000 job 62438417 node fc20429 Model name:                              AMD EPYC 9655 96-Co Thu Oct  1 11:20:28 PDT 2026 sha 83d9dcafd49ac52e ===
+cp_s102_m0.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s102_m0.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=2665365085  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=10  cells_empty=0  cum_done=0  cum_dup=10  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=355872  resume_batch=1  resume_k=0
+cp_s102_m1.log A2SHADOW mode=1 rows_tested=10160351328 rows_rejected=3314083177 cuts=135955170 saved_nodes=519206262 total_nodes=2665365085 hit_under_cut=0 cuts_by_depth=9:19266,10:7363971,11:10980091,12:27332601,13:27108735,14:26974764,15:26539571,16:8061716,17:1574455, saved_by_depth=9:117509,10:56999220,11:64361150,12:131606740,13:86613111,14:89625252,15:69628338,16:17425176,17:2829766,
+cp_s102_m1.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s102_m1.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=2665365085  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=10  cells_empty=0  cum_done=0  cum_dup=10  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=355872  resume_batch=1  resume_k=0
+cp_s102_m2.log A2SHADOW mode=2 rows_tested=7511145491 rows_rejected=664877340 cuts=0 saved_nodes=0 total_nodes=2146158823 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s102_m2.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s102_m2.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=2146158823  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=10  cells_empty=0  cum_done=0  cum_dup=10  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=355872  resume_batch=1  resume_k=0
+cp_s10_m0.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s10_m0.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=4040074499  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=38  cells_empty=0  cum_done=0  cum_dup=38  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=360736  resume_batch=1  resume_k=0
+cp_s10_m1.log A2SHADOW mode=1 rows_tested=20103695762 rows_rejected=7195062596 cuts=229069374 saved_nodes=828029153 total_nodes=4040074499 hit_under_cut=0 cuts_by_depth=8:4,9:13382,10:1636095,11:12273503,12:30497604,13:67989093,14:52821800,15:41819627,16:20410739,17:1607527, saved_by_depth=8:814,9:253857,10:16666698,11:102682293,12:138418721,13:231845704,14:168576019,15:121346337,16:45256681,17:2982029,
+cp_s10_m1.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s10_m1.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=4040074499  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=38  cells_empty=0  cum_done=0  cum_dup=38  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=360736  resume_batch=1  resume_k=0
+cp_s10_m2.log A2SHADOW mode=2 rows_tested=14219399166 rows_rejected=1310766000 cuts=0 saved_nodes=0 total_nodes=3212045346 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s10_m2.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s10_m2.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=3212045346  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=38  cells_empty=0  cum_done=0  cum_dup=38  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=360736  resume_batch=1  resume_k=0
+cp_s148_m0.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s148_m0.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=1360000  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=28  cells_empty=0  cum_done=0  cum_dup=28  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=359104  resume_batch=1  resume_k=0
+cp_s148_m1.log A2SHADOW mode=1 rows_tested=121600000 rows_rejected=0 cuts=0 saved_nodes=0 total_nodes=1360000 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s148_m1.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s148_m1.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=1360000  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=28  cells_empty=0  cum_done=0  cum_dup=28  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=359104  resume_batch=1  resume_k=0
+cp_s148_m2.log A2SHADOW mode=2 rows_tested=121600000 rows_rejected=0 cuts=0 saved_nodes=0 total_nodes=1360000 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s148_m2.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s148_m2.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=1360000  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=28  cells_empty=0  cum_done=0  cum_dup=28  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=359104  resume_batch=1  resume_k=0
+cp_s56_m0.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s56_m0.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=2616259399  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=24  cells_empty=0  cum_done=0  cum_dup=24  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=358304  resume_batch=1  resume_k=0
+cp_s56_m1.log A2SHADOW mode=1 rows_tested=22769331000 rows_rejected=8680237997 cuts=120144764 saved_nodes=379237625 total_nodes=2616259399 hit_under_cut=0 cuts_by_depth=9:6676,10:1338803,11:5565010,12:18505199,13:31317753,14:22272851,15:26016710,16:12703125,17:2418637, saved_by_depth=9:40112,10:10222285,11:28348707,12:81193319,13:87925948,14:71574039,15:67227267,16:28308742,17:4397206,
+cp_s56_m1.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s56_m1.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=2616259399  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=24  cells_empty=0  cum_done=0  cum_dup=24  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=358304  resume_batch=1  resume_k=0
+cp_s56_m2.log A2SHADOW mode=2 rows_tested=15566183000 rows_rejected=1477089997 cuts=0 saved_nodes=0 total_nodes=2237021774 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s56_m2.log candidates_streamed=40000  pre_filter_rejected=0  score_rejected=0
+cp_s56_m2.log backtracks_entered=40000  clean_no_AB=40000  budget_aborted=0  total_AB_nodes=2237021774  cells_done=0 (skip=2000)  ab_prof=1  cells_prof_dead=0  cells_prof_uncap=0  cells_orbit_dup=24  cells_empty=0  cum_done=0  cum_dup=24  cum_dead=0  cum_empty=0  cells_capped=1 (drain_top=40000 batches=1)  cells_walled=0 (wall_sec=0)  range_end=3000  pins_dropped=1  tested_cum=40000  resume_pi=358304  resume_batch=1  resume_k=0
+=== CPILOT done Thu Oct  1 11:47:41 PDT 2026 ===
+--- CAND40 ---
+cp_s102_m0.log CAND idx=40000 ci=0 pi=355872 r=2 nodes=1583 ns=1053590
+cp_s102_m0.log CAND idx=40000 ci=1 pi=355872 r=2 nodes=1396 ns=897109
+cp_s102_m0.log CAND idx=40000 ci=2 pi=355872 r=2 nodes=7282 ns=2639610
+cp_s102_m0.log CAND idx=40000 ci=3 pi=355872 r=2 nodes=23940 ns=6718270
+cp_s102_m0.log CAND idx=40000 ci=4 pi=355872 r=2 nodes=166476 ns=39750027
+cp_s102_m0.log CAND idx=40000 ci=5 pi=355872 r=2 nodes=166476 ns=40017887
+cp_s102_m0.log CAND idx=40000 ci=6 pi=355872 r=2 nodes=87789 ns=23509328
+cp_s102_m0.log CAND idx=40000 ci=7 pi=355872 r=2 nodes=87789 ns=23250398
+cp_s102_m0.log CAND idx=40000 ci=8 pi=355872 r=2 nodes=48395 ns=14537239
+cp_s102_m0.log CAND idx=40000 ci=9 pi=355872 r=2 nodes=15608 ns=6009400
+cp_s102_m0.log CAND idx=40000 ci=10 pi=355872 r=2 nodes=10111 ns=3347529
+cp_s102_m0.log CAND idx=40000 ci=11 pi=355872 r=2 nodes=186734 ns=49690167
+cp_s102_m0.log CAND idx=40000 ci=12 pi=355872 r=2 nodes=14645 ns=4558059
+cp_s102_m0.log CAND idx=40000 ci=13 pi=355872 r=2 nodes=16895 ns=5086850
+cp_s102_m0.log CAND idx=40000 ci=14 pi=355872 r=2 nodes=12438 ns=4248270
+cp_s102_m0.log CAND idx=40000 ci=15 pi=355872 r=2 nodes=18660 ns=6516279
+cp_s102_m0.log CAND idx=40000 ci=16 pi=355872 r=2 nodes=19089 ns=5376240
+cp_s102_m0.log CAND idx=40000 ci=17 pi=355872 r=2 nodes=162771 ns=39383557
+cp_s102_m0.log CAND idx=40000 ci=18 pi=355872 r=2 nodes=162771 ns=39631707
+cp_s102_m0.log CAND idx=40000 ci=19 pi=355872 r=2 nodes=351188 ns=93413733
+cp_s102_m0.log CAND idx=40000 ci=20 pi=355872 r=2 nodes=109377 ns=31148217
+cp_s102_m0.log CAND idx=40000 ci=21 pi=355872 r=2 nodes=173264 ns=41828787
+cp_s102_m0.log CAND idx=40000 ci=22 pi=355872 r=2 nodes=93342 ns=25346778
+cp_s102_m0.log CAND idx=40000 ci=23 pi=355872 r=2 nodes=17218 ns=6144270
+cp_s102_m0.log CAND idx=40000 ci=24 pi=355872 r=2 nodes=506619 ns=122955090
+cp_s102_m0.log CAND idx=40000 ci=25 pi=355872 r=2 nodes=296265 ns=76504814
+cp_s102_m0.log CAND idx=40000 ci=26 pi=355872 r=2 nodes=229886 ns=59754706
+cp_s102_m0.log CAND idx=40000 ci=27 pi=355872 r=2 nodes=227915 ns=58526236
+cp_s102_m0.log CAND idx=40000 ci=28 pi=355872 r=2 nodes=84779 ns=23625548
+cp_s102_m0.log CAND idx=40000 ci=29 pi=355872 r=2 nodes=213181 ns=57714395
+cp_s102_m0.log CAND idx=40000 ci=30 pi=355872 r=2 nodes=26060 ns=7204110
+cp_s102_m0.log CAND idx=40000 ci=31 pi=355872 r=2 nodes=3428 ns=1433290
+cp_s102_m0.log CAND idx=40000 ci=32 pi=355872 r=2 nodes=3643 ns=1451310
+cp_s102_m0.log CAND idx=40000 ci=33 pi=355872 r=2 nodes=13100 ns=4156529
+cp_s102_m0.log CAND idx=40000 ci=34 pi=355872 r=2 nodes=11570 ns=3872600
+cp_s102_m0.log CAND idx=40000 ci=35 pi=355872 r=2 nodes=11883 ns=3883570
+cp_s102_m0.log CAND idx=40000 ci=36 pi=355872 r=2 nodes=26356 ns=7090809
+cp_s102_m0.log CAND idx=40000 ci=37 pi=355872 r=2 nodes=26468 ns=7133219
+cp_s102_m0.log CAND idx=40000 ci=38 pi=355872 r=2 nodes=22351 ns=6228140
+cp_s102_m0.log CAND idx=40000 ci=39 pi=355872 r=2 nodes=6816 ns=2537200
+--- CANDCOUNT ---
+480000
+--- A2SHADOW ---
+cp_s102_m1.log A2SHADOW mode=1 rows_tested=10160351328 rows_rejected=3314083177 cuts=135955170 saved_nodes=519206262 total_nodes=2665365085 hit_under_cut=0 cuts_by_depth=9:19266,10:7363971,11:10980091,12:27332601,13:27108735,14:26974764,15:26539571,16:8061716,17:1574455, saved_by_depth=9:117509,10:56999220,11:64361150,12:131606740,13:86613111,14:89625252,15:69628338,16:17425176,17:2829766,
+cp_s102_m2.log A2SHADOW mode=2 rows_tested=7511145491 rows_rejected=664877340 cuts=0 saved_nodes=0 total_nodes=2146158823 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s10_m1.log A2SHADOW mode=1 rows_tested=20103695762 rows_rejected=7195062596 cuts=229069374 saved_nodes=828029153 total_nodes=4040074499 hit_under_cut=0 cuts_by_depth=8:4,9:13382,10:1636095,11:12273503,12:30497604,13:67989093,14:52821800,15:41819627,16:20410739,17:1607527, saved_by_depth=8:814,9:253857,10:16666698,11:102682293,12:138418721,13:231845704,14:168576019,15:121346337,16:45256681,17:2982029,
+cp_s10_m2.log A2SHADOW mode=2 rows_tested=14219399166 rows_rejected=1310766000 cuts=0 saved_nodes=0 total_nodes=3212045346 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s148_m1.log A2SHADOW mode=1 rows_tested=121600000 rows_rejected=0 cuts=0 saved_nodes=0 total_nodes=1360000 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s148_m2.log A2SHADOW mode=2 rows_tested=121600000 rows_rejected=0 cuts=0 saved_nodes=0 total_nodes=1360000 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+cp_s56_m1.log A2SHADOW mode=1 rows_tested=22769331000 rows_rejected=8680237997 cuts=120144764 saved_nodes=379237625 total_nodes=2616259399 hit_under_cut=0 cuts_by_depth=9:6676,10:1338803,11:5565010,12:18505199,13:31317753,14:22272851,15:26016710,16:12703125,17:2418637, saved_by_depth=9:40112,10:10222285,11:28348707,12:81193319,13:87925948,14:71574039,15:67227267,16:28308742,17:4397206,
+cp_s56_m2.log A2SHADOW mode=2 rows_tested=15566183000 rows_rejected=1477089997 cuts=0 saved_nodes=0 total_nodes=2237021774 hit_under_cut=0 cuts_by_depth= saved_by_depth=
+--- TOOL ON FIR ---
+--- mode 1 vs 0: cells off 4 on 4; per-cell counts equal: True
+paired candidates: 160000  unpaired off/on: 0/0  identity violations: 0 []
+completion time off/on: 2853s / 3604s = 0.792x  (saving -26.3%); nodes off/on 1.000x; resolved 160000 -> 160000; hits 0 -> 0
+  shadow s10: rows_tested=20103695762 rows_rejected=7195062596 cuts=229069374 saved_nodes=828029153 total_nodes=4040074499 (20.5%) hit_under_cut=0
+  shadow s56: rows_tested=22769331000 rows_rejected=8680237997 cuts=120144764 saved_nodes=379237625 total_nodes=2616259399 (14.5%) hit_under_cut=0
+  shadow s102: rows_tested=10160351328 rows_rejected=3314083177 cuts=135955170 saved_nodes=519206262 total_nodes=2665365085 (19.5%) hit_under_cut=0
+  shadow s148: rows_tested=121600000 rows_rejected=0 cuts=0 saved_nodes=0 total_nodes=1360000 (0.0%) hit_under_cut=0
+  shadow total: rows_rejected 19189383770/53154978090, cuts 485169308, saved nodes 1726473040/9323058983 = 18.5%, overhead 751s (26.3%), estimated net saving -222s = -7.8% of off time, hit_under_cut=0
+VERDICT[mode 1, shadow]: CLOSE (estimated net saving <= 10%)
+--- mode 2 vs 0: cells off 4 on 4; per-cell counts equal: True
+paired candidates: 160000  unpaired off/on: 0/0  identity violations: 0 []
+completion time off/on: 2853s / 2693s = 1.060x  (saving 5.6%); nodes off/on 1.227x; resolved 160000 -> 160000; hits 0 -> 0
+VERDICT[mode 2]: INCONCLUSIVE
+=== END FIR TAP ===
