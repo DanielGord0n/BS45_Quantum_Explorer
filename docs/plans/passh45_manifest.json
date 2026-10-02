@@ -1,5 +1,5 @@
 {
- "build": "0f6f3ca",
+ "build": "396231d",
  "narms": 177,
  "n": 45,
  "classes": [
@@ -345,7 +345,7 @@
     5
    ],
    "letter": "g",
-   "cluster": "nibi",
+   "cluster": "fir",
    "cells": 488269,
    "kept": 69756,
    "windows": 2759,
@@ -402,7 +402,7 @@
     11
    ],
    "letter": "h",
-   "cluster": "nibi",
+   "cluster": "rorqual",
    "cells": 471881,
    "kept": 66215,
    "windows": 2666,

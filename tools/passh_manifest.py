@@ -38,7 +38,9 @@ CLASSES_BY_N = {
     45: [
         ((0, 2, 3, 13), 300, 'fir', 'a'), ((8, 10, 3, 3), 300, 'fir', 'b'), ((2, 4, 9, 9), 300, 'fir', 'c'),
         ((0, 6, 5, 11), 300, 'rorqual', 'd'), ((0, 10, 1, 9), 300, 'rorqual', 'e'), ((4, 6, 7, 9), 300, 'rorqual', 'f'),
-        ((2, 12, 3, 5), 300, 'nibi', 'g'), ((4, 6, 3, 11), 300, 'nibi', 'h'),
+        # 2026-10-02 launch: Nibi stays on n=44 (six n=44 classes other than the solved (9,9,0,4),
+        # the Professor's "more solutions of the other classes"); its two n=45 classes moved here.
+        ((2, 12, 3, 5), 300, 'fir', 'g'), ((4, 6, 3, 11), 300, 'rorqual', 'h'),
         ((6, 8, 1, 9), 300, 'trillium', 'i'), ((6, 12, 1, 1), 300, 'trillium', 'j'),
     ],
 }

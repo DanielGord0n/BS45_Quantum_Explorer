@@ -1,0 +1,15 @@
+# ODDCANARY 62595724 (Fir fc30204, sha 836ef105 = c71699f7 cell filter excluded; started Fri Oct 2 13:40 PDT), read in Daniel's session while RUNNING.
+[ours43] step0: [orbitcanon] group=64 cells=453079 kept_orbits=64163 dedup=7.06137x | [order] ord3 cells=453079 kept=64163 windows=2560 digest=848b6bb10f6f839c:21f4762bc76c115c arms=177 kept_per_arm_min=324 | LOCATE_CANON: orbit_canon=1 matched_cells=8 kept_cells=1 retained=YES
+[ours43] step0: kept cell pi=106598 (window 602, arm 44)
+[wz43] step0: [orbitcanon] group=64 cells=453079 kept_orbits=64163 dedup=7.06137x | [order] ord3 cells=453079 kept=64163 windows=2560 digest=848b6bb10f6f839c:21f4762bc76c115c arms=177 kept_per_arm_min=324 | LOCATE_CANON: orbit_canon=1 matched_cells=8 kept_cells=1 retained=YES
+[wz43] step0: kept cell pi=98193 (window 554, arm 135)
+[ours43] step1: TARGET_COMPLETE pi=106598 idx=451787 score=130 | CELLSIZE pi=106598 cand=451787 capped=0 partial=1 sec=69.5012 sec_at_buf=-1 leaves=88797221 hall_ok=451787
+[ours43] result: *** BS(44,43) FOUND ***  (firsthit probe) | FIRSTHIT: idx=451787 profile_rank=106598 nodes_this_cand=54286 score=130 elapsed=73.1497s | VERIFY: max |NPAF[s]| over s=1..43 = 0  (NPAF==0 confirmed)
+[ours43] VERDICT: PASS (verify locally)
+*** BS(44,43) FOUND ***  (firsthit probe)
+sig = (-2,8,5,9)
+A = {1,-1,1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,1,1,1,-1,1,-1,1,1,1,1,1,-1,-1,1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,1,-1,-1,1};
+B = {1,1,1,1,1,1,-1,1,-1,1,1,-1,1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,1,-1,-1,-1,1,1,1,1,-1,-1,1,-1};
+C = {-1,-1,-1,1,-1,1,1,1,1,-1,1,-1,-1,-1,1,1,1,1,1,-1,1,-1,1,1,1,-1,-1,-1,1,1,-1,1,1,1,1,-1,1,-1,1,1,-1,-1,-1};
+D = {1,-1,-1,1,-1,-1,1,1,1,-1,1,1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,-1,1,-1,1,1,1,-1,1,1,1,-1,1,1,1,1,-1,-1,1};
+# wz43 step1 still streaming at read time (1.86M candidates at 600 s, no TARGET_COMPLETE yet).
