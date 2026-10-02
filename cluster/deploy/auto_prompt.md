@@ -165,6 +165,15 @@ Do not re-run the checker.
      cancel or resubmit them.
      **LEVER 28 DONE (2026-09-23):** controls PASSED (exact node counts); the early check is now
      DEFAULT ON in source (WZ_FH_EARLY_CHECK=0 disables). Never set the flag on submits.
+     **ODDCANARY 62595724 (Fir, 2026-10-02, $SCRATCH/bs45_oddcanary, 2 cores, up to 24 h): the n=45
+     launch control. It re-finds both known BS(44,43) under the exact n=45 pipeline (ENDPOS + Q +
+     prune, ORDER=3, 177 arms, 2e6). NOT a lane: never count, restack or cancel it. Once it is gone
+     from squeue: `cd $SCRATCH/bs45_oddcanary && cat oddcanary_62595724.txt` -> save verbatim to
+     docs/reviews/evidence/oddcanary_62595724.txt; report the two "[ours43] VERDICT" / "[wz43]
+     VERDICT" lines; if either FOUND block is printed, run tools/verify_npaf.py on it locally and
+     report. Two PASS = NEEDS_HUMAN (n=45 launch is Daniel's go); any FAIL = NEEDS_HUMAN (do not
+     launch n=45); INCONCLUSIVE = report, nothing to do. NEVER submit anything from
+     docs/plans/passh45_submit_*.txt on your own.**
      **A2 PILOT 62438417 (Fir, 2026-10-01, $SCRATCH/bs45_a2pilot, 12 cores, up to 8 h): A2 profile-row
      reachability, 4 shards x {off, shadow, prune}. NOT a lane: never count, restack or cancel it. Once
      it is gone from squeue: `cd $SCRATCH/bs45_a2pilot && cat cpilot_62438417.txt` -> save verbatim to

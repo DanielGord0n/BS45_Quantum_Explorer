@@ -4,6 +4,26 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-10-02 (Daniel session, evening) — PROFESSOR CONFIRMED (checked in Maple), wants more n=44 solutions AND
+n=45 as the next target. ★ ODD-n Q UNLOCKED (Astra n=45 note A, docs/reviews/prompts/astra-n45-prompt.md reply pasted in
+chat; verified): every base-sequence solution has a POSITIVE C,D endpoint quad (at shift n-1 the four A,B terms have
+product (root)(next) = -1, so they sum to +-2 and c0c[n-1] = d0d[n-1]; all 36 banked/reference solutions n=32..44
+satisfy it, as do all brute-force solutions at n=5,7,9). New WZ_FH_ENDPOS=1 (commit 3eee03a): the C,D root quad is
+restricted to the 8 positive-product quads, so every quad is positive at ANY n and the quad switch Q (middle fixed) plus
+its closure prune are sound at odd n; CFGSIG gains ".ep1". GATE tools/test_endpos_q.py PASS: 60 class/direction runs
+n=5..13 keep every verdict with ENDPOS, Q and prune (180 FOUNDs NPAF-verified); brute-force retention at n=5,7,9 (420
+class-orbit reps); 14 banked odd-n solutions (33,35,37,41,43 + WZ 41/43) LOCATE retained=YES under ENDPOS+Q+prune on
+the ORDER=3 list; 16 closure-pruned odd-n cells stream empty; regression (orbit_q, retention, cd_prune, passh_order)
+PASS. n=45 MANIFEST REGENERATED with ENDPOS+Q (tools/passh_manifest.py --n 45): kept orbits 1,079,164 -> 582,683
+(e.g. (0,2,3,13) 122,381 -> 64,858), 194 units unchanged, digests in docs/plans/passh45_manifest.json, lines in
+docs/plans/passh45_submit_<cluster>.txt (every line carries WZ_FH_ENDPOS=1 and its digest). ODD-n CONTROL SHIPPED: Fir
+62595724 (cluster_odd_canary.sh, $SCRATCH/bs45_oddcanary, sha 836ef105.. on 86657e1, 2 cores, 24 h): LOCATE + TARGET_
+COMPLETE of ours-43 and WZ-43 under the exact n=45 pipeline (ENDPOS, Q, prune, ORDER=3, 177 arms, 2e6, A1 K=3).
+PRE-REGISTERED: both PASS => n=45 launch (Daniel's go; keep some n=44 lanes per the Professor); any FAIL => no launch;
+INCONCLUSIVE => rerun with a longer wall. LAUNCH PLAN once PASS: redeploy the solver fleet-wide (sha-checked, same as
+10-01; ENDPOS is opt-in so n=44 lanes are untouched), then submit passh45 lines: Fir a/b/c, Rorqual d/e/f, Nibi g/h,
+Trillium i/j, keeping the running n=44 H reps and a floor of n=44 lanes on Rorqual/Nibi.**
+
 **⚡ 2026-10-02 (Daniel session) — n=44 RE-VERIFIED INDEPENDENTLY (from-definition checker: lengths 45/45/44/44,
 NPAF sum zero at every shift 1..44, row sums (-9,-9,0,4), 178; email rows byte-identical to the banked file); literature
 checked (Wang-Zhu arXiv 2506.20296 v3, Feb 2026, stops at 43; no other n=44 anywhere) => first known BS(45,44). Email to
