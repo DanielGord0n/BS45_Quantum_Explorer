@@ -4,6 +4,23 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-10-02 (Daniel session) — n=44 RE-VERIFIED INDEPENDENTLY (from-definition checker: lengths 45/45/44/44,
+NPAF sum zero at every shift 1..44, row sums (-9,-9,0,4), 178; email rows byte-identical to the banked file); literature
+checked (Wang-Zhu arXiv 2506.20296 v3, Feb 2026, stops at 43; no other n=44 anywhere) => first known BS(45,44). Email to
+the Professor sent by Daniel asking him to verify. Repo is PUBLIC: the sequences have been visible since the loop's push
+at 13:09 EDT. Framing fixed in CLAUDE.md + skill. ★ n=45 PREP DONE, NOT LAUNCHED: 10 classes (a,b even, c,d odd,
+squares 182); tools/passh_manifest.py --n 45 (new --n flag, CLASSES_BY_N) enumerated all 10 locally in ~15 s each
+(Q + closure prune auto-disabled at odd n => 32-group kept list): cells 465k-513k per class, kept 63k-129k, total
+1,079,164 kept orbits (vs 759,190 at n=44 under the 64-group), 97 lane ranges x 2 = 194 units at S=300, digests in
+docs/plans/passh45_manifest.json, submit lines docs/plans/passh45_submit_<cluster>.txt (lane names H45<letter>..,
+fir a/b/c, rorqual d/e/f, nibi g/h, trillium i/j). TWIN CLASSES: (0,10,1,9) e and (6,8,1,9) i have the identical C,D
+list and digest (942d9f77..) — same stream, different A,B targets (like 44's (7,11,2,2)/(1,13,2,2)); shared-stream
+work would apply to them. LAUNCH GATES before any n=45 submit: (1) odd-n control: the exact n=45 pipeline (ORDER=3, Q
+off, K=50k, 2e6, A1 K=3) must re-find a banked BS(44,43) via TARGET_COMPLETE on a cluster (canary v3 style); (2) the
+Professor's answer on what the fleet does next (n=44 H keeps running meanwhile); (3) Astra's n=45 note
+(docs/reviews/prompts/astra-n45-prompt.md: is there an odd-n analogue of Q?). A2 pilot 62438417 read by the loop: shadow
+CLOSE (-7.8% net), prune INCONCLUSIVE (+5.6%) => A2 stays OFF per rule.**
+
 **⚡ 2026-10-02 (daily loop 1pm — all four reached) — ★★★ VERIFIED BS(45,44) = n=44, THE OPEN-RECORD TARGET: Rorqual
 22037999 (lane H44G2700, class (9,9,0,4), forward front, raw cells [2700,3000), FIRST rep, build a3b84f9/K=0, started Thu Oct 1
 09:45:34 EDT on rc13609) printed `*** BS(45,44) FOUND ***` sig (-9,-9,0,4) at elapsed=14731 s (4.09 h, ~13:51 EDT). R2 DONE:
