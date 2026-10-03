@@ -4,6 +4,40 @@
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
 
+**⚡ 2026-10-03 (daily loop, Fir reached on a second tap ~13:07 EDT) — ★ FIRST n=45 READS: 48 Fir H45 reps HITLESS;
+48 H45 RESTACKS submitted on Fir (62707176-62707225, 48/48 echoed); ODDCANARY wz43 still running, no verdict.** Raw
+capture results/fir_check_2026-10-03.txt; verbatim GATEB + pipeline lines docs/reviews/evidence/
+passh45_first_reads_fir_2026-10-03.txt. All three "NEW FOUND?" greps (none yet). H45 first reps (sacct COMPLETED 11:30,
+started 18:19-22:35 PDT Oct 2; all 177/177 arms, arms_with_hits=0, cum_done == cells_done, no CFGSIG mismatch / DIGEST
+MISMATCH / oom / fresh start / internal error in any firsthit output of the last 2 days):
+class a (0,2,3,13) 18 reps H45a0..H45ar2400 (62598470-488): cells 347-595, mean 463, aborts 0.7-11.6%, range 0/177 all;
+class b (8,10,3,3) 20 reps H45b0..H45br2700 (62598489-508): cells 336-858, mean 565, aborts 0.7-7.0%; H45b2700 range_done
+10/177, H45br2700 3/177 (short last range), rest 0;
+class c (2,4,9,9) 10 reps H45c0..H45cr1200 (62598509-518): cells 292-445, mean 341, aborts 2.0-10.2%, range 0/177.
+n=45 THROUGHPUT (first number): ~340-565 cells per 12 h rep by class vs ~675-1000 on the n=44 K=3 reps = roughly half the
+cells per rep, as expected (each candidate costs more); different classes, indicative only.
+PIPELINE CHECK = OK: arm logs show "[orbitcanon] group=64" and "[endpos] cells 488269 -> 488269" (class g, running);
+checkpoint CFGSIG carries ".ep1" in all 76 n=45 checkpoint dirs on Fir (EPCHECK n45_ckpt_dirs=76 with_ep1=76), e.g.
+CFGSIG=n45.a0.b2.c3.d13.ns177.sh0.ord3.m6.co1.ap1.sm0.cap500000.sk0.t11.t21.oc1.dt50000.ep1.oq1.qp1.bud2000000.dgfa80576cd40fb89a:cc5f482d6673d519
+(76 of 78: H45c2700/H45cr2700-type lanes that started latest may not have written arm_0.ckpt yet; not an alarm).
+FIR n=44 (3,13,0,0), the reps running at the 10-02 launch + two 1-minute reps on the finished range (14 reps, hitless):
+★ H44g0 IS DONE: 62278026 range_done 177/177 (224 cells, cum 4073); 62417659 and 62558169 then ran 1 min on the exhausted
+range (0 cells) as designed. Others (cells this rep / cum / range_done): 62278017 H44gr1000 1143/3297/96; 018 H44g2000
+272/3330/176; 019 H44gr2000 1041/2940/84; 020 H44g3000 435/3357/173; 021 H44gr3000 956/3113/111; 022 H44g4000 716/3639/170;
+023 H44gr4000 1053/3395/106; 024 H44g5000 362/3309/176; 025 H44gr5000 706/3287/170; 027 H44gr0 569/3956/159; 028 H44g1000
+59/3777/175; aborts 0.1-1.7%. Per the 10-02 program none of these is resubmitted on Fir (forward lanes are 1-7 arms from
+closing; whether to finish them is Daniel's call).
+ODDCANARY 62595724: still RUNNING at 20:27 elapsed (about 3.5 h of its 24 h wall left); file unchanged since 10-02 13:42
+PDT: both orbits retained=YES, [ours43] VERDICT: PASS, [wz43] still streaming, no verdict line => read it next cycle
+(TIME LIMIT without a wz43 verdict = INCONCLUSIVE per the pre-registered rule: rerun with a longer wall is Daniel's call).
+QUEUE + REFILL: Fir had 31 H45 R (10 class c, 20 class g, + H45cr1200 finishing) + canary, 0 PD < floor 12 => restacked
+every H45 lane with a READ first rep, range_done < 177 and no job queued: 48 lanes (a x18, b x20, c x10), verbatim lines
+from docs/plans/passh45_submit_fir.txt, gated in-tap on .ep1 and pending=0; lane->ID map
+docs/reviews/evidence/passh45_restack_2026-10-03_fir_ids.txt (H45a0 62707176 ... H45cr1200 62707225). Fir after the tap:
+48 PD + 31 R. The 30 lanes still running (H45c1500..H45gr2700) have no second rep queued: restack them after they read.
+CHECKER: exclusions +62 Fir IDs read today (validated: 62/62 excluded; running 62598519-551, new 627071xx and the canary
+stay visible).**
+
 **⚡ 2026-10-03 (daily loop 1pm — Nibi, Rorqual, Trillium reached; FIR MISSED, no Duo approval within 180 s) — NO HITS;
 50 n=44 reps read hitless; n=45 H45 lanes not started yet; no submits (every reached cluster above its floor).** All three
 "NEW FOUND?" greps = (none yet) on the reached clusters. Verbatim GATEB lines + lane names:
