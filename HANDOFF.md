@@ -1,8 +1,33 @@
 # CP493 — BS(45) Solver Project Handoff
 
-**Date**: 2026-10-02 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
+**Date**: 2026-10-03 (read TOP OF MIND newest-first; QUICK REFERENCE below has the current
 system. Pre-2026-07-24 history — SA era, join saga, firsthit ramp n=32→37 — lives in
 `docs/archive/handoff/HANDOFF_ARCHIVE_to_2026-07-23.md`; measured-dead list in `.claude/skills/bs45-campaign/SKILL.md`.)
+
+**⚡ 2026-10-03 (daily loop 1pm — Nibi, Rorqual, Trillium reached; FIR MISSED, no Duo approval within 180 s) — NO HITS;
+50 n=44 reps read hitless; n=45 H45 lanes not started yet; no submits (every reached cluster above its floor).** All three
+"NEW FOUND?" greps = (none yet) on the reached clusters. Verbatim GATEB lines + lane names:
+docs/reviews/evidence/passh_reads_2026-10-03.txt. All 50 reps 177/177 arms, arms_with_hits=0, no CFGSIG mismatch / fresh
+start / DIGEST MISMATCH / STALE / oom line; cum_done == cells_done on every rep (all first reps of their lanes).
+RORQUAL, the 17 n=44 reps that were running at the 10-02 launch (22038003-019, started 08:30-11:06 EDT Oct 2, K=3 build
+9e0b89ce by start time): (9,9,0,4) 16 reps H44G3300..H44Gr5400, cells 776-1413, mean 1000 (vs 872 on the 13 K=0 first reps
+read 10-02 = +15%, different cells, indicative only), aborts 1.2-3.0% (vs pooled 22.9% at K=0); TAIL LANES NEARLY CLOSED:
+22038017 H44G5400 range_done 160/177, 22038018 H44Gr5400 146/177 (the last range is short), 22038003 H44G3300 2/177, the
+rest 0/177. (3,5,0,12) 22038019 H44H0 648 cells ab 1.0% r0. Per the 10-02 program these Rorqual n=44 lanes are NOT
+restacked (checkpoints untouched). Rorqual queue: 76 H45 PD (Priority), 0 R => n=45 has not started there; floor 8 => no action.
+NIBI, 33 first reps (22931003-213, started 10:55-21:50 EDT Oct 2): (1,7,8,8) 28 reps H44B1500..H44Br5400, cells 552-902,
+mean 675 (10-02 K=3 reps: mean 768), aborts 1.6-5.8%; H44B5400 22931181 range_done 23/177, H44Br5400 22931187 8/177
+(short last range), rest 0/177. (5,5,8,8) FIRST READS: 22931193 H44C0 1046 cells ab 0.2%; 200 H44Cr0 719/0.2%; 203 H44C300
+948/1.1%; 209 H44Cr300 738/1.0%; 213 H44C600 743/1.8%; [orbitcanon] group=64 cells=972489 kept_orbits=66536 dedup=14.616x.
+Nibi queue: 255 PD (H44Cr600..H44F*), 0 R (not an alarm) => above floor 100, no restack; the 33 lanes read today plus
+the 10 read 10-02 have no job queued and range_done < 177 => they are the restack pool when Nibi pending nears 100.
+TRILLIUM: 40 H45 PD, 0 R, no new outputs => no action (floor 8).
+FIR UNREAD: its 11 running n=44 reps, the 78 H45 lanes and ODDCANARY 62595724 ([wz43] VERDICT still outstanding; it has
+passed its 24 h wall by now) could not be read => next reach of Fir must read the canary first: `cd $SCRATCH/bs45_oddcanary
+&& cat oddcanary_62595724.txt`, save to docs/reviews/evidence/oddcanary_62595724.txt; wz43 FAIL = NEEDS_HUMAN at once.
+No H45 rep has read anywhere yet, so the ".ep1" / "[endpos] cells" check and the n=45 throughput number are still open.
+rung_status not run (no idle-refill decision; SA ledger retired). CHECKER: exclusions +22038003-019, +33 Nibi IDs
+(22931003..22931213); validated locally (50/50 read IDs excluded, pending IDs still visible, bash -n OK).**
 
 **⚡ 2026-10-02 (Daniel session, ~17:00 EDT) — ★★ n=45 LAUNCHED: PASS H45 on Fir, Rorqual, Trillium; Nibi stays on
 n=44.** Gate: ODDCANARY 62595724 read while running: BOTH n=43 orbits LOCATE-retained in kept cells on Fir's toolchain
